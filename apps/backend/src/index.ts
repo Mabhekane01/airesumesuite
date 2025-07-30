@@ -1,0 +1,280 @@
+import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import morgan from 'morgan';
+import compression from 'compression';
+import rateLimit from 'express-rate-limit';
+import dotenv from 'dotenv';
+import { connectDB } from './config/database';
+import { connectRedis } from './config/redis';
+// import './config/passport';
+import resumeRoutes from './routes/resumeRoutes';
+import fileUploadRoutes from './routes/fileUploadRoutes';
+import coverLetterRoutes from './routes/coverLetterRoutes';
+import authRoutes from './routes/authRoutes';
+import jobScrapingRoutes from './routes/jobScrapingRoutes';
+import jobApplicationRoutes from './routes/jobApplicationRoutes';
+import simpleAnalyticsRoutes from './routes/simpleAnalyticsRoutes';
+import accountRoutes from './routes/accountRoutes';
+import enterpriseRoutes from './routes/enterpriseRoutes';
+import locationRoutes from './routes/locationRoutes';
+import companyRoutes from './routes/companyRoutes';
+import currencyRoutes from './routes/currencyRoutes';
+import interviewRoutes from './routes/interviewRoutes';
+import careerCoachRoutes from './routes/careerCoachRoutes';
+import { 
+  requestIdMiddleware, 
+  requestLogger, 
+  auditLogger, 
+  securityMonitor,
+  errorHandler,
+  notFoundHandler
+} from './middleware/enterpriseErrorHandler';
+import { automationService } from './services/automationService';
+import { locationService } from './services/locationService';
+import { companyService } from './services/companyService';
+import { currencyService } from './services/currencyService';
+// Import interview services with error handling
+let interviewNotificationService: any;
+let emailService: any;
+
+try {
+  const { interviewNotificationService: notificationService } = require('./services/interviewNotificationService');
+  const { emailService: mailService } = require('./services/emailService');
+  interviewNotificationService = notificationService;
+  emailService = mailService;
+} catch (error) {
+  console.warn('⚠️  Interview system dependencies missing. Some features will be disabled.');
+  console.warn('📦 To enable full interview functionality, run: pnpm add node-cron @types/node-cron');
+  console.warn('📧 For email notifications, run: pnpm add nodemailer @types/nodemailer');
+  console.warn('📖 See SETUP_INTERVIEW_SYSTEM.md for complete setup instructions');
+  
+  // Create mock services
+  interviewNotificationService = {
+    startService: async () => console.log('Interview notification service disabled - dependencies missing')
+  };
+  emailService = {
+    testConnection: async () => {
+      console.log('Email service disabled - dependencies missing');
+      return false;
+    }
+  };
+}
+
+dotenv.config();
+
+const app = express();
+const PORT = process.env.PORT || 3001;
+
+// Security middleware
+app.use(helmet({
+  crossOriginEmbedderPolicy: false
+}));
+
+// Enhanced CORS configuration for enterprise security
+const corsOptions = {
+  origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
+    console.log('🌐 CORS Request from origin:', origin || 'no-origin');
+    
+    // Allow requests with no origin (like mobile apps, curl, or Postman)
+    if (!origin) {
+      console.log('✅ CORS: Allowing request with no origin');
+      return callback(null, true);
+    }
+    
+    const allowedOrigins = [
+      'http://localhost:5173',
+      'http://localhost:5174',
+      'http://localhost:5175',
+      'http://localhost:5176',
+      'http://localhost:5177',
+      'http://localhost:5178',
+      'http://localhost:3000',
+      'http://localhost:3001', // Backend itself
+      'http://127.0.0.1:5173',
+      'http://127.0.0.1:5174',
+      'http://127.0.0.1:5175',
+      'http://127.0.0.1:5176',
+      'http://127.0.0.1:5177',
+      'http://127.0.0.1:5178',
+      'http://127.0.0.1:3000',
+      'http://127.0.0.1:3001',
+      process.env.FRONTEND_URL || 'http://localhost:5173'
+    ];
+    
+    if (allowedOrigins.includes(origin)) {
+      console.log('✅ CORS: Origin allowed from whitelist');
+      return callback(null, true);
+    }
+    
+    // In development, be more permissive for localhost variants
+    if (process.env.NODE_ENV !== 'production') {
+      const isLocalhost = origin.includes('localhost') || origin.includes('127.0.0.1');
+      if (isLocalhost) {
+        console.log('✅ CORS: Allowing localhost origin in development:', origin);
+        return callback(null, true);
+      }
+    }
+    
+    console.error('❌ CORS: Origin not allowed:', origin);
+    const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+    return callback(new Error(msg), false);
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS', 'HEAD'],
+  allowedHeaders: [
+    'Content-Type', 
+    'Authorization', 
+    'X-Requested-With', 
+    'Accept', 
+    'Origin',
+    'Access-Control-Request-Method',
+    'Access-Control-Request-Headers',
+    'Cache-Control',
+    'Pragma'
+  ],
+  exposedHeaders: ['Set-Cookie', 'X-Request-ID'],
+  preflightContinue: false,
+  optionsSuccessStatus: 200,
+  maxAge: 86400 // 24 hours cache for preflight
+};
+
+app.use(cors(corsOptions));
+
+// Additional CORS debugging middleware
+app.use((req, res, next) => {
+  console.log(`📥 ${req.method} ${req.path} from ${req.get('Origin') || 'no-origin'}`);
+  console.log('📋 Headers:', {
+    'Content-Type': req.get('Content-Type'),
+    'Authorization': req.get('Authorization') ? '[PRESENT]' : '[NOT PRESENT]',
+    'User-Agent': req.get('User-Agent')?.substring(0, 50) + '...'
+  });
+  next();
+});
+
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100 // limit each IP to 100 requests per windowMs
+});
+app.use(limiter);
+
+// General middleware
+app.use(compression());
+app.use(morgan('combined'));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Enterprise middleware
+app.use(requestIdMiddleware);
+app.use(requestLogger);
+app.use(auditLogger);
+app.use(securityMonitor);
+
+// Health check endpoints
+app.get('/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'OK', 
+    timestamp: new Date().toISOString(),
+    cors: 'enabled',
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
+// CORS test endpoint
+app.get('/api/v1/test-cors', (req, res) => {
+  res.status(200).json({ 
+    message: 'CORS is working!', 
+    origin: req.get('Origin'),
+    timestamp: new Date().toISOString() 
+  });
+});
+
+// Auth endpoints test
+app.get('/api/v1/auth/status', (req, res) => {
+  res.status(200).json({ 
+    message: 'Auth service is running', 
+    endpoints: [
+      'POST /api/v1/auth/send-registration-otp',
+      'POST /api/v1/auth/verify-registration-otp',
+      'POST /api/v1/auth/register',
+      'POST /api/v1/auth/login',
+      'POST /api/v1/auth/check-email'
+    ],
+    timestamp: new Date().toISOString() 
+  });
+});
+
+// API Routes
+app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/resumes', resumeRoutes);
+app.use('/api/v1/upload', fileUploadRoutes);
+app.use('/api/v1/cover-letters', coverLetterRoutes);
+app.use('/api/v1/job-scraper', jobScrapingRoutes);
+app.use('/api/v1/job-applications', jobApplicationRoutes);
+app.use('/api/v1/analytics', simpleAnalyticsRoutes);
+app.use('/api/v1/account', accountRoutes);
+app.use('/api/v1/enterprise', enterpriseRoutes);
+app.use('/api/v1/locations', locationRoutes);
+app.use('/api/v1/companies', companyRoutes);
+app.use('/api/v1/currencies', currencyRoutes);
+app.use('/api/v1/interviews', interviewRoutes);
+app.use('/api/v1/coach', careerCoachRoutes);
+
+// 404 handler for unmatched API routes
+app.use('/api/v1', notFoundHandler);
+
+// Global error handler
+app.use(errorHandler);
+
+// Initialize database connections and start server
+const startServer = async () => {
+  try {
+    await connectDB();
+    await connectRedis();
+    
+    // Initialize location, company, and currency databases
+    console.log('🌍 Initializing location, company, and currency databases...');
+    await locationService.initializeDatabase();
+    await companyService.initializeDatabase();
+    await currencyService.initializeDatabase();
+    
+    // Test email service connection
+    try {
+      console.log('📧 Testing email service connection...');
+      const emailConnected = await emailService.testConnection();
+      if (!emailConnected) {
+        console.warn('⚠️  Email service not properly configured - email notifications will be limited');
+      }
+    } catch (error) {
+      console.warn('⚠️  Email service initialization failed:', error);
+    }
+    
+    // Start interview notification service
+    try {
+      console.log('🔔 Starting interview notification service...');
+      await interviewNotificationService.startService();
+    } catch (error) {
+      console.warn('⚠️  Interview notification service failed to start:', error);
+      console.warn('📦 Some dependencies may be missing. Check package.json and run: pnpm install');
+    }
+    
+    // Start automation service
+    automationService.startAutomation();
+    
+    app.listen(PORT, () => {
+      console.log(`🚀 Backend server running on port ${PORT}`);
+      console.log(`🤖 Enterprise automation service started`);
+      console.log(`📍 Location service ready with comprehensive English-speaking countries data`);
+      console.log(`🏢 Company service ready with major company database`);
+      console.log(`💰 Currency service ready with all English-speaking countries' currencies`);
+      console.log(`🔔 Interview notification service with automated reminders`);
+      console.log(`📧 Email service ready for calendar invites and reminders`);
+    });
+  } catch (error) {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  }
+};
+
+startServer();

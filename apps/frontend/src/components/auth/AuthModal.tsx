@@ -1,0 +1,85 @@
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { XMarkIcon } from '@heroicons/react/24/outline';
+import LoginForm from './LoginForm';
+import RegisterForm from './RegisterForm';
+import { useEnterpriseRecaptcha } from '../../hooks/useEnterpriseRecaptcha';
+
+interface AuthModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  initialMode?: 'login' | 'register';
+}
+
+export default function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalProps) {
+  const [mode, setMode] = useState<'login' | 'register'>(initialMode);
+  
+  // Initialize reCAPTCHA at modal level to persist across form switches
+  const recaptchaState = useEnterpriseRecaptcha();
+
+  const toggleMode = () => {
+    setMode(prev => prev === 'login' ? 'register' : 'login');
+  };
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-40 flex items-center justify-center"
+        >
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+          />
+          
+          {/* Modal */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+            className="relative card-dark rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto"
+            style={{
+              backdropFilter: 'blur(10px)',
+            }}
+          >
+            {/* Close button */}
+            <button
+              onClick={onClose}
+              className="absolute top-4 right-4 p-2 dark-text-muted hover:dark-text-secondary transition-colors"
+            >
+              <XMarkIcon className="h-6 w-6" />
+            </button>
+
+            {/* Form */}
+            <div className="pt-4">
+              <AnimatePresence mode="wait">
+                {mode === 'login' ? (
+                  <LoginForm
+                    key="login"
+                    onToggleMode={toggleMode}
+                    onClose={onClose}
+                    recaptchaState={recaptchaState}
+                  />
+                ) : (
+                  <RegisterForm
+                    key="register"
+                    onToggleMode={toggleMode}
+                    onClose={onClose}
+                    recaptchaState={recaptchaState}
+                  />
+                )}
+              </AnimatePresence>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
