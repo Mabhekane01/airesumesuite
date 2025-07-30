@@ -75,7 +75,7 @@ export const requestLogger = (req: AuthenticatedRequest, res: Response, next: Ne
       timestamp: new Date().toISOString()
     });
 
-    originalEnd.call(this, chunk, encoding);
+    return originalEnd.call(this, chunk, encoding);
   };
 
   next();
@@ -105,7 +105,7 @@ export const auditLogger = (req: AuthenticatedRequest, res: Response, next: Next
       enterpriseLogger.info('Audit event', auditEvent);
     }
 
-    originalEnd.call(this, chunk, encoding);
+    return originalEnd.call(this, chunk, encoding);
   };
 
   next();

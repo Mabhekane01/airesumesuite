@@ -7,3 +7,21 @@ export { Location, ILocation } from './Location';
 export { Company, ICompany } from './Company';
 export { Currency, ICurrency } from './Currency';
 export { Interview, IInterview } from './Interview';
+
+// Basic UserProfile interface for AI optimization services
+export interface IUserProfile {
+  preferredRoles: string[];
+  yearsOfExperience: number;
+  technicalSkills: Array<{ name: string; level?: string }>;
+  industries?: string[];
+  salaryExpectation?: {
+    min: number;
+    max: number;
+    currency: string;
+  };
+  workPreferences?: {
+    remote: boolean;
+    partTime: boolean;
+    contract: boolean;
+  };
+}

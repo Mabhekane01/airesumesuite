@@ -48,12 +48,26 @@ const UserSettingsSchema = new Schema<IUserSettings>({
 
 export const UserSettings = mongoose.model<IUserSettings>('UserSettings', UserSettingsSchema);
 
-// Enhanced User Profile interface (placeholder)
+// Enhanced User Profile interface
 export interface IEnhancedUserProfile extends Document {
   userId: mongoose.Types.ObjectId;
   profile: any;
   settings: any;
   analytics: any;
+  profileCompleteness: number;
+  profileMetrics: {
+    viewCount: number;
+    searchAppearances: number;
+    applicationSubmissions: number;
+    responseRate: number;
+  };
+  profileEngagement: {
+    lastLoginAt: Date;
+    sessionsThisMonth: number;
+    averageSessionDuration: number;
+    featuresUsed: string[];
+  };
+  integrationData?: any;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -68,7 +82,21 @@ const EnhancedUserProfileSchema = new Schema<IEnhancedUserProfile>({
   },
   profile: { type: Schema.Types.Mixed, default: {} },
   settings: { type: Schema.Types.Mixed, default: {} },
-  analytics: { type: Schema.Types.Mixed, default: {} }
+  analytics: { type: Schema.Types.Mixed, default: {} },
+  profileCompleteness: { type: Number, default: 0, min: 0, max: 100 },
+  profileMetrics: {
+    viewCount: { type: Number, default: 0 },
+    searchAppearances: { type: Number, default: 0 },
+    applicationSubmissions: { type: Number, default: 0 },
+    responseRate: { type: Number, default: 0 }
+  },
+  profileEngagement: {
+    lastLoginAt: { type: Date },
+    sessionsThisMonth: { type: Number, default: 0 },
+    averageSessionDuration: { type: Number, default: 0 },
+    featuresUsed: [{ type: String }]
+  },
+  integrationData: { type: Schema.Types.Mixed, default: {} }
 }, {
   timestamps: true
 });

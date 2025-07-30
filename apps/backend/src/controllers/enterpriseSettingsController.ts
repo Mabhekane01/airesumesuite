@@ -268,7 +268,7 @@ export class EnterpriseSettingsController {
         return;
       }
 
-      const settings = await this.settingsService.getUserSettings(new mongoose.Types.ObjectId(userId));
+      const settings = await this.settingsService.getUserSettings(userId);
 
       if (!settings) {
         res.status(404).json({
@@ -338,9 +338,8 @@ export class EnterpriseSettingsController {
       const sanitizedUpdates = await this.sanitizeSettingsUpdates(updates);
 
       const updatedSettings = await this.settingsService.updateUserSettings(
-        new mongoose.Types.ObjectId(userId),
-        sanitizedUpdates,
-        true // validateConsent
+        userId,
+        sanitizedUpdates
       );
 
       // Filter response data
@@ -456,7 +455,7 @@ export class EnterpriseSettingsController {
       }
 
       // Check user consent for data export
-      const settings = await this.settingsService.getUserSettings(new mongoose.Types.ObjectId(userId));
+      const settings = await this.settingsService.getUserSettings(userId);
       
       if (!settings?.security.dataDownload.allowExport) {
         res.status(403).json({
@@ -468,7 +467,7 @@ export class EnterpriseSettingsController {
       }
 
       // Export settings
-      const exportedSettings = await this.settingsService.exportUserSettings(new mongoose.Types.ObjectId(userId));
+      const exportedSettings = await this.settingsService.exportUserSettings(userId);
       
       // Export profile
       const profile = await EnhancedUserProfile.findOne({ userId: new mongoose.Types.ObjectId(userId) }).lean();

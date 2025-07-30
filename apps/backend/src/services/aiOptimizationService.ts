@@ -1,5 +1,5 @@
 
-import { IJobApplication } from '../models/JobApplication';
+import { IJobApplication, IUserProfile } from '../models';
 import { geminiService } from './ai/gemini';
 
 export interface ResumeOptimizationSuggestion {

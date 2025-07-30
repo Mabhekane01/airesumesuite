@@ -742,7 +742,7 @@ export class InterviewController {
           // Send reschedule emails
           const user = await User.findById(userId);
           if (user) {
-            await emailService.sendInterviewRescheduled(user, interview, reason);
+            await emailService.sendInterviewRescheduled(user, interview, interview.applicationId, originalData.scheduledDate);
           }
         } catch (notificationError) {
           console.warn('Failed to send reschedule notifications:', notificationError);
@@ -781,7 +781,7 @@ export class InterviewController {
       const interview = await Interview.findOne({
         _id: interviewId,
         userId: new mongoose.Types.ObjectId(userId)
-      });
+      }).populate('applicationId');
 
       if (!interview) {
         res.status(404).json({
@@ -805,7 +805,7 @@ export class InterviewController {
       try {
         const user = await User.findById(userId);
         if (user) {
-          await emailService.sendInterviewConfirmation(user, interview);
+          await emailService.sendInterviewConfirmation(user, interview, interview.applicationId);
         }
       } catch (notificationError) {
         console.warn('Failed to send confirmation notification:', notificationError);

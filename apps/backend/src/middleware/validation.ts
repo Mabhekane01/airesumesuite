@@ -13,3 +13,6 @@ export const handleValidationErrors = (req: Request, res: Response, next: NextFu
   
   return next();
 };
+
+// Alias for consistency with enterprise routes
+export const validateRequest = handleValidationErrors;

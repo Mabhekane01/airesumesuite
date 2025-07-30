@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Document, Schema, Model } from 'mongoose';
 
 export interface IEmailOTP extends Document {
   email: string;
@@ -13,6 +13,11 @@ export interface IEmailOTP extends Document {
   createdAt: Date;
   updatedAt: Date;
   verify(providedOTP: string): boolean;
+}
+
+export interface IEmailOTPModel extends Model<IEmailOTP> {
+  generateOTP(): string;
+  createOTP(email: string, purpose: string, ipAddress?: string, userAgent?: string): Promise<IEmailOTP>;
 }
 
 const EmailOTPSchema = new Schema<IEmailOTP>({
@@ -114,7 +119,7 @@ EmailOTPSchema.methods.verify = function(providedOTP: string): boolean {
   return false;
 };
 
-export const EmailOTP = mongoose.model<IEmailOTP>('EmailOTP', EmailOTPSchema);
+export const EmailOTP = mongoose.model<IEmailOTP, IEmailOTPModel>('EmailOTP', EmailOTPSchema);
 
 // Traditional Email Verification Model (token-based)
 export interface IEmailVerification extends Document {

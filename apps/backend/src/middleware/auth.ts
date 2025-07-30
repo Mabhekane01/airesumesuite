@@ -36,4 +36,19 @@ export const authMiddleware = async (req: AuthenticatedRequest, res: Response, n
   }
 };
 
+// Permission middleware for enterprise features
+export const requirePermissions = (...permissions: string[]) => {
+  return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    // For now, just check if user is authenticated
+    // In a real implementation, you would check actual permissions
+    if (!req.user) {
+      return res.status(401).json({ message: 'Authentication required' });
+    }
+    
+    // TODO: Implement actual permission checking logic here
+    // For now, allow all authenticated users
+    return next();
+  };
+};
+
 export { authMiddleware as authenticateToken };

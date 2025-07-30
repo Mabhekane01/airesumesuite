@@ -1,10 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
-import { SecurityService } from '../services/securityService';
+import { securityService } from '../services/securityService';
 import { logger } from '../utils/logger';
-
-const securityService = new SecurityService();
 
 // CSRF Protection
 export const csrfProtection = (req: Request, res: Response, next: NextFunction) => {

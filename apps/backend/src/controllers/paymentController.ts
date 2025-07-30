@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { AuthenticatedRequest } from '../middleware/auth';
 // Conditional imports with fallbacks for missing packages
 let Stripe: any;
 let z: any;
@@ -52,7 +53,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 // securityService is imported as a singleton
 
-export const createPaymentSession = async (req: Request, res: Response) => {
+export const createPaymentSession = async (req: AuthenticatedRequest, res: Response) => {
   try {
     // Rate limiting is applied via middleware
     const userId = req.user?.id;
@@ -238,7 +239,7 @@ export const handleWebhook = async (req: Request, res: Response) => {
   }
 };
 
-export const getSubscriptionStatus = async (req: Request, res: Response) => {
+export const getSubscriptionStatus = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user?.id;
 
@@ -265,7 +266,7 @@ export const getSubscriptionStatus = async (req: Request, res: Response) => {
   }
 };
 
-export const cancelSubscription = async (req: Request, res: Response) => {
+export const cancelSubscription = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user?.id;
 
@@ -292,7 +293,7 @@ export const cancelSubscription = async (req: Request, res: Response) => {
   }
 };
 
-export const getPaymentHistory = async (req: Request, res: Response) => {
+export const getPaymentHistory = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user?.id;
 

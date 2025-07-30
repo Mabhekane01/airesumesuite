@@ -1,5 +1,5 @@
 
-import { JobApplication } from '../models/JobApplication';
+import { JobApplication, IUserProfile } from '../models';
 import { aiOptimizationService } from './aiOptimizationService';
 import mongoose from 'mongoose';
 
