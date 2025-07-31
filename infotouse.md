@@ -1,3 +1,4 @@
+src/tests/setup.ts(65,26): error TS2304: Cannot find name 'jest'.
 src/utils/environmentValidator.ts(79,21): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
 src/utils/environmentValidator.ts(86,9): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
 src/utils/environmentValidator.ts(87,44): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
@@ -23,7 +24,6 @@ src/utils/environmentValidator.ts(145,38): error TS2584: Cannot find name 'conso
 src/utils/environmentValidator.ts(146,7): error TS2584: Cannot find name 'console'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'.
 src/utils/environmentValidator.ts(147,7): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
 src/utils/environmentValidator.ts(150,5): error TS2584: Cannot find name 'console'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'.
-src/utils/errorUtils.ts(1,10): error TS2305: Module '"express"' has no exported member 'Response'.
 src/utils/errorUtils.ts(8,3): error TS2584: Cannot find name 'console'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'.
 src/utils/errorUtils.ts(23,9): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
 src/utils/jwt.ts(4,29): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
@@ -45,7 +45,7 @@ src/utils/resetMatchScores.ts(40,5): error TS2584: Cannot find name 'console'. D
 src/utils/resetMatchScores.ts(51,5): error TS2584: Cannot find name 'console'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'.
 src/utils/resetMatchScores.ts(58,5): error TS2584: Cannot find name 'console'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'.
 src/utils/resetMatchScores.ts(73,7): error TS2584: Cannot find name 'console'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'.
-src/utils/resetMatchScores.ts(89,5): error TS2584: Cannot
+src/utils/resetMatchScores.ts(89,5): error TS2584: Cannot find name 'console'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'.
 
 ​
 

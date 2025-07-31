@@ -930,16 +930,19 @@ export class EnterpriseSettingsController {
     const key = crypto.randomBytes(32);
     const iv = crypto.randomBytes(16);
     
-    const cipher = crypto.createCipher(algorithm, key);
+    const cipher = crypto.createCipheriv(algorithm, key, iv);
     let encrypted = cipher.update(JSON.stringify(data), 'utf8', 'hex');
     encrypted += cipher.final('hex');
+    
+    const authTag = cipher.getAuthTag();
     
     return {
       encrypted: true,
       data: encrypted,
       algorithm,
       key: key.toString('hex'),
-      iv: iv.toString('hex')
+      iv: iv.toString('hex'),
+      authTag: authTag.toString('hex')
     };
   }
 
