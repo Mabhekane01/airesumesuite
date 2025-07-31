@@ -23,11 +23,9 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
-    },
-    "typeRoots": ["./node_modules/@types", "../../node_modules/@types"],
-    "types": ["node"]
+    }
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "src/types/global.d.ts"],
   "exclude": [
     "node_modules",
     "dist",
