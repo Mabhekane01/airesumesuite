@@ -31,12 +31,13 @@ import helmet from 'helmet';
 import { paymentService } from '../services/paymentService';
 import { userService } from '../services/userService';
 import { securityService } from '../services/securityService';
+import { notificationService } from '../services/notificationService';
 import { logger } from '../utils/logger';
 
 // Input validation schemas
 const CreatePaymentSessionSchema = z.object({
   planType: z.enum(['monthly', 'yearly']),
-  paymentMethod: z.enum(['stripe', 'paypal']),
+  paymentMethod: z.enum(['stripe', 'paypal', 'paystack']),
   amount: z.number().positive().max(10000),
   currency: z.string().length(3).regex(/^[A-Z]{3}$/),
   location: z.object({
@@ -162,6 +163,15 @@ export const createPaymentSession = async (req: AuthenticatedRequest, res: Respo
         currency,
         location
       });
+    } else if (paymentMethod === 'paystack') {
+      sessionData = await paymentService.createPaystackSession({
+        userId,
+        userEmail: user.email,
+        planType,
+        amount,
+        currency,
+        location
+      });
     } else {
       return res.status(400).json({
         success: false,
@@ -180,6 +190,31 @@ export const createPaymentSession = async (req: AuthenticatedRequest, res: Respo
       location: location?.country,
       fraudScore: fraudCheck.riskScore
     });
+
+    // Send notification for payment session initiation
+    try {
+      await notificationService.createNotification({
+        userId,
+        type: 'info',
+        category: 'payment',
+        title: 'Payment Session Created',
+        message: `Your ${planType} Enterprise subscription payment is ready. Complete your checkout to activate premium features.`,
+        priority: 'medium',
+        action: {
+          label: 'Complete Payment',
+          url: sessionData.checkoutUrl,
+          type: 'external'
+        },
+        metadata: {
+          source: 'paymentController',
+          entityType: 'payment',
+          additionalData: { planType, amount, currency, paymentMethod }
+        },
+        expiresAt: sessionData.expiresAt
+      });
+    } catch (notificationError) {
+      console.warn('⚠️ Failed to send payment session notification:', notificationError);
+    }
 
     res.json({
       success: true,
@@ -316,6 +351,47 @@ export const getPaymentHistory = async (req: AuthenticatedRequest, res: Response
     res.status(500).json({
       success: false,
       message: 'Failed to get payment history'
+    });
+  }
+};
+
+export const verifyPayment = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { reference } = req.params;
+    const { planType } = req.body;
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: 'User not authenticated'
+      });
+    }
+
+    if (!reference || !planType) {
+      return res.status(400).json({
+        success: false,
+        message: 'Payment reference and planType are required'
+      });
+    }
+
+    const verification = await paymentService.verifyPayment(reference, userId, planType);
+
+    res.json({
+      success: true,
+      data: verification
+    });
+
+  } catch (error) {
+    logger.error('Payment verification failed:', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      reference: req.params.reference,
+      userId: req.user?.id
+    });
+    
+    res.status(500).json({
+      success: false,
+      message: 'Payment verification failed'
     });
   }
 };

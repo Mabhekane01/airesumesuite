@@ -244,7 +244,7 @@ export const useFieldValidation = (
 // Validation status indicators
 export const getValidationStatus = (
   errors: Record<string, string>,
-  touched: Record<string, string>,
+  touched: Record<string, boolean>,
   fieldName: string
 ): 'success' | 'error' | 'warning' | 'default' => {
   const hasError = errors[fieldName];

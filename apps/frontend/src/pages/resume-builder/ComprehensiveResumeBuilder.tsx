@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuthStore } from '../../stores/authStore';
+import { locationService } from '../../services/locationService';
 import JobOptimizationModal from '../../components/resume/JobOptimizationModal';
 import {
   ChevronLeftIcon,
@@ -25,7 +27,9 @@ import VolunteerExperienceForm from '../../components/resume/VolunteerExperience
 import AwardsForm from '../../components/resume/AwardsForm';
 import HobbiesForm from '../../components/resume/HobbiesForm';
 import LanguagesForm from '../../components/resume/LanguagesForm';
-import EnhancedResumePreview from '../../components/resume/EnhancedResumePreview';
+import EnterpriseResumeEnhancer from '../../components/resume/EnterpriseResumeEnhancer';
+import AILoadingOverlay from '../../components/ui/AILoadingOverlay';
+import { useAIProgress } from '../../hooks/useAIProgress';
 
 import { Resume } from '../../types';
 import { resumeService } from '../../services/resumeService';
@@ -132,9 +136,9 @@ const steps: Step[] = [
   },
   {
     id: 'preview',
-    title: 'Preview & AI Enhancement',
-    description: 'Review your resume and apply AI improvements',
-    component: EnhancedResumePreview,
+    title: 'AI-Powered Resume Enhancement',
+    description: 'Enterprise-grade AI analysis, optimization, and benchmarking',
+    component: EnterpriseResumeEnhancer,
     required: false,
     icon: EyeIcon
   }
@@ -148,6 +152,10 @@ const ComprehensiveResumeBuilderContent: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [atsScore, setAtsScore] = useState<number>(aiData.atsScore);
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
+  const [isJobOptimizationModalOpen, setIsJobOptimizationModalOpen] = useState(false);
+  
+  // AI Progress for final step improvement
+  const aiImprovementProgress = useAIProgress('professional-summary');
 
   useEffect(() => {
     const templateId = location.state?.templateId;
@@ -223,17 +231,18 @@ const ComprehensiveResumeBuilderContent: React.FC = () => {
   };
 
   const handleAIImprovement = async () => {
-    setIsLoading(true);
+    aiImprovementProgress.startProgress();
     try {
       // Validate resume data before AI enhancement
       if (!resumeData.workExperience?.length && !resumeData.skills?.length) {
+        aiImprovementProgress.cancelProgress();
         toast.error('Missing required information', {
           description: 'Please add work experience and skills before using AI enhancement.'
         });
         return;
       }
       
-      const summary = await resumeService.generateProfessionalSummary(resumeData);
+      const summary = await resumeService.generateProfessionalSummary(resumeData.id, resumeData);
       const optimizedSummary = summary[0];
       
       updateResumeData({
@@ -250,17 +259,19 @@ const ComprehensiveResumeBuilderContent: React.FC = () => {
         lastOptimized: new Date().toISOString()
       });
       
+      aiImprovementProgress.completeProgress();
+      
       toast.success('AI enhancement complete!', {
         description: 'Your professional summary has been optimized.'
       });
       
     } catch (error) {
       console.error('Failed to generate AI summary:', error);
+      aiImprovementProgress.cancelProgress();
+      
       toast.error('AI enhancement failed', {
         description: 'Please check your connection and try again.'
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -291,7 +302,42 @@ const ComprehensiveResumeBuilderContent: React.FC = () => {
     }
   };
 
-  const [isJobOptimizationModalOpen, setIsJobOptimizationModalOpen] = useState(false);
+  const getDefaultLocation = async (): Promise<string> => {
+    try {
+      // Get user's location from their stored profile location data
+      const locationData = await locationService.getLocationForLogin();
+      if (locationData?.city && locationData?.country) {
+        return `${locationData.city}, ${locationData.country}`;
+      }
+    } catch (error) {
+      console.warn('Could not get user location:', error);
+    }
+    
+    // Global fallback based on timezone
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const timezoneParts = timezone.split('/');
+    
+    if (timezoneParts.length >= 2) {
+      const region = timezoneParts[0];
+      const city = timezoneParts[1].replace(/_/g, ' ');
+      
+      // Map regions to countries/continents
+      const regionMap: Record<string, string> = {
+        'America': 'USA',
+        'Europe': 'Europe',
+        'Asia': 'Asia',
+        'Africa': 'Africa',
+        'Australia': 'Australia',
+        'Pacific': 'Pacific'
+      };
+      
+      const countryRegion = regionMap[region] || region;
+      return `${city}, ${countryRegion}`;
+    }
+    
+    // Final fallback
+    return 'Global';
+  };
 
   const handleJobOptimization = async () => {
     setIsJobOptimizationModalOpen(true);
@@ -300,9 +346,18 @@ const ComprehensiveResumeBuilderContent: React.FC = () => {
   const handleSaveResume = async () => {
     setIsLoading(true);
     try {
+      // Validate required fields
+      if (!resumeData.personalInfo?.firstName || !resumeData.personalInfo?.lastName) {
+        toast.error('Please fill in your first and last name before saving');
+        return;
+      }
+
       const resumeToSave = {
         title: `${resumeData.personalInfo?.firstName || 'My'} ${resumeData.personalInfo?.lastName || 'Resume'}`,
-        personalInfo: resumeData.personalInfo,
+        personalInfo: {
+          ...resumeData.personalInfo,
+          location: resumeData.personalInfo?.location || await getDefaultLocation()
+        },
         professionalSummary: resumeData.professionalSummary,
         workExperience: resumeData.workExperience,
         education: resumeData.education,
@@ -313,10 +368,20 @@ const ComprehensiveResumeBuilderContent: React.FC = () => {
         templateId: resumeData.template,
         isPublic: false
       };
-      const savedResume = await resumeService.createResume(resumeToSave);
-      navigate(`/dashboard/resume/preview/${savedResume._id}`);
-    } catch (error) {
+
+      toast.loading('Saving your resume...', { id: 'save-resume' });
+      
+      const result = await resumeService.createResume(resumeToSave);
+      
+      if (result.success && result.data?._id) {
+        toast.success('Resume saved successfully!', { id: 'save-resume' });
+        navigate(`/dashboard/resume/preview/${result.data._id}`);
+      } else {
+        throw new Error(result.message || 'Failed to save resume');
+      }
+    } catch (error: any) {
       console.error('Failed to save resume:', error);
+      toast.error(error.message || 'Failed to save resume. Please try again.', { id: 'save-resume' });
     } finally {
       setIsLoading(false);
     }
@@ -334,9 +399,11 @@ const ComprehensiveResumeBuilderContent: React.FC = () => {
       const endTime = performance.now();
       console.log(`⚡ Download completed in ${(endTime - startTime).toFixed(0)}ms`);
       
-      // Generate optimized filename
-      const sanitizedFirstName = resumeData.personalInfo?.firstName?.replace(/[^\w\s-]/g, '').trim() || 'Resume';
-      const sanitizedLastName = resumeData.personalInfo?.lastName?.replace(/[^\w\s-]/g, '').trim() || '';
+      // Generate optimized filename with proper null checks
+      const firstName = resumeData.personalInfo?.firstName || '';
+      const lastName = resumeData.personalInfo?.lastName || '';
+      const sanitizedFirstName = firstName ? firstName.replace(/[^\w\s-]/g, '').trim() : 'Resume';
+      const sanitizedLastName = lastName ? lastName.replace(/[^\w\s-]/g, '').trim() : '';
       const fileName = `${sanitizedFirstName}${sanitizedLastName ? `_${sanitizedLastName}` : ''}_Resume.${format}`;
       
       // Optimized download flow
@@ -538,14 +605,9 @@ const ComprehensiveResumeBuilderContent: React.FC = () => {
                   </div>
 
                   {currentStep === steps.length - 1 ? (
-                    <EnhancedResumePreview
+                    <EnterpriseResumeEnhancer
                       resume={resumeData as Resume}
-                      onAIImprovement={handleAIImprovement}
-                      onATSCheck={handleATSCheck}
-                      onJobOptimization={handleJobOptimization}
                       onResumeUpdate={updateResumeData}
-                      atsScore={atsScore}
-                      aiGenerated={resumeData.aiGenerated?.summary}
                     />
                   ) : (
                     <StepComponent {...getStepProps(currentStepData.id)} />
@@ -616,6 +678,18 @@ const ComprehensiveResumeBuilderContent: React.FC = () => {
           </div>
         </div>
       </div>
+      
+      {/* AI Loading Overlay for step-by-step improvement */}
+      <AILoadingOverlay
+        isVisible={aiImprovementProgress.isLoading}
+        title="🚀 Final AI Enhancement"
+        description="AI is applying final optimizations to create your perfect resume"
+        progress={aiImprovementProgress.progress}
+        currentStep={aiImprovementProgress.currentStep}
+        estimatedTime={aiImprovementProgress.estimatedTime}
+        onCancel={aiImprovementProgress.cancelProgress}
+      />
+      
     <JobOptimizationModal
         isOpen={isJobOptimizationModalOpen}
         onClose={() => setIsJobOptimizationModalOpen(false)}

@@ -15,7 +15,7 @@ export interface NavNotification {
   type: 'success' | 'warning' | 'info' | 'deadline';
   title: string;
   message: string;
-  timestamp: Date;
+  timestamp: string;
   read: boolean;
   action?: {
     label: string;
@@ -43,9 +43,9 @@ const getNotificationIcon = (type: NavNotification['type']) => {
   }
 };
 
-const getTimeAgo = (timestamp: Date) => {
+const getTimeAgo = (timestamp: string) => {
   const now = new Date();
-  const diff = now.getTime() - timestamp.getTime();
+  const diff = now.getTime() - new Date(timestamp).getTime();
   const minutes = Math.floor(diff / 60000);
   const hours = Math.floor(diff / 3600000);
   const days = Math.floor(diff / 86400000);

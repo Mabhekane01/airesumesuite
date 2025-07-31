@@ -1220,7 +1220,7 @@ export default function ApplicationTracker() {
       </div>
 
       {/* Debug Info */}
-      {process.env.NODE_ENV === 'development' && (
+      {import.meta.env.DEV && (
         <div className="bg-dark-secondary/20 p-3 rounded text-xs text-dark-text-secondary space-y-1">
           <div><strong>Debug:</strong> Total Apps: {applications.length} | Filtered: {filteredApplications.length} | Loading: {loading ? 'Yes' : 'No'}</div>
           <div><strong>Active Filters:</strong> {Object.keys(activeFilters).length > 0 ? JSON.stringify(activeFilters) : 'None'}</div>

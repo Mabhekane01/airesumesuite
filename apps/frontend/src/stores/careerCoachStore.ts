@@ -74,8 +74,6 @@ export const useCareerCoachStore = create<CareerCoachState>((set, get) => ({
     }));
 
     try {
-      console.log('💬 Sending message to AI coach:', { message: message.substring(0, 50) + '...', resumeId });
-      
       const stream = await careerCoachService.getAICoachResponse(message, resumeId);
       
       const aiMessage: Message = { 
@@ -111,7 +109,6 @@ export const useCareerCoachStore = create<CareerCoachState>((set, get) => ({
         });
       }
 
-      // Mark as complete
       set(state => {
         const finalMessages = [...state.messages];
         const lastMessageIndex = finalMessages.length - 1;
@@ -124,17 +121,12 @@ export const useCareerCoachStore = create<CareerCoachState>((set, get) => ({
         return { messages: finalMessages, isLoading: false };
       });
 
-      console.log('✅ AI coach response completed');
-
-    } catch (err) {
-      console.error('❌ Error in sendMessage:', err);
+    } catch (err) {      
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
       
-      const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred.';
-      
-      // Add error message to chat
       const errorAiMessage: Message = {
         sender: 'ai',
-        text: `Sorry, I encountered an error: ${errorMessage}. Please try again or check your connection.`,
+        text: `Sorry, ${errorMessage}. Please try again.`,
         timestamp: new Date(),
         error: true
       };

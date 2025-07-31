@@ -92,7 +92,7 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
               id: '1',
               name: 'E-commerce Platform',
               description: 'Full-stack e-commerce solution with React frontend and Node.js backend',
-              technologies: ['React', 'Node.js', 'MongoDB', 'Stripe API'],
+              technologies: ['React', 'Node.js', 'MongoDB', 'Paystack API'],
               url: 'https://github.com/johndoe/ecommerce'
             }
           ],

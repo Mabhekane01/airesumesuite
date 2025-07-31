@@ -28,12 +28,17 @@ export class JobScrapingService {
   }
   
   async scrapeJobPosting(url: string): Promise<JobPostingData> {
-    // Check cache first
-    const cacheKey = `job:${Buffer.from(url).toString('base64')}`;
-    const cached = await redisClient.get(cacheKey);
-    
-    if (cached) {
-      return JSON.parse(cached);
+    // Check cache first (with error handling)
+    let cached;
+    try {
+      const cacheKey = `job:${Buffer.from(url).toString('base64')}`;
+      cached = await redisClient.get(cacheKey);
+      
+      if (cached) {
+        return JSON.parse(cached);
+      }
+    } catch (cacheError) {
+      console.warn('Cache operation failed, proceeding without cache:', cacheError);
     }
 
     try {
@@ -55,8 +60,13 @@ export class JobScrapingService {
         jobData = await this.scrapeGeneric(url);
       }
 
-      // Cache the result for 24 hours
-      await redisClient.setEx(cacheKey, 86400, JSON.stringify(jobData));
+      // Cache the result for 24 hours (with error handling)
+      try {
+        const cacheKey = `job:${Buffer.from(url).toString('base64')}`;
+        await redisClient.setEx(cacheKey, 86400, JSON.stringify(jobData));
+      } catch (cacheError) {
+        console.warn('Failed to cache job data:', cacheError);
+      }
 
       return jobData;
     } catch (error) {
@@ -66,66 +76,80 @@ export class JobScrapingService {
   }
 
   private async scrapeLinkedIn(url: string): Promise<JobPostingData> {
-    const response = await axios.get(url, {
-      headers: { 'User-Agent': this.userAgent },
-      timeout: 10000
-    });
+    try {
+      const response = await axios.get(url, {
+        headers: { 'User-Agent': this.userAgent },
+        timeout: 15000,
+        validateStatus: (status) => status < 500 // Accept 4xx as valid responses
+      });
 
-    const $ = cheerio.load(response.data);
+      const $ = cheerio.load(response.data);
 
-    // LinkedIn-specific selectors
-    const title = $('h1.top-card-layout__title, .job-title').first().text().trim();
-    const company = $('.topcard__org-name-link, .job-company-name').first().text().trim();
-    const location = $('.topcard__flavor--bullet, .job-location').first().text().trim();
-    
-    // Get job description
-    let description = $('.show-more-less-html__markup, .job-description').text().trim();
-    if (!description) {
-      description = $('[data-automation-id="jobPostingDescription"]').text().trim();
+      // LinkedIn-specific selectors
+      const title = $('h1.top-card-layout__title, .job-title').first().text().trim();
+      const company = $('.topcard__org-name-link, .job-company-name').first().text().trim();
+      const location = $('.topcard__flavor--bullet, .job-location').first().text().trim();
+      
+      // Get job description
+      let description = $('.show-more-less-html__markup, .job-description').text().trim();
+      if (!description) {
+        description = $('[data-automation-id="jobPostingDescription"]').text().trim();
+      }
+
+      return {
+        title: title || 'Job Title Not Found',
+        company: company || 'Company Not Found',
+        location: location || 'Location Not Found',
+        description: description || 'Description not available',
+        requirements: this.extractRequirements(description),
+        responsibilities: this.extractResponsibilities(description),
+        url,
+        employmentType: this.extractEmploymentType(description)
+      };
+    } catch (error) {
+      console.error('LinkedIn scraping failed:', error);
+      throw new Error('Unable to access LinkedIn job posting. Please verify the URL is accessible.');
     }
-
-    return {
-      title: title || 'Job Title Not Found',
-      company: company || 'Company Not Found',
-      location: location || 'Location Not Found',
-      description: description || 'Description not available',
-      requirements: this.extractRequirements(description),
-      responsibilities: this.extractResponsibilities(description),
-      url,
-      employmentType: this.extractEmploymentType(description)
-    };
   }
 
   private async scrapeIndeed(url: string): Promise<JobPostingData> {
-    const response = await axios.get(url, {
-      headers: { 'User-Agent': this.userAgent },
-      timeout: 10000
-    });
+    try {
+      const response = await axios.get(url, {
+        headers: { 'User-Agent': this.userAgent },
+        timeout: 15000,
+        validateStatus: (status) => status < 500
+      });
 
-    const $ = cheerio.load(response.data);
+      const $ = cheerio.load(response.data);
 
-    const title = $('[data-testid="jobsearch-JobInfoHeader-title"], .jobsearch-JobInfoHeader-title').first().text().trim();
-    const company = $('[data-testid="inlineHeader-companyName"], .jobsearch-InlineCompanyRating').first().text().trim();
-    const location = $('[data-testid="job-location"], .jobsearch-JobInfoHeader-subtitle').first().text().trim();
-    const description = $('#jobDescriptionText, .jobsearch-jobDescriptionText').text().trim();
+      const title = $('[data-testid="jobsearch-JobInfoHeader-title"], .jobsearch-JobInfoHeader-title').first().text().trim();
+      const company = $('[data-testid="inlineHeader-companyName"], .jobsearch-InlineCompanyRating').first().text().trim();
+      const location = $('[data-testid="job-location"], .jobsearch-JobInfoHeader-subtitle').first().text().trim();
+      const description = $('#jobDescriptionText, .jobsearch-jobDescriptionText').text().trim();
 
-    return {
-      title: title || 'Job Title Not Found',
-      company: company || 'Company Not Found',
-      location: location || 'Location Not Found',
-      description: description || 'Description not available',
-      requirements: this.extractRequirements(description),
-      responsibilities: this.extractResponsibilities(description),
-      url,
-      salary: this.extractSalary($, description)
-    };
+      return {
+        title: title || 'Job Title Not Found',
+        company: company || 'Company Not Found',
+        location: location || 'Location Not Found',
+        description: description || 'Description not available',
+        requirements: this.extractRequirements(description),
+        responsibilities: this.extractResponsibilities(description),
+        url,
+        salary: this.extractSalary($, description)
+      };
+    } catch (error) {
+      console.error('Indeed scraping failed:', error);
+      throw new Error('Unable to access Indeed job posting. Please verify the URL is accessible.');
+    }
   }
 
   private async scrapeGlassdoor(url: string): Promise<JobPostingData> {
-    const response = await axios.get(url, {
-      headers: { 'User-Agent': this.userAgent },
-      timeout: 10000
-    });
+    try {
+      const response = await axios.get(url, {
+        headers: { 'User-Agent': this.userAgent },
+        timeout: 15000,
+        validateStatus: (status) => status < 500
+      });
 
     const $ = cheerio.load(response.data);
 
@@ -134,22 +158,28 @@ export class JobScrapingService {
     const location = $('[data-test="job-location"], .job-location').first().text().trim();
     const description = $('[data-test="jobDescriptionContent"], .jobDescriptionContent').text().trim();
 
-    return {
-      title: title || 'Job Title Not Found',
-      company: company || 'Company Not Found', 
-      location: location || 'Location Not Found',
-      description: description || 'Description not available',
-      requirements: this.extractRequirements(description),
-      responsibilities: this.extractResponsibilities(description),
-      url
-    };
+      return {
+        title: title || 'Job Title Not Found',
+        company: company || 'Company Not Found', 
+        location: location || 'Location Not Found',
+        description: description || 'Description not available',
+        requirements: this.extractRequirements(description),
+        responsibilities: this.extractResponsibilities(description),
+        url
+      };
+    } catch (error) {
+      console.error('Glassdoor scraping failed:', error);
+      throw new Error('Unable to access Glassdoor job posting. Please verify the URL is accessible.');
+    }
   }
 
   private async scrapeGeneric(url: string): Promise<JobPostingData> {
-    const response = await axios.get(url, {
-      headers: { 'User-Agent': this.userAgent },
-      timeout: 10000
-    });
+    try {
+      const response = await axios.get(url, {
+        headers: { 'User-Agent': this.userAgent },
+        timeout: 15000,
+        validateStatus: (status) => status < 500
+      });
 
     const $ = cheerio.load(response.data);
 
@@ -169,15 +199,19 @@ export class JobScrapingService {
     const bodyText = $('body').text();
     const description = bodyText.substring(0, 2000); // Limit to first 2000 chars
 
-    return {
-      title: title || 'Job Title Not Found',
-      company: company || 'Company Not Found',
-      location: 'Location Not Found',
-      description: description || 'Description not available',
-      requirements: this.extractRequirements(description),
-      responsibilities: this.extractResponsibilities(description),
-      url
-    };
+      return {
+        title: title || 'Job Title Not Found',
+        company: company || 'Company Not Found',
+        location: 'Location Not Found',
+        description: description || 'Description not available',
+        requirements: this.extractRequirements(description),
+        responsibilities: this.extractResponsibilities(description),
+        url
+      };
+    } catch (error) {
+      console.error('Generic scraping failed:', error);
+      throw new Error('Unable to access the job posting URL. Please verify the URL is accessible and publicly available.');
+    }
   }
 
   private extractRequirements(text: string): string[] {

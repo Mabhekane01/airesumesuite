@@ -346,6 +346,7 @@ export function isValidUrl(url: string): boolean {
 }
 
 export function sanitizeInput(input: string): string {
+  if (!input || typeof input !== 'string') return '';
   return input.trim().replace(/[<>]/g, '');
 }
 
@@ -384,7 +385,7 @@ export function logError(error: unknown, context?: string): void {
   console.error('Application Error:', errorDetails);
   
   // In production, send to error tracking service
-  if (process.env.NODE_ENV === 'production') {
+  if (import.meta.env.PROD) {
     // Send to error tracking service like Sentry, LogRocket, etc.
   }
 }

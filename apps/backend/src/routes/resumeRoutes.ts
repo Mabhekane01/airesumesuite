@@ -17,8 +17,14 @@ router.get('/test', (req: Request, res: Response) => {
 });
 
 // Development endpoints - Only enabled in development mode
-const isDevelopment = process.env.NODE_ENV === 'development';
+let isDevelopment = process.env.NODE_ENV === 'development' && !process.env.DISABLE_DEV_ENDPOINTS;
 console.log('🔧 NODE_ENV check:', process.env.NODE_ENV, 'isDevelopment:', isDevelopment);
+
+// Additional safety check for production
+if (process.env.NODE_ENV === 'production') {
+  console.log('🚨 PRODUCTION MODE: Development endpoints are disabled for security');
+  isDevelopment = false;
+}
 
 // Define mockUser outside the if block so it's accessible to both development sections
 const mockUser = { id: '507f1f77bcf86cd799439011', email: 'dev@example.com' }; // Valid ObjectId
@@ -81,6 +87,21 @@ if (isDevelopment) {
   });
 } else {
   console.log('✅ Development endpoints disabled - Production mode');
+}
+
+// Additional dev endpoints BEFORE auth middleware (conditionally enabled)
+if (process.env.NODE_ENV === 'development') {
+  console.log('✅ Setting up additional development endpoints (no auth required)');
+  
+  router.post('/generate-summary-dev', (req: Request, res: Response) => {
+    (req as AuthenticatedRequest).user = mockUser;
+    resumeController.generateSummaryForUnsavedResume(req as AuthenticatedRequest, res);
+  });
+  
+  router.post('/enhance-dev', (req: Request, res: Response) => {
+    (req as AuthenticatedRequest).user = mockUser;
+    resumeController.enhanceUnsavedResume(req as AuthenticatedRequest, res);
+  });
 }
 
 // Apply auth middleware to all routes AFTER dev endpoints
@@ -280,8 +301,8 @@ router.post('/download/:format', (req: AuthenticatedRequest, res: Response) => {
 // POST /api/v1/resumes/parse - Parse resume from text
 router.post('/parse', (req: AuthenticatedRequest, res: Response) => resumeController.parseResumeFromText(req, res));
 
-// POST /api/v1/resumes/generate-summary - Generate summary for unsaved resume
-router.post('/generate-summary', (req: AuthenticatedRequest, res: Response) => resumeController.generateSummaryForUnsavedResume(req, res));
+// POST /api/v1/resumes/generate-summary - Generate summary for saved or unsaved resume
+router.post('/generate-summary', authMiddleware, requireEnterpriseSubscription, subscriptionRateLimit('ai-resume-builder'), trackFeatureUsage('ai-resume-generation'), (req: AuthenticatedRequest, res: Response) => resumeController.generateProfessionalSummary(req, res));
 
 // POST /api/v1/resumes/optimize-for-job - Optimize unsaved resume for job
 router.post('/optimize-for-job', (req: AuthenticatedRequest, res: Response) => resumeController.optimizeUnsavedResumeForJob(req, res));
@@ -292,11 +313,20 @@ router.post('/job-alignment', (req: AuthenticatedRequest, res: Response) => resu
 // POST /api/v1/resumes/analyze-job-url - Analyze job posting from URL (no resume required)
 router.post('/analyze-job-url', (req: AuthenticatedRequest, res: Response) => resumeController.analyzeJobFromUrl(req, res));
 
+// POST /api/v1/resumes/job-matching - Get job matching score without saved resume
+router.post('/job-matching', (req: AuthenticatedRequest, res: Response) => resumeController.getJobMatchingScoreUnsaved(req, res));
+
+// POST /api/v1/resumes/optimize-job-url - Optimize unsaved resume with job URL
+router.post('/optimize-job-url', (req: AuthenticatedRequest, res: Response) => resumeController.optimizeUnsavedResumeWithJobUrl(req, res));
+
+// POST /api/v1/resumes/analyze-ats - Analyze ATS compatibility for unsaved resume
+router.post('/analyze-ats', (req: AuthenticatedRequest, res: Response) => resumeController.analyzeATSCompatibilityUnsaved(req, res));
+
 // GET /api/v1/resumes/:id - Get specific resume
 router.get('/:id', (req: AuthenticatedRequest, res: Response) => resumeController.getResumeById(req, res));
 
 // POST /api/v1/resumes - Create new resume
-router.post('/', resumeValidation, (req: AuthenticatedRequest, res: Response) => resumeController.createResume(req, res));
+router.post('/', (req: AuthenticatedRequest, res: Response) => resumeController.createResumeWithoutValidation(req, res));
 
 // PUT /api/v1/resumes/:id - Update resume
 router.put('/:id', resumeValidation, (req: AuthenticatedRequest, res: Response) => resumeController.updateResume(req, res));
@@ -310,17 +340,18 @@ router.post('/:id/optimize', authMiddleware, requireEnterpriseSubscription, subs
 // POST /api/v1/resumes/:id/optimize-url - Optimize resume using job URL
 router.post('/:id/optimize-url', authMiddleware, requireEnterpriseSubscription, subscriptionRateLimit('ai-resume-builder'), trackFeatureUsage('ai-resume-optimization'), jobUrlValidation, (req: AuthenticatedRequest, res: Response) => resumeController.optimizeResumeWithJobUrl(req, res));
 
-// POST /api/v1/resumes/:id/generate-summary - Generate AI professional summary
-router.post('/:id/generate-summary', authMiddleware, requireEnterpriseSubscription, subscriptionRateLimit('ai-resume-builder'), trackFeatureUsage('ai-resume-generation'), (req: AuthenticatedRequest, res: Response) => resumeController.generateProfessionalSummary(req, res));
-
 // POST /api/v1/resumes/:id/ats-analysis - Analyze ATS compatibility
 router.post('/:id/ats-analysis', authMiddleware, requireEnterpriseSubscription, subscriptionRateLimit('ai-resume-builder'), trackFeatureUsage('ai-ats-analysis'), atsValidation, (req: AuthenticatedRequest, res: Response) => resumeController.analyzeATSCompatibility(req, res));
 
 // POST /api/v1/resumes/:id/job-alignment - Check job alignment score
 router.post('/:id/job-alignment', authMiddleware, requireEnterpriseSubscription, subscriptionRateLimit('ai-resume-builder'), trackFeatureUsage('ai-job-alignment'), (req: AuthenticatedRequest, res: Response) => resumeController.getJobAlignmentScore(req, res));
 
+// POST /api/v1/resumes/enhance - Enhance unsaved resume data
+router.post('/enhance', authMiddleware, (req: AuthenticatedRequest, res: Response) => resumeController.enhanceUnsavedResume(req, res));
+
 // POST /api/v1/resumes/:id/enhance - Comprehensive AI enhancement
 router.post('/:id/enhance', authMiddleware, requireEnterpriseSubscription, subscriptionRateLimit('ai-resume-builder'), trackFeatureUsage('ai-resume-enhancement'), (req: AuthenticatedRequest, res: Response) => resumeController.enhanceResumeComprehensively(req, res));
+
 
 // POST /api/v1/resumes/:id/job-matching - Get job matching score with URL
 router.post('/:id/job-matching', authMiddleware, requireEnterpriseSubscription, subscriptionRateLimit('ai-resume-builder'), trackFeatureUsage('ai-job-matching'), (req: AuthenticatedRequest, res: Response) => resumeController.getJobMatchingScore(req, res));
@@ -346,17 +377,6 @@ if (process.env.NODE_ENV === 'development') {
     // Mock resume ID for unsaved resumes
     req.body.resumeData = { ...req.body.resumeData, _id: 'dev-resume-id' };
     resumeController.analyzeATSCompatibility(req as AuthenticatedRequest, res);
-  });
-  
-  router.post('/enhance-dev', (req: Request, res: Response) => {
-    (req as AuthenticatedRequest).user = mockUser;
-    req.body.resumeData = { ...req.body.resumeData, _id: 'dev-resume-id' };
-    resumeController.enhanceResumeComprehensively(req as AuthenticatedRequest, res);
-  });
-  
-  router.post('/generate-summary-dev', (req: Request, res: Response) => {
-    (req as AuthenticatedRequest).user = mockUser;
-    resumeController.generateSummaryForUnsavedResume(req as AuthenticatedRequest, res);
   });
 }
 

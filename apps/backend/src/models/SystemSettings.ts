@@ -436,7 +436,7 @@ const SystemSettingsSchema = new Schema<ISystemSettings>({
       },
       google: {
         enabled: { type: Boolean, default: true },
-        models: { type: [String], default: ['gemini-pro', 'gemini-pro-vision'] },
+        models: { type: [String], default: ['gemini-2.5-flash', 'gemini-1.5-pro'] },
         maxTokens: { type: Number, default: 4000 },
         temperature: { type: Number, default: 0.7 },
         costPerToken: { type: Number, default: 0.00001 }

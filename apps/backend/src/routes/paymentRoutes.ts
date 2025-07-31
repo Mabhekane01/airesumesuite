@@ -5,7 +5,8 @@ import {
   handleWebhook,
   getSubscriptionStatus,
   cancelSubscription,
-  getPaymentHistory
+  getPaymentHistory,
+  verifyPayment
 } from '../controllers/paymentController';
 import {
   securityHeaders,
@@ -38,6 +39,9 @@ router.post('/create-session',
   express.json({ limit: '1mb' }), // Smaller payload for security
   createPaymentSession
 );
+
+// Payment verification
+router.post('/verify/:reference', generalRateLimit, express.json(), verifyPayment);
 
 // Subscription management
 router.get('/subscription/status', generalRateLimit, getSubscriptionStatus);

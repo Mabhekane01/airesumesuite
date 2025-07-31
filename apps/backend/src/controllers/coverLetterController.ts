@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { coverLetterService } from '../services/cover-letter/coverLetterService';
 import { jobScrapingService } from '../services/job-scraper/jobScrapingService';
+import { notificationService } from '../services/notificationService';
 import { body, validationResult } from 'express-validator';
 import { AuthenticatedRequest } from '../middleware/auth';
 
@@ -36,6 +37,33 @@ export class CoverLetterController {
         ...req.body,
         userId
       });
+
+      // Send cover letter created notification
+      try {
+        await notificationService.createNotification({
+          userId,
+          category: 'cover_letter',
+          type: 'success',
+          title: 'Cover Letter Created!',
+          message: `Your cover letter for ${req.body.jobTitle} at ${req.body.companyName} is ready.`,
+          priority: 'medium',
+          action: {
+            label: 'View Cover Letter',
+            url: `/dashboard/cover-letter`,
+            type: 'internal'
+          },
+          metadata: {
+            source: 'coverLetterController',
+            additionalData: { 
+              jobTitle: req.body.jobTitle, 
+              companyName: req.body.companyName,
+              tone: req.body.tone 
+            }
+          }
+        });
+      } catch (notificationError) {
+        console.warn('⚠️ Failed to send cover letter creation notification:', notificationError);
+      }
 
       res.status(201).json({
         success: true,

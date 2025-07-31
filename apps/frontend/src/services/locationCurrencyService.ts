@@ -106,10 +106,10 @@ class LocationCurrencyService {
       }
 
       // Fallback: ipgeolocation.io (requires API key but has free tier)
-      if (!locationData && process.env.REACT_APP_IPGEOLOCATION_API_KEY) {
+      if (!locationData && import.meta.env.VITE_IPGEOLOCATION_API_KEY) {
         try {
           const response = await fetch(
-            `https://api.ipgeolocation.io/ipgeo?apiKey=${process.env.REACT_APP_IPGEOLOCATION_API_KEY}`,
+            `https://api.ipgeolocation.io/ipgeo?apiKey=${import.meta.env.VITE_IPGEOLOCATION_API_KEY}`,
             { timeout: 5000 }
           );
 
@@ -172,10 +172,10 @@ class LocationCurrencyService {
       }
 
       // Fallback: Fixer.io (requires API key)
-      if (!rates && process.env.REACT_APP_FIXER_API_KEY) {
+      if (!rates && import.meta.env.VITE_FIXER_API_KEY) {
         try {
           const response = await fetch(
-            `https://api.fixer.io/latest?access_key=${process.env.REACT_APP_FIXER_API_KEY}&base=${baseCurrency}`,
+            `https://api.fixer.io/latest?access_key=${import.meta.env.VITE_FIXER_API_KEY}&base=${baseCurrency}`,
             { timeout: 5000 }
           );
 
@@ -189,10 +189,10 @@ class LocationCurrencyService {
       }
 
       // Fallback: CurrencyAPI (alternative)
-      if (!rates && process.env.REACT_APP_CURRENCYAPI_KEY) {
+      if (!rates && import.meta.env.VITE_CURRENCYAPI_KEY) {
         try {
           const response = await fetch(
-            `https://api.currencyapi.com/v3/latest?apikey=${process.env.REACT_APP_CURRENCYAPI_KEY}&base_currency=${baseCurrency}`,
+            `https://api.currencyapi.com/v3/latest?apikey=${import.meta.env.VITE_CURRENCYAPI_KEY}&base_currency=${baseCurrency}`,
             { timeout: 5000 }
           );
 

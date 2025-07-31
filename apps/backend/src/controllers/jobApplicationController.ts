@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { jobApplicationService, CreateJobApplicationData, UpdateJobApplicationData, JobApplicationFilters } from '../services/jobApplicationService';
+import { notificationService } from '../services/notificationService';
 import { validationResult } from 'express-validator';
 import { AuthenticatedRequest } from '../middleware/auth';
 
@@ -34,6 +35,22 @@ export class JobApplicationController {
       console.log(`   - Saved Resume ID: ${application.documentsUsed?.resumeId || 'NOT SAVED!!!'}`);
       console.log(`   - Saved Resume Content: ${application.documentsUsed?.resumeContent ? 'YES (' + application.documentsUsed.resumeContent.length + ' chars)' : 'NO'}`);
       console.log(`   - Final match score: ${application.metrics?.applicationScore || 0}%`);
+
+      // Send application created notification
+      try {
+        await notificationService.sendApplicationNotification(
+          userId,
+          'application_created',
+          application._id.toString(),
+          {
+            jobTitle: application.jobTitle,
+            companyName: application.companyName,
+            matchScore: application.metrics?.applicationScore || 0
+          }
+        );
+      } catch (notificationError) {
+        console.warn('⚠️ Failed to send application creation notification:', notificationError);
+      }
 
       return res.status(201).json({
         success: true,
@@ -271,6 +288,23 @@ export class JobApplicationController {
       const interviewData = req.body;
 
       const application = await jobApplicationService.addInterview(userId, applicationId, interviewData);
+
+      // Send interview scheduled notification
+      try {
+        await notificationService.sendApplicationNotification(
+          userId,
+          'interview_scheduled',
+          applicationId,
+          {
+            jobTitle: application.jobTitle,
+            companyName: application.companyName,
+            interviewType: interviewData.type,
+            scheduledDate: interviewData.scheduledDate
+          }
+        );
+      } catch (notificationError) {
+        console.warn('⚠️ Failed to send interview scheduled notification:', notificationError);
+      }
 
       return res.status(201).json({
         success: true,

@@ -93,7 +93,7 @@ function cleanAndParseJson(rawText: string): any {
 }
 
 export class GeminiService {
-  public model = genAI?.getGenerativeModel({ model: 'gemini-1.5-flash' }) || null;
+  public model = genAI?.getGenerativeModel({ model: 'gemini-2.5-flash' }) || null;
 
   async optimizeResume(params: ResumeOptimizationParams): Promise<any> {
     if (!this.model) {
@@ -1209,7 +1209,7 @@ export const getGeminiStream = async (prompt: string): Promise<NodeJS.ReadableSt
     throw new Error('Gemini API not configured. Please set GEMINI_API_KEY environment variable.');
   }
 
-  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+  const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
   
   try {
     const result = await model.generateContentStream(prompt);

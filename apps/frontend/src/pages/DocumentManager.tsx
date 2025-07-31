@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createFileName } from '../utils/validation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   DocumentTextIcon,
@@ -210,7 +211,7 @@ export default function DocumentManager() {
       
       // Create download link
       const downloadUrl = window.URL.createObjectURL(pdfBlob);
-      const fileName = `${resume.personalInfo.firstName}_${resume.personalInfo.lastName}_Resume.pdf`.replace(/\s+/g, '_');
+      const fileName = createFileName(resume.personalInfo?.firstName, resume.personalInfo?.lastName);
       
       // Create and trigger download
       const downloadLink = document.createElement('a');

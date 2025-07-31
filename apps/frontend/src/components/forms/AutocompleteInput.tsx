@@ -308,7 +308,7 @@ export const AutocompleteInput: React.FC<AutocompleteInputProps> = ({
           aria-expanded={isOpen}
           aria-haspopup="listbox"
           aria-autocomplete="list"
-          aria-invalid={showError}
+          aria-invalid={showError ? 'true' : 'false'}
           aria-describedby={showError ? `${name}-error` : undefined}
         />
         

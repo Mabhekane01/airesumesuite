@@ -22,6 +22,7 @@ import { CheckIcon as CheckIconSolid, StarIcon as StarIconSolid } from '@heroico
 import { toast } from 'sonner';
 import { useAuthStore } from '../../stores/authStore';
 import { locationCurrencyService, PricingData } from '../../services/locationCurrencyService';
+import { paystackService } from '../../services/paystackService';
 
 interface PaymentMethod {
   id: string;
@@ -36,28 +37,21 @@ export default function EnterpriseUpgrade() {
   const [loading, setLoading] = useState(true);
   const [pricing, setPricing] = useState<PricingData | null>(null);
   const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('yearly');
-  const [selectedPayment, setSelectedPayment] = useState<string>('stripe');
+  const [selectedPayment, setSelectedPayment] = useState<string>('paystack');
   const [processing, setProcessing] = useState(false);
   const [locationDetecting, setLocationDetecting] = useState(true);
   const [currencyUpdating, setCurrencyUpdating] = useState(false);
   const [showComparison, setShowComparison] = useState(false);
-  const { user } = useAuthStore();
+  const { user, isAuthenticated, accessToken } = useAuthStore();
 
   const paymentMethods: PaymentMethod[] = [
     {
-      id: 'stripe',
-      name: 'Credit Card',
-      icon: '💳',
-      description: 'Visa, Mastercard, Amex - Instant activation',
+      id: 'paystack',
+      name: 'Secure Payment',
+      icon: '🔒',
+      description: 'Card, Bank Transfer, USSD, Mobile Money - Powered by Paystack',
       available: true,
       popular: true
-    },
-    {
-      id: 'paypal',
-      name: 'PayPal',
-      icon: '🅿️',
-      description: 'Pay securely with your PayPal account',
-      available: true
     }
   ];
 
@@ -171,42 +165,61 @@ export default function EnterpriseUpgrade() {
   };
 
   const handleUpgrade = async () => {
-    if (!pricing) return;
+    if (!pricing || !user?.email) {
+      toast.error('Missing required information');
+      return;
+    }
+    
+    if (!isAuthenticated || !accessToken) {
+      toast.error('Please log in to upgrade your account');
+      return;
+    }
     
     try {
       setProcessing(true);
       
       const amount = selectedPlan === 'monthly' ? pricing.localMonthly : pricing.localYearly;
       
-      const response = await fetch('/api/payments/create-session', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({
-          planType: selectedPlan,
-          paymentMethod: selectedPayment,
-          amount,
-          currency: pricing.currency,
-          location: pricing.location
-        })
-      });
-      
-      const data = await response.json();
-      
-      if (data.success) {
-        if (selectedPayment === 'stripe') {
-          window.location.href = data.checkoutUrl;
-        } else if (selectedPayment === 'paypal') {
-          window.location.href = data.paypalUrl;
-        }
-      } else {
-        toast.error(data.message || 'Failed to create payment session');
+      // Check if Paystack is available
+      if (!paystackService.isAvailable()) {
+        toast.error('Payment service configuration error', {
+          description: 'Paystack publishable key is missing. Please contact support.',
+          duration: 8000
+        });
+        console.error('Paystack service not available - check environment configuration');
+        return;
       }
-    } catch (error) {
+
+      const envInfo = paystackService.getEnvironmentInfo();
+      console.log('Paystack Environment:', envInfo);
+      
+      toast.info(`💳 Initializing ${envInfo.environment} payment...`);
+      
+      // Process payment with Paystack inline
+      const response = await paystackService.processEnterpriseUpgrade(
+        selectedPlan,
+        amount,
+        pricing.currency,
+        user.email,
+        pricing.location
+      );
+
+      // Payment successful - show success and redirect immediately
+      toast.success('🎉 Payment successful! Welcome to Enterprise!');
+      
+      // Redirect to success page immediately to prevent render loops
+      window.location.href = `/dashboard/upgrade/success?reference=${response.reference}`;
+
+    } catch (error: any) {
       console.error('Payment error:', error);
-      toast.error('Failed to process payment');
+      
+      if (error.message === 'Payment cancelled by user') {
+        toast.info('Payment cancelled');
+      } else if (error.message.includes('verification failed')) {
+        toast.error('Payment verification failed. Please contact support.');
+      } else {
+        toast.error(error.message || 'Payment failed. Please try again.');
+      }
     } finally {
       setProcessing(false);
     }

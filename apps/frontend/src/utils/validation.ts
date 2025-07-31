@@ -12,12 +12,17 @@ export interface ValidationResult {
 export const validateEmail = (email: string): ValidationResult => {
   const errors: ValidationError[] = [];
   
-  if (!email) {
+  if (!email || typeof email !== 'string') {
     errors.push({ field: 'email', message: 'Email is required' });
-  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    errors.push({ field: 'email', message: 'Please enter a valid email address' });
-  } else if (email.length > 254) {
-    errors.push({ field: 'email', message: 'Email address is too long' });
+  } else {
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail) {
+      errors.push({ field: 'email', message: 'Email is required' });
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+      errors.push({ field: 'email', message: 'Please enter a valid email address' });
+    } else if (trimmedEmail.length > 254) {
+      errors.push({ field: 'email', message: 'Email address is too long' });
+    }
   }
 
   return {
@@ -30,7 +35,7 @@ export const validateEmail = (email: string): ValidationResult => {
 export const validatePassword = (password: string): ValidationResult => {
   const errors: ValidationError[] = [];
   
-  if (!password) {
+  if (!password || typeof password !== 'string') {
     errors.push({ field: 'password', message: 'Password is required' });
   } else {
     if (password.length < 8) {
@@ -506,16 +511,30 @@ export const validateJobApplication = (application: any): ValidationResult => {
 
 // Input sanitization functions
 export const sanitizeInput = (input: string): string => {
-  return input.trim().replace(/\s+/g, ' '); // Remove extra whitespace
+  if (!input || typeof input !== 'string') return '';
+  return input.trim().replace(/\s+/g, ' ');
 };
 
 export const sanitizeHtml = (input: string): string => {
+  if (!input || typeof input !== 'string') return '';
   return input
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#x27;')
     .replace(/\//g, '&#x2F;');
+};
+
+// Safe name handling utilities
+export const safeString = (value: any): string => {
+  if (value === null || value === undefined) return '';
+  if (typeof value === 'string') return value;
+  return String(value);
+};
+
+export const createFileName = (firstName?: string, lastName?: string, suffix: string = 'Resume'): string => {
+  const safeName = `${safeString(firstName)}_${safeString(lastName)}_${suffix}.pdf`;
+  return safeName.replace(/\s+/g, '_').replace(/_{2,}/g, '_').replace(/^_|_$/g, '');
 };
 
 // Formatting functions

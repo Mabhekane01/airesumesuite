@@ -548,12 +548,37 @@ export class ResumeService {
         achievements: Array.isArray(work.achievements) ? work.achievements : []
       })) : [];
 
+      // Validate required personal info fields
+      if (!data.personalInfo?.firstName?.trim()) {
+        throw new Error('First name is required');
+      }
+      if (!data.personalInfo?.lastName?.trim()) {
+        throw new Error('Last name is required');
+      }
+      if (!data.personalInfo?.email?.trim()) {
+        throw new Error('Email is required');
+      }
+      if (!data.personalInfo?.phone?.trim()) {
+        throw new Error('Phone number is required');
+      }
+
       // Ensure required fields have defaults
       const resumeData = {
         userId: userObjectId,
         title: data.title || 'Untitled Resume',
-        personalInfo: data.personalInfo || {},
-        professionalSummary: data.professionalSummary || '',
+        personalInfo: {
+          firstName: data.personalInfo.firstName.trim(),
+          lastName: data.personalInfo.lastName.trim(),
+          email: data.personalInfo.email.trim(),
+          phone: data.personalInfo.phone.trim(),
+          location: data.personalInfo?.location?.trim() || '',
+          linkedinUrl: data.personalInfo?.linkedinUrl || undefined,
+          portfolioUrl: data.personalInfo?.portfolioUrl || undefined,
+          githubUrl: data.personalInfo?.githubUrl || undefined,
+          websiteUrl: data.personalInfo?.websiteUrl || undefined,
+          professionalTitle: data.personalInfo?.professionalTitle || undefined
+        },
+        professionalSummary: (data.professionalSummary && data.professionalSummary.trim()) || 'Professional seeking new opportunities.',
         workExperience: sanitizedWorkExperience,
         education: sanitizedEducation,
         skills: sanitizedSkills,

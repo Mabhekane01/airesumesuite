@@ -54,6 +54,8 @@ export default function EnhancedResumePreview({
   const [isATSCheckerOpen, setIsATSCheckerOpen] = useState(false);
   const [showEnhancementModal, setShowEnhancementModal] = useState(false);
   const [enhancementResult, setEnhancementResult] = useState<any>(null);
+  const [showComparison, setShowComparison] = useState(false);
+  const [originalResume, setOriginalResume] = useState<any>(null);
   const [aiLoading, setAiLoading] = useState<string | null>(null);
   const [aiSuggestions, setAiSuggestions] = useState<string[]>(aiData.aiSuggestions || []);
   const [atsAnalysis, setAtsAnalysis] = useState<any>(null);
@@ -129,13 +131,17 @@ export default function EnhancedResumePreview({
     }
   };
 
-  // Implement AI Enhancement function - now works without saving
+  // AI Enhancement function - works with in-memory resume data
   const handleAIImprovement = async (enhancementType: string = 'comprehensive') => {
+
     try {
       setAiLoading(enhancementType);
       toast.loading('🤖 Enhancing your resume with AI...', { id: 'ai-enhance' });
 
-      // Use the current resume data directly, no need to save first
+      // Store original resume for comparison
+      setOriginalResume({ ...resume });
+
+      // Use the in-memory resume data directly for AI enhancement
       const result = await resumeService.enhanceResumeWithAI(resume, {
         improvementLevel: enhancementType as 'basic' | 'comprehensive' | 'expert'
       });
@@ -158,8 +164,10 @@ export default function EnhancedResumePreview({
         ]
       };
 
-      setEnhancementResult(feedbackData);
+      setEnhancementResult(result);
       setEnhancementResults(result.enhancedResume);
+      console.log('Original resume stored:', originalResume);
+      console.log('Enhanced result stored:', result);
       
       // Update AI data in context for real-time reflection
       updateAIData({
@@ -168,10 +176,28 @@ export default function EnhancedResumePreview({
         qualityScore: result.qualityScore.after
       });
       
-      toast.success('✨ AI enhancement complete!', { id: 'ai-enhance' });
-      setShowEnhancementModal(true);
+      // Handle AI status notifications
+      console.log('🔍 DEBUG: AI Enhancement Result:', {
+        hasAiStatus: !!result.aiStatus,
+        aiStatus: result.aiStatus,
+        resultKeys: Object.keys(result)
+      });
       
-      onAIImprovement?.();
+      if (result.aiStatus) {
+        console.log('⚠️ SHOWING AI FALLBACK WARNING:', result.aiStatus);
+        toast.warning(`⚠️ ${result.aiStatus}`, { 
+          id: 'ai-enhance',
+          description: 'Enhancement completed with manual backup. Contact support for full AI capabilities.',
+          duration: 8000
+        });
+      } else {
+        console.log('✅ SHOWING AI SUCCESS MESSAGE');
+        toast.success('🤖 AI enhancement complete!', { 
+          id: 'ai-enhance',
+          description: 'Your resume has been enhanced using advanced AI algorithms.'
+        });
+      }
+      setShowEnhancementModal(true);
       
     } catch (error) {
       console.error('AI enhancement error:', error);
@@ -1214,7 +1240,7 @@ export default function EnhancedResumePreview({
         <div className="flex items-center justify-center">
           <BeakerIcon className="w-5 h-5 text-purple-400 mr-2" />
           <span className="text-sm text-dark-text-secondary">
-            Powered by <span className="text-purple-400 font-medium">Google Gemini AI</span>
+            Powered by <span className="text-purple-400 font-medium">Google Gemini 2.5 Flash</span>
           </span>
         </div>
       </Card>
@@ -1529,9 +1555,14 @@ export default function EnhancedResumePreview({
           isOpen={isJobOptimizationOpen}
           onClose={() => setIsJobOptimizationOpen(false)}
           resumeData={resume}
-          onOptimize={() => {
+          onOptimize={(optimizedResume) => {
+            updateResumeData(optimizedResume);
+            if (onResumeUpdate) {
+              onResumeUpdate(optimizedResume);
+            }
             setIsJobOptimizationOpen(false);
             if (onJobOptimization) onJobOptimization();
+            toast.success('Resume optimization applied! Check the preview for changes.');
           }}
         />
       )}
@@ -1570,10 +1601,172 @@ export default function EnhancedResumePreview({
           setShowEnhancementModal(false);
         }}
         onViewComparison={() => {
-          // TODO: Implement side-by-side comparison view
-          toast.info('Comparison view coming soon!');
+          setShowComparison(true);
+          setShowEnhancementModal(false);
         }}
       />
+
+      {/* Resume Comparison Modal */}
+      {showComparison && originalResume && enhancementResult && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-7xl w-full max-h-[90vh] overflow-hidden">
+            <div className="p-6 border-b border-gray-200 flex justify-between items-center">
+              <h3 className="text-xl font-semibold text-gray-900">Resume Comparison</h3>
+              <button
+                onClick={() => setShowComparison(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+              <div className="grid grid-cols-2 gap-6">
+                {/* Original Resume */}
+                <div>
+                  <h4 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                    <span className="w-3 h-3 bg-red-500 rounded-full mr-2"></span>
+                    Original Resume
+                  </h4>
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <div className="space-y-4">
+                      <div>
+                        <h5 className="font-medium text-gray-700">Professional Summary</h5>
+                        <p className="text-sm text-gray-600 mt-1">
+                          {originalResume?.professionalSummary || originalResume?.summary || 'No summary provided'}
+                        </p>
+                      </div>
+                      
+                      {(originalResume?.workExperience?.length > 0 || originalResume?.experience?.length > 0) && (
+                        <div>
+                          <h5 className="font-medium text-gray-700">Work Experience</h5>
+                          {(originalResume.workExperience || originalResume.experience || []).slice(0, 2).map((exp, index) => (
+                            <div key={index} className="text-sm text-gray-600 mt-1">
+                              <p className="font-medium">{exp.jobTitle || exp.title} at {exp.company}</p>
+                              {(exp.achievements || exp.description ? [exp.description] : [])?.slice(0, 2).map((achievement, i) => (
+                                <p key={i} className="ml-2">• {achievement}</p>
+                              ))}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Enhanced Resume */}
+                <div>
+                  <h4 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                    <span className="w-3 h-3 bg-green-500 rounded-full mr-2"></span>
+                    AI Enhanced Resume
+                  </h4>
+                  <div className="bg-green-50 p-4 rounded-lg">
+                    <div className="space-y-4">
+                      <div>
+                        <h5 className="font-medium text-gray-700">Professional Summary</h5>
+                        <p className="text-sm text-gray-600 mt-1">
+                          {enhancementResult.enhancedResume?.professionalSummary || 'No summary provided'}
+                        </p>
+                      </div>
+                      
+                      {enhancementResult.enhancedResume?.workExperience?.length > 0 && (
+                        <div>
+                          <h5 className="font-medium text-gray-700">Work Experience</h5>
+                          {enhancementResult.enhancedResume.workExperience.slice(0, 2).map((exp, index) => (
+                            <div key={index} className="text-sm text-gray-600 mt-1">
+                              <p className="font-medium">{exp.jobTitle} at {exp.company}</p>
+                              {exp.achievements?.slice(0, 2).map((achievement, i) => (
+                                <p key={i} className="ml-2">• {achievement}</p>
+                              ))}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Quality Score Comparison */}
+              <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+                <h5 className="font-medium text-gray-900 mb-3">Quality Score Improvement</h5>
+                <div className="grid grid-cols-3 gap-4 text-center">
+                  <div>
+                    <p className="text-2xl font-bold text-red-600">{enhancementResult.qualityScore?.before || 0}%</p>
+                    <p className="text-sm text-gray-600">Original Score</p>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-green-600">+{enhancementResult.qualityScore?.improvement || 0}</p>
+                    <p className="text-sm text-gray-600">Improvement</p>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-green-600">{enhancementResult.qualityScore?.after || 0}%</p>
+                    <p className="text-sm text-gray-600">Enhanced Score</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Improvements Made */}
+              <div className="mt-6">
+                <h5 className="font-medium text-gray-900 mb-3">Improvements Made</h5>
+                <div className="space-y-3">
+                  {(enhancementResult.improvements || []).map((improvement, index) => {
+                    // Handle both array of strings and array of objects
+                    if (typeof improvement === 'string') {
+                      return (
+                        <div key={index} className="bg-white p-3 rounded-lg border border-gray-200">
+                          <div className="flex items-center text-sm text-gray-600">
+                            <span className="w-1 h-1 bg-green-500 rounded-full mr-2"></span>
+                            {improvement}
+                          </div>
+                        </div>
+                      );
+                    } else if (improvement && typeof improvement === 'object') {
+                      return (
+                        <div key={index} className="bg-white p-3 rounded-lg border border-gray-200">
+                          <h6 className="font-medium text-gray-800">{improvement.category || 'Enhancement'}</h6>
+                          <ul className="mt-1 text-sm text-gray-600">
+                            {(improvement.changes || []).map((change, i) => (
+                              <li key={i} className="flex items-center">
+                                <span className="w-1 h-1 bg-green-500 rounded-full mr-2"></span>
+                                {change}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      );
+                    }
+                    return null;
+                  })}
+                </div>
+              </div>
+
+              <div className="mt-6 flex justify-end space-x-3">
+                <button
+                  onClick={() => setShowComparison(false)}
+                  className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
+                >
+                  Close
+                </button>
+                <button
+                  onClick={() => {
+                    if (enhancementResult) {
+                      updateResumeData(enhancementResult.enhancedResume);
+                      toast.success('🎉 Resume updated with AI enhancements!');
+                    }
+                    setShowComparison(false);
+                  }}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                >
+                  Apply Changes
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Cover Letter Integration Modal */}
       <CoverLetterIntegration
@@ -1581,6 +1774,7 @@ export default function EnhancedResumePreview({
         isOpen={showCoverLetterModal}
         onClose={() => setShowCoverLetterModal(false)}
       />
+
     </div>
   );
 }

@@ -15,11 +15,26 @@ const API_BASE_URL = API_BASE_URLS[0] || 'http://localhost:3001';
 // Create axios instance with default config
 const api = axios.create({
   baseURL: `${API_BASE_URL}/api/v1`,
-  timeout: 30000,
+  timeout: 60000, // Increased to 60 seconds for AI operations
   headers: {
     'Content-Type': 'application/json',
   },
 });
+
+// Public endpoints that don't require authentication
+const PUBLIC_ENDPOINTS = [
+  '/auth/login',
+  '/auth/register',
+  '/auth/check-email',
+  '/auth/send-registration-otp',
+  '/auth/verify-registration-otp',
+  '/auth/resend-registration-otp',
+  '/auth/forgot-password',
+  '/auth/reset-password',
+  '/auth/google',
+  '/auth/status',
+  '/coach/health'
+];
 
 // Request interceptor to add auth token
 api.interceptors.request.use(
@@ -34,21 +49,26 @@ api.interceptors.request.use(
       config.headers = {};
     }
 
+    // Check if this is a public endpoint
+    const isPublicEndpoint = PUBLIC_ENDPOINTS.some(endpoint => 
+      config.url?.includes(endpoint)
+    );
+
+    if (isPublicEndpoint) {
+      return config;
+    }
+
     // Try to get token from auth store first (Zustand persist)
     let token = null;
     const authData = storageUtils.safeGetJson('auth-storage');
     if (authData && authData.state && authData.state.accessToken) {
       token = authData.state.accessToken;
-      console.log('🔑 API: Using Zustand auth token, length:', token.length);
     }
 
     // Fallback to legacy authToken storage
     if (!token) {
       try {
         token = localStorage.getItem('authToken');
-        if (token) {
-          console.log('🔑 API: Using legacy auth token, length:', token.length);
-        }
       } catch (error) {
         console.warn('Failed to get legacy auth token:', error);
       }
@@ -56,10 +76,8 @@ api.interceptors.request.use(
 
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
-      console.log('✅ API: Authorization header set for request to:', config.url, 'Token preview:', token.substring(0, 20) + '...');
-    } else {
-      console.warn('⚠️ API: No auth token found for request to:', config.url);
     }
+    
     return config;
   },
   (error) => {

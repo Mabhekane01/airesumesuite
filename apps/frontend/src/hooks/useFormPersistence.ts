@@ -14,7 +14,7 @@ export function useFormPersistence<T extends Record<string, any>>(
   const { key, debounceMs = 500, clearOnSubmit = true, onRestore } = options;
   const [data, setData] = useState<T>(initialData);
   const [isRestored, setIsRestored] = useState(false);
-  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [lastSaved, setLastSaved] = useState<string | null>(null);
   const debounceRef = useRef<NodeJS.Timeout>();
   const initialLoadRef = useRef(false);
 
@@ -41,7 +41,7 @@ export function useFormPersistence<T extends Record<string, any>>(
         
         if (isRecent && Object.keys(parsedData).length > 0) {
           setData(parsedData);
-          setLastSaved(timestamp);
+          setLastSaved(timestamp?.toISOString() || null);
           setIsRestored(true);
           onRestore?.(parsedData);
         }
@@ -65,7 +65,7 @@ export function useFormPersistence<T extends Record<string, any>>(
         const timestamp = new Date();
         localStorage.setItem(storageKey, JSON.stringify(dataToSave));
         localStorage.setItem(timestampKey, timestamp.toISOString());
-        setLastSaved(timestamp);
+        setLastSaved(timestamp.toISOString());
       } catch (error) {
         console.warn('Failed to save form data:', error);
       }

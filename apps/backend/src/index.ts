@@ -22,6 +22,8 @@ import companyRoutes from './routes/companyRoutes';
 import currencyRoutes from './routes/currencyRoutes';
 import interviewRoutes from './routes/interviewRoutes';
 import careerCoachRoutes from './routes/careerCoachRoutes';
+import paymentRoutes from './routes/paymentRoutes';
+import notificationRoutes from './routes/notificationRoutes';
 import { 
   requestIdMiddleware, 
   requestLogger, 
@@ -62,6 +64,33 @@ try {
 }
 
 dotenv.config();
+
+// Production environment validation
+if (process.env.NODE_ENV === 'production') {
+  console.log('🚀 PRODUCTION MODE: Validating required environment variables...');
+  
+  const requiredProdVars = [
+    'DATABASE_URL',
+    'REDIS_URL', 
+    'JWT_SECRET',
+    'ALLOWED_ORIGINS'
+  ];
+  
+  const missingVars = requiredProdVars.filter(varName => !process.env[varName]);
+  
+  if (missingVars.length > 0) {
+    console.error('🚨 PRODUCTION ERROR: Missing required environment variables:', missingVars);
+    process.exit(1);
+  }
+  
+  console.log('✅ PRODUCTION: All required environment variables are set');
+  
+  // Disable development features
+  process.env.DISABLE_DEV_ENDPOINTS = 'true';
+  console.log('🔒 PRODUCTION: Development endpoints disabled');
+} else {
+  console.log('🔧 DEVELOPMENT MODE: Running with relaxed security settings');
+}
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -220,6 +249,8 @@ app.use('/api/v1/companies', companyRoutes);
 app.use('/api/v1/currencies', currencyRoutes);
 app.use('/api/v1/interviews', interviewRoutes);
 app.use('/api/v1/coach', careerCoachRoutes);
+app.use('/api/payments', paymentRoutes);
+app.use('/api/v1/notifications', notificationRoutes);
 
 // 404 handler for unmatched API routes
 app.use('/api/v1', notFoundHandler);

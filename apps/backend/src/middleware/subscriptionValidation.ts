@@ -40,8 +40,15 @@ export const requireEnterpriseSubscription = async (
       });
     }
 
-    // Check if user has enterprise tier
-    if (user.tier !== 'enterprise') {
+    // Check subscription status from Subscription model
+    const { Subscription } = require('../models/Subscription');
+    const activeSubscription = await Subscription.findOne({
+      userId: userId,
+      status: 'active'
+    });
+
+    // Check if user has enterprise tier or active subscription
+    if (user.tier !== 'enterprise' && !activeSubscription) {
       logger.warn('Unauthorized AI feature access attempt', {
         userId,
         tier: user.tier,

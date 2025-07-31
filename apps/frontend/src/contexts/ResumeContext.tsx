@@ -44,6 +44,7 @@ export const ResumeProvider: React.FC<ResumeProviderProps> = ({ children }) => {
   const [resumeData, setResumeData] = useState<Partial<Resume>>({});
   const [aiData, setAIData] = useState<AIEnhancementData>({});
   const [isAutoSaving, setIsAutoSaving] = useState(false);
+  const [saveTimeout, setSaveTimeout] = useState<NodeJS.Timeout | null>(null);
 
   // Load data from localStorage on mount
   useEffect(() => {
@@ -63,16 +64,16 @@ export const ResumeProvider: React.FC<ResumeProviderProps> = ({ children }) => {
     }
   }, []);
 
-  // Auto-save to localStorage when data changes
+  // Auto-save to localStorage when data changes (debounced)
   useEffect(() => {
     if (Object.keys(resumeData).length > 0) {
-      saveToStorage();
+      debouncedSave();
     }
   }, [resumeData]);
 
   useEffect(() => {
     if (Object.keys(aiData).length > 0) {
-      saveToStorage();
+      debouncedSave();
     }
   }, [aiData]);
 
@@ -85,7 +86,37 @@ export const ResumeProvider: React.FC<ResumeProviderProps> = ({ children }) => {
   };
 
   const handleDataChange = (stepId: string, data: any) => {
-    updateResumeData({ [stepId]: data });
+    // Map step IDs to resume property names
+    const stepMapping: { [key: string]: string } = {
+      'personal-info': 'personalInfo',
+      'professional-summary': 'professionalSummary',
+      'work-experience': 'workExperience',
+      'education': 'education',
+      'skills': 'skills',
+      'certifications': 'certifications',
+      'languages': 'languages',
+      'projects': 'projects',
+      'volunteer-experience': 'volunteerExperience',
+      'awards': 'awards',
+      'hobbies': 'hobbies'
+    };
+    
+    const propertyName = stepMapping[stepId] || stepId;
+    updateResumeData({ [propertyName]: data });
+  };
+
+  const debouncedSave = () => {
+    // Clear existing timeout
+    if (saveTimeout) {
+      clearTimeout(saveTimeout);
+    }
+    
+    // Set new timeout
+    const newTimeout = setTimeout(() => {
+      saveToStorage();
+    }, 1000); // Save after 1 second of no changes
+    
+    setSaveTimeout(newTimeout);
   };
 
   const saveToStorage = () => {

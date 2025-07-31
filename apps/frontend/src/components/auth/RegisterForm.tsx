@@ -106,7 +106,7 @@ export default function RegisterForm({ onToggleMode, onClose, recaptchaState }: 
       
       console.log('🔍 reCAPTCHA result:', {
         tokenLength: recaptchaToken?.length || 0,
-        siteKey: RECAPTCHA_CONFIG.siteKey,
+        siteKey: RECAPTCHA_CONFIG.SITE_KEY,
         hasToken: !!recaptchaToken
       });
       
@@ -150,7 +150,7 @@ export default function RegisterForm({ onToggleMode, onClose, recaptchaState }: 
         toast.error(error.message || 'Registration failed. Please try again.');
       }
       
-      resetRecaptcha();
+      // resetRecaptcha() not needed for reCAPTCHA v3 (invisible)
     } finally {
       setIsRecaptchaProcessing(false);
     }

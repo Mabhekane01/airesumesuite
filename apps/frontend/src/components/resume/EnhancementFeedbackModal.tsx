@@ -20,7 +20,12 @@ interface EnhancementResult {
     changes: string[];
     impact: 'high' | 'medium' | 'low';
   }[];
-  scores: {
+  scores?: {
+    before: number;
+    after: number;
+    improvement: number;
+  };
+  qualityScore?: {
     before: number;
     after: number;
     improvement: number;
@@ -151,17 +156,17 @@ const EnhancementFeedbackModal: React.FC<EnhancementFeedbackModalProps> = ({
                 Performance Improvement
               </h3>
               <div className="flex items-center space-x-2">
-                <span className="text-2xl font-bold text-red-400">{result.scores.before}%</span>
+                <span className="text-2xl font-bold text-red-400">{(result.scores || result.qualityScore)?.before || 0}%</span>
                 <ArrowRightIcon className="w-4 h-4 text-dark-text-muted" />
-                <span className="text-2xl font-bold text-green-400">{result.scores.after}%</span>
+                <span className="text-2xl font-bold text-green-400">{(result.scores || result.qualityScore)?.after || 0}%</span>
                 <span className="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-sm font-medium border border-green-400/30">
-                  +{result.scores.improvement}%
+                  +{(result.scores || result.qualityScore)?.improvement || 0}%
                 </span>
               </div>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {result.keyMetrics.map((metric, index) => (
+              {(result.keyMetrics || []).map((metric, index) => (
                 <div key={index} className="bg-dark-tertiary/50 rounded-lg p-4">
                   <div className="text-sm text-dark-text-secondary mb-1">{metric.label}</div>
                   <div className="text-xl font-bold text-white">{metric.value}</div>

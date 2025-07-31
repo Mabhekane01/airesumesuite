@@ -20,6 +20,8 @@ import { CoverLetterData, coverLetterService } from '../../services/coverLetterS
 import { ResumeData, resumeService } from '../../services/resumeService';
 import { toast } from 'sonner';
 import { testAIEndpoints } from '../../utils/testAI';
+import SubscriptionGate from '../subscription/SubscriptionGate';
+import { useAuthStore } from '../../stores/authStore';
 
 interface CoverLetterEditorProps {
   coverLetter: CoverLetterData | null;
@@ -36,6 +38,7 @@ export default function CoverLetterEditor({
   onClose,
   onSave,
 }: CoverLetterEditorProps) {
+  const { user } = useAuthStore();
   const [activeTab, setActiveTab] = useState<EditorTab>('edit');
   const [formData, setFormData] = useState({
     title: '',
@@ -48,7 +51,7 @@ export default function CoverLetterEditor({
   const [availableResumes, setAvailableResumes] = useState<ResumeData[]>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [lastSaved, setLastSaved] = useState<string | null>(null);
   const [isDirty, setIsDirty] = useState(false);
   const [wordCount, setWordCount] = useState(0);
   const [characterCount, setCharacterCount] = useState(0);
@@ -64,6 +67,20 @@ export default function CoverLetterEditor({
   const contentRef = useRef<HTMLTextAreaElement>(null);
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout>();
 
+  // Check if user has enterprise access
+  const hasEnterpriseAccess = user?.tier === 'enterprise' && (user?.subscriptionStatus === 'active' || !user?.subscriptionStatus);
+
+  const showUpgradePrompt = (featureName: string) => {
+    toast.error(`${featureName} is a premium feature`, {
+      description: 'Upgrade to Enterprise to access AI-powered tools',
+      action: {
+        label: 'Upgrade',
+        onClick: () => window.open('/dashboard/upgrade', '_blank')
+      },
+      duration: 5000
+    });
+  };
+
   // Initialize form data and load resumes
   useEffect(() => {
     if (coverLetter) {
@@ -72,7 +89,7 @@ export default function CoverLetterEditor({
         jobTitle: coverLetter.jobTitle || '',
         companyName: coverLetter.companyName || '',
         content: coverLetter.content || '',
-        tone: coverLetter.tone || 'professional',
+        tone: (coverLetter.tone as "professional" | "casual" | "enthusiastic" | "conservative") || 'professional',
         resumeId: coverLetter.resumeId || '',
       });
       setIsDirty(false);
@@ -150,7 +167,7 @@ export default function CoverLetterEditor({
         // Update existing
         const response = await coverLetterService.updateCoverLetter(coverLetter._id, saveData);
         if (response.success) {
-          setLastSaved(new Date());
+          setLastSaved(new Date().toISOString());
           setIsDirty(false);
         }
       }
@@ -212,7 +229,7 @@ export default function CoverLetterEditor({
         toast.success(coverLetter ? 'Cover letter updated successfully!' : 'Cover letter created successfully!');
         onSave(response.data);
         setIsDirty(false);
-        setLastSaved(new Date());
+        setLastSaved(new Date().toISOString());
       } else {
         toast.error(response.message || 'Failed to save cover letter');
       }
@@ -225,6 +242,11 @@ export default function CoverLetterEditor({
   };
 
   const handleGenerateAI = async () => {
+    if (!hasEnterpriseAccess) {
+      showUpgradePrompt('AI Cover Letter Generation');
+      return;
+    }
+
     if (!formData.jobTitle.trim() || !formData.companyName.trim()) {
       toast.error('Please enter job title and company name to generate content');
       return;
@@ -277,6 +299,11 @@ export default function CoverLetterEditor({
 
   // AI Enhancement Functions
   const enhanceWithAI = async () => {
+    if (!hasEnterpriseAccess) {
+      showUpgradePrompt('AI Content Enhancement');
+      return;
+    }
+
     if (!formData.content.trim()) {
       toast.error('Please add some content first before enhancing');
       return;
@@ -321,6 +348,11 @@ export default function CoverLetterEditor({
   };
 
   const analyzeContent = async () => {
+    if (!hasEnterpriseAccess) {
+      showUpgradePrompt('AI Content Analysis');
+      return;
+    }
+
     if (!formData.content.trim()) {
       toast.error('Please add content to analyze');
       return;
@@ -509,10 +541,16 @@ ${selectedTone.signature}
                 <button
                   onClick={handleGenerateAI}
                   disabled={loading}
-                  className="px-4 py-2 bg-purple-600/20 text-purple-400 border border-purple-600/30 rounded-lg hover:bg-purple-600/30 transition-all duration-200 flex items-center space-x-2 disabled:opacity-50"
+                  className={`px-4 py-2 border rounded-lg transition-all duration-200 flex items-center space-x-2 disabled:opacity-50 ${
+                    hasEnterpriseAccess 
+                      ? 'bg-purple-600/20 text-purple-400 border-purple-600/30 hover:bg-purple-600/30' 
+                      : 'bg-yellow-600/20 text-yellow-400 border-yellow-600/30 hover:bg-yellow-600/30'
+                  }`}
+                  title={hasEnterpriseAccess ? 'Generate AI content' : 'Upgrade to Enterprise for AI features'}
                 >
                   <SparklesIcon className="w-4 h-4" />
                   <span>AI Generate</span>
+                  {!hasEnterpriseAccess && <span className="text-xs">⭐</span>}
                 </button>
 
                 {/* Save Button */}
@@ -693,9 +731,15 @@ ${selectedTone.signature}
                             type="button"
                             onClick={enhanceWithAI}
                             disabled={isGeneratingAI || !formData.content.trim()}
-                            className="px-3 py-1 text-xs bg-green-500/10 text-green-400 border border-green-500/30 rounded hover:bg-green-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className={`px-3 py-1 text-xs border rounded disabled:opacity-50 disabled:cursor-not-allowed ${
+                              hasEnterpriseAccess 
+                                ? 'bg-green-500/10 text-green-400 border-green-500/30 hover:bg-green-500/20' 
+                                : 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30 hover:bg-yellow-500/20'
+                            }`}
+                            title={hasEnterpriseAccess ? 'Enhance content with AI' : 'Upgrade to Enterprise for AI enhancement'}
                           >
                             {isGeneratingAI ? 'Enhancing...' : '✨ Enhance'}
+                            {!hasEnterpriseAccess && <span className="ml-1">⭐</span>}
                           </button>
                           <button
                             type="button"
@@ -760,16 +804,16 @@ ${selectedTone.signature}
                     style={{ maxHeight: 'calc(100vh - 200px)' }}
                   >
                     <div className="space-y-6">
-                      {/* AI Tools Header */}
-                      <div className="text-center">
-                        <h3 className="text-2xl font-bold text-green-400 mb-2 flex items-center justify-center">
-                          <SparklesIcon className="w-6 h-6 mr-2" />
-                          AI Enhancement Tools
-                        </h3>
-                        <p className="text-dark-text-secondary">
-                          Improve your cover letter with advanced AI assistance
-                        </p>
-                      </div>
+                        {/* AI Tools Header */}
+                        <div className="text-center">
+                          <h3 className="text-2xl font-bold text-green-400 mb-2 flex items-center justify-center">
+                            <SparklesIcon className="w-6 h-6 mr-2" />
+                            AI Enhancement Tools
+                          </h3>
+                          <p className="text-dark-text-secondary">
+                            Improve your cover letter with advanced AI assistance
+                          </p>
+                        </div>
 
                       {/* Debug Test Button */}
                       <div className="text-center mb-4">
@@ -786,16 +830,21 @@ ${selectedTone.signature}
                         <button
                           onClick={enhanceWithAI}
                           disabled={isGeneratingAI || !formData.content.trim()}
-                          className="p-6 bg-green-500/10 border border-green-500/30 rounded-lg hover:bg-green-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          className={`p-6 border rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                            hasEnterpriseAccess 
+                              ? 'bg-green-500/10 border-green-500/30 hover:bg-green-500/20' 
+                              : 'bg-yellow-500/10 border-yellow-500/30 hover:bg-yellow-500/20'
+                          }`}
                         >
                           <div className="flex flex-col items-center space-y-3">
-                            <ChatBubbleLeftRightIcon className="w-8 h-8 text-green-400" />
+                            <ChatBubbleLeftRightIcon className={`w-8 h-8 ${hasEnterpriseAccess ? 'text-green-400' : 'text-yellow-400'}`} />
                             <div>
-                              <h4 className="font-semibold text-green-400">
+                              <h4 className={`font-semibold ${hasEnterpriseAccess ? 'text-green-400' : 'text-yellow-400'}`}>
                                 {isGeneratingAI ? 'Enhancing...' : 'Enhance Content'}
+                                {!hasEnterpriseAccess && ' ⭐'}
                               </h4>
-                              <p className="text-sm text-green-300">
-                                Improve language, flow, and impact
+                              <p className={`text-sm ${hasEnterpriseAccess ? 'text-green-300' : 'text-yellow-300'}`}>
+                                {hasEnterpriseAccess ? 'Improve language, flow, and impact' : 'Premium AI feature - Upgrade to unlock'}
                               </p>
                             </div>
                           </div>
@@ -804,16 +853,21 @@ ${selectedTone.signature}
                         <button
                           onClick={analyzeContent}
                           disabled={isAnalyzing || !formData.content.trim()}
-                          className="p-6 bg-blue-500/10 border border-blue-500/30 rounded-lg hover:bg-blue-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          className={`p-6 border rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                            hasEnterpriseAccess 
+                              ? 'bg-blue-500/10 border-blue-500/30 hover:bg-blue-500/20' 
+                              : 'bg-yellow-500/10 border-yellow-500/30 hover:bg-yellow-500/20'
+                          }`}
                         >
                           <div className="flex flex-col items-center space-y-3">
-                            <ChartBarIcon className="w-8 h-8 text-blue-400" />
+                            <ChartBarIcon className={`w-8 h-8 ${hasEnterpriseAccess ? 'text-blue-400' : 'text-yellow-400'}`} />
                             <div>
-                              <h4 className="font-semibold text-blue-400">
+                              <h4 className={`font-semibold ${hasEnterpriseAccess ? 'text-blue-400' : 'text-yellow-400'}`}>
                                 {isAnalyzing ? 'Analyzing...' : 'Analyze Content'}
+                                {!hasEnterpriseAccess && ' ⭐'}
                               </h4>
-                              <p className="text-sm text-blue-300">
-                                Get match score and suggestions
+                              <p className={`text-sm ${hasEnterpriseAccess ? 'text-blue-300' : 'text-yellow-300'}`}>
+                                {hasEnterpriseAccess ? 'Get match score and suggestions' : 'Premium AI feature - Upgrade to unlock'}
                               </p>
                             </div>
                           </div>

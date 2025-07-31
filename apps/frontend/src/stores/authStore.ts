@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { locationService, LocationData } from '../services/locationService';
+import { Notification } from '../services/notificationService';
 
 export interface User {
   id: string;
@@ -10,8 +11,13 @@ export interface User {
   provider: 'local' | 'google';
   isEmailVerified: boolean;
   tier: 'free' | 'enterprise';
-  subscriptionStatus?: 'active' | 'cancelled' | 'expired';
+  subscriptionStatus?: 'active' | 'cancelled' | 'expired' | 'past_due';
   subscriptionEndDate?: string;
+  subscriptionStartDate?: string;
+  subscriptionPlanType?: 'monthly' | 'yearly';
+  paystackCustomerCode?: string;
+  paystackSubscriptionCode?: string;
+  cancelAtPeriodEnd?: boolean;
 }
 
 interface AuthState {
@@ -21,6 +27,7 @@ interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
+  loginNotification: Notification | null;
   
   // OTP verification state
   requiresOTPVerification: boolean;
@@ -29,6 +36,7 @@ interface AuthState {
   // Actions
   setTokens: (accessToken: string, refreshToken: string) => void;
   setUser: (user: User) => void;
+  updateUser: (updates: Partial<User>) => void;
   login: (email: string, password: string, location?: any, recaptchaToken?: string) => Promise<void>;
   sendRegistrationOTP: (data: RegisterData) => Promise<void>;
   verifyRegistrationOTP: (email: string, otp: string) => Promise<void>;
@@ -41,6 +49,8 @@ interface AuthState {
   clearError: () => void;
   clearOTPState: () => void;
   googleLogin: () => void;
+  refreshUserProfile: () => Promise<void>;
+  clearLoginNotification: () => void;
 }
 
 interface RegisterData {
@@ -51,7 +61,7 @@ interface RegisterData {
   recaptchaToken?: string;
 }
 
-const API_BASE = 'http://localhost:3001';
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
 
 export const useAuthStore = create<AuthState>()(
   persist(
@@ -62,22 +72,35 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
       isLoading: false,
       error: null,
+      loginNotification: null,
       
       // OTP verification state
       requiresOTPVerification: false,
       pendingVerificationEmail: null,
 
       setTokens: (accessToken: string, refreshToken: string) => {
+        // Store in zustand state
         set({ 
           accessToken, 
           refreshToken, 
           isAuthenticated: true,
           error: null 
         });
+        
+        // Also store in localStorage for backward compatibility with existing services
+        localStorage.setItem('token', accessToken);
+        localStorage.setItem('authToken', accessToken);
       },
 
       setUser: (user: User) => {
         set({ user, isAuthenticated: true });
+      },
+
+      updateUser: (updates: Partial<User>) => {
+        const { user } = get();
+        if (user) {
+          set({ user: { ...user, ...updates } });
+        }
       },
 
       login: async (email: string, password: string, location?: LocationData, recaptchaToken?: string) => {
@@ -128,10 +151,25 @@ export const useAuthStore = create<AuthState>()(
             error: null,
             requiresOTPVerification: false,
             pendingVerificationEmail: null,
+            loginNotification: data.loginNotification || null,
           });
           
+          // Also store in localStorage for backward compatibility
+          localStorage.setItem('token', data.accessToken);
+          localStorage.setItem('authToken', data.accessToken);
+          
           console.log('✅ Auth Store: Login state updated successfully');
+          
+          // Refresh user profile to get latest subscription status
+          try {
+            await get().refreshUserProfile();
+            console.log('✅ User profile refreshed after login');
+          } catch (profileError) {
+            console.warn('⚠️ Failed to refresh user profile after login:', profileError);
+          }
+          
         } catch (error: any) {
+          console.error('🚨 Auth Store Login Error:', error);
           const errorMessage = error instanceof Error ? error.message : 'Login failed';
           set({
             isLoading: false,
@@ -142,7 +180,6 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      // Production registration flow - Step 1: Send OTP
       sendRegistrationOTP: async (data: RegisterData) => {
         set({ isLoading: true, error: null });
         
@@ -192,6 +229,7 @@ export const useAuthStore = create<AuthState>()(
           console.log('📧 Registration OTP sent successfully');
           return result;
         } catch (error) {
+          console.error('🚨 Auth Store Registration OTP Error:', error);
           set({
             isLoading: false,
             error: error instanceof Error ? error.message : 'Failed to send verification code',
@@ -200,7 +238,6 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      // Production registration flow - Step 2: Verify OTP and create user
       verifyRegistrationOTP: async (email: string, otp: string) => {
         set({ isLoading: true, error: null });
         
@@ -230,6 +267,10 @@ export const useAuthStore = create<AuthState>()(
             requiresOTPVerification: false,
             pendingVerificationEmail: null,
           });
+          
+          // Also store in localStorage for backward compatibility
+          localStorage.setItem('token', result.accessToken);
+          localStorage.setItem('authToken', result.accessToken);
 
           console.log('✅ Registration completed successfully');
           return result;
@@ -242,7 +283,6 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      // Resend registration OTP
       resendRegistrationOTP: async (email: string) => {
         set({ isLoading: true, error: null });
         
@@ -276,8 +316,6 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      // Legacy registration method removed - use sendRegistrationOTP flow only
-
       logout: async () => {
         const { refreshToken, accessToken } = get();
         
@@ -302,6 +340,10 @@ export const useAuthStore = create<AuthState>()(
             isAuthenticated: false,
             error: null,
           });
+          
+          // Clear localStorage tokens
+          localStorage.removeItem('token');
+          localStorage.removeItem('authToken');
         }
       },
 
@@ -327,6 +369,10 @@ export const useAuthStore = create<AuthState>()(
             isAuthenticated: false,
             error: null,
           });
+          
+          // Clear localStorage tokens
+          localStorage.removeItem('token');
+          localStorage.removeItem('authToken');
         }
       },
 
@@ -357,6 +403,10 @@ export const useAuthStore = create<AuthState>()(
             refreshToken: data.refreshToken,
             error: null,
           });
+          
+          // Update localStorage tokens
+          localStorage.setItem('token', data.accessToken);
+          localStorage.setItem('authToken', data.accessToken);
         } catch (error) {
           set({
             user: null,
@@ -451,6 +501,48 @@ export const useAuthStore = create<AuthState>()(
       googleLogin: () => {
         window.location.href = `${API_BASE}/api/v1/auth/google`;
       },
+
+      refreshUserProfile: async () => {
+        const { accessToken } = get();
+        
+        console.log('Refreshing user profile...');
+        
+        if (!accessToken) {
+          throw new Error('No access token available');
+        }
+
+        try {
+          const response = await fetch(`${API_BASE}/api/v1/auth/profile`, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+              'Content-Type': 'application/json',
+            },
+          });
+
+          const data = await response.json();
+          console.log('Profile response:', data);
+
+          if (!response.ok) {
+            throw new Error(data.message || 'Failed to refresh profile');
+          }
+
+          console.log('Updating user state with:', {
+            tier: data.user?.tier,
+            subscriptionStatus: data.user?.subscription_status
+          });
+
+          set({ user: data.user });
+          
+          console.log('User state updated successfully');
+        } catch (error) {
+          console.error('Failed to refresh user profile:', error);
+          throw error;
+        }
+      },
+      clearLoginNotification: () => {
+        set({ loginNotification: null });
+      },
     }),
     {
       name: 'auth-storage',
@@ -459,20 +551,18 @@ export const useAuthStore = create<AuthState>()(
         accessToken: state.accessToken,
         refreshToken: state.refreshToken,
         isAuthenticated: state.isAuthenticated,
-        // Explicitly exclude OTP state from persistence (should be session-only)
-        // requiresOTPVerification: false,
-        // pendingVerificationEmail: null,
       }),
       onRehydrateStorage: () => (state, error) => {
         if (error) {
           console.error('Failed to rehydrate auth store:', error);
-          // Clear corrupted storage
           localStorage.removeItem('auth-storage');
+        } else if (state?.accessToken) {
+          localStorage.setItem('token', state.accessToken);
+          localStorage.setItem('authToken', state.accessToken);
         }
       },
       merge: (persistedState, currentState) => {
         try {
-          // Ensure persistedState is a valid object
           if (!persistedState || typeof persistedState !== 'object') {
             console.warn('Invalid persisted state, using defaults');
             return currentState;

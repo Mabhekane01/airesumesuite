@@ -10,14 +10,14 @@ interface TemplateRendererProps {
 
 export default function TemplateRenderer({ resume, template, isPreview = false }: TemplateRendererProps) {
   const {
-    personalInfo,
-    professionalSummary,
-    workExperience,
-    education,
-    skills,
-    projects,
-    certifications,
-    languages
+    personalInfo = {},
+    professionalSummary = '',
+    workExperience = [],
+    education = [],
+    skills = [],
+    projects = [],
+    certifications = [],
+    languages = []
   } = resume;
 
   // Fixed font sizes and spacing that never change - same as TemplatePreview

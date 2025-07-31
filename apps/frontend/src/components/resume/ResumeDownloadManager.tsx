@@ -81,9 +81,11 @@ export default function ResumeDownloadManager({ resumeData, className = '' }: Re
       const endTime = performance.now();
       console.log(`⚡ Download completed in ${(endTime - startTime).toFixed(0)}ms for ${format} format`);
       
-      // Optimize filename generation
-      const sanitizedFirstName = resumeData.personalInfo?.firstName?.replace(/[^\w\s-]/g, '').trim() || 'Resume';
-      const sanitizedLastName = resumeData.personalInfo?.lastName?.replace(/[^\w\s-]/g, '').trim() || '';
+      // Optimize filename generation with proper null checks
+      const firstName = resumeData.personalInfo?.firstName || '';
+      const lastName = resumeData.personalInfo?.lastName || '';
+      const sanitizedFirstName = firstName ? firstName.replace(/[^\w\s-]/g, '').trim() : 'Resume';
+      const sanitizedLastName = lastName ? lastName.replace(/[^\w\s-]/g, '').trim() : '';
       const fileName = `${sanitizedFirstName}${sanitizedLastName ? `_${sanitizedLastName}` : ''}_Resume.${format}`;
       
       // Use more efficient download approach

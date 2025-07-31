@@ -419,7 +419,7 @@ export default function TemplateSelection() {
                           {template.name}
                         </h3>
                         <div className="text-sm font-bold px-3 py-1 rounded-xl bg-dark-tertiary text-dark-text-primary border border-dark-border">
-                          {template.layout.replace('-', ' ')}
+                          {template.layout ? template.layout.replace('-', ' ') : 'Standard'}
                         </div>
                       </div>
                       
@@ -556,7 +556,7 @@ export default function TemplateSelection() {
                         {template.name}
                       </h3>
                       <div className="flex items-center space-x-2 text-xs text-dark-text-secondary">
-                        <span>{template.layout.replace('-', ' ')}</span>
+                        <span>{template.layout ? template.layout.replace('-', ' ') : 'Standard'}</span>
                         <span>•</span>
                         <span>ATS {template.atsCompatibility}</span>
                       </div>

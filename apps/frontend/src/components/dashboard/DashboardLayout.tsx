@@ -21,8 +21,10 @@ import ApplicationAnalytics from "../../pages/job-tracker/ApplicationAnalytics";
 import CareerCoachPage from "../../pages/career-coach/CareerCoachPage";
 import InterviewScheduler from "../../pages/job-tracker/InterviewScheduler";
 import ApiDebugInfo from "../debug/ApiDebugInfo";
+import NotificationTestPage from "../../pages/NotificationTestPage";
 import AccountManager from "../account/AccountManager";
 import EnterpriseUpgrade from "../../pages/payment/EnterpriseUpgrade";
+import PaymentSuccess from "../../pages/payment/PaymentSuccess";
 import DocumentManager from "../../pages/DocumentManager";
 import CoverLetterDashboard from "../../pages/cover-letter/CoverLetterDashboard";
 import CoverLetterGenerator from "../../pages/cover-letter/CoverLetterGenerator";
@@ -30,6 +32,7 @@ import ConversationalCoverLetterPage from "../../pages/cover-letter/Conversation
 import SimpleConversationalBuilder from "../../components/cover-letter/SimpleConversationalBuilder";
 import TestCoverLetterPage from "../../pages/cover-letter/TestCoverLetterPage";
 import IntelligentCoverLetterBuilder from "../../components/cover-letter/IntelligentCoverLetterBuilder";
+import ErrorBoundary from '../ErrorBoundary';
 import {
   HomeIcon,
   DocumentTextIcon,
@@ -98,7 +101,7 @@ const quickActions = [
 
 export default function DashboardLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { notifications, unreadCount, markAsRead, markAllAsRead, clearAll } = useNavNotifications();
+  const { notifications, unreadCount, loading: notificationsLoading, markAsRead, markAllAsRead, clearAll } = useNavNotifications();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
@@ -374,7 +377,14 @@ export default function DashboardLayout() {
                       )}
                     </div>
                     <div className="max-h-80 overflow-y-auto">
-                      {notifications.length === 0 ? (
+                      {notificationsLoading ? (
+                        <div className="p-4 text-center">
+                          <div className="spinner-dark"></div>
+                          <p className="text-sm text-dark-text-muted mt-2">
+                            Loading notifications...
+                          </p>
+                        </div>
+                      ) : notifications.length === 0 ? (
                         <div className="p-4 text-center">
                           <p className="text-sm text-dark-text-muted">
                             No new notifications
@@ -417,7 +427,7 @@ export default function DashboardLayout() {
                                       {notification.title}
                                     </p>
                                     <span className="text-xs text-dark-text-secondary/70">
-                                      {Math.floor((new Date().getTime() - notification.timestamp.getTime()) / 60000)}m ago
+                                      {Math.floor((new Date().getTime() - new Date(notification.timestamp).getTime()) / 60000)}m ago
                                     </span>
                                   </div>
                                   <p className="text-xs text-dark-text-secondary mt-1">
@@ -531,48 +541,52 @@ export default function DashboardLayout() {
 
         {/* Page content */}
         <main className="flex-1 p-3 sm:p-4 lg:p-6 overflow-auto min-h-0">
-          <Routes>
-            <Route index element={<DashboardHome />} />
-            <Route path="resume/templates" element={<TemplateSelection />} />
-            <Route
-              path="resume/comprehensive"
-              element={<ComprehensiveResumeBuilder />}
-            />
-            <Route path="resume/preview/:id" element={<ResumePreviewPage />} />
-            <Route path="applications" element={<ApplicationTracker />} />
-            <Route path="applications/new" element={<CreateJobApplication />} />
-            <Route
-              path="applications/:applicationId/edit"
-              element={<EditJobApplication />}
-            />
-            <Route
-              path="applications/:applicationId"
-              element={<JobApplicationDetail />}
-            />
-            <Route path="coach" element={<CareerCoachPage />} />
-            <Route path="analytics" element={<ApplicationAnalytics />} />
-            <Route path="documents" element={<DocumentManager />} />
-            <Route path="calendar" element={<InterviewScheduler />} />
-            <Route path="cover-letter" element={<CoverLetterGenerator />} />
-            <Route path="cover-letter/ai" element={<CoverLetterGenerator />} />
-            <Route path="cover-letter/builder" element={<CoverLetterGenerator />} />
-            <Route
-              path="learning"
-              element={
-                <div className="text-center py-12">
-                  <h2 className="text-2xl font-bold text-dark-text-primary mb-4">
-                    Learning Hub
-                  </h2>
-                  <p className="text-dark-text-secondary">
-                    Skill development resources coming soon!
-                  </p>
-                </div>
-              }
-            />
-            <Route path="account" element={<AccountManager />} />
-            <Route path="upgrade" element={<EnterpriseUpgrade />} />
-            <Route path="debug" element={<ApiDebugInfo />} />
-          </Routes>
+          <ErrorBoundary>
+            <Routes>
+              <Route index element={<DashboardHome />} />
+              <Route path="resume/templates" element={<TemplateSelection />} />
+              <Route
+                path="resume/comprehensive"
+                element={<ComprehensiveResumeBuilder />}
+              />
+              <Route path="resume/preview/:id" element={<ResumePreviewPage />} />
+              <Route path="applications" element={<ApplicationTracker />} />
+              <Route path="applications/new" element={<CreateJobApplication />} />
+              <Route
+                path="applications/:applicationId/edit"
+                element={<EditJobApplication />}
+              />
+              <Route
+                path="applications/:applicationId"
+                element={<JobApplicationDetail />}
+              />
+              <Route path="coach" element={<CareerCoachPage />} />
+              <Route path="analytics" element={<ApplicationAnalytics />} />
+              <Route path="documents" element={<DocumentManager />} />
+              <Route path="calendar" element={<InterviewScheduler />} />
+              <Route path="cover-letter" element={<CoverLetterGenerator />} />
+              <Route path="cover-letter/ai" element={<CoverLetterGenerator />} />
+              <Route path="cover-letter/builder" element={<CoverLetterGenerator />} />
+              <Route
+                path="learning"
+                element={
+                  <div className="text-center py-12">
+                    <h2 className="text-2xl font-bold text-dark-text-primary mb-4">
+                      Learning Hub
+                    </h2>
+                    <p className="text-dark-text-secondary">
+                      Skill development resources coming soon!
+                    </p>
+                  </div>
+                }
+              />
+              <Route path="account" element={<AccountManager />} />
+              <Route path="upgrade" element={<EnterpriseUpgrade />} />
+              <Route path="upgrade/success" element={<PaymentSuccess />} />
+              <Route path="debug" element={<ApiDebugInfo />} />
+              <Route path="notifications/test" element={<NotificationTestPage />} />
+            </Routes>
+          </ErrorBoundary>
         </main>
       </div>
 
@@ -581,6 +595,7 @@ export default function DashboardLayout() {
         isOpen={searchModalOpen}
         onClose={() => setSearchModalOpen(false)}
       />
+      
     </div>
   );
 }

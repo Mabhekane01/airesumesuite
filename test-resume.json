@@ -1,0 +1,14 @@
+{
+  "title": "Test Resume",
+  "personalInfo": {
+    "firstName": "John",
+    "lastName": "Doe", 
+    "email": "john@example.com",
+    "phone": "555-1234",
+    "location": "New York, USA"
+  },
+  "professionalSummary": "Test summary",
+  "workExperience": [],
+  "education": [],
+  "skills": []
+}

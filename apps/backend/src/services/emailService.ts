@@ -1170,6 +1170,245 @@ The AI Job Suite Team
     return { subject, html, text };
   }
 
+  /**
+   * Send enterprise notification email with rich templates
+   */
+  async sendNotificationEmail(params: {
+    to: string;
+    subject: string;
+    body: string;
+    type: 'success' | 'info' | 'warning' | 'error' | 'deadline';
+    action?: {
+      label: string;
+      url: string;
+      type: 'internal' | 'external';
+    };
+    priority?: 'low' | 'medium' | 'high' | 'urgent';
+    category?: string;
+  }): Promise<boolean> {
+    try {
+      const template = this.generateNotificationTemplate(params);
+      
+      const mailOptions = {
+        from: {
+          name: process.env.APP_NAME || 'AI Job Suite',
+          address: process.env.SMTP_FROM || process.env.SMTP_USER || 'noreply@aijobsuite.com'
+        },
+        to: params.to,
+        subject: template.subject,
+        html: template.html,
+        text: template.text,
+        // Add priority headers for enterprise email routing
+        headers: {
+          'X-Priority': this.getPriorityHeader(params.priority || 'medium'),
+          'X-MSMail-Priority': this.getPriorityHeader(params.priority || 'medium'),
+          'X-Notification-Category': params.category || 'general',
+          'X-Notification-Type': params.type
+        }
+      };
+
+      await this.transporter.sendMail(mailOptions);
+      console.log(`✅ Notification email sent successfully to: ${params.to} (${params.type})`);
+      return true;
+    } catch (error) {
+      console.error('❌ Failed to send notification email:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Generate enterprise notification email template
+   */
+  private generateNotificationTemplate(params: {
+    subject: string;
+    body: string;
+    type: 'success' | 'info' | 'warning' | 'error' | 'deadline';
+    action?: {
+      label: string;
+      url: string;
+      type: 'internal' | 'external';
+    };
+    priority?: string;
+    category?: string;
+  }): EmailTemplate {
+    const typeConfig = {
+      success: { color: '#10b981', icon: '✅', bgColor: '#f0fdf4' },
+      info: { color: '#06b6d4', icon: 'ℹ️', bgColor: '#f0f9ff' },
+      warning: { color: '#f59e0b', icon: '⚠️', bgColor: '#fffbeb' },
+      error: { color: '#ef4444', icon: '❌', bgColor: '#fef2f2' },
+      deadline: { color: '#8b5cf6', icon: '⏰', bgColor: '#faf5ff' }
+    };
+
+    const config = typeConfig[params.type];
+    const baseUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>${params.subject}</title>
+        <style>
+          body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            margin: 0; 
+            padding: 0; 
+            background-color: #f8fafc; 
+            color: #1e293b; 
+            line-height: 1.6;
+          }
+          .container { 
+            max-width: 600px; 
+            margin: 0 auto; 
+            padding: 20px; 
+          }
+          .header { 
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%); 
+            color: white; 
+            padding: 30px; 
+            text-align: center; 
+            border-radius: 12px 12px 0 0; 
+          }
+          .logo { 
+            font-size: 24px; 
+            font-weight: 800; 
+            color: white; 
+            margin-bottom: 10px;
+          }
+          .content { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 0 0 12px 12px; 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+          }
+          .notification-banner {
+            background: ${config.bgColor};
+            border-left: 4px solid ${config.color};
+            padding: 16px;
+            margin: 20px 0;
+            border-radius: 6px;
+          }
+          .notification-banner h3 {
+            margin: 0 0 8px 0;
+            color: ${config.color};
+            font-size: 16px;
+            font-weight: 600;
+          }
+          .btn { 
+            display: inline-block; 
+            background: ${config.color}; 
+            color: white; 
+            padding: 12px 24px; 
+            text-decoration: none; 
+            border-radius: 8px; 
+            font-weight: 600; 
+            margin: 20px 0;
+            transition: all 0.2s;
+          }
+          .btn:hover {
+            background: ${config.color}dd;
+          }
+          .footer { 
+            text-align: center; 
+            margin-top: 30px; 
+            color: #64748b; 
+            font-size: 14px; 
+            border-top: 1px solid #e2e8f0;
+            padding-top: 20px;
+          }
+          .enterprise-badge {
+            background: linear-gradient(135deg, #8b5cf6 0%, #06b6d4 100%);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+          }
+          .priority-${params.priority || 'medium'} {
+            border-left: 4px solid ${params.priority === 'urgent' ? '#ef4444' : params.priority === 'high' ? '#f59e0b' : '#06b6d4'};
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <div class="logo">✨ AI Job Suite</div>
+            <span class="enterprise-badge">Enterprise</span>
+            <h1 style="margin: 15px 0 0 0; font-size: 20px;">${config.icon} ${params.subject}</h1>
+          </div>
+          <div class="content priority-${params.priority || 'medium'}">
+            <div class="notification-banner">
+              <h3>${config.icon} ${params.type.charAt(0).toUpperCase() + params.type.slice(1)} Notification</h3>
+              <p style="margin: 0; color: #374151;">${params.body}</p>
+            </div>
+            
+            ${params.action ? `
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${params.action.type === 'internal' ? baseUrl + params.action.url : params.action.url}" 
+                   class="btn" 
+                   ${params.action.type === 'external' ? 'target="_blank" rel="noopener noreferrer"' : ''}>
+                  ${params.action.label}
+                </a>
+              </div>
+            ` : ''}
+            
+            <div class="footer">
+              <p><strong>AI Job Suite Enterprise</strong> - Your Career Acceleration Platform</p>
+              <p>
+                <a href="${baseUrl}/dashboard" style="color: #06b6d4; text-decoration: none;">Dashboard</a> | 
+                <a href="${baseUrl}/dashboard/notifications/test" style="color: #06b6d4; text-decoration: none;">Notification Settings</a> | 
+                <a href="${baseUrl}/dashboard/account" style="color: #06b6d4; text-decoration: none;">Account</a>
+              </p>
+              <p style="font-size: 12px; color: #9ca3af;">
+                This is an automated notification from AI Job Suite. 
+                <a href="${baseUrl}/dashboard/notifications/test" style="color: #06b6d4;">Manage preferences</a>
+              </p>
+            </div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const text = `
+${config.icon} ${params.subject}
+
+${params.body}
+
+${params.action ? `${params.action.label}: ${params.action.type === 'internal' ? baseUrl + params.action.url : params.action.url}` : ''}
+
+---
+AI Job Suite Enterprise
+Dashboard: ${baseUrl}/dashboard
+Notification Settings: ${baseUrl}/dashboard/notifications/test
+Account: ${baseUrl}/dashboard/account
+
+This is an automated notification. Manage your preferences at: ${baseUrl}/dashboard/notifications/test
+    `;
+
+    return {
+      subject: `${config.icon} ${params.subject}`,
+      html,
+      text
+    };
+  }
+
+  /**
+   * Get email priority header value
+   */
+  private getPriorityHeader(priority: string): string {
+    switch (priority) {
+      case 'urgent': return 'High';
+      case 'high': return 'High';
+      case 'medium': return 'Normal';
+      case 'low': return 'Low';
+      default: return 'Normal';
+    }
+  }
+
   async sendOTPEmail(email: string, otp: string, firstName: string): Promise<boolean> {
     try {
       const template = this.generateOTPTemplate(otp, firstName);

@@ -7,6 +7,8 @@ export { Location, ILocation } from './Location';
 export { Company, ICompany } from './Company';
 export { Currency, ICurrency } from './Currency';
 export { Interview, IInterview } from './Interview';
+export { Notification, INotification } from './Notification';
+export { NotificationPreferences, INotificationPreferences } from './NotificationPreferences';
 
 // Basic UserProfile interface for AI optimization services
 export interface IUserProfile {

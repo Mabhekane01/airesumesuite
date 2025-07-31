@@ -116,12 +116,12 @@ export const securityMonitor = (req: AuthenticatedRequest, res: Response, next: 
   const ipAddress = getClientIP(req);
   const userAgent = req.headers['user-agent'] || '';
 
-  // Detect suspicious patterns
+  // Detect suspicious patterns - refined to reduce false positives
   const suspiciousPatterns = {
-    sqlInjection: /(\b(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|EXEC|UNION)\b)/i,
+    sqlInjection: /(\b(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|EXEC|UNION)\b.*\b(FROM|WHERE|INTO|VALUES)\b)/i,
     xss: /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
-    pathTraversal: /\.\.[\/\\]/,
-    commandInjection: /[;&|`$(){}[\]]/
+    pathTraversal: /\.\.[\/\\]|(\.\.\/){2,}/,
+    commandInjection: /[;&|`]\s*(?:ls|cat|rm|mkdir|chmod|curl|wget|nc|bash|sh|cmd|powershell)/i
   };
 
   // Check request content for suspicious patterns

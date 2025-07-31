@@ -1,14 +1,17 @@
 import React, { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react';
 import { NavNotification } from '../components/layout/NotificationDropdown';
+import { notificationService } from '../services/notificationService';
+import { useAuthStore } from '../stores/authStore';
 
 interface NavNotificationContextType {
   notifications: NavNotification[];
   unreadCount: number;
-  addNotification: (notification: Omit<NavNotification, 'id' | 'timestamp' | 'read'>) => void;
+  loading: boolean;  
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
   clearAll: () => void;
   removeNotification: (id: string) => void;
+  refreshNotifications: () => Promise<void>;
 }
 
 const NavNotificationContext = createContext<NavNotificationContextType | undefined>(undefined);
@@ -27,81 +30,139 @@ interface NavNotificationProviderProps {
 
 export const NavNotificationProvider: React.FC<NavNotificationProviderProps> = ({ children }) => {
   const [notifications, setNotifications] = useState<NavNotification[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [loading, setLoading] = useState(false);
+  
+  const { isAuthenticated, loginNotification, clearLoginNotification } = useAuthStore();
 
-  const addNotification = useCallback((notification: Omit<NavNotification, 'id' | 'timestamp' | 'read'>) => {
-    const newNotification: NavNotification = {
-      ...notification,
-      id: Math.random().toString(36).substr(2, 9),
-      timestamp: new Date(),
-      read: false
-    };
-
-    setNotifications(prev => [newNotification, ...prev].slice(0, 50)); // Keep max 50 notifications
-  }, []);
-
-  const markAsRead = useCallback((id: string) => {
-    setNotifications(prev => 
-      prev.map(notification => 
-        notification.id === id 
-          ? { ...notification, read: true }
-          : notification
-      )
-    );
-  }, []);
-
-  const markAllAsRead = useCallback(() => {
-    setNotifications(prev => 
-      prev.map(notification => ({ ...notification, read: true }))
-    );
-  }, []);
-
-  const clearAll = useCallback(() => {
-    setNotifications([]);
-  }, []);
-
-  const removeNotification = useCallback((id: string) => {
-    setNotifications(prev => prev.filter(notification => notification.id !== id));
-  }, []);
-
-  const unreadCount = notifications.filter(n => !n.read).length;
-
-  // Demo notifications - Add some sample notifications on mount
-  useEffect(() => {
-    const demoNotifications = [
-      {
-        type: 'success' as const,
-        title: 'Resume Generated',
-        message: 'Your ATS-optimized resume has been successfully created and is ready for download.'
-      },
-      {
-        type: 'warning' as const,
-        title: 'Application Deadline',
-        message: 'Your application for Software Engineer at Tech Corp is due in 2 days.',
-        action: { label: 'View Application', href: '/job-tracker' }
-      },
-      {
-        type: 'info' as const,
-        title: 'Cover Letter Ready',
-        message: 'Your personalized cover letter has been generated and optimized for the position.'
-      }
-    ];
-
-    // Add demo notifications after a short delay
-    setTimeout(() => {
-      demoNotifications.forEach((notif, index) => {
-        setTimeout(() => addNotification(notif), index * 500);
+  const refreshNotifications = useCallback(async () => {
+    if (!isAuthenticated) return;
+    setLoading(true);
+    try {
+      console.log('🔄 Refreshing notifications...');
+      const response = await notificationService.getNotifications({ limit: 50 });
+      console.log('📨 Notifications response:', response);
+      
+      const fetchedNotifications = response.data?.notifications || [];
+      const fetchedUnreadCount = response.data?.unreadCount || 0;
+      
+      console.log('📊 Fetched notifications:', { 
+        count: fetchedNotifications.length, 
+        unreadCount: fetchedUnreadCount 
       });
-    }, 1000);
-  }, [addNotification]);
+      
+      const mappedNotifications = fetchedNotifications.map(n => 
+        notificationService.mapBackendNotification(n)
+      );
+      setNotifications(mappedNotifications);
+      setUnreadCount(fetchedUnreadCount);
+    } catch (error) {
+      console.error('❌ Failed to fetch notifications:', error);
+      // Don't show error to user, just log and continue
+      setNotifications([]);
+      setUnreadCount(0);
+    } finally {
+      setLoading(false);
+    }
+  }, [isAuthenticated]);
+
+  const markAsRead = useCallback(async (id: string) => {
+    try {
+      await notificationService.markAsRead(id);
+      setNotifications(prev => 
+        prev.map(notification => 
+          notification.id === id 
+            ? { ...notification, read: true }
+            : notification
+        )
+      );
+      setUnreadCount(prev => Math.max(0, prev - 1));
+    } catch (error) {
+      console.error('Failed to mark notification as read:', error);
+    }
+  }, []);
+
+  const markAllAsRead = useCallback(async () => {
+    try {
+      await notificationService.markAllAsRead();
+      setNotifications(prev => 
+        prev.map(notification => ({ ...notification, read: true }))
+      );
+      setUnreadCount(0);
+    } catch (error) {
+      console.error('Failed to mark all notifications as read:', error);
+    }
+  }, []);
+
+  const clearAll = useCallback(async () => {
+    try {
+      await notificationService.clearAllNotifications();
+      setNotifications([]);
+      setUnreadCount(0);
+    } catch (error) {
+      console.error('Failed to clear all notifications:', error);
+    }
+  }, []);
+
+  const removeNotification = useCallback(async (id: string) => {
+    try {
+      await notificationService.deleteNotification(id);
+      const wasUnread = notifications.find(n => n.id === id)?.read === false;
+      setNotifications(prev => prev.filter(notification => notification.id !== id));
+      if (wasUnread) {
+        setUnreadCount(prev => Math.max(0, prev - 1));
+      }
+    } catch (error) {
+      console.error('Failed to delete notification:', error);
+    }
+  }, [notifications]);
+
+  // Effect to handle the login notification from the auth store
+  useEffect(() => {
+    if (loginNotification) {
+      const newNotification = notificationService.mapBackendNotification(loginNotification);
+      
+      setNotifications(prev => [newNotification, ...prev.filter(n => n.id !== newNotification.id)].slice(0, 50));
+      
+      const isAlreadyUnread = notifications.find(n => n.id === newNotification.id)?.read === false;
+      if (!isAlreadyUnread) {
+        setUnreadCount(prev => prev + 1);
+      }
+      
+      clearLoginNotification();
+    }
+  }, [loginNotification, clearLoginNotification, notifications]);
+
+  // Effect to fetch notifications when authentication status changes
+  useEffect(() => {
+    if (isAuthenticated) {
+      refreshNotifications();
+    } else {
+      setNotifications([]);
+      setUnreadCount(0);
+    }
+  }, [isAuthenticated, refreshNotifications]);
+
+  // Effect for polling
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const interval = setInterval(() => {
+      refreshNotifications();
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [isAuthenticated, refreshNotifications]);
 
   const value: NavNotificationContextType = {
     notifications,
     unreadCount,
-    addNotification,
+    loading,
     markAsRead,
     markAllAsRead,
     clearAll,
-    removeNotification
+    removeNotification,
+    refreshNotifications
   };
 
   return (

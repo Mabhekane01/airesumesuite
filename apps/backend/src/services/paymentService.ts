@@ -32,6 +32,10 @@ import { Database } from '../database/database';
 import { logger } from '../utils/logger';
 import { securityService } from './securityService';
 import { notificationService } from './notificationService';
+import { PaymentSession } from '../models/PaymentSession';
+import { Subscription } from '../models/Subscription';
+import { Payment } from '../models/Payment';
+import { User } from '../models/User';
 
 // Input validation schemas
 const CreatePaymentSessionSchema = z.object({
@@ -162,7 +166,7 @@ export class PaymentService {
       });
 
       // Store payment session in database
-      await this.storePaymentSession({
+      await PaymentSession.create({
         sessionId: session.id,
         userId: validatedData.userId,
         planType: validatedData.planType,
@@ -192,6 +196,94 @@ export class PaymentService {
 
     } catch (error) {
       logger.error('Failed to create Stripe session:', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        userId: data.userId,
+        stack: error instanceof Error ? error.stack : undefined,
+      });
+      
+      // Don't expose internal errors to client
+      if (error instanceof z.ZodError) {
+        throw new Error('Invalid payment data provided');
+      }
+      
+      throw new Error('Failed to create payment session');
+    }
+  }
+
+  async createPaystackSession(data: z.infer<typeof CreatePaymentSessionSchema>): Promise<PaymentSession> {
+    try {
+      // Validate input
+      const validatedData = CreatePaymentSessionSchema.parse(data);
+      
+      // Check for existing active subscription
+      const existingSubscription = await this.getSubscriptionStatus(validatedData.userId);
+      if (existingSubscription.tier === 'enterprise' && existingSubscription.status === 'active') {
+        throw new Error('User already has an active subscription');
+      }
+
+      // Fraud detection
+      await this.performFraudChecks(validatedData);
+
+      // Generate payment reference
+      const { paystackService } = await import('./paystackService');
+      const reference = paystackService.generateReference('ENTERPRISE');
+
+      // Store payment session in database FIRST to prevent race conditions
+      await PaymentSession.create({
+        sessionId: reference,
+        userId: validatedData.userId,
+        planType: validatedData.planType,
+        amount: validatedData.amount,
+        currency: validatedData.currency,
+        provider: 'paystack',
+        expiresAt: new Date(Date.now() + (30 * 60 * 1000)), // 30 minutes
+        status: 'pending',
+      });
+      logger.info('Local payment session created before redirecting to Paystack', { userId: validatedData.userId, reference });
+
+      // Initialize Paystack transaction
+      const paystackTransaction = await paystackService.initializeTransaction({
+        reference,
+        amount: validatedData.amount,
+        email: validatedData.userEmail,
+        currency: validatedData.currency,
+        callback_url: `${process.env.FRONTEND_URL}/dashboard/upgrade/success`,
+        metadata: {
+          userId: validatedData.userId,
+          planType: validatedData.planType,
+          location: validatedData.location?.country || 'unknown',
+          originalAmount: validatedData.amount,
+        },
+        channels: ['card', 'bank', 'ussd', 'qr', 'mobile_money', 'bank_transfer'],
+      });
+
+      if (!paystackTransaction.data) {
+        // If this fails, mark our local session as failed so it can't be used
+        await PaymentSession.findOneAndUpdate({ sessionId: reference }, { status: 'failed' });
+        throw new Error('Failed to initialize Paystack transaction');
+      }
+
+      // Log security event
+      logger.info('Paystack payment session created', {
+        userId: validatedData.userId,
+        reference,
+        amount: validatedData.amount,
+        currency: validatedData.currency,
+        planType: validatedData.planType,
+        location: validatedData.location?.country,
+        timestamp: new Date().toISOString(),
+      });
+
+      console.log('Paystack session created with reference:', reference, 'for user:', validatedData.userId);
+
+      return {
+        sessionId: reference,
+        checkoutUrl: paystackTransaction.data.authorization_url,
+        expiresAt: new Date(Date.now() + (30 * 60 * 1000)),
+      };
+
+    } catch (error) {
+      logger.error('Failed to create Paystack session:', {
         error: error instanceof Error ? error.message : 'Unknown error',
         userId: data.userId,
         stack: error instanceof Error ? error.stack : undefined,
@@ -259,10 +351,9 @@ export class PaymentService {
       return;
     }
 
-    // Start database transaction
-    await this.db.transaction(async (trx) => {
+    try {
       // Update user subscription
-      await trx('users').where('id', userId).update({
+      await User.findByIdAndUpdate(userId, {
         tier: 'enterprise',
         subscription_status: 'active',
         stripe_customer_id: session.customer,
@@ -271,26 +362,29 @@ export class PaymentService {
       });
 
       // Create subscription record
-      await trx('subscriptions').insert({
-        id: crypto.randomUUID(),
-        user_id: userId,
-        stripe_subscription_id: session.subscription,
-        stripe_customer_id: session.customer,
-        plan_type: planType,
+      await Subscription.create({
+        userId: userId,
+        stripeSubscriptionId: session.subscription as string,
+        stripeCustomerId: session.customer as string,
+        planType: planType as 'monthly' | 'yearly',
         status: 'active',
-        current_period_start: new Date(),
-        current_period_end: new Date(Date.now() + (planType === 'yearly' ? 365 : 30) * 24 * 60 * 60 * 1000),
-        created_at: new Date(),
-        updated_at: new Date(),
+        currentPeriodStart: new Date(),
+        currentPeriodEnd: new Date(Date.now() + (planType === 'yearly' ? 365 : 30) * 24 * 60 * 60 * 1000),
+        cancelAtPeriodEnd: false,
       });
 
       // Update payment session status
-      await trx('payment_sessions').where('session_id', session.id).update({
-        status: 'completed',
-        completed_at: new Date(),
-        updated_at: new Date(),
-      });
-    });
+      await PaymentSession.findOneAndUpdate(
+        { sessionId: session.id },
+        { 
+          status: 'completed',
+          completedAt: new Date(),
+        }
+      );
+    } catch (error) {
+      logger.error('Failed to complete checkout:', error);
+      throw error;
+    }
 
     // Send success notification
     await notificationService.sendSubscriptionActivated(userId);
@@ -314,17 +408,15 @@ export class PaymentService {
     }
 
     // Record payment in database
-    await this.db.query(`
-      INSERT INTO payments (id, user_id, stripe_invoice_id, amount, currency, status, created_at)
-      VALUES (?, ?, ?, ?, ?, 'succeeded', ?)
-    `, [
-      crypto.randomUUID(),
-      userId,
-      invoice.id,
-      invoice.amount_paid,
-      invoice.currency.toUpperCase(),
-      new Date(),
-    ]);
+    await Payment.create({
+      userId: userId,
+      stripeInvoiceId: invoice.id,
+      amount: invoice.amount_paid / 100, // Convert from cents
+      currency: invoice.currency.toUpperCase(),
+      status: 'succeeded',
+      provider: 'stripe',
+      description: 'Subscription payment',
+    });
 
     logger.info('Payment recorded successfully', {
       userId,
@@ -342,11 +434,10 @@ export class PaymentService {
     if (!userId) return;
 
     // Update subscription status to past_due
-    await this.db.query(`
-      UPDATE subscriptions 
-      SET status = 'past_due', updated_at = ? 
-      WHERE stripe_subscription_id = ?
-    `, [new Date(), subscriptionId]);
+    await Subscription.findOneAndUpdate(
+      { stripeSubscriptionId: subscriptionId },
+      { status: 'past_due' }
+    );
 
     // Send payment failed notification
     await notificationService.sendPaymentFailed(userId);
@@ -361,13 +452,14 @@ export class PaymentService {
 
   private async performFraudChecks(data: z.infer<typeof CreatePaymentSessionSchema>): Promise<void> {
     // Check for suspicious patterns
-    const recentPayments = await this.db.query(`
-      SELECT COUNT(*) as count 
-      FROM payment_sessions 
-      WHERE user_id = ? AND created_at > ? AND status IN ('pending', 'completed')
-    `, [data.userId, new Date(Date.now() - 60 * 60 * 1000)]); // Last hour
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+    const recentPayments = await PaymentSession.countDocuments({
+      userId: data.userId,
+      createdAt: { $gt: oneHourAgo },
+      status: { $in: ['pending', 'completed'] }
+    });
 
-    if (recentPayments[0]?.count > 3) {
+    if (recentPayments > 3) {
       throw new Error('Too many payment attempts detected');
     }
 
@@ -410,60 +502,29 @@ export class PaymentService {
     }
   }
 
-  private async storePaymentSession(sessionData: {
-    sessionId: string;
-    userId: string;
-    planType: string;
-    amount: number;
-    currency: string;
-    provider: string;
-    expiresAt: Date;
-    status: string;
-  }): Promise<void> {
-    await this.db.query(`
-      INSERT INTO payment_sessions (
-        id, session_id, user_id, plan_type, amount, currency, 
-        provider, expires_at, status, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `, [
-      crypto.randomUUID(),
-      sessionData.sessionId,
-      sessionData.userId,
-      sessionData.planType,
-      sessionData.amount,
-      sessionData.currency,
-      sessionData.provider,
-      sessionData.expiresAt,
-      sessionData.status,
-      new Date(),
-      new Date(),
-    ]);
-  }
 
   async getSubscriptionStatus(userId: string): Promise<SubscriptionStatus> {
-    const subscription = await this.db.query(`
-      SELECT s.*, u.tier, u.subscription_status
-      FROM subscriptions s
-      JOIN users u ON s.user_id = u.id
-      WHERE s.user_id = ? AND s.status IN ('active', 'past_due')
-      ORDER BY s.created_at DESC
-      LIMIT 1
-    `, [userId]);
+    const subscription = await Subscription.findOne({
+      userId: userId,
+      status: { $in: ['active', 'past_due'] }
+    }).sort({ createdAt: -1 });
 
-    if (subscription.length === 0) {
+    if (!subscription) {
       return {
         tier: 'free',
         status: 'expired',
       };
     }
 
-    const sub = subscription[0];
+    // Get user tier from User model
+    const user = await User.findById(userId).select('tier subscription_status');
+
     return {
-      tier: sub.tier,
-      status: sub.status,
-      currentPeriodEnd: sub.current_period_end,
-      cancelAtPeriodEnd: sub.cancel_at_period_end,
-      stripeSubscriptionId: sub.stripe_subscription_id,
+      tier: user?.tier || 'free',
+      status: subscription.status as any,
+      currentPeriodEnd: subscription.currentPeriodEnd,
+      cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
+      stripeSubscriptionId: subscription.stripeSubscriptionId,
     };
   }
 
@@ -481,11 +542,10 @@ export class PaymentService {
       });
 
       // Update database
-      await this.db.query(`
-        UPDATE subscriptions 
-        SET cancel_at_period_end = true, updated_at = ?
-        WHERE stripe_subscription_id = ?
-      `, [new Date(), subscription.stripeSubscriptionId]);
+      await Subscription.findOneAndUpdate(
+        { stripeSubscriptionId: subscription.stripeSubscriptionId },
+        { cancelAtPeriodEnd: true }
+      );
 
       logger.info('Subscription cancelled', {
         userId,
@@ -503,14 +563,10 @@ export class PaymentService {
   // Get payment history for user
   async getPaymentHistory(userId: string): Promise<any[]> {
     try {
-      const payments = await this.db.query(`
-        SELECT p.*, s.plan_type, s.created_at as subscription_date
-        FROM payments p
-        LEFT JOIN subscriptions s ON p.user_id = s.user_id
-        WHERE p.user_id = ?
-        ORDER BY p.created_at DESC
-        LIMIT 50
-      `, [userId]);
+      const payments = await Payment.find({ userId })
+        .sort({ createdAt: -1 })
+        .limit(50)
+        .lean();
 
       return payments;
     } catch (error) {
@@ -527,6 +583,103 @@ export class PaymentService {
   private handleSubscriptionDeleted = async (subscription: Stripe.Subscription): Promise<void> => {
     // Implementation for subscription deletion
   };
+
+  async verifyPayment(reference: string, userId: string, planType: 'monthly' | 'yearly'): Promise<any> {
+    try {
+      // 1. Check if this payment has already been successfully processed.
+      const existingPayment = await Payment.findOne({ paystackReference: reference, status: 'succeeded' });
+      if (existingPayment) {
+        logger.info('Payment has already been processed.', { reference, userId });
+        return {
+          reference: existingPayment.paystackReference,
+          status: 'completed',
+          message: 'Already processed',
+          subscriptionActivated: true,
+        };
+      }
+
+      // 2. Verify with Paystack
+      const { paystackService } = await import('./paystackService');
+      const paystackResponse = await paystackService.verifyTransaction(reference);
+
+      // 3. Process if Paystack verification is successful
+      if (paystackResponse.data && paystackResponse.data.status === 'success') {
+        
+        await Subscription.findOneAndUpdate(
+            { userId: userId },
+            {
+              paystackSubscriptionId: reference,
+              planType: planType,
+              status: 'active',
+              currentPeriodStart: new Date(),
+              currentPeriodEnd: new Date(Date.now() + (planType === 'yearly' ? 365 : 30) * 24 * 60 * 60 * 1000),
+              cancelAtPeriodEnd: false,
+              metadata: { paystackData: paystackResponse.data }
+            },
+            { new: true, upsert: true }
+        );
+
+        const updatedUser = await User.findByIdAndUpdate(userId, {
+            tier: 'enterprise',
+            subscription_status: 'active',
+            subscription_start_date: new Date(),
+        }, { new: true });
+
+        if (!updatedUser) {
+          throw new Error('Failed to update user after payment.');
+        }
+
+        await Payment.create({
+            userId: userId,
+            paystackReference: reference,
+            amount: paystackResponse.data.amount / 100,
+            currency: paystackResponse.data.currency?.toUpperCase(),
+            status: 'succeeded',
+            provider: 'paystack',
+            description: `${planType} subscription payment`,
+            metadata: { paystackData: paystackResponse.data }
+        });
+
+        // Optional: Mark local session as completed if it exists
+        await PaymentSession.findOneAndUpdate(
+            { sessionId: reference, userId: userId },
+            { status: 'completed', completedAt: new Date() }
+        ).catch(err => logger.warn('Could not update local payment session, but proceeding as payment is verified.', { reference, err }));
+
+        logger.info('Paystack payment completed and subscription activated', {
+          userId,
+          reference,
+          amount: paystackResponse.data.amount,
+          planType: planType
+        });
+        
+        return {
+          reference,
+          status: 'completed',
+          amount: paystackResponse.data.amount / 100,
+          currency: paystackResponse.data.currency?.toUpperCase(),
+          planType: planType,
+          provider: 'paystack',
+          subscriptionActivated: true,
+          user: updatedUser
+        };
+
+      } else {
+        logger.warn('Paystack verification failed or was not successful.', { reference, status: paystackResponse.data?.status });
+        return {
+          reference,
+          status: paystackResponse.data?.status || 'failed',
+        };
+      }
+    } catch (error) {
+      logger.error('Payment verification failed:', {
+        reference,
+        userId,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+      throw error;
+    }
+  }
 }
 
 export const paymentService = new PaymentService();

@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { resumeService } from '../services/resume-builder/resumeService';
 import { aiResumeService } from '../services/resume-builder/aiResumeService';
+import { notificationService } from '../services/notificationService';
 import { body, validationResult } from 'express-validator';
 import { AuthenticatedRequest } from '../middleware/auth';
 
@@ -10,7 +11,7 @@ export const resumeValidation = [
   body('personalInfo.lastName').notEmpty().withMessage('Last name is required'),
   body('personalInfo.email').isEmail().withMessage('Valid email is required'),
   body('personalInfo.phone').notEmpty().withMessage('Phone is required'),
-  body('personalInfo.location').notEmpty().withMessage('Location is required'),
+  body('personalInfo.location').optional().isString().withMessage('Location must be a string'),
   body('professionalSummary').optional().isString().withMessage('Professional summary must be a string'),
   body('workExperience').optional().isArray().withMessage('Work experience must be an array'),
   body('education').optional().isArray().withMessage('Education must be an array'),
@@ -69,6 +70,17 @@ export class ResumeController {
       });
 
       console.log('✅ Resume created successfully:', resume._id);
+
+      // Send notification for resume creation
+      try {
+        await notificationService.sendResumeNotification(
+          userId, 
+          'resume_created', 
+          resume._id.toString()
+        );
+      } catch (notificationError) {
+        console.warn('⚠️ Failed to send resume creation notification:', notificationError);
+      }
 
       res.status(201).json({
         success: true,
@@ -334,6 +346,22 @@ export class ResumeController {
 
       const optimizedResume = await resumeService.optimizeResumeForJob(id, userId, req.body);
 
+      // Send notification for resume optimization completion
+      try {
+        await notificationService.sendResumeNotification(
+          userId, 
+          'resume_optimized', 
+          id,
+          { 
+            optimizationType: 'job_matching',
+            jobTitle: req.body.jobTitle,
+            companyName: req.body.companyName
+          }
+        );
+      } catch (notificationError) {
+        console.warn('⚠️ Failed to send resume optimization notification:', notificationError);
+      }
+
       res.status(200).json({
         success: true,
         data: optimizedResume
@@ -376,24 +404,38 @@ export class ResumeController {
 
   async generateProfessionalSummary(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
-      const { id } = req.params;
+      const { resumeId, resumeData } = req.body;
       const userId = req.user?.id;
-      
+
+      console.log('🔍 Generate summary request:', {
+        hasResumeId: !!resumeId,
+        resumeId: resumeId,
+        hasResumeData: !!resumeData,
+        resumeDataKeys: resumeData ? Object.keys(resumeData) : null,
+        userId: userId
+      });
+
       if (!userId) {
         res.status(401).json({ message: 'Unauthorized' });
         return;
       }
 
-      const resume = await resumeService.getResumeById(id, userId);
-      if (!resume) {
-        res.status(404).json({ 
-          success: false, 
-          message: 'Resume not found' 
-        });
+      let dataToProcess;
+      if (resumeId && resumeId !== 'undefined' && resumeId !== 'null' && resumeId.length === 24) {
+        const resume = await resumeService.getResumeById(resumeId, userId);
+        if (!resume) {
+          res.status(404).json({ success: false, message: 'Resume not found' });
+          return;
+        }
+        dataToProcess = resume;
+      } else if (resumeData) {
+        dataToProcess = resumeData;
+      } else {
+        res.status(400).json({ success: false, message: 'Resume ID or resume data is required' });
         return;
       }
 
-      const summary = await aiResumeService.generateProfessionalSummary(resume);
+      const summary = await aiResumeService.generateProfessionalSummary(dataToProcess);
 
       res.status(200).json({
         success: true,
@@ -436,6 +478,22 @@ export class ResumeController {
 
       const analysis = await aiResumeService.analyzeATSCompatibility(resume, jobDescription);
 
+      // Send notification for ATS analysis completion
+      try {
+        await notificationService.sendResumeNotification(
+          userId, 
+          'ai_analysis_complete', 
+          id,
+          { 
+            analysisType: 'ats_compatibility', 
+            score: analysis.score,
+            totalIssues: analysis.issues?.length || 0
+          }
+        );
+      } catch (notificationError) {
+        console.warn('⚠️ Failed to send ATS analysis notification:', notificationError);
+      }
+
       res.status(200).json({
         success: true,
         data: analysis
@@ -445,6 +503,40 @@ export class ResumeController {
       res.status(500).json({ 
         success: false, 
         message: 'Failed to analyze ATS compatibility' 
+      });
+    }
+  }
+
+  async analyzeATSCompatibilityUnsaved(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const { resumeData, jobDescription } = req.body;
+      const userId = req.user?.id;
+      
+      if (!userId) {
+        res.status(401).json({ message: 'Unauthorized' });
+        return;
+      }
+
+      if (!resumeData) {
+        res.status(400).json({ 
+          success: false, 
+          message: 'Resume data is required' 
+        });
+        return;
+      }
+
+      console.log('🛡️ Analyzing ATS compatibility for unsaved resume...');
+      const analysis = await aiResumeService.analyzeATSCompatibility(resumeData, jobDescription);
+
+      res.status(200).json({
+        success: true,
+        data: analysis
+      });
+    } catch (error) {
+      console.error('Error in analyzeATSCompatibilityUnsaved:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Failed to analyze ATS compatibility for unsaved resume'
       });
     }
   }
@@ -541,33 +633,50 @@ export class ResumeController {
     try {
       const { id } = req.params;
       const userId = req.user?.id;
-      const options = req.body; // Enhancement options
+      const options = req.body;
       
       if (!userId) {
         res.status(401).json({ message: 'Unauthorized' });
         return;
       }
 
-      const resume = await resumeService.getResumeById(id, userId);
-      if (!resume) {
-        res.status(404).json({ 
-          success: false, 
-          message: 'Resume not found' 
-        });
-        return;
+      let resumeData;
+      if (id) {
+        resumeData = await resumeService.getResumeById(id, userId);
+        if (!resumeData) {
+          res.status(404).json({ 
+            success: false, 
+            message: 'Resume not found' 
+          });
+          return;  
+        }
+      } else {
+        resumeData = req.body.resumeData;
+        if (!resumeData) {
+          res.status(400).json({
+            success: false,
+            message: 'Resume data is required'
+          });
+          return;
+        }
       }
 
-      const enhancement = await aiResumeService.enhanceResumeComprehensively(resume, options);
+      const enhancement = await aiResumeService.enhanceResumeComprehensively(resumeData, {
+        includeIndustryAnalysis: options.includeIndustryAnalysis || true,
+        includeCompetitorBenchmarking: options.includeCompetitorBenchmarking || true,
+        includeContentOptimization: options.includeContentOptimization || true,
+        includeATSAnalysis: options.includeATSAnalysis || true,
+        ...options
+      });
 
       res.status(200).json({
         success: true,
         data: enhancement
       });
     } catch (error) {
-      console.error('Error in enhanceResumeComprehensively:', error);
       res.status(500).json({ 
         success: false, 
-        message: 'Failed to enhance resume' 
+        message: 'Failed to enhance resume comprehensively' 
       });
     }
   }
@@ -607,45 +716,6 @@ export class ResumeController {
   }
 
   // New enterprise methods for unsaved resumes and advanced features
-
-  async generateSummaryForUnsavedResume(req: Request, res: Response): Promise<void> {
-    try {
-      const { resumeData } = req.body;
-      
-      if (!resumeData) {
-        res.status(400).json({ 
-          success: false, 
-          message: 'Resume data is required' 
-        });
-        return;
-      }
-
-      // Validate essential data for summary generation
-      if (!resumeData.workExperience?.length && !resumeData.skills?.length) {
-        res.status(400).json({ 
-          success: false, 
-          message: 'Work experience or skills are required to generate a professional summary',
-          code: 'AI_INVALID_INPUT'
-        });
-        return;
-      }
-
-      // Generate multiple summary options
-      const summaries = await aiResumeService.generateMultipleSummaryOptions(resumeData);
-
-      res.status(200).json({
-        success: true,
-        data: summaries
-      });
-    } catch (error) {
-      console.error('Error in generateSummaryForUnsavedResume:', error);
-      res.status(500).json({ 
-        success: false, 
-        message: 'Failed to generate professional summary',
-        code: 'AI_PROCESSING_FAILED'
-      });
-    }
-  }
 
   async optimizeUnsavedResumeForJob(req: Request, res: Response): Promise<void> {
     try {
@@ -802,10 +872,76 @@ export class ResumeController {
     }
   }
 
+  async getJobMatchingScoreUnsaved(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const { resumeData, jobUrl } = req.body;
+      const userId = req.user?.id;
+      
+      if (!userId) {
+        res.status(401).json({ message: 'Unauthorized' });
+        return;
+      }
+
+      if (!jobUrl || !resumeData) {
+        res.status(400).json({ 
+          success: false, 
+          message: 'Job URL and resume data are required' 
+        });
+        return;
+      }
+
+      const matchingScore = await aiResumeService.getJobMatchingScore(resumeData, jobUrl);
+
+      res.status(200).json({
+        success: true,
+        data: matchingScore
+      });
+    } catch (error) {
+      res.status(500).json({ 
+        success: false, 
+        message: 'Failed to analyze job matching score',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  }
+
+  async optimizeUnsavedResumeWithJobUrl(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const { resumeData, jobUrl } = req.body;
+      const userId = req.user?.id;
+      
+      if (!userId) {
+        res.status(401).json({ message: 'Unauthorized' });
+        return;
+      }
+
+      if (!jobUrl || !resumeData) {
+        res.status(400).json({ 
+          success: false, 
+          message: 'Job URL and resume data are required' 
+        });
+        return;
+      }
+
+      const optimizedResume = await aiResumeService.optimizeResumeWithJobUrl(resumeData, jobUrl);
+
+      res.status(200).json({
+        success: true,
+        data: optimizedResume
+      });
+    } catch (error) {
+      res.status(500).json({ 
+        success: false, 
+        message: 'Failed to optimize resume with job URL',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  }
+
   async optimizeResumeWithJobUrlOnly(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       const { id } = req.params;
-      const { jobUrl } = req.body;
+      const { jobUrl, resumeData } = req.body;
       const userId = req.user?.id;
       
       if (!userId) {
@@ -821,13 +957,20 @@ export class ResumeController {
         return;
       }
 
-      const resume = await resumeService.getResumeById(id, userId);
+      // Try to get saved resume first, if not found use provided resume data
+      let resume = await resumeService.getResumeById(id, userId);
+      
       if (!resume) {
-        res.status(404).json({ 
-          success: false, 
-          message: 'Resume not found' 
-        });
-        return;
+        // If no saved resume found, check if resume data is provided in request body
+        if (resumeData) {
+          resume = resumeData;
+        } else {
+          res.status(404).json({ 
+            success: false, 
+            message: 'Resume not found and no resume data provided' 
+          });
+          return;
+        }
       }
 
       const optimization = await aiResumeService.optimizeResumeWithJobUrl(resume, jobUrl);
@@ -918,6 +1061,77 @@ export class ResumeController {
       });
     }
   }
+
+  async generateSummaryForUnsavedResume(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const { resumeData } = req.body;
+      
+      if (!resumeData) {
+        res.status(400).json({ success: false, message: 'Resume data is required' });
+        return;
+      }
+
+      const summary = await aiResumeService.generateProfessionalSummary(resumeData);
+
+      res.status(200).json({
+        success: true,
+        data: { summary }
+      });
+    } catch (error) {
+      console.error('Error generating summary for unsaved resume:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Failed to generate professional summary' 
+      });
+    }
+  }
+
+  async enhanceUnsavedResume(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const { resumeData, options } = req.body;
+      
+      console.log('📝 Enhancing unsaved resume with AI...');
+      
+      if (!resumeData) {
+        res.status(400).json({ success: false, message: 'Resume data is required' });
+        return;
+      }
+
+      // AI can work with minimal data - just ensure we have something to work with
+      const hasAnyData = resumeData.personalInfo?.firstName || 
+                        resumeData.personalInfo?.email ||
+                        resumeData.workExperience?.length > 0 || 
+                        resumeData.skills?.length > 0 ||
+                        resumeData.education?.length > 0 ||
+                        resumeData.professionalSummary;
+
+      if (!hasAnyData) {
+        // Even with no data, AI can create a basic template
+        console.log('💡 No existing data found, AI will create from scratch');
+      }
+
+      console.log('🤖 Processing AI enhancement...');
+      const result = await aiResumeService.enhanceResumeComprehensively(resumeData, {
+        generateSummary: true,
+        improveATS: true,
+        enhanceAchievements: true,
+        ...options
+      });
+
+      console.log('✅ AI enhancement completed successfully');
+      res.status(200).json({
+        success: true,
+        data: result
+      });
+    } catch (error: any) {
+      res.status(500).json({ 
+        success: false, 
+        message: 'Failed to enhance resume with AI'
+      });
+    }
+  }
+
+
 }
 
 export const resumeController = new ResumeController();

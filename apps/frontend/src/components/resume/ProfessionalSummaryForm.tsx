@@ -5,14 +5,19 @@ import { Card } from '../ui/Card';
 import { Textarea } from '../ui/Textarea';
 import { resumeService } from '../../services/resumeService';
 import { useResume } from '../../contexts/ResumeContext';
+import SubscriptionGate from '../subscription/SubscriptionGate';
+import SaveResumeModal from './SaveResumeModal';
+import AILoadingOverlay from '../ui/AILoadingOverlay';
+import { useAIProgress } from '../../hooks/useAIProgress';
 import { toast } from 'sonner';
 
 export function ProfessionalSummaryForm() {
   const { resumeData, handleDataChange } = useResume();
   const { professionalSummary } = resumeData;
-  const [isGenerating, setIsGenerating] = useState(false);
   const [generatedOptions, setGeneratedOptions] = useState<string[]>([]);
   const [showOptions, setShowOptions] = useState(false);
+  
+  const aiProgress = useAIProgress('professional-summary');
 
   const updateSummary = (newSummary: string) => {
     handleDataChange('professionalSummary', newSummary);
@@ -27,28 +32,27 @@ export function ProfessionalSummaryForm() {
       return;
     }
 
-    setIsGenerating(true);
-    toast.loading('🤖 Generating AI summaries...', { id: 'ai-summary' });
+    aiProgress.startProgress();
     
     try {
-      const options = await resumeService.generateProfessionalSummary(resumeData);
+      const options = await resumeService.generateProfessionalSummary(resumeData.id, resumeData);
+      aiProgress.completeProgress();
+      
       setGeneratedOptions(Array.isArray(options) ? options : [options]);
       setShowOptions(true);
       
       toast.success(`✨ Generated ${Array.isArray(options) ? options.length : 1} AI summary options!`, {
-        id: 'ai-summary',
         description: 'Click on any option below to use it.',
         duration: 3000,
       });
     } catch (error) {
       console.error('Error generating AI summary:', error);
+      aiProgress.cancelProgress();
+      
       toast.error('Failed to generate AI summary', {
-        id: 'ai-summary',
         description: 'Please check your internet connection and try again.',
         duration: 4000,
       });
-    } finally {
-      setIsGenerating(false);
     }
   };
 
@@ -76,7 +80,12 @@ export function ProfessionalSummaryForm() {
       </div>
 
       {/* AI Generation Section */}
-      <Card className="card-dark p-6 bg-gradient-to-r from-purple-500/10 to-indigo-500/10 border border-purple-500/30">
+      <SubscriptionGate 
+        feature="AI Professional Summary Generator" 
+        description="Generate multiple professional summary options tailored to your experience using advanced AI technology."
+        requiresEnterprise={true}
+      >
+        <Card className="card-dark p-6 bg-gradient-to-r from-purple-500/10 to-indigo-500/10 border border-purple-500/30">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center">
             <SparklesIcon className="w-6 h-6 text-purple-400 mr-2" />
@@ -87,10 +96,10 @@ export function ProfessionalSummaryForm() {
           </div>
           <Button
             onClick={generateAISummary}
-            disabled={isGenerating}
+            disabled={aiProgress.isLoading}
             className="btn-primary-dark bg-purple-600 hover:bg-purple-700"
           >
-            {isGenerating ? (
+            {aiProgress.isLoading ? (
               <>
                 <ArrowPathIcon className="w-4 h-4 mr-2 animate-spin" />
                 Generating...
@@ -144,6 +153,7 @@ export function ProfessionalSummaryForm() {
           </div>
         )}
       </Card>
+      </SubscriptionGate>
 
       {/* Manual Summary Input */}
       <div className="space-y-4">
@@ -219,6 +229,17 @@ export function ProfessionalSummaryForm() {
           </div>
         </div>
       </Card>
+
+      {/* AI Loading Overlay */}
+      <AILoadingOverlay
+        isVisible={aiProgress.isLoading}
+        title="🤖 Generating Professional Summary"
+        description="AI is analyzing your experience and creating compelling summary options"
+        progress={aiProgress.progress}
+        currentStep={aiProgress.currentStep}
+        estimatedTime={aiProgress.estimatedTime}
+        onCancel={aiProgress.cancelProgress}
+      />
     </div>
   );
 }

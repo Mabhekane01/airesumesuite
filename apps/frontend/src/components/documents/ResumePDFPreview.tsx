@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createFileName } from '../../utils/validation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   XMarkIcon,
@@ -103,7 +104,7 @@ export default function ResumePDFPreview({
       
       // Create download link
       const downloadUrl = window.URL.createObjectURL(pdfBlob);
-      const fileName = `${resume.personalInfo.firstName}_${resume.personalInfo.lastName}_Resume.pdf`.replace(/\s+/g, '_');
+      const fileName = createFileName(resume.personalInfo?.firstName, resume.personalInfo?.lastName);
       
       // Create and trigger download
       const downloadLink = document.createElement('a');
@@ -735,7 +736,6 @@ function ResumePreviewPage({ resume, zoomLevel }: ResumePreviewPageProps) {
         email: resumeData.personalInfo?.email || '',
         phone: resumeData.personalInfo?.phone || '',
         location: resumeData.personalInfo?.location || '',
-        title: 'Professional',
         linkedinUrl: resumeData.personalInfo?.linkedinUrl,
         portfolioUrl: resumeData.personalInfo?.portfolioUrl,
         githubUrl: resumeData.personalInfo?.githubUrl
@@ -775,13 +775,13 @@ function ResumePreviewPage({ resume, zoomLevel }: ResumePreviewPageProps) {
       certifications: resumeData.certifications || [],
       languages: resumeData.languages?.map(lang => ({
         name: typeof lang === 'string' ? lang : lang,
-        proficiency: 'Fluent'
+        proficiency: 'fluent' as const
       })) || [],
       volunteerExperience: [],
       awards: [],
       hobbies: [],
-      createdAt: new Date(resumeData.createdAt || Date.now()),
-      updatedAt: new Date(resumeData.updatedAt || Date.now())
+      createdAt: resumeData.createdAt || new Date().toISOString(),
+      updatedAt: resumeData.updatedAt || new Date().toISOString()
     };
   };
 

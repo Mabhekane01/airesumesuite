@@ -23,7 +23,14 @@
     "clean": "turbo run clean",
     "docker:build": "docker-compose build",
     "docker:up": "docker-compose up -d",
-    "docker:down": "docker-compose down"
+    "docker:down": "docker-compose down",
+    "env:dev": "node scripts/set-env.js development",
+    "env:prod": "node scripts/set-env.js production",
+    "env:check": "node scripts/set-env.js check",
+    "env:validate": "node scripts/validate-env.js production",
+    "env:validate:dev": "node scripts/validate-env.js development",
+    "deploy:check": "npm run env:validate && npm run build && npm run test:ci",
+    "start:prod": "NODE_ENV=production turbo run start"
   },
   "devDependencies": {
     "@playwright/test": "^1.41.0",

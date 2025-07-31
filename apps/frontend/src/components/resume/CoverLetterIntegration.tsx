@@ -15,6 +15,8 @@ import { Textarea } from '../ui/Textarea';
 import { Modal } from '../ui/Modal';
 import { coverLetterService } from '../../services/coverLetterService';
 import { toast } from 'sonner';
+import SubscriptionGate from '../subscription/SubscriptionGate';
+import { useAuthStore } from '../../stores/authStore';
 
 interface CoverLetterIntegrationProps {
   resume: any;
@@ -28,6 +30,7 @@ export default function CoverLetterIntegration({
   onClose 
 }: CoverLetterIntegrationProps) {
   const navigate = useNavigate();
+  const { user } = useAuthStore();
   const [step, setStep] = useState<'method' | 'input' | 'generating'>('method');
   const [method, setMethod] = useState<'quick' | 'detailed'>('quick');
   const [jobUrl, setJobUrl] = useState('');
@@ -36,7 +39,26 @@ export default function CoverLetterIntegration({
   const [jobDescription, setJobDescription] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
 
+  // Check if user has enterprise access
+  const hasEnterpriseAccess = user?.tier === 'enterprise' && (user?.subscriptionStatus === 'active' || !user?.subscriptionStatus);
+
+  const showUpgradePrompt = (featureName: string) => {
+    toast.error(`${featureName} is a premium feature`, {
+      description: 'Upgrade to Enterprise to access AI-powered tools',
+      action: {
+        label: 'Upgrade',
+        onClick: () => window.open('/dashboard/upgrade', '_blank')
+      },
+      duration: 5000
+    });
+  };
+
   const handleQuickGenerate = async () => {
+    if (!hasEnterpriseAccess) {
+      showUpgradePrompt('AI Cover Letter Generation');
+      return;
+    }
+
     if (!jobTitle || !companyName) {
       toast.error('Please fill in job title and company name');
       return;
@@ -82,6 +104,11 @@ export default function CoverLetterIntegration({
   };
 
   const handleDetailedBuilder = () => {
+    if (!hasEnterpriseAccess) {
+      showUpgradePrompt('AI Intelligent Builder');
+      return;
+    }
+
     navigate('/cover-letter/intelligent-builder', {
       state: {
         resumeData: resume,
@@ -126,45 +153,79 @@ export default function CoverLetterIntegration({
             setMethod('quick');
             setStep('input');
           }}
-          className="p-6 border-2 border-dark-border rounded-lg text-left hover:border-blue-400 transition-colors group"
+          className={`p-6 border-2 rounded-lg text-left transition-colors group ${
+            hasEnterpriseAccess 
+              ? 'border-dark-border hover:border-blue-400' 
+              : 'border-yellow-400/30 hover:border-yellow-400 bg-yellow-500/5'
+          }`}
         >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <SparklesIcon className="w-8 h-8 text-blue-400 mr-4" />
-              <div>
-                <h4 className="font-semibold text-dark-text-primary mb-1">Quick AI Generation</h4>
-                <p className="text-sm text-dark-text-secondary">
-                  Generate a professional cover letter with minimal input
-                </p>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <SparklesIcon className={`w-8 h-8 mr-4 ${hasEnterpriseAccess ? 'text-blue-400' : 'text-yellow-400'}`} />
+                <div>
+                  <h4 className="font-semibold text-dark-text-primary mb-1">
+                    Quick AI Generation
+                    {!hasEnterpriseAccess && ' ⭐'}
+                  </h4>
+                  <p className="text-sm text-dark-text-secondary">
+                    {hasEnterpriseAccess 
+                      ? 'Generate a professional cover letter with minimal input'
+                      : 'Premium AI feature - Upgrade to unlock'
+                    }
+                  </p>
+                </div>
               </div>
+              <ArrowRightIcon className={`w-5 h-5 text-dark-text-muted transition-colors ${
+                hasEnterpriseAccess ? 'group-hover:text-blue-400' : 'group-hover:text-yellow-400'
+              }`} />
             </div>
-            <ArrowRightIcon className="w-5 h-5 text-dark-text-muted group-hover:text-blue-400 transition-colors" />
-          </div>
-          <div className="mt-4 flex items-center text-sm text-green-400">
-            <CheckCircleIcon className="w-4 h-4 mr-2" />
-            <span>Resume data auto-integrated • AI-powered content • Fast generation</span>
-          </div>
-        </button>
+            <div className={`mt-4 flex items-center text-sm ${hasEnterpriseAccess ? 'text-green-400' : 'text-yellow-400'}`}>
+              <CheckCircleIcon className="w-4 h-4 mr-2" />
+              <span>
+                {hasEnterpriseAccess 
+                  ? 'Resume data auto-integrated • AI-powered content • Fast generation'
+                  : 'Enterprise feature • Premium AI • Professional results'
+                }
+              </span>
+            </div>
+          </button>
 
         <button
           onClick={handleDetailedBuilder}
-          className="p-6 border-2 border-dark-border rounded-lg text-left hover:border-purple-400 transition-colors group"
+          className={`p-6 border-2 rounded-lg text-left transition-colors group ${
+            hasEnterpriseAccess 
+              ? 'border-dark-border hover:border-purple-400' 
+              : 'border-yellow-400/30 hover:border-yellow-400 bg-yellow-500/5'
+          }`}
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <DocumentTextIcon className="w-8 h-8 text-purple-400 mr-4" />
+              <DocumentTextIcon className={`w-8 h-8 mr-4 ${hasEnterpriseAccess ? 'text-purple-400' : 'text-yellow-400'}`} />
               <div>
-                <h4 className="font-semibold text-dark-text-primary mb-1">Intelligent Builder</h4>
+                <h4 className="font-semibold text-dark-text-primary mb-1">
+                  Intelligent Builder
+                  {!hasEnterpriseAccess && ' ⭐'}
+                </h4>
                 <p className="text-sm text-dark-text-secondary">
-                  Advanced builder with multiple variations and analysis
+                  {hasEnterpriseAccess 
+                    ? 'Advanced builder with multiple variations and analysis'
+                    : 'Premium AI feature - Upgrade to unlock'
+                  }
                 </p>
               </div>
             </div>
-            <ArrowRightIcon className="w-5 h-5 text-dark-text-muted group-hover:text-purple-400 transition-colors" />
+            <ArrowRightIcon className={`w-5 h-5 text-dark-text-muted transition-colors ${
+              hasEnterpriseAccess ? 'group-hover:text-purple-400' : 'group-hover:text-yellow-400'
+            }`} />
           </div>
-          <div className="mt-4 flex items-center text-sm text-purple-400">
+          <div className={`mt-4 flex items-center text-sm ${hasEnterpriseAccess ? 'text-purple-400' : 'text-yellow-400'}`}>
             <CheckCircleIcon className="w-4 h-4 mr-2" />
-            <span>Multiple AI variations • Match analysis • ATS optimization</span>
+            <span>
+              {hasEnterpriseAccess 
+                ? 'Multiple AI variations • Match analysis • ATS optimization'
+                : 'Enterprise feature • Premium AI • Advanced analysis'
+              }
+            </span>
           </div>
         </button>
       </div>

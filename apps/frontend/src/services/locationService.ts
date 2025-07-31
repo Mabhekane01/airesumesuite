@@ -155,25 +155,21 @@ class LocationService {
    */
   private async reverseGeocode(latitude: number, longitude: number): Promise<Partial<LocationData>> {
     try {
-      // Using OpenStreetMap Nominatim (free, no API key required)
+      // Use backend proxy to avoid CORS issues
+      const API_BASE_URL = (import.meta as any).env.VITE_API_BASE_URL || 'http://localhost:3001';
       const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=10&addressdetails=1`,
-        {
-          headers: {
-            'User-Agent': 'AI Job Suite Location Service'
-          }
-        }
+        `${API_BASE_URL}/api/v1/locations/reverse-geocode?lat=${latitude}&lon=${longitude}&zoom=10`
       );
 
       if (response.ok) {
-        const data = await response.json();
-        const address = data.address || {};
-        
-        return {
-          city: address.city || address.town || address.village || null,
-          country: address.country || null,
-          region: address.state || address.region || null
-        };
+        const result = await response.json();
+        if (result.success && result.data) {
+          return {
+            city: result.data.city,
+            country: result.data.country,
+            region: result.data.region
+          };
+        }
       }
     } catch (error) {
       console.warn('Reverse geocoding failed:', error);

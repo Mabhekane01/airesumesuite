@@ -15,12 +15,35 @@ export function useSubscription(): SubscriptionStatus {
   const isFree = !isEnterprise;
   const tier = user?.tier || 'free';
   
+  // More strict subscription status checking
+  const subscriptionStatus = user?.subscriptionStatus;
+  const hasActiveSubscription = isEnterprise && 
+    (subscriptionStatus === 'active' || 
+     (!subscriptionStatus && user?.tier === 'enterprise')); // Backward compatibility
+  
+  // Check if subscription has expired based on end date if available
+  const subscriptionEndDate = user?.subscriptionEndDate;
+  const isExpired = subscriptionEndDate ? new Date(subscriptionEndDate) < new Date() : false;
+  
+  const finalActiveStatus = hasActiveSubscription && !isExpired;
+  
+  // Debug logging
+  console.log('useSubscription:', {
+    userTier: user?.tier,
+    subscriptionStatus: user?.subscriptionStatus,
+    subscriptionEndDate: user?.subscriptionEndDate,
+    isEnterprise,
+    hasActiveSubscription,
+    isExpired,
+    finalActiveStatus
+  });
+  
   return {
     isEnterprise,
     isFree,
     tier,
-    canUseAI: isEnterprise,
-    hasActiveSubscription: isEnterprise,
+    canUseAI: finalActiveStatus,
+    hasActiveSubscription: finalActiveStatus,
   };
 }
 

@@ -580,7 +580,7 @@ export const MAJOR_COMPANIES = [
   'Slack',
   'Shopify',
   'Square',
-  'Stripe',
+  'Paystack',
   'Coinbase',
   'OpenAI',
   'Anthropic',

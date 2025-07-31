@@ -46,11 +46,6 @@ const CurrencyAutocomplete: React.FC<CurrencyAutocompleteProps> = ({
   const listRef = useRef<HTMLUListElement>(null);
   const debounceRef = useRef<NodeJS.Timeout>();
 
-  // Load initial currencies
-  useEffect(() => {
-    loadInitialCurrencies();
-  }, [englishSpeaking, countryCode, loadInitialCurrencies]);
-
   const loadInitialCurrencies = useCallback(async () => {
     try {
       let url = '/api/v1/currencies';
@@ -75,6 +70,11 @@ const CurrencyAutocomplete: React.FC<CurrencyAutocompleteProps> = ({
       setOptions([]);
     }
   }, [countryCode, englishSpeaking]);
+
+  // Load initial currencies
+  useEffect(() => {
+    loadInitialCurrencies();
+  }, [englishSpeaking, countryCode, loadInitialCurrencies]);
 
   // Debounced search function
   const debouncedSearch = useCallback(async (searchQuery: string) => {

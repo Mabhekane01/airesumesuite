@@ -25,8 +25,17 @@ export default function SubscriptionGate({
 }: SubscriptionGateProps) {
   const { user } = useAuthStore();
   
-  // If user has enterprise tier, show the content
-  if (user?.tier === 'enterprise') {
+  // Debug logging
+  console.log('SubscriptionGate check:', {
+    feature,
+    userTier: user?.tier,
+    subscriptionStatus: user?.subscriptionStatus,
+    requiresEnterprise,
+    hasAccess: user?.tier === 'enterprise'
+  });
+  
+  // If user has enterprise tier and active subscription, show the content
+  if (user?.tier === 'enterprise' && (user?.subscriptionStatus === 'active' || !user?.subscriptionStatus)) {
     return <>{children}</>;
   }
   

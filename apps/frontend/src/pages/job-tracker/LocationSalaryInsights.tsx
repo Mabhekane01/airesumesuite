@@ -383,7 +383,7 @@ export default function LocationSalaryInsights() {
   return (
     <div className="space-y-6 animate-slide-up-soft">
       {/* Debug Info - Remove this in production */}
-      {process.env.NODE_ENV === 'development' && (
+      {import.meta.env.DEV && (
         <div className="bg-gray-800 p-4 rounded-lg text-xs">
           <details>
             <summary className="text-yellow-400 cursor-pointer mb-2">🐛 Debug: API Response Data</summary>
@@ -572,7 +572,7 @@ export default function LocationSalaryInsights() {
                 Try logging out and back in to refresh location data
               </div>
               {/* Debug info for troubleshooting */}
-              {process.env.NODE_ENV === 'development' && (
+              {import.meta.env.DEV && (
                 <div className="text-xs text-gray-500 bg-gray-800 p-2 rounded">
                   Debug: locationComparison length = {locationComparison?.length || 'undefined'}<br/>
                   salaryInsights exists = {salaryInsights ? 'yes' : 'no'}<br/>

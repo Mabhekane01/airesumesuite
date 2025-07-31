@@ -93,10 +93,13 @@ export default function JobOptimizationModal({
       setOptimizationResult(result);
       setStep('results');
       
+      // Handle both improvedResume and enhancedResume for backwards compatibility
+      const optimizedResumeData = result.improvedResume || result.enhancedResume;
+      
       if (onOptimize) {
-        onOptimize(result.improvedResume);
+        onOptimize(optimizedResumeData);
       } else {
-        updateResumeData(result.improvedResume);
+        updateResumeData(optimizedResumeData);
       }
       
       toast.success('Resume optimized successfully!', {
@@ -362,12 +365,35 @@ export default function JobOptimizationModal({
           <div className="card-glass-dark p-4 border border-dark-border rounded-lg">
             <h4 className="font-semibold text-dark-text-primary mb-3">Improvements Applied</h4>
             <ul className="space-y-2">
-              {optimizationResult.improvements?.map((improvement: string, index: number) => (
-                <li key={index} className="flex items-start text-sm">
-                  <CheckCircleIcon className="w-4 h-4 text-green-400 mr-2 mt-0.5 flex-shrink-0" />
-                  <span className="text-dark-text-secondary">{improvement}</span>
-                </li>
-              ))}
+              {optimizationResult.improvements?.map((improvement: any, index: number) => {
+                // Handle both string and object improvement formats
+                if (typeof improvement === 'string') {
+                  return (
+                    <li key={index} className="flex items-start text-sm">
+                      <CheckCircleIcon className="w-4 h-4 text-green-400 mr-2 mt-0.5 flex-shrink-0" />
+                      <span className="text-dark-text-secondary">{improvement}</span>
+                    </li>
+                  );
+                } else if (improvement && improvement.changes) {
+                  // Handle object format with category and changes
+                  return (
+                    <li key={index} className="mb-3">
+                      <div className="flex items-start text-sm">
+                        <CheckCircleIcon className="w-4 h-4 text-green-400 mr-2 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <span className="text-dark-text-primary font-medium">{improvement.category}:</span>
+                          <ul className="ml-4 mt-1 space-y-1">
+                            {improvement.changes.map((change: string, changeIndex: number) => (
+                              <li key={changeIndex} className="text-dark-text-secondary">• {change}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                    </li>
+                  );
+                }
+                return null;
+              })}
             </ul>
           </div>
 

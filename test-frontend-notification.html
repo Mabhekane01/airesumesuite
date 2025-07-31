@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notification Debug Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .button { padding: 10px 20px; margin: 10px; background: #007bff; color: white; border: none; cursor: pointer; }
+        .result { margin: 10px 0; padding: 10px; background: #f8f9fa; border-left: 4px solid #007bff; }
+        .error { border-left-color: #dc3545; background: #f8d7da; }
+        .success { border-left-color: #28a745; background: #d4edda; }
+        pre { background: #f1f1f1; padding: 10px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Notification System Debug Test</h1>
+    
+    <div>
+        <label>Access Token: 
+            <input type="text" id="accessToken" placeholder="Paste your access token here" style="width: 400px;">
+        </label>
+        <button class="button" onclick="tryExtractToken()" style="background: #6c757d;">Auto-Extract Token</button>
+        <p><small>
+            <strong>How to get your token:</strong><br>
+            1. Login to your app at <a href="http://localhost:5173" target="_blank">http://localhost:5173</a><br>
+            2. Open Developer Tools (F12) → Application/Storage tab → Local Storage → http://localhost:5173<br>
+            3. Copy the value of "access_token" or click "Auto-Extract Token" button above
+        </small></p>
+    </div>
+    
+    <button class="button" onclick="testDebugEndpoint()">Test Debug Endpoint</button>
+    <button class="button" onclick="testCreateNotification()">Test Create Notification</button>
+    <button class="button" onclick="testFetchNotifications()">Test Fetch Notifications</button>
+    <button class="button" onclick="clearResults()">Clear Results</button>
+    
+    <div id="results"></div>
+
+    <script>
+        const API_BASE = 'http://localhost:3001/api/v1';
+        
+        function tryExtractToken() {
+            try {
+                // Try to get token from localStorage (if on same domain)
+                const token = localStorage.getItem('access_token') || localStorage.getItem('accessToken');
+                if (token) {
+                    document.getElementById('accessToken').value = token;
+                    addResult('Token extracted from localStorage successfully!', 'success');
+                } else {
+                    addResult('No token found in localStorage. Please login first or paste token manually.', 'error');
+                }
+            } catch (error) {
+                addResult('Cannot access localStorage (cross-origin). Please paste token manually.', 'error');
+            }
+        }
+        
+        function getAuthHeaders() {
+            const token = document.getElementById('accessToken').value.trim();
+            if (!token) {
+                addResult('Please enter your access token first', 'error');
+                return null;
+            }
+            
+            // Validate token format (should be base64-like)
+            if (!/^[A-Za-z0-9\-_=]+\.[A-Za-z0-9\-_=]+\.[A-Za-z0-9\-_=]+$/.test(token)) {
+                addResult('Invalid token format. JWT tokens should have 3 parts separated by dots.', 'error');
+                return null;
+            }
+            
+            return {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
+        }
+        
+        function addResult(message, type = 'result') {
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}</strong><br>${message}`;
+            document.getElementById('results').appendChild(div);
+        }
+        
+        async function testDebugEndpoint() {
+            const headers = getAuthHeaders();
+            if (!headers) return;
+            
+            try {
+                addResult('Testing debug endpoint...', 'result');
+                
+                // Check if token has invalid characters
+                const token = document.getElementById('accessToken').value.trim();
+                console.log('Token being used:', token.substring(0, 20) + '...');
+                
+                const response = await fetch(`${API_BASE}/notifications/debug`, {
+                    method: 'POST',
+                    headers: headers,
+                    mode: 'cors'
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    addResult(`Debug test SUCCESS:<pre>${JSON.stringify(data, null, 2)}</pre>`, 'success');
+                } else {
+                    addResult(`Debug test FAILED (${response.status}):<pre>${JSON.stringify(data, null, 2)}</pre>`, 'error');
+                }
+            } catch (error) {
+                console.error('Full error:', error);
+                addResult(`Debug test ERROR: ${error.message}<br><br>This usually means:<br>• Invalid characters in token<br>• Token is malformed<br>• CORS issues<br><br>Try copying the token again from localStorage.`, 'error');
+            }
+        }
+        
+        async function testCreateNotification() {
+            const headers = getAuthHeaders();
+            if (!headers) return;
+            
+            try {
+                addResult('Testing notification creation...', 'result');
+                
+                const response = await fetch(`${API_BASE}/notifications/test`, {
+                    method: 'POST',
+                    headers,
+                    body: JSON.stringify({
+                        type: 'success',
+                        category: 'system',
+                        title: 'Frontend Test Notification',
+                        message: 'This is a test notification from the frontend',
+                        priority: 'urgent'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    addResult(`Notification creation SUCCESS:<pre>${JSON.stringify(data, null, 2)}</pre>`, 'success');
+                } else {
+                    addResult(`Notification creation FAILED:<pre>${JSON.stringify(data, null, 2)}</pre>`, 'error');
+                }
+            } catch (error) {
+                addResult(`Notification creation ERROR: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testFetchNotifications() {
+            const headers = getAuthHeaders();
+            if (!headers) return;
+            
+            try {
+                addResult('Testing notification fetching...', 'result');
+                
+                const response = await fetch(`${API_BASE}/notifications?limit=10`, {
+                    headers
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    addResult(`Fetch notifications SUCCESS:<pre>${JSON.stringify(data, null, 2)}</pre>`, 'success');
+                } else {
+                    addResult(`Fetch notifications FAILED:<pre>${JSON.stringify(data, null, 2)}</pre>`, 'error');
+                }
+            } catch (error) {
+                addResult(`Fetch notifications ERROR: ${error.message}`, 'error');
+            }
+        }
+        
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+    </script>
+</body>
+</html>

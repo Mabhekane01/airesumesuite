@@ -34,7 +34,7 @@ export default function ResendVerification() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email: email.toLowerCase().trim() }),
+        body: JSON.stringify({ email: email?.toLowerCase()?.trim() || '' }),
       });
 
       const data = await response.json();

@@ -239,7 +239,7 @@ export default function LoginForm({ onToggleMode, onClose, recaptchaState }: Log
         )}
 
         {/* Debug reCAPTCHA state */}
-        {process.env.NODE_ENV === 'development' && (
+        {import.meta.env.DEV && (
           <div className="text-xs text-gray-500 bg-gray-900/50 p-2 rounded mb-4">
             reCAPTCHA Debug: loaded={isRecaptchaLoaded ? '✅' : '❌'} | loading={isRecaptchaLoading ? '🔄' : '✅'} | error={recaptchaError || 'none'}
           </div>

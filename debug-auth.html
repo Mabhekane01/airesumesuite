@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Auth Debug</title>
+</head>
+<body>
+    <h1>Authentication Debug</h1>
+    <button onclick="checkAuth()">Check Current Auth State</button>
+    <pre id="output"></pre>
+
+    <script>
+        function checkAuth() {
+            const output = document.getElementById('output');
+            
+            const authData = {
+                'localStorage.token': localStorage.getItem('token'),
+                'localStorage.authToken': localStorage.getItem('authToken'),
+                'localStorage.auth-storage': localStorage.getItem('auth-storage'),
+                'all localStorage keys': Object.keys(localStorage)
+            };
+            
+            output.textContent = JSON.stringify(authData, null, 2);
+        }
+        
+        // Auto-check on load
+        checkAuth();
+    </script>
+</body>
+</html>

@@ -5,10 +5,8 @@ echo.
 cd apps\frontend
 
 echo Installing dependencies...
-npm install
+pnpm install
 
 echo.
 echo Starting frontend development server...
 npm run dev
-
-pause

@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
+import rateLimit from 'express-rate-limit';
 import { securityService } from '../services/securityService';
 import { logger } from '../utils/logger';
 
@@ -189,21 +190,27 @@ function isSuspiciousUserAgent(userAgent: string): boolean {
   return suspiciousUAs.some(ua => lowerUA.includes(ua));
 }
 
-// Export rate limiters from SecurityService
-export const paymentRateLimit = securityService.createRateLimit(
-  15 * 60 * 1000, // 15 minutes
-  3, // 3 attempts
-  'Too many payment attempts'
-);
+// Rate limiters using express-rate-limit
+export const paymentRateLimit = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 3, // 3 attempts
+  message: 'Too many payment attempts',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
-export const authRateLimit = securityService.createRateLimit(
-  60 * 60 * 1000, // 1 hour
-  5, // 5 attempts
-  'Too many authentication attempts'
-);
+export const authRateLimit = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 5, // 5 attempts
+  message: 'Too many authentication attempts',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
-export const generalRateLimit = securityService.createRateLimit(
-  60 * 1000, // 1 minute
-  100, // 100 requests
-  'Too many requests'
-);
+export const generalRateLimit = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 100, // 100 requests
+  message: 'Too many requests',
+  standardHeaders: true,
+  legacyHeaders: false,
+});

@@ -6,6 +6,7 @@ import { EmailOTP } from '../models/EmailVerification';
 import { generateTokenPair, verifyRefreshToken } from '../utils/jwt';
 import { AuthenticatedRequest } from '../middleware/auth';
 import { emailService } from '../services/emailService';
+import { notificationService } from '../services/notificationService';
 import { recaptchaService, RecaptchaVerificationResult } from '../services/recaptchaService';
 import { otpService } from '../services/otpService';
 import * as crypto from 'crypto';
@@ -227,8 +228,18 @@ export const verifyRegistrationOTP = async (req: Request, res: Response) => {
     await user.save();
     console.log('✅ User registered and email verified via OTP:', user._id);
 
-    // Send welcome email (no auto-login)
+    // Send welcome email (no auto-login)  
     await emailService.sendWelcomeEmail(user);
+
+    // Send registration completion notification
+    try {
+      await notificationService.sendAuthNotification(
+        user._id.toString(),
+        'registration_complete'
+      );
+    } catch (notificationError) {
+      console.warn('⚠️ Failed to send registration notification:', notificationError);
+    }
 
     return res.status(201).json({
       message: 'Registration successful! Your email has been verified. Please login with your credentials.',
@@ -619,6 +630,27 @@ export const login = async (req: Request, res: Response) => {
     user.lastLoginAt = new Date();
     await user.save();
 
+    let loginNotification: INotification | null = null;
+    try {
+      loginNotification = await notificationService.sendAuthNotification(
+        user._id.toString(),
+        'login_success',
+        {
+          loginTime: new Date(),
+          location: location?.city || 'Unknown location',
+          userAgent: req.get('User-Agent') || 'Unknown browser'
+        }
+      );
+      
+      if (loginNotification) {
+        console.log('✅ Login notification created successfully:', loginNotification._id);
+      } else {
+        console.warn('⚠️ Login notification was not created (returned null)');
+      }
+    } catch (notificationError) {
+      console.error('❌ Failed to send login notification:', notificationError);
+    }
+
     return res.json({
       message: 'Login successful',
       user: {
@@ -631,7 +663,8 @@ export const login = async (req: Request, res: Response) => {
       },
       accessToken,
       refreshToken,
-      sessionId
+      sessionId,
+      loginNotification
     });
 
   } catch (error) {
@@ -872,6 +905,20 @@ export const verifyEmail = async (req: Request, res: Response) => {
     user.refreshTokens.push(refreshToken);
     user.lastLoginAt = new Date();
     await user.save();
+
+    // Send welcome and email verification notifications
+    try {
+      await notificationService.sendAuthNotification(
+        user._id.toString(),
+        'email_verified'
+      );
+      await notificationService.sendSystemNotification(
+        user._id.toString(),
+        'welcome'
+      );
+    } catch (notificationError) {
+      console.warn('⚠️ Failed to send verification notifications:', notificationError);
+    }
 
     return res.json({
       message: 'Email verified successfully! Welcome to AI Job Suite!',
@@ -1181,8 +1228,11 @@ export const checkEmailExists = async (req: Request, res: Response) => {
 
     const normalizedEmail = email.toLowerCase().trim();
 
-    // Check if user exists
-    const existingUser = await User.findOne({ email: normalizedEmail });
+    // Check if user exists with local provider (matching login logic)
+    const existingUser = await User.findOne({ 
+      email: normalizedEmail,
+      provider: 'local'
+    });
 
     return res.status(200).json({
       exists: !!existingUser,
@@ -1204,14 +1254,24 @@ export const getProfile = async (req: AuthenticatedRequest, res: Response) => {
     if (!req.user) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
+    
+    console.log('Profile request for user ID:', req.user.id);
     const user = await User.findById(req.user.id).select('-password -refreshTokens');
     
     if (!user) {
+      console.log('User not found for ID:', req.user.id);
       return res.status(404).json({ message: 'User not found' });
     }
 
+    console.log('Returning profile data:', {
+      id: user._id,
+      tier: user.tier,
+      subscriptionStatus: user.subscription_status
+    });
+
     return res.json({ user });
   } catch (error) {
+    console.error('Profile fetch error:', error);
     if (error instanceof Error) {
       return res.status(500).json({ message: 'Server error', error: error.message });
     } else {

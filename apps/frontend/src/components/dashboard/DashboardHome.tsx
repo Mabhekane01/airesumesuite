@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import {
   BriefcaseIcon,
   DocumentTextIcon,
@@ -15,6 +15,7 @@ import { Link } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
 import { jobApplicationAPI, analyticsAPI } from '../../services/api';
 
+// Interfaces for data shapes
 interface DashboardStats {
   totalApplications: number;
   interviewsScheduled: number;
@@ -31,101 +32,78 @@ interface UpcomingEvent {
   type: 'interview' | 'follow-up' | 'deadline';
 }
 
-interface RecentActivity {
-  id: string;
-  type: 'application' | 'interview' | 'response' | 'document';
-  title: string;
-  description: string;
-  timestamp: string;
-  status: 'success' | 'pending' | 'warning';
-}
+// Fetcher function for dashboard data
+const fetchDashboardData = async () => {
+  const [statsRes, eventsRes, insightsRes] = await Promise.all([
+    jobApplicationAPI.getStats(),
+    jobApplicationAPI.getUpcomingInterviews({ days: 7 }),
+    analyticsAPI.getUserAnalytics(),
+  ]);
+
+  if (!statsRes.success || !eventsRes.success || !insightsRes.success) {
+    // You can handle partial failures if needed
+    throw new Error('Failed to fetch all dashboard data');
+  }
+
+  // Mocking AI insights as the endpoint seems to be a placeholder
+  const mockInsights = [
+    'Your application response rate has improved by 15% this month',
+    'Consider applying to more mid-size companies for better success rates',
+    'Your JavaScript skills are in high demand - highlight them more',
+  ];
+
+  return {
+    stats: statsRes.data.stats,
+    upcomingEvents: eventsRes.data.upcomingInterviews,
+    aiInsights: mockInsights,
+  };
+};
 
 export default function DashboardHome() {
   const { user } = useAuthStore();
-  const [stats, setStats] = useState<DashboardStats>({
-    totalApplications: 0,
-    interviewsScheduled: 0,
-    pendingTasks: 0,
-    responseRate: 0,
-    weeklyGrowth: 0,
+
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: ['dashboardData'],
+    queryFn: fetchDashboardData,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    cacheTime: 10 * 60 * 1000, // 10 minutes
+    retry: 1, // Retry once on failure
   });
-  const [upcomingEvents, setUpcomingEvents] = useState<UpcomingEvent[]>([]);
-  const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [aiInsights, setAiInsights] = useState<string[]>([]);
 
-  useEffect(() => {
-    loadDashboardData();
-  }, []);
+  // Loading state UI
+  if (isLoading) {
+    return (
+      <div className="animate-pulse space-y-4 sm:space-y-6">
+        <div className="h-6 sm:h-8 bg-dark-tertiary rounded w-1/4 mb-4 sm:mb-6"></div>
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="h-24 sm:h-28 lg:h-32 bg-dark-tertiary rounded-lg"></div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
-  const loadDashboardData = async () => {
-    try {
-      setLoading(true);
-      
-      // Load stats
-      const statsResponse = await jobApplicationAPI.getStats();
-      if (statsResponse.success && statsResponse.data) {
-        setStats({
-          totalApplications: statsResponse.data.stats.totalApplications || 0,
-          interviewsScheduled: statsResponse.data.stats.interviewsScheduled || 0,
-          pendingTasks: statsResponse.data.stats.pendingTasks || 0,
-          responseRate: statsResponse.data.stats.responseRate || 0,
-          weeklyGrowth: statsResponse.data.stats.weeklyGrowth || 0,
-        });
-      }
+  // Error state UI
+  if (isError) {
+    return (
+      <div className="card-glass-dark p-6 text-center">
+        <ExclamationTriangleIcon className="w-12 h-12 text-accent-danger mx-auto mb-4" />
+        <h2 className="text-xl font-semibold text-dark-text-primary mb-2">Could not load dashboard</h2>
+        <p className="text-dark-text-secondary mb-4">
+          There was an error fetching your dashboard data. Please try again later.
+        </p>
+        <p className="text-xs text-dark-text-muted">Error: {error.message}</p>
+      </div>
+    );
+  }
 
-      // Load upcoming events
-      const upcomingResponse = await jobApplicationAPI.getUpcomingInterviews(7);
-      if (upcomingResponse.success && upcomingResponse.data) {
-        setUpcomingEvents(upcomingResponse.data.upcomingInterviews || []);
-      }
-
-      // Load analytics insights
-      const analyticsResponse = await analyticsAPI.getUserAnalytics();
-      if (analyticsResponse.success && analyticsResponse.data) {
-        setAiInsights([
-          'Your application response rate has improved by 15% this month',
-          'Consider applying to more mid-size companies for better success rates',
-          'Your JavaScript skills are in high demand - highlight them more',
-        ]);
-      }
-
-      // Mock recent activity
-      setRecentActivity([
-        {
-          id: '1',
-          type: 'application',
-          title: 'Applied to Software Engineer',
-          description: 'TechCorp Inc.',
-          timestamp: '2 hours ago',
-          status: 'success',
-        },
-        {
-          id: '2',
-          type: 'interview',
-          title: 'Interview Scheduled',
-          description: 'Frontend Developer at StartupXYZ',
-          timestamp: '1 day ago',
-          status: 'pending',
-        },
-        {
-          id: '3',
-          type: 'response',
-          title: 'Application Viewed',
-          description: 'Your application was viewed by BigTech Co.',
-          timestamp: '2 days ago',
-          status: 'success',
-        },
-      ]);
-
-    } catch (error) {
-      console.error('Failed to load dashboard data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const statCards = [
+  // Data-driven UI
+  const stats = data?.stats || { totalApplications: 0, interviewsScheduled: 0, pendingTasks: 0, responseRate: 0, weeklyGrowth: 0 };
+  const upcomingEvents = data?.upcomingEvents || [];
+  const aiInsights = data?.aiInsights || [];
+  
+    const statCards = [
     {
       title: 'Total Applications',
       value: stats.totalApplications,
@@ -191,24 +169,10 @@ export default function DashboardHome() {
     },
   ];
 
-  if (loading) {
-    return (
-      <div className="animate-pulse space-y-4 sm:space-y-6">
-        <div className="h-6 sm:h-8 bg-dark-tertiary rounded w-1/4 mb-4 sm:mb-6"></div>
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-24 sm:h-28 lg:h-32 bg-dark-tertiary rounded-lg"></div>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* Welcome Section */}
       <div className="glass-dark-heavy rounded-xl p-4 sm:p-6 text-white shadow-glow-md border border-accent-primary/30 backdrop-blur-lg relative overflow-hidden">
-        {/* Background gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-br from-accent-primary/20 via-accent-secondary/15 to-accent-tertiary/20 animate-gradient"></div>
         
         <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
@@ -337,28 +301,7 @@ export default function DashboardHome() {
         <div className="card-gradient-dark p-4 sm:p-5 lg:p-6">
           <h2 className="text-base sm:text-lg font-semibold text-dark-text-primary mb-3 sm:mb-4">📈 Recent Activity</h2>
           <div className="space-y-3 sm:space-y-4">
-            {recentActivity.map((activity, index) => (
-              <div key={activity.id} className="flex items-start space-x-2.5 sm:space-x-3 animate-slide-up-soft" style={{ animationDelay: `${index * 0.1}s` }}>
-                <div className={`
-                  w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center flex-shrink-0
-                  ${activity.status === 'success' ? 'bg-accent-success/20 border border-accent-success/30' : 
-                    activity.status === 'warning' ? 'bg-accent-quaternary/20 border border-accent-quaternary/30' : 'bg-accent-secondary/20 border border-accent-secondary/30'}
-                `}>
-                  {activity.status === 'success' ? (
-                    <CheckCircleIcon className="w-3 h-3 sm:w-4 sm:h-4 text-accent-success" />
-                  ) : activity.status === 'warning' ? (
-                    <ExclamationTriangleIcon className="w-3 h-3 sm:w-4 sm:h-4 text-accent-quaternary" />
-                  ) : (
-                    <ClockIcon className="w-3 h-3 sm:w-4 sm:h-4 text-accent-secondary" />
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs sm:text-sm font-medium text-dark-text-primary truncate">{activity.title}</p>
-                  <p className="text-xs sm:text-sm text-dark-text-secondary truncate">{activity.description}</p>
-                  <p className="text-xs text-dark-text-muted mt-0.5 sm:mt-1">{activity.timestamp}</p>
-                </div>
-              </div>
-            ))}
+            {/* This should be replaced with real data */}
           </div>
           <Link
             to="/dashboard/applications"
