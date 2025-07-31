@@ -610,11 +610,11 @@ export class ResumeService {
       if (error instanceof mongoose.Error.ValidationError) {
         console.error('📋 Mongoose validation errors:', Object.keys(error.errors));
         Object.entries(error.errors).forEach(([field, err]) => {
-          console.error(`📋 Field ${field}:`, err.message);
+          console.error(`📋 Field ${field}:`, (err as any).message);
         });
       }
       if (error instanceof mongoose.Error.CastError) {
-        console.error('📋 Mongoose cast error:', error.message, 'Path:', error.path, 'Value:', error.value);
+        console.error('📋 Mongoose cast error:', error.message, 'Path:', (error as any).path, 'Value:', (error as any).value);
       }
       throw new Error(`Failed to create resume: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }

@@ -160,6 +160,9 @@ importers:
       '@types/multer':
         specifier: ^1.4.11
         version: 1.4.13
+      '@types/node':
+        specifier: ^20.10.0
+        version: 20.19.9
       '@types/node-cron':
         specifier: ^3.0.9
         version: 3.0.11

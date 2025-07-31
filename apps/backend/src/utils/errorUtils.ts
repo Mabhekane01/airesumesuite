@@ -1,7 +1,7 @@
-import { Response } from 'express';
+import express from 'express';
 
 export const handleControllerError = (
-  res: Response, 
+  res: express.Response, 
   error: any, 
   message: string = 'An error occurred'
 ): void => {
