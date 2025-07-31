@@ -10,7 +10,7 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
-    "build:prod": "tsc --skipLibCheck",
+    "build:prod": "tsc -p tsconfig.json --skipLibCheck",
     "build:render": "pnpm install --frozen-lockfile && tsc --skipLibCheck",
     "start": "node dist/index.js",
     "lint": "eslint src --ext .ts,.tsx",
