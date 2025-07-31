@@ -575,8 +575,8 @@ export class ResumeService {
           linkedinUrl: data.personalInfo?.linkedinUrl || undefined,
           portfolioUrl: data.personalInfo?.portfolioUrl || undefined,
           githubUrl: data.personalInfo?.githubUrl || undefined,
-          websiteUrl: data.personalInfo?.websiteUrl || undefined,
-          professionalTitle: data.personalInfo?.professionalTitle || undefined
+          websiteUrl: (data.personalInfo as any)?.websiteUrl || undefined,
+          professionalTitle: (data.personalInfo as any)?.professionalTitle || undefined
         },
         professionalSummary: (data.professionalSummary && data.professionalSummary.trim()) || 'Professional seeking new opportunities.',
         workExperience: sanitizedWorkExperience,

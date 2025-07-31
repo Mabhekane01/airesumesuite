@@ -4,7 +4,7 @@ import { authMiddleware } from '../middleware/auth';
 import { validateRequest } from '../middleware/validateRequest';
 import { body, param, query } from 'express-validator';
 
-const router = Router();
+const router: Router = Router();
 
 // Apply authentication middleware to all notification routes
 router.use(authMiddleware);

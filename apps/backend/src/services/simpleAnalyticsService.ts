@@ -246,9 +246,9 @@ class SimpleAnalyticsService {
         r.personalInfo?.firstName && 
         r.personalInfo?.lastName && 
         r.personalInfo?.email && 
-        r.summary && 
-        r.experience && 
-        r.experience.length > 0
+        r.professionalSummary && 
+        r.workExperience && 
+        r.workExperience.length > 0
       ).length;
       const completionRate = totalResumes > 0 ? (completedResumes / totalResumes) * 100 : 0;
       

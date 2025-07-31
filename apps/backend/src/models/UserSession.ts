@@ -199,4 +199,10 @@ UserSessionSchema.methods.endSession = function() {
   return this.save();
 };
 
-export const UserSession = mongoose.model<IUserSession>('UserSession', UserSessionSchema);
+interface IUserSessionModel extends mongoose.Model<IUserSession> {
+  getLocationAnalytics(timeRange?: number): Promise<any>;
+  getActiveSessionsByLocation(): Promise<any>;
+  getUserRecentLocations(userId: mongoose.Types.ObjectId, limit?: number): Promise<any>;
+}
+
+export const UserSession = mongoose.model<IUserSession, IUserSessionModel>('UserSession', UserSessionSchema);

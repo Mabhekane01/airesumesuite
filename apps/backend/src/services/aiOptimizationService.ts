@@ -46,11 +46,11 @@ As an expert ATS and recruitment specialist, analyze this resume against the job
 
 USER PROFILE:
 ${JSON.stringify({
-        headline: userProfile.headline,
-        bio: userProfile.bio,
-        technicalSkills: userProfile.technicalSkills,
-        preferredRoles: userProfile.preferredRoles,
-        aiOptimizationPreferences: userProfile.aiOptimizationPreferences
+        headline: (userProfile as any).headline,
+        bio: (userProfile as any).bio,
+        technicalSkills: (userProfile as any).technicalSkills,
+        preferredRoles: (userProfile as any).preferredRoles,
+        aiOptimizationPreferences: (userProfile as any).aiOptimizationPreferences
       }, null, 2)}
 
 JOB DESCRIPTION:
@@ -106,14 +106,14 @@ Analyze how well this candidate matches the job requirements and provide a compr
 
 CANDIDATE PROFILE:
 ${JSON.stringify({
-        headline: userProfile.headline,
-        bio: userProfile.bio,
+        headline: (userProfile as any).headline,
+        bio: (userProfile as any).bio,
         yearsOfExperience: userProfile.yearsOfExperience,
         technicalSkills: userProfile.technicalSkills,
-        softSkills: userProfile.softSkills,
+        softSkills: (userProfile as any).softSkills,
         preferredRoles: userProfile.preferredRoles,
-        currentLocation: userProfile.currentLocation,
-        expectedSalary: userProfile.expectedSalary
+        currentLocation: (userProfile as any).currentLocation,
+        expectedSalary: (userProfile as any).expectedSalary
       }, null, 2)}
 
 JOB DETAILS:
@@ -178,12 +178,12 @@ Provide career insights and market analysis for this professional profile.
 
 PROFILE:
 ${JSON.stringify({
-        headline: userProfile.headline,
+        headline: (userProfile as any).headline,
         yearsOfExperience: userProfile.yearsOfExperience,
         technicalSkills: userProfile.technicalSkills,
         preferredRoles: userProfile.preferredRoles,
-        preferredIndustries: userProfile.preferredIndustries,
-        currentLocation: userProfile.currentLocation
+        preferredIndustries: (userProfile as any).preferredIndustries,
+        currentLocation: (userProfile as any).currentLocation
       }, null, 2)}
 
 Generate insights for each preferred role in JSON format:
@@ -231,10 +231,10 @@ Generate a compelling, personalized cover letter for this job application.
 
 CANDIDATE:
 ${JSON.stringify({
-        headline: userProfile.headline,
-        bio: userProfile.bio,
+        headline: (userProfile as any).headline,
+        bio: (userProfile as any).bio,
         technicalSkills: userProfile.technicalSkills.slice(0, 8),
-        aiOptimizationPreferences: userProfile.aiOptimizationPreferences
+        aiOptimizationPreferences: (userProfile as any).aiOptimizationPreferences
       }, null, 2)}
 
 JOB:
@@ -249,7 +249,7 @@ ${JSON.stringify({
 TEMPLATE (if provided): ${template || 'Use professional standard format'}
 
 Requirements:
-- Tone: ${userProfile.aiOptimizationPreferences.tonePreference}
+- Tone: ${(userProfile as any).aiOptimizationPreferences.tonePreference}
 - Length: 250-400 words
 - Include specific achievements and metrics
 - Address company's needs and values
@@ -426,7 +426,7 @@ Generate 8-12 relevant questions and 5 detailed answer guides.
 
 I am writing to express my strong interest in the ${jobApplication.jobTitle} position at ${jobApplication.companyName}. With ${userProfile.yearsOfExperience} years of experience and expertise in ${userProfile.technicalSkills.slice(0, 3).map(s => s.name).join(', ')}, I am confident I would be a valuable addition to your team.
 
-${userProfile.bio}
+${(userProfile as any).bio}
 
 I am particularly excited about this opportunity because it aligns perfectly with my career goals and expertise. I would welcome the chance to discuss how my background and skills can contribute to ${jobApplication.companyName}'s continued success.
 

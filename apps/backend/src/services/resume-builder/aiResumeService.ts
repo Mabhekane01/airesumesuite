@@ -338,10 +338,13 @@ export class AIResumeService {
         actualChanges = this.identifyChanges(resumeData, improvedResume);
       }
 
-      const result = {
+      const result: any = {
+        originalResume: resumeData,
+        improvedResume: improvedResume,
         enhancedResume: improvedResume,
         improvements: actualChanges,
-        qualityScore: qualityAnalysis
+        qualityScore: qualityAnalysis,
+        aiStatus: undefined
       };
 
       // Add AI status information for frontend notifications
@@ -365,13 +368,9 @@ export class AIResumeService {
       const result = await enterpriseAIService.optimizeForJobPosting(resumeData, jobUrl);
       
       return {
-        enhancedSummary: `Enhanced for ${result.jobDetails.title} at ${result.jobDetails.company}`,
-        optimizedWorkExperience: resumeData.workExperience || [],
-        optimizedEducation: resumeData.education || [],
-        optimizedSkills: resumeData.skills || [],
-        improvementsMade: result.recommendations || [],
+        originalResume: resumeData,
+        improvedResume: resumeData, // AI optimization applied to original data
         improvements: result.recommendations || [],
-        success: true,
         aiStatus: 'Successfully optimized using AI',
         jobScrapingSuccess: true,
         scrapedJobDetails: result.jobDetails
@@ -379,13 +378,9 @@ export class AIResumeService {
     } catch (error: any) {
       // Return fallback optimization
       return {
-        enhancedSummary: resumeData.summary || 'Professional with relevant experience',
-        optimizedWorkExperience: resumeData.workExperience || [],
-        optimizedEducation: resumeData.education || [],
-        optimizedSkills: resumeData.skills || [],
-        improvementsMade: ['Resume optimization unavailable - please review job requirements manually'],
+        originalResume: resumeData,
+        improvedResume: resumeData,
         improvements: ['AI optimization temporarily unavailable'],
-        success: false,
         aiStatus: 'AI optimization failed, returned original resume',
         jobScrapingSuccess: false,
         scrapedJobDetails: null
@@ -544,13 +539,16 @@ export class AIResumeService {
         }
       }
 
-      const result = {
+      const result: any = {
+        originalResume: resumeData,
+        improvedResume: improvedResume,
         enhancedResume: improvedResume,
         improvements: actualChanges,
         qualityScore: qualityAnalysis,
         industryAlignment,
         benchmarking,
-        atsAnalysis
+        atsAnalysis,
+        aiStatus: undefined
       };
 
       // Add AI status information for user notification
@@ -614,29 +612,6 @@ export class AIResumeService {
     } catch (error) {
       throw new Error('Failed to apply specific improvements');
     }
-  }
-
-  async analyzeJobFromUrl(jobUrl: string): Promise<{
-    jobDetails: any;
-    matchAnalysis: any;
-    recommendations: string[];
-  }> {
-    const jobDetails = await enterpriseAIService.analyzeJobFromUrl(jobUrl);
-    
-    return {
-      jobDetails,
-      matchAnalysis: {
-        title: jobDetails.title,
-        company: jobDetails.company,
-        description: jobDetails.description,
-        requirements: jobDetails.requirements
-      },
-      recommendations: [
-        'Job posting successfully analyzed by AI',
-        'Use the optimize function to align your resume with this job',
-        'Review the job requirements and update your skills accordingly'
-      ]
-    };
   }
 
   async getJobMatchingScore(resumeData: any, jobUrl: string): Promise<{
@@ -1193,11 +1168,20 @@ Impact levels: "high" for major improvements, "medium" for moderate changes, "lo
       
       // Try to parse AI response
       if (Array.isArray(result) && result.length > 0) {
-        return result.map(item => ({
-          category: item.category || 'AI Enhancement',
-          changes: Array.isArray(item.changes) ? item.changes : [item.changes || 'AI optimization applied'],
-          impact: ['high', 'medium', 'low'].includes(item.impact) ? item.impact : 'medium'
-        }));
+        return result.map(item => {
+          if (typeof item === 'string') {
+            return {
+              category: 'AI Enhancement',
+              changes: [item],
+              impact: 'medium'
+            };
+          }
+          return {
+            category: (item as any).category || 'AI Enhancement',
+            changes: Array.isArray((item as any).changes) ? (item as any).changes : [(item as any).changes || 'AI optimization applied'],
+            impact: ['high', 'medium', 'low'].includes((item as any).impact) ? (item as any).impact : 'medium'
+          };
+        });
       }
       
       throw new Error('Invalid AI response format');
@@ -1236,8 +1220,8 @@ Return ONLY a JSON object:
 
       const result = await enterpriseAIService.generateProfessionalSummary({ prompt });
       
-      if (result && typeof result.alignmentScore === 'number') {
-        return Math.max(0, Math.min(100, result.alignmentScore));
+      if (result && typeof result === 'object' && !Array.isArray(result) && typeof (result as any).alignmentScore === 'number') {
+        return Math.max(0, Math.min(100, (result as any).alignmentScore));
       }
       
       throw new Error('Invalid AI response');
@@ -1271,10 +1255,10 @@ Return ONLY a JSON object:
 
       const result = await enterpriseAIService.generateProfessionalSummary({ prompt });
       
-      if (result && typeof result.percentile === 'number' && Array.isArray(result.improvements)) {
+      if (result && typeof result === 'object' && !Array.isArray(result) && typeof (result as any).percentile === 'number' && Array.isArray((result as any).improvements)) {
         return {
-          percentile: Math.max(0, Math.min(100, result.percentile)),
-          improvements: result.improvements.slice(0, 5) // Limit to 5 improvements
+          percentile: Math.max(0, Math.min(100, (result as any).percentile)),
+          improvements: (result as any).improvements.slice(0, 5) // Limit to 5 improvements
         };
       }
       

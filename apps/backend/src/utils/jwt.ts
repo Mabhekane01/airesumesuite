@@ -15,7 +15,7 @@ export const generateAccessToken = (user: IUser): string => {
   return jwt.sign(
     { id: user._id.toString(), email: user.email },
     ACCESS_TOKEN_SECRET,
-    { expiresIn: ACCESS_TOKEN_EXPIRY }
+    { expiresIn: ACCESS_TOKEN_EXPIRY } as jwt.SignOptions
   );
 };
 
@@ -23,7 +23,7 @@ export const generateRefreshToken = (user: IUser): string => {
   return jwt.sign(
     { id: user._id.toString(), email: user.email },
     REFRESH_TOKEN_SECRET,
-    { expiresIn: REFRESH_TOKEN_EXPIRY }
+    { expiresIn: REFRESH_TOKEN_EXPIRY } as jwt.SignOptions
   );
 };
 

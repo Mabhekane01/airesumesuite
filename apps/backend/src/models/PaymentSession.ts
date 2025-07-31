@@ -6,7 +6,7 @@ export interface IPaymentSession extends Document {
   planType: 'monthly' | 'yearly';
   amount: number;
   currency: string;
-  provider: 'stripe' | 'paystack';
+  provider: 'paystack';
   status: 'pending' | 'completed' | 'failed' | 'expired';
   expiresAt: Date;
   completedAt?: Date;
@@ -44,7 +44,7 @@ const PaymentSessionSchema: Schema = new Schema({
   },
   provider: {
     type: String,
-    enum: ['stripe', 'paystack'],
+    enum: ['paystack'],
     required: true
   },
   status: {

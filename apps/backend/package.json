@@ -48,7 +48,6 @@
     "qrcode": "^1.5.4",
     "redis": "^4.6.12",
     "speakeasy": "^2.0.0",
-    "stripe": "^14.25.0",
     "uuid": "^11.1.0",
     "validator": "^13.11.0",
     "zod": "^3.25.76"
@@ -69,7 +68,6 @@
     "@types/pdf-parse": "^1.1.5",
     "@types/qrcode": "^1.5.5",
     "@types/speakeasy": "^2.0.10",
-    "@types/stripe": "^8.0.417",
     "@types/supertest": "^6.0.2",
     "@types/uuid": "^10.0.0",
     "@types/validator": "^13.11.7",

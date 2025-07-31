@@ -330,7 +330,7 @@ export const businessValidators = {
 
     // Check rate limits
     if (updates.jobSearch?.autoApply?.criteria?.maxApplicationsPerDay) {
-      const maxAllowed = systemSettings.rateLimiting?.autoApply?.maxPerDay || 10;
+      const maxAllowed = 10; // Default rate limit for auto-applications per day
       if (updates.jobSearch.autoApply.criteria.maxApplicationsPerDay > maxAllowed) {
         throw new Error(`Maximum ${maxAllowed} auto-applications per day allowed`);
       }

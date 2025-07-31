@@ -33,9 +33,9 @@ export const securityHeaders = helmet({
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       imgSrc: ["'self'", "data:", "https:"],
-      scriptSrc: ["'self'", "https://js.stripe.com"],
-      frameSrc: ["https://js.stripe.com", "https://hooks.stripe.com"],
-      connectSrc: ["'self'", "https://api.stripe.com"],
+      scriptSrc: ["'self'"],
+      frameSrc: ["'self'"],
+      connectSrc: ["'self'", "https://api.paystack.co"],
     },
   },
   hsts: {
@@ -60,7 +60,7 @@ export const corsConfig = cors({
     if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
-      logger.warn('CORS blocked request from:', origin);
+      logger.warn('CORS blocked request from:', { origin });
       callback(new Error('Not allowed by CORS'));
     }
   },
@@ -87,13 +87,17 @@ export const ipFilter = async (req: Request, res: Response, next: NextFunction) 
   try {
     const isBlacklisted = await checkBlacklistedIP(clientIP);
     if (isBlacklisted) {
-      await securityService.logSecurityEvent({
-        ip: clientIP,
-        userAgent: req.get('User-Agent') || 'unknown',
-        event: 'blacklisted_ip_access_attempt',
-        severity: 'high',
-        metadata: { endpoint: req.path, method: req.method }
-      });
+      await securityService.logSecurityEvent(
+        'unknown', 
+        'suspicious_activity',
+        {
+          ip: clientIP,
+          userAgent: req.get('User-Agent') || 'unknown',
+          success: false,
+          reason: 'blacklisted_ip_access_attempt'
+        },
+        'high'
+      );
 
       return res.status(403).json({
         success: false,
@@ -121,14 +125,17 @@ export const requestSizeLimits = {
 export const validateRequest = (req: Request, res: Response, next: NextFunction) => {
   // Check for suspicious patterns in URL
   if (containsSuspiciousPatterns(req.url)) {
-    securityService.logSecurityEvent({
-      userId: req.user?.userId,
-      ip: req.ip || 'unknown',
-      userAgent: req.get('User-Agent') || 'unknown',
-      event: 'suspicious_url_pattern',
-      severity: 'medium',
-      metadata: { url: req.url, method: req.method }
-    });
+    securityService.logSecurityEvent(
+      (req as any).user?.id || 'unknown',
+      'suspicious_activity',
+      {
+        ip: req.ip || 'unknown',
+        userAgent: req.get('User-Agent') || 'unknown',
+        success: false,
+        reason: 'suspicious_url_pattern'
+      },
+      'medium'
+    );
 
     return res.status(400).json({
       success: false,
@@ -139,14 +146,17 @@ export const validateRequest = (req: Request, res: Response, next: NextFunction)
   // Check request headers for suspicious content
   const userAgent = req.get('User-Agent') || '';
   if (isSuspiciousUserAgent(userAgent)) {
-    securityService.logSecurityEvent({
-      userId: req.user?.userId,
-      ip: req.ip || 'unknown',
-      userAgent,
-      event: 'suspicious_user_agent',
-      severity: 'low',
-      metadata: { userAgent }
-    });
+    securityService.logSecurityEvent(
+      (req as any).user?.id || 'unknown',
+      'suspicious_activity',
+      {
+        ip: req.ip || 'unknown',
+        userAgent,
+        success: false,
+        reason: 'suspicious_user_agent'
+      },
+      'low'
+    );
   }
 
   next();

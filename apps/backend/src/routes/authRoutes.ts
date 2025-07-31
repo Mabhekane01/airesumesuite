@@ -52,10 +52,6 @@ const loginValidation = [
   body('password').isLength({ min: 1 })
 ];
 
-// Debug route
-router.get('/test', (req, res) => {
-  res.json({ message: 'Auth routes working!', timestamp: new Date().toISOString() });
-});
 
 // Modern enterprise OTP registration flow
 router.post('/send-registration-otp', registerValidation, handleValidationErrors, sendRegistrationOTP);

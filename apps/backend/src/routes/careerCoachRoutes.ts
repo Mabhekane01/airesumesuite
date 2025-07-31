@@ -3,7 +3,7 @@ import { careerCoachController } from '../controllers/careerCoachController';
 import { authMiddleware } from '../middleware/auth';
 import { requireEnterpriseSubscription, trackFeatureUsage, subscriptionRateLimit } from '../middleware/subscriptionValidation';
 
-const router = Router();
+const router: Router = Router();
 
 // Chat with AI career coach
 router.post(

@@ -33,6 +33,13 @@ export interface IUser extends Document {
   emailVerificationAttempts?: number;
   tier?: string;
   subscription_status?: string;
+  subscription_end_date?: Date;
+  cancel_at_period_end?: boolean;
+  subscription_plan_type?: string;
+  profile?: any;
+  profileViews?: number;
+  searchRankingScore?: number;
+  technicalSkills?: Array<{ name: string; level?: string; years?: number; }>;
 }
 
 const UserSchema = new Schema<IUser>({
@@ -108,7 +115,20 @@ const UserSchema = new Schema<IUser>({
   subscription_status: {
     type: String,
     default: 'inactive'
-  }
+  },
+  profileViews: {
+    type: Number,
+    default: 0
+  },
+  searchRankingScore: {
+    type: Number,
+    default: 0
+  },
+  technicalSkills: [{
+    name: String,
+    level: String,
+    years: Number
+  }]
 }, {
   timestamps: true
 });

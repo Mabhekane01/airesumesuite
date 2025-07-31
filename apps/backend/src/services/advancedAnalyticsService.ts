@@ -165,7 +165,7 @@ class AdvancedAnalyticsService {
       const seasonalPatterns = await this.calculateSeasonalPatterns(applications);
       const performanceImprovement = await this.calculatePerformanceImprovement(applications);
 
-      return {
+      const result = {
         applicationEffectiveness: coreMetrics.applicationEffectiveness || 0,
         responseRate: coreMetrics.responseRate || 0,
         interviewConversionRate: coreMetrics.interviewConversionRate || 0,

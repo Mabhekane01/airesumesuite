@@ -284,7 +284,7 @@ class LocationService {
             stateCode: state.code,
             coordinates: { latitude: state.coords.lat, longitude: state.coords.lng },
             isEnglishSpeaking: true
-          }, new mongoose.Types.ObjectId(usCountry._id));
+          }, new mongoose.Types.ObjectId(usCountry._id as string));
         }
       }
 
@@ -307,7 +307,7 @@ class LocationService {
           coordinates: { latitude: city.coords.lat, longitude: city.coords.lng },
           population: city.pop,
           isEnglishSpeaking: ['US', 'GB', 'CA', 'AU', 'NZ', 'IE', 'SG', 'IN', 'ZA'].includes(city.country)
-        }, stateLocation ? new mongoose.Types.ObjectId(stateLocation._id) : undefined);
+        }, stateLocation ? new mongoose.Types.ObjectId(stateLocation._id as string) : undefined);
       }
 
     } catch (error) {
@@ -433,8 +433,8 @@ class LocationService {
       return location.name;
     }
     
-    if (location.type === 'state' && location.parent) {
-      return `${location.name}, ${location.parent.name}`;
+    if (location.type === 'state' && location.$parent) {
+      return `${location.name}, ${location.$parent.name}`;
     }
     
     if (location.type === 'city') {

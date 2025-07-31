@@ -90,7 +90,7 @@ EmailOTPSchema.statics.createOTP = async function(
   );
 
   // Create new OTP
-  const otp = this.generateOTP();
+  const otp = (this as any).generateOTP();
   return await this.create({
     email,
     otp,

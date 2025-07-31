@@ -58,6 +58,10 @@ class SecurityService {
     return crypto.randomBytes(length).toString('hex');
   }
 
+  verifyCSRFToken(token: string, sessionToken: string): boolean {
+    return token === sessionToken;
+  }
+
   async generateTwoFactorSecret(userEmail: string): Promise<{
     secret: string;
     qrCodeUrl: string;
@@ -512,7 +516,7 @@ class SecurityService {
       }, 'high');
 
       // In production, you might want to soft delete or anonymize data
-      await UserProfile.deleteOne({ userId: new mongoose.Types.ObjectId(userId) });
+      // await UserProfile.deleteOne({ userId: new mongoose.Types.ObjectId(userId) }); // UserProfile model not available
       await User.findByIdAndDelete(userId);
 
       return { success: true, message: 'Account deleted successfully' };

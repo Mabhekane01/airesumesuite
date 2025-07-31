@@ -89,7 +89,14 @@ export class SubscriptionService {
       logger.info(`Sending renewal reminders to ${usersNeedingReminder.length} users`);
 
       for (const user of usersNeedingReminder) {
-        await notificationService.sendRenewalReminder(user._id.toString(), user.subscription_end_date);
+        await notificationService.createNotification({
+          userId: user._id.toString(),
+          type: 'info',
+          category: 'payment',
+          title: 'Subscription Renewal Reminder',
+          message: `Your subscription expires on ${user.subscription_end_date}`,
+          priority: 'medium'
+        });
       }
     } catch (error) {
       logger.error('Error sending renewal reminders:', {
@@ -195,7 +202,14 @@ export class SubscriptionService {
       });
 
       // Send renewal success notification
-      await notificationService.sendRenewalSuccess(user._id.toString(), endDate);
+      await notificationService.createNotification({
+        userId: user._id.toString(),
+        type: 'success',
+        category: 'payment',
+        title: 'Subscription Renewed Successfully',
+        message: `Your subscription has been renewed until ${endDate}`,
+        priority: 'high'
+      });
 
       logger.info('Subscription renewed successfully', {
         userId: user._id.toString(),
@@ -220,7 +234,14 @@ export class SubscriptionService {
       });
 
       // Send payment failed notification
-      await notificationService.sendRenewalFailed(user._id.toString(), error);
+      await notificationService.createNotification({
+        userId: user._id.toString(),
+        type: 'error',
+        category: 'payment',
+        title: 'Subscription Renewal Failed',
+        message: `Your subscription renewal failed: ${error}`,
+        priority: 'high'
+      });
 
       logger.warn('Subscription renewal failed', {
         userId: user._id.toString(),
@@ -254,7 +275,14 @@ export class SubscriptionService {
       });
 
       // Send expiration notification
-      await notificationService.sendSubscriptionExpired(user._id.toString());
+      await notificationService.createNotification({
+        userId: user._id.toString(),
+        type: 'warning',
+        category: 'payment',
+        title: 'Subscription Expired',
+        message: 'Your subscription has expired and you have been downgraded to the free tier',
+        priority: 'high'
+      });
 
       logger.info('User subscription expired and downgraded', {
         userId: user._id.toString(),

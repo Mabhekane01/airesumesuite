@@ -104,6 +104,9 @@ export interface IInterviewCommunication extends Document {
   
   createdAt: Date;
   updatedAt: Date;
+  
+  // Virtual properties
+  _replyCount?: number;
 }
 
 const InterviewCommunicationSchema = new Schema<IInterviewCommunication>({

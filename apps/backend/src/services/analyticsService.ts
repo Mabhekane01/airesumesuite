@@ -296,7 +296,7 @@ class AnalyticsService {
       const averageApplicationsPerUser = totalUsers > 0 ? totalApplications / totalUsers : 0;
       const userRetentionRate = activeUsersThisMonth > 0 ? (activeUsersThisWeek / activeUsersThisMonth) * 100 : 0;
 
-      return {
+      const result = {
         overview: {
           totalUsers,
           totalApplications,
@@ -356,6 +356,9 @@ class AnalyticsService {
         this.generateUserRecommendations(userId)
       ]);
       
+      // Use user as profile for compatibility
+      const profile = user;
+      
       // Get user sessions for location data
       const userSessions = await UserSession.find({
         userId: new mongoose.Types.ObjectId(userId)
@@ -397,7 +400,7 @@ class AnalyticsService {
       // Activity timeline
       const activityTimeline = this.generateActivityTimeline(applications, profile);
 
-      return {
+      const result = {
         applicationMetrics: {
           totalApplications,
           successRate: Math.round(successRate),
@@ -486,7 +489,7 @@ class AnalyticsService {
       // Competitive analysis
       const competitiveAnalysis = await this.generateCompetitiveAnalysis(companyName, applications);
 
-      return {
+      const result = {
         overview: {
           totalApplications,
           successRate: Math.round(successRate),
@@ -656,7 +659,7 @@ class AnalyticsService {
       // Analyze skills from job applications and user profiles
       const [jobApplications, userProfiles] = await Promise.all([
         JobApplication.find({}).select('jobDescription requirements applicationStrategy compensation'),
-        UserProfile.find({}).select('technicalSkills')
+        User.find({}).select('technicalSkills')
       ]);
 
       // Extract skills from job descriptions and requirements

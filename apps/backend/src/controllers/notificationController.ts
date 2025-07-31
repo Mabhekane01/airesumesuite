@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import mongoose from 'mongoose';
 import { notificationService } from '../services/notificationService';
 import { NotificationPreferences } from '../models';
 import { handleControllerError } from '../utils/errorUtils';
@@ -232,7 +233,7 @@ export class NotificationController {
         return;
       }
 
-      const preferences = await NotificationPreferences.getOrCreateForUser(userId);
+      const preferences = await NotificationPreferences.getOrCreateForUser(new mongoose.Types.ObjectId(userId));
 
       res.json({
         success: true,
@@ -262,7 +263,7 @@ export class NotificationController {
         return;
       }
 
-      const preferences = await NotificationPreferences.getOrCreateForUser(userId);
+      const preferences = await NotificationPreferences.getOrCreateForUser(new mongoose.Types.ObjectId(userId));
       
       // Update the preferences
       Object.assign(preferences, updates);
@@ -301,7 +302,7 @@ export class NotificationController {
 
       const { enabled, channels, priority } = req.body;
 
-      const preferences = await NotificationPreferences.getOrCreateForUser(userId);
+      const preferences = await NotificationPreferences.getOrCreateForUser(new mongoose.Types.ObjectId(userId));
       
       await preferences.updateCategory(category, {
         enabled,

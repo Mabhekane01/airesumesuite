@@ -11,100 +11,9 @@ import { requireEnterpriseSubscription, trackFeatureUsage, subscriptionRateLimit
 
 const router: Router = express.Router();
 
-// Test endpoint to verify routes are working (no auth required)
-router.get('/test', (req: Request, res: Response) => {
-  res.json({ message: 'Resume routes are working', timestamp: new Date().toISOString() });
-});
 
-// Development endpoints - Only enabled in development mode
-let isDevelopment = process.env.NODE_ENV === 'development' && !process.env.DISABLE_DEV_ENDPOINTS;
-console.log('🔧 NODE_ENV check:', process.env.NODE_ENV, 'isDevelopment:', isDevelopment);
 
-// Additional safety check for production
-if (process.env.NODE_ENV === 'production') {
-  console.log('🚨 PRODUCTION MODE: Development endpoints are disabled for security');
-  isDevelopment = false;
-}
-
-// Define mockUser outside the if block so it's accessible to both development sections
-const mockUser = { id: '507f1f77bcf86cd799439011', email: 'dev@example.com' }; // Valid ObjectId
-
-if (isDevelopment) {
-  console.log('⚠️ Development endpoints enabled - SHOULD NOT BE USED IN PRODUCTION');
-
-  // Dev test endpoint for basic functionality
-  router.post('/test-dev', (req: Request, res: Response) => {
-    console.log('🧪 DEV: Test endpoint hit - WARNING: Development mode only');
-    res.json({ success: true, message: 'Dev endpoint working', received: req.body });
-  });
-
-  // Simple database connection test
-  router.get('/db-test', async (req: Request, res: Response) => {
-    try {
-      const mongoose = require('mongoose');
-      console.log('🔍 Testing database connection...');
-      console.log('Connection state:', mongoose.connection.readyState);
-      
-      // Try to perform a simple operation
-      const testDoc = await mongoose.connection.db.admin().ping();
-      console.log('Database ping result:', testDoc);
-      
-      res.json({ 
-        success: true, 
-        connectionState: mongoose.connection.readyState,
-        ping: testDoc
-      });
-    } catch (error) {
-      console.error('Database test failed:', error);
-      res.status(500).json({ 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Unknown error'
-      });
-    }
-  });
-
-  // Dev minimal test endpoint - DEPRECATED: Should use authenticated endpoints
-  router.post('/minimal-dev', (req: Request, res: Response) => {
-    console.log('⚠️ DEV: Minimal test endpoint hit - DEPRECATED, use authenticated endpoints');
-    (req as AuthenticatedRequest).user = mockUser;
-    resumeController.createMinimalResume(req as AuthenticatedRequest, res);
-  });
-
-  // Dev endpoint for creating resumes without auth - DEPRECATED
-  router.post('/create-dev', (req: Request, res: Response) => {
-    console.log('⚠️ DEV: Create resume dev endpoint - DEPRECATED, use authenticated /resumes endpoint');
-    console.log('🧪 DEV: Request body keys:', Object.keys(req.body));
-    (req as AuthenticatedRequest).user = mockUser;
-    resumeController.createResumeWithoutValidation(req as AuthenticatedRequest, res);
-  });
-
-  // Dev endpoint for getting resume by ID without auth - DEPRECATED
-  router.get('/get-dev/:id', (req: Request, res: Response) => {
-    console.log('⚠️ DEV: Get resume dev endpoint - DEPRECATED, use authenticated /resumes/:id endpoint');
-    console.log('🧪 DEV: Resume ID:', req.params.id);
-    (req as AuthenticatedRequest).user = mockUser;
-    resumeController.getResumeById(req as AuthenticatedRequest, res);
-  });
-} else {
-  console.log('✅ Development endpoints disabled - Production mode');
-}
-
-// Additional dev endpoints BEFORE auth middleware (conditionally enabled)
-if (process.env.NODE_ENV === 'development') {
-  console.log('✅ Setting up additional development endpoints (no auth required)');
-  
-  router.post('/generate-summary-dev', (req: Request, res: Response) => {
-    (req as AuthenticatedRequest).user = mockUser;
-    resumeController.generateSummaryForUnsavedResume(req as AuthenticatedRequest, res);
-  });
-  
-  router.post('/enhance-dev', (req: Request, res: Response) => {
-    (req as AuthenticatedRequest).user = mockUser;
-    resumeController.enhanceUnsavedResume(req as AuthenticatedRequest, res);
-  });
-}
-
-// Apply auth middleware to all routes AFTER dev endpoints
+// Apply auth middleware to all routes
 router.use(authMiddleware);
 
 // GET /api/v1/resumes/count - Get resume count for user (for debugging)
@@ -363,21 +272,5 @@ router.post('/:id/optimize-job-url', authMiddleware, requireEnterpriseSubscripti
 router.get('/:id/suggestions', (req: AuthenticatedRequest, res: Response) => resumeController.suggestMissingSections(req, res));
 
 // Additional dev endpoints (conditionally enabled)
-if (process.env.NODE_ENV === 'development') {
-  console.log('✅ Setting up additional development endpoints');
-  
-  router.post('/download-dev/:format', (req: Request, res: Response) => {
-    console.log('🧪 DEV: Download request received at dev endpoint');
-    (req as AuthenticatedRequest).user = mockUser;
-    resumeController.downloadResume(req as AuthenticatedRequest, res);
-  });
-  
-  router.post('/ats-analysis-dev', (req: Request, res: Response) => {
-    (req as AuthenticatedRequest).user = mockUser;
-    // Mock resume ID for unsaved resumes
-    req.body.resumeData = { ...req.body.resumeData, _id: 'dev-resume-id' };
-    resumeController.analyzeATSCompatibility(req as AuthenticatedRequest, res);
-  });
-}
 
 export default router;

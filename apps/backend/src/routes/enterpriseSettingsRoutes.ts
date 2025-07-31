@@ -8,7 +8,7 @@ import { validateRequest } from '../middleware/validation';
 import { auditLogger } from '../middleware/enterpriseErrorHandler';
 import { Redis } from 'ioredis';
 
-const router = express.Router();
+const router: express.Router = express.Router();
 
 // Initialize Redis for rate limiting and caching (optional)
 let redis: Redis | undefined;
@@ -56,7 +56,7 @@ const globalRateLimit = rateLimit({
   legacyHeaders: false,
   ...(redis && {
     store: new (require('rate-limit-redis'))({
-      sendCommand: (...args: string[]) => redis.call(...args),
+      sendCommand: (...args: any[]) => redis.call(...(args as [string, ...any[]])),
     })
   })
 });
@@ -433,7 +433,7 @@ router.post('/import',
  * @access Admin only
  */
 router.get('/system',
-  requirePermissions(['system:settings:read']),
+  requirePermissions('system:settings:read'),
   [
     query('environment').optional().isIn(['development', 'staging', 'production']).withMessage('Invalid environment')
   ],
@@ -447,7 +447,7 @@ router.get('/system',
  * @access Admin only
  */
 router.put('/system/:settingsId',
-  requirePermissions(['system:settings:update']),
+  requirePermissions('system:settings:update'),
   settingsController.getSettingsRateLimit(),
   [
     param('settingsId').isMongoId().withMessage('Invalid settings ID format'),
@@ -534,7 +534,7 @@ router.put('/system/:settingsId',
  * @access Admin only
  */
 router.post('/bulk/users',
-  requirePermissions(['settings:bulk:update']),
+  requirePermissions('settings:bulk:update'),
   [
     body('userIds').isArray({ min: 1, max: 1000 }).withMessage('UserIds must be an array of 1-1000 items'),
     body('userIds.*').isMongoId().withMessage('Each user ID must be valid'),
@@ -583,7 +583,7 @@ router.get('/health', (req, res) => {
  * @access Admin only
  */
 router.get('/metrics',
-  requirePermissions(['system:metrics:read']),
+  requirePermissions('system:metrics:read'),
   async (req, res) => {
     try {
       const cacheStats = await redis.hgetall('cache_stats');

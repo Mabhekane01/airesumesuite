@@ -5,6 +5,7 @@ import morgan from 'morgan';
 import compression from 'compression';
 import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
+import { EnvironmentValidator } from './utils/environmentValidator';
 import { connectDB } from './config/database';
 import { connectRedis } from './config/redis';
 // import './config/passport';
@@ -65,29 +66,13 @@ try {
 
 dotenv.config();
 
-// Production environment validation
+// Comprehensive environment validation
+console.log('🔍 Validating environment configuration...');
+EnvironmentValidator.validateAndExit();
+
 if (process.env.NODE_ENV === 'production') {
-  console.log('🚀 PRODUCTION MODE: Validating required environment variables...');
-  
-  const requiredProdVars = [
-    'DATABASE_URL',
-    'REDIS_URL', 
-    'JWT_SECRET',
-    'ALLOWED_ORIGINS'
-  ];
-  
-  const missingVars = requiredProdVars.filter(varName => !process.env[varName]);
-  
-  if (missingVars.length > 0) {
-    console.error('🚨 PRODUCTION ERROR: Missing required environment variables:', missingVars);
-    process.exit(1);
-  }
-  
-  console.log('✅ PRODUCTION: All required environment variables are set');
-  
-  // Disable development features
-  process.env.DISABLE_DEV_ENDPOINTS = 'true';
-  console.log('🔒 PRODUCTION: Development endpoints disabled');
+  console.log('🚀 PRODUCTION MODE: All environment variables validated');
+  console.log('🔒 PRODUCTION: Security features enabled');
 } else {
   console.log('🔧 DEVELOPMENT MODE: Running with relaxed security settings');
 }

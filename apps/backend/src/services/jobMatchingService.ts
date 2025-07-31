@@ -1,7 +1,26 @@
 
-import { JobApplication, IUserProfile } from '../models';
+import { JobApplication, IUserProfile, User, IUser } from '../models';
 import { aiOptimizationService } from './aiOptimizationService';
 import mongoose from 'mongoose';
+
+// Helper function to convert IUser to IUserProfile
+function userToProfile(user: IUser): IUserProfile {
+  return {
+    preferredRoles: user.profile?.preferredRoles || [],
+    yearsOfExperience: user.profile?.yearsOfExperience || 0,
+    technicalSkills: user.technicalSkills || [],
+    industries: user.profile?.industries || [],
+    salaryExpectation: user.profile?.salaryExpectation,
+    workPreferences: user.profile?.workPreferences,
+    openToRemote: user.profile?.openToRemote,
+    currentLocation: user.lastKnownLocation,
+    preferredLocations: user.profile?.preferredLocations,
+    openToRelocation: user.profile?.openToRelocation,
+    expectedSalary: user.profile?.expectedSalary,
+    workType: user.profile?.workType,
+    preferredIndustries: user.profile?.preferredIndustries
+  };
+}
 
 export interface JobListing {
   id: string;
@@ -97,10 +116,11 @@ class JobMatchingService {
     };
   }> {
     try {
-      const userProfile = await UserProfile.findOne({ userId: new mongoose.Types.ObjectId(userId) });
-      if (!userProfile) {
+      const user = await User.findById(userId);
+      if (!user) {
         throw new Error('User profile not found');
       }
+      const userProfile = userToProfile(user);
 
       // Get user's applied jobs to filter out
       const appliedJobs = filters.excludeApplied 
@@ -288,10 +308,11 @@ class JobMatchingService {
 
   async getJobRecommendations(userId: string, count: number = 10): Promise<JobMatch[]> {
     try {
-      const userProfile = await UserProfile.findOne({ userId: new mongoose.Types.ObjectId(userId) });
-      if (!userProfile) {
+      const user = await User.findById(userId);
+      if (!user) {
         throw new Error('User profile not found');
       }
+      const userProfile = userToProfile(user);
 
       // Get personalized filters based on user profile
       const personalizedFilters = this.generatePersonalizedFilters(userProfile);
@@ -310,10 +331,11 @@ class JobMatchingService {
         throw new Error('Job not found');
       }
 
-      const userProfile = await UserProfile.findOne({ userId: new mongoose.Types.ObjectId(userId) });
-      if (!userProfile) {
+      const user = await User.findById(userId);
+      if (!user) {
         throw new Error('User profile not found');
       }
+      const userProfile = userToProfile(user);
 
       // Find jobs similar to the given job
       const similarFilters: JobSearchFilters = {
@@ -459,21 +481,21 @@ class JobMatchingService {
     const userLocation = userProfile.currentLocation;
     const jobLocation = job.location;
 
-    if (userLocation.city?.toLowerCase() === jobLocation.city?.toLowerCase() &&
-        userLocation.state?.toLowerCase() === jobLocation.state?.toLowerCase()) {
+    if (userLocation?.city?.toLowerCase() === jobLocation.city?.toLowerCase() &&
+        userLocation?.country?.toLowerCase() === jobLocation.country?.toLowerCase()) {
       return 100;
     }
 
     // Check preferred locations
-    if (userProfile.preferredLocations.some(loc => 
-      loc.toLowerCase().includes(jobLocation.city?.toLowerCase() || '') ||
-      loc.toLowerCase().includes(jobLocation.state?.toLowerCase() || '')
+    if (userProfile.preferredLocations?.some(loc => 
+      loc.city?.toLowerCase() === jobLocation.city?.toLowerCase() ||
+      loc.country?.toLowerCase() === jobLocation.country?.toLowerCase()
     )) {
       return 90;
     }
 
-    // Same state
-    if (userLocation.state?.toLowerCase() === jobLocation.state?.toLowerCase()) {
+    // Same country
+    if (userLocation?.country?.toLowerCase() === jobLocation.country?.toLowerCase()) {
       return 70;
     }
 
@@ -672,7 +694,7 @@ class JobMatchingService {
       remote: userProfile.openToRemote,
       salaryMin: userProfile.expectedSalary ? userProfile.expectedSalary.min * 0.8 : undefined,
       experienceLevel: this.getExperienceLevelFromYears(userProfile.yearsOfExperience),
-      employmentType: userProfile.workType,
+      employmentType: userProfile.workType ? [userProfile.workType] : undefined,
       industry: userProfile.preferredIndustries,
       skills: userProfile.technicalSkills.slice(0, 5).map(skill => skill.name),
       postedWithin: 30,

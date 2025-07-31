@@ -2,12 +2,11 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IPayment extends Document {
   userId: string;
-  stripeInvoiceId?: string;
   paystackReference?: string;
   amount: number;
   currency: string;
   status: 'succeeded' | 'failed' | 'pending' | 'cancelled';
-  provider: 'stripe' | 'paystack';
+  provider: 'paystack';
   paymentMethod?: string;
   description?: string;
   metadata?: Record<string, any>;
@@ -22,13 +21,8 @@ const PaymentSchema: Schema = new Schema({
     required: true,
     index: true
   },
-  stripeInvoiceId: {
-    type: String,
-    sparse: true
-  },
   paystackReference: {
-    type: String,
-    sparse: true
+    type: String
   },
   amount: {
     type: Number,
@@ -48,7 +42,7 @@ const PaymentSchema: Schema = new Schema({
   },
   provider: {
     type: String,
-    enum: ['stripe', 'paystack'],
+    enum: ['paystack'],
     required: true
   },
   paymentMethod: {
@@ -70,7 +64,6 @@ const PaymentSchema: Schema = new Schema({
 
 // Indexes for better query performance
 PaymentSchema.index({ userId: 1, status: 1 });
-PaymentSchema.index({ stripeInvoiceId: 1 }, { sparse: true });
 PaymentSchema.index({ paystackReference: 1 }, { sparse: true });
 PaymentSchema.index({ createdAt: -1 });
 

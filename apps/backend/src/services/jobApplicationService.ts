@@ -1,8 +1,28 @@
 import { JobApplication, IJobApplication } from '../models/JobApplication';
-// UserProfile model removed - using User model for basic user info
+import { User, IUser } from '../models/User';
+import { IUserProfile } from '../models';
 import { Resume } from '../models/Resume';
 import { aiOptimizationService } from './aiOptimizationService';
 import mongoose from 'mongoose';
+
+// Helper function to convert IUser to IUserProfile
+function userToProfile(user: IUser): IUserProfile {
+  return {
+    preferredRoles: user.profile?.preferredRoles || [],
+    yearsOfExperience: user.profile?.yearsOfExperience || 0,
+    technicalSkills: user.technicalSkills || [],
+    industries: user.profile?.industries || [],
+    salaryExpectation: user.profile?.salaryExpectation,
+    workPreferences: user.profile?.workPreferences,
+    openToRemote: user.profile?.openToRemote,
+    currentLocation: user.lastKnownLocation,
+    preferredLocations: user.profile?.preferredLocations,
+    openToRelocation: user.profile?.openToRelocation,
+    expectedSalary: user.profile?.expectedSalary,
+    workType: user.profile?.workType,
+    preferredIndustries: user.profile?.preferredIndustries
+  };
+}
 import { v4 as uuidv4 } from 'uuid';
 
 export interface CreateJobApplicationData {
@@ -136,10 +156,10 @@ class JobApplicationService {
   async createApplication(userId: string, applicationData: CreateJobApplicationData): Promise<IJobApplication> {
     try {
       // Get user profile for AI optimization, create basic one if doesn't exist
-      let userProfile = await UserProfile.findOne({ userId: new mongoose.Types.ObjectId(userId) });
+      let userProfile = await User.findById(userId);
       if (!userProfile) {
         // Create a basic profile for the user
-        userProfile = new UserProfile({
+        userProfile = new User({
           userId: new mongoose.Types.ObjectId(userId),
           headline: 'Job Seeker',
           bio: '',
@@ -473,8 +493,8 @@ class JobApplicationService {
       if (updates.companyName !== undefined) application.companyName = updates.companyName;
       if (updates.jobDescription !== undefined) application.jobDescription = updates.jobDescription;
       if (updates.jobUrl !== undefined) application.jobUrl = updates.jobUrl;
-      if (updates.jobSource !== undefined) application.jobSource = updates.jobSource;
-      if (updates.applicationMethod !== undefined) application.applicationMethod = updates.applicationMethod;
+      if (updates.jobSource !== undefined) application.jobSource = updates.jobSource as 'manual' | 'linkedin' | 'indeed' | 'glassdoor' | 'company_website' | 'referral' | 'recruiter';
+      if (updates.applicationMethod !== undefined) application.applicationMethod = updates.applicationMethod as 'online' | 'email' | 'referral' | 'recruiter' | 'career_fair' | 'networking';
 
       // Update job location
       if (updates.jobLocation) {
@@ -486,10 +506,49 @@ class JobApplicationService {
 
       // Update compensation
       if (updates.compensation) {
-        application.compensation = {
-          ...application.compensation,
-          ...updates.compensation
-        };
+        if (application.compensation) {
+          // Update existing compensation
+          if (updates.compensation.salaryRange) {
+            application.compensation.salaryRange = {
+              min: updates.compensation.salaryRange.min || application.compensation.salaryRange?.min || 0,
+              max: updates.compensation.salaryRange.max || application.compensation.salaryRange?.max || 0,
+              currency: updates.compensation.salaryRange.currency || application.compensation.salaryRange?.currency || 'USD',
+              period: (updates.compensation.salaryRange.period as 'hourly' | 'monthly' | 'yearly') || application.compensation.salaryRange?.period || 'yearly'
+            };
+          }
+          if (updates.compensation.equity) {
+            application.compensation.equity = {
+              min: updates.compensation.equity.min || application.compensation.equity?.min || 0,
+              max: updates.compensation.equity.max || application.compensation.equity?.max || 0,
+              type: (updates.compensation.equity.type as 'options' | 'rsu' | 'percentage') || application.compensation.equity?.type || 'options'
+            };
+          }
+          if (updates.compensation.benefits) application.compensation.benefits = updates.compensation.benefits;
+          if (updates.compensation.bonusStructure) application.compensation.bonusStructure = updates.compensation.bonusStructure;
+          if (updates.compensation.totalCompensation) application.compensation.totalCompensation = updates.compensation.totalCompensation;
+        } else {
+          // Create new compensation with proper typing
+        const newCompensation: any = {};
+        if (updates.compensation.salaryRange) {
+          newCompensation.salaryRange = {
+            min: updates.compensation.salaryRange.min || 0,
+            max: updates.compensation.salaryRange.max || 0,
+            currency: updates.compensation.salaryRange.currency || 'USD',
+            period: (updates.compensation.salaryRange.period as 'hourly' | 'monthly' | 'yearly') || 'yearly'
+          };
+        }
+        if (updates.compensation.equity) {
+          newCompensation.equity = {
+            min: updates.compensation.equity.min || 0,
+            max: updates.compensation.equity.max || 0,
+            type: (updates.compensation.equity.type as 'options' | 'rsu' | 'percentage') || 'options'
+          };
+        }
+        if (updates.compensation.benefits) newCompensation.benefits = updates.compensation.benefits;
+        if (updates.compensation.bonusStructure) newCompensation.bonusStructure = updates.compensation.bonusStructure;
+        if (updates.compensation.totalCompensation) newCompensation.totalCompensation = updates.compensation.totalCompensation;
+        application.compensation = newCompensation;
+        }
       }
 
       // Update referral contact
@@ -511,13 +570,17 @@ class JobApplicationService {
         };
         
         if (updates.documentsUsed.resumeId) {
-          processedDocumentsUsed.resumeId = new mongoose.Types.ObjectId(updates.documentsUsed.resumeId);
+          processedDocumentsUsed.resumeId = typeof updates.documentsUsed.resumeId === 'string' 
+            ? new mongoose.Types.ObjectId(updates.documentsUsed.resumeId)
+            : updates.documentsUsed.resumeId;
         }
         if (updates.documentsUsed.coverLetterId) {
-          processedDocumentsUsed.coverLetterId = new mongoose.Types.ObjectId(updates.documentsUsed.coverLetterId);
+          processedDocumentsUsed.coverLetterId = typeof updates.documentsUsed.coverLetterId === 'string'
+            ? new mongoose.Types.ObjectId(updates.documentsUsed.coverLetterId)
+            : updates.documentsUsed.coverLetterId;
         }
         
-        application.documentsUsed = processedDocumentsUsed;
+        application.documentsUsed = processedDocumentsUsed as any;
       }
       if (updates.applicationStrategy) {
         application.applicationStrategy = {
@@ -1128,12 +1191,12 @@ class JobApplicationService {
         throw new Error('Job application not found');
       }
 
-      const userProfile = await UserProfile.findOne({ userId: new mongoose.Types.ObjectId(userId) });
-      if (!userProfile) {
+      const user = await User.findById(userId);
+      if (!user) {
         throw new Error('User profile not found');
       }
 
-      const analysis = await aiOptimizationService.analyzeJobMatch(userProfile, application);
+      const analysis = await aiOptimizationService.analyzeJobMatch(userToProfile(user), application);
       return analysis;
     } catch (error) {
       if (error instanceof Error) {
@@ -1154,12 +1217,12 @@ class JobApplicationService {
         throw new Error('Job application not found');
       }
 
-      const userProfile = await UserProfile.findOne({ userId: new mongoose.Types.ObjectId(userId) });
-      if (!userProfile) {
+      const user = await User.findById(userId);
+      if (!user) {
         throw new Error('User profile not found');
       }
 
-      const coverLetter = await aiOptimizationService.optimizeCoverLetter(userProfile, application, template);
+      const coverLetter = await aiOptimizationService.optimizeCoverLetter(userToProfile(user), application, template);
       return coverLetter;
     } catch (error) {
       if (error instanceof Error) {

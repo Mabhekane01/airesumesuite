@@ -1,32 +1,6 @@
 import { Request, Response } from 'express';
 import { AuthenticatedRequest } from '../middleware/auth';
-// Conditional imports with fallbacks for missing packages
-let Stripe: any;
-let z: any;
-
-try {
-  Stripe = require('stripe');
-} catch {
-  // Fallback Stripe-like interface for development
-  Stripe = class {
-    constructor() {}
-    static createCheckoutSession() { throw new Error('Stripe not installed'); }
-  };
-}
-
-try {
-  z = require('zod');
-} catch {
-  // Fallback validation for development
-  z = {
-    object: () => ({ parse: (data: any) => data }),
-    enum: () => ({}),
-    number: () => ({ positive: () => ({ max: () => ({}) }) }),
-    string: () => ({ length: () => ({ regex: () => ({}) }), min: () => ({ max: () => ({}) }) }),
-    boolean: () => ({}),
-    optional: () => ({})
-  };
-}
+import { z } from 'zod';
 import helmet from 'helmet';
 import { paymentService } from '../services/paymentService';
 import { userService } from '../services/userService';
@@ -37,7 +11,7 @@ import { logger } from '../utils/logger';
 // Input validation schemas
 const CreatePaymentSessionSchema = z.object({
   planType: z.enum(['monthly', 'yearly']),
-  paymentMethod: z.enum(['stripe', 'paypal', 'paystack']),
+  paymentMethod: z.enum(['paystack']),
   amount: z.number().positive().max(10000),
   currency: z.string().length(3).regex(/^[A-Z]{3}$/),
   location: z.object({
@@ -48,9 +22,6 @@ const CreatePaymentSessionSchema = z.object({
   }).optional()
 });
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2023-10-16',
-});
 
 // securityService is imported as a singleton
 
@@ -152,32 +123,14 @@ export const createPaymentSession = async (req: AuthenticatedRequest, res: Respo
     }
 
     // Create payment session
-    let sessionData;
-    
-    if (paymentMethod === 'stripe') {
-      sessionData = await paymentService.createStripeSession({
-        userId,
-        userEmail: user.email,
-        planType,
-        amount,
-        currency,
-        location
-      });
-    } else if (paymentMethod === 'paystack') {
-      sessionData = await paymentService.createPaystackSession({
-        userId,
-        userEmail: user.email,
-        planType,
-        amount,
-        currency,
-        location
-      });
-    } else {
-      return res.status(400).json({
-        success: false,
-        message: 'PayPal integration not yet implemented'
-      });
-    }
+    const sessionData = await paymentService.createPaystackSession({
+      userId,
+      userEmail: user.email,
+      planType,
+      amount,
+      currency,
+      location
+    });
 
     // Log successful payment session creation
     logger.info('Payment session created successfully', {
@@ -241,28 +194,17 @@ export const createPaymentSession = async (req: AuthenticatedRequest, res: Respo
 
 export const handleWebhook = async (req: Request, res: Response) => {
   try {
-    const sig = req.headers['stripe-signature'] as string;
-    const paypalSig = req.headers['paypal-signature'] as string;
+    const sig = req.headers['x-paystack-signature'] as string;
 
-    if (sig) {
-      // Handle Stripe webhook
-      const event = stripe.webhooks.constructEvent(
-        req.body,
-        sig,
-        process.env.STRIPE_WEBHOOK_SECRET!
-      );
-
-      await paymentService.handleStripeWebhook(event);
-    } else if (paypalSig) {
-      // Handle PayPal webhook
-      await paymentService.handlePayPalWebhook(req.body, paypalSig);
-    } else {
+    if (!sig) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid webhook signature'
+        message: 'Missing Paystack signature'
       });
     }
 
+    // Handle Paystack webhook
+    await paymentService.handleWebhook(sig, req.body);
     res.json({ received: true });
 
   } catch (error) {

@@ -9,7 +9,13 @@ try {
   console.warn('Anthropic SDK not available - some AI features will be limited');
   Anthropic = null;
 }
-import { AIServiceError } from '../../middleware/enterpriseErrorHandler';
+// Custom error class for AI service errors
+class AIServiceError extends Error {
+  constructor(message: string, public code?: string) {
+    super(message);
+    this.name = 'AIServiceError';
+  }
+}
 
 export interface AIProvider {
   name: string;
@@ -110,8 +116,7 @@ export class EnterpriseAIService {
     if (availableProviders.length === 0) {
       throw new AIServiceError(
         'No AI providers are currently available',
-        'all',
-        { operationName, availableProviders: this.providers.map(p => ({ name: p.name, available: p.isAvailable })) }
+        'all'
       );
     }
 
@@ -149,12 +154,7 @@ export class EnterpriseAIService {
 
     throw new AIServiceError(
       `All AI providers failed for ${operationName}`,
-      'fallback',
-      { 
-        operationName, 
-        attempts: attemptResults,
-        lastError: lastError?.message 
-      }
+      'fallback'
     );
   }
 

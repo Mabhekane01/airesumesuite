@@ -10,15 +10,7 @@ try {
   const { interviewNotificationService: service } = require('../services/interviewNotificationService');
   interviewNotificationService = service;
 } catch (error) {
-  console.warn('⚠️  Interview notification service not available:', error);
-  // Create a mock service that doesn't crash
-  interviewNotificationService = {
-    scheduleInterviewNotifications: async () => console.log('Mock: Interview notifications not available'),
-    cancelInterviewNotifications: async () => console.log('Mock: Cancel notifications not available'),
-    rescheduleInterviewNotifications: async () => console.log('Mock: Reschedule notifications not available'),
-    sendTestReminder: async () => false,
-    getQueueStatus: () => ({ totalJobs: 0, pendingJobs: 0, executedJobs: 0, jobsByType: {} })
-  };
+  throw new Error('Interview notification service not available. Please ensure all required services are properly configured.');
 }
 import { calendarService } from '../services/calendarService';
 import { emailService } from '../services/emailService';
@@ -741,8 +733,9 @@ export class InterviewController {
           
           // Send reschedule emails
           const user = await User.findById(userId);
-          if (user) {
-            await emailService.sendInterviewRescheduled(user, interview, interview.applicationId, originalData.scheduledDate);
+          const application = await JobApplication.findById(interview.applicationId);
+          if (user && application) {
+            await emailService.sendInterviewRescheduled(user, interview, application, originalData.scheduledDate);
           }
         } catch (notificationError) {
           console.warn('Failed to send reschedule notifications:', notificationError);
@@ -804,8 +797,9 @@ export class InterviewController {
       // Send confirmation notification
       try {
         const user = await User.findById(userId);
-        if (user) {
-          await emailService.sendInterviewConfirmation(user, interview, interview.applicationId);
+        const application = await JobApplication.findById(interview.applicationId);
+        if (user && application) {
+          await emailService.sendInterviewConfirmation(user, interview, application);
         }
       } catch (notificationError) {
         console.warn('Failed to send confirmation notification:', notificationError);
@@ -985,13 +979,10 @@ export class InterviewController {
       // Send the message via email service
       try {
         if (emailService.sendInterviewCancellation) {
-          await emailService.sendInterviewCancellation({
-            from: user.email,
-            to: communication.to.map(recipient => recipient.email),
-            subject: subject || `Message regarding ${interview.title}`,
-            text: body,
-            html: body
-          });
+          const application = await JobApplication.findById(interview.applicationId);
+          if (application) {
+            await emailService.sendInterviewCancellation(user, interview, application, body);
+          }
 
           communication.status = 'sent';
           communication.sentAt = new Date();
@@ -1183,29 +1174,13 @@ export class InterviewController {
 
       // Send email with optional calendar attachment
       try {
-        const emailOptions: any = {
-          from: user.email,
-          to: recipients.map((r: any) => r.email),
-          subject: (emailContent as any).subject,
-          text: (emailContent as any).body,
-          html: (emailContent as any).body
-        };
-
-        if (includeCalendar) {
-          const icsContent = calendarService.generateInterviewICS(interview, user, interview.applicationId as any);
-          emailOptions.attachments = [{
-            filename: `interview-${interview._id}.ics`,
-            content: icsContent,
-            contentType: 'text/calendar'
-          }];
-        }
-
-        if (emailService.sendInterviewCancellation) {
-          await emailService.sendInterviewCancellation(emailOptions);
+        const application = await JobApplication.findById(interview.applicationId);
+        if (application && emailService.sendInterviewCancellation) {
+          await emailService.sendInterviewCancellation(user, interview, application, (emailContent as any).body);
           communication.status = 'sent';
           communication.sentAt = new Date();
         } else {
-          throw new Error('Email service not available');
+          throw new Error('Email service not available or application not found');
         }
       } catch (emailError) {
         console.warn('Failed to send email:', emailError);
@@ -1304,22 +1279,9 @@ export class InterviewController {
         await communication.save();
 
         try {
-          const icsContent = calendarService.generateInterviewICS(interview, user, interview.applicationId as any);
-          
-          if (emailService.sendInterviewCancellation) {
-            await emailService.sendInterviewCancellation({
-              from: user.email,
-              to: email,
-              subject: `Interview Invitation - ${interview.title}`,
-              text: communication.body,
-              html: communication.body,
-              attachments: [{
-                filename: `interview-${interview._id}.ics`,
-                content: icsContent,
-                contentType: 'text/calendar'
-              }]
-            });
-
+          const application = await JobApplication.findById(interview.applicationId);
+          if (application && emailService.sendInterviewCancellation) {
+            await emailService.sendInterviewCancellation(user, interview, application, communication.body);
             communication.status = 'sent';
             communication.sentAt = new Date();
           }
@@ -1916,15 +1878,9 @@ export class InterviewController {
 
       // Send follow-up email
       try {
-        if (emailService.sendInterviewCancellation) {
-          await emailService.sendInterviewCancellation({
-            from: user.email,
-            to: recipients.map((r: any) => r.email),
-            subject: `Follow-up: ${interview.title}`,
-            text: message,
-            html: message
-          });
-
+        const application = await JobApplication.findById(interview.applicationId);
+        if (application && emailService.sendInterviewCancellation) {
+          await emailService.sendInterviewCancellation(user, interview, application, message);
           communication.status = 'sent';
           communication.sentAt = new Date();
         }

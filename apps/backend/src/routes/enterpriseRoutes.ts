@@ -160,12 +160,12 @@ router.post(
             switch (analysisType) {
               case 'performance':
                 return await enterpriseController.generatePerformanceReport(
-                  { ...req, user: { ...req.user, userId } } as AuthenticatedRequest,
+                  { ...req, user: { ...req.user, userId } } as any,
                   res
                 );
               case 'recommendations':
                 return await enterpriseController.getAutomatedRecommendations(
-                  { ...req, user: { ...req.user, userId } } as AuthenticatedRequest,
+                  { ...req, user: { ...req.user, userId } } as any,
                   res
                 );
               default:

@@ -3,7 +3,7 @@ import { currencyController, currencyValidation } from '../controllers/currencyC
 import { authenticateToken } from '../middleware/auth';
 import { cacheMiddleware, staticDataCacheConfig } from '../middleware/cache';
 
-const router = Router();
+const router: Router = Router();
 
 // Public routes (no authentication required)
 router.get(

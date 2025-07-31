@@ -26,4 +26,26 @@ export interface IUserProfile {
     partTime: boolean;
     contract: boolean;
   };
+  // Additional properties for job matching
+  openToRemote?: boolean;
+  currentLocation?: {
+    city: string;
+    country: string;
+    coordinates?: {
+      latitude: number;
+      longitude: number;
+    };
+  };
+  preferredLocations?: Array<{
+    city: string;
+    country: string;
+  }>;
+  openToRelocation?: boolean;
+  expectedSalary?: {
+    min: number;
+    max: number;
+    currency: string;
+  };
+  workType?: 'full_time' | 'part_time' | 'contract' | 'freelance';
+  preferredIndustries?: string[];
 }

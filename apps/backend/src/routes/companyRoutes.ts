@@ -3,7 +3,7 @@ import { companyController, companyValidation } from '../controllers/companyCont
 import { authenticateToken } from '../middleware/auth';
 import { cacheMiddleware, companyCacheConfig, staticDataCacheConfig } from '../middleware/cache';
 
-const router = Router();
+const router: Router = Router();
 
 // Public routes for reference data
 router.get(

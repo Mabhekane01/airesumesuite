@@ -88,6 +88,9 @@ export interface INotificationPreferences extends Document {
   
   createdAt: Date;
   updatedAt: Date;
+  
+  // Instance methods
+  updateCategory(category: string, settings: { enabled?: boolean; channels?: string[]; priority?: string }): void;
 }
 
 const categoryPreferencesSchema = new Schema({
@@ -253,6 +256,17 @@ const NotificationPreferencesSchema = new Schema<INotificationPreferences>({
   timestamps: true
 });
 
+// Static methods interface
+interface INotificationPreferencesModel extends mongoose.Model<INotificationPreferences> {
+  getOrCreateForUser(userId: mongoose.Types.ObjectId): Promise<INotificationPreferences>;
+  shouldSendNotification(
+    userId: mongoose.Types.ObjectId,
+    category: string,
+    channel?: string,
+    priority?: 'low' | 'medium' | 'high' | 'urgent'
+  ): Promise<boolean>;
+}
+
 // Static methods
 NotificationPreferencesSchema.statics.getOrCreateForUser = async function(userId: mongoose.Types.ObjectId) {
   let preferences = await this.findOne({ userId });
@@ -270,7 +284,7 @@ NotificationPreferencesSchema.statics.shouldSendNotification = async function(
   channel: string = 'inApp',
   priority: 'low' | 'medium' | 'high' | 'urgent' = 'medium'
 ) {
-  const preferences = await this.getOrCreateForUser(userId);
+  const preferences = await (this as any).getOrCreateForUser(userId);
   
   // For urgent notifications, bypass all checks
   if (priority === 'urgent') {
@@ -350,4 +364,4 @@ NotificationPreferencesSchema.methods.updateCategory = function(
   return this.save();
 };
 
-export const NotificationPreferences = mongoose.model<INotificationPreferences>('NotificationPreferences', NotificationPreferencesSchema);
+export const NotificationPreferences = mongoose.model<INotificationPreferences, INotificationPreferencesModel>('NotificationPreferences', NotificationPreferencesSchema);

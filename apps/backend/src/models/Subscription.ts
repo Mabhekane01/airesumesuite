@@ -2,9 +2,7 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 export interface ISubscription extends Document {
   userId: string;
-  stripeSubscriptionId?: string;
   paystackSubscriptionId?: string;
-  stripeCustomerId?: string;
   paystackCustomerId?: string;
   planType: 'monthly' | 'yearly';
   status: 'active' | 'cancelled' | 'expired' | 'past_due';
@@ -23,17 +21,8 @@ const SubscriptionSchema: Schema = new Schema({
     required: true,
     index: true
   },
-  stripeSubscriptionId: {
-    type: String,
-    sparse: true
-  },
   paystackSubscriptionId: {
-    type: String,
-    sparse: true
-  },
-  stripeCustomerId: {
-    type: String,
-    sparse: true
+    type: String
   },
   paystackCustomerId: {
     type: String,
@@ -75,7 +64,6 @@ const SubscriptionSchema: Schema = new Schema({
 
 // Indexes for better query performance
 SubscriptionSchema.index({ userId: 1, status: 1 });
-SubscriptionSchema.index({ stripeSubscriptionId: 1 }, { sparse: true });
 SubscriptionSchema.index({ paystackSubscriptionId: 1 }, { sparse: true });
 SubscriptionSchema.index({ currentPeriodEnd: 1 });
 

@@ -159,7 +159,6 @@ export class ResumeController {
 
   async createMinimalResume(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
-      console.log('🧪 Creating minimal resume for testing');
       
       const mongoose = require('mongoose');
       const { Resume } = require('../../models/Resume');
@@ -487,7 +486,7 @@ export class ResumeController {
           { 
             analysisType: 'ats_compatibility', 
             score: analysis.score,
-            totalIssues: analysis.issues?.length || 0
+            totalIssues: analysis.improvementAreas?.length || 0
           }
         );
       } catch (notificationError) {

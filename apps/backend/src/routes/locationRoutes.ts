@@ -4,7 +4,7 @@ import { authenticateToken } from '../middleware/auth';
 import { cacheMiddleware, locationCacheConfig, staticDataCacheConfig } from '../middleware/cache';
 import axios from 'axios';
 
-const router = Router();
+const router: Router = Router();
 
 // Public routes (no authentication required)
 

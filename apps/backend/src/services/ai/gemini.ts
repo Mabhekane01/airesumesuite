@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
 
 const API_KEY = process.env.GEMINI_API_KEY;
 
@@ -661,12 +661,12 @@ RESPOND WITH ONLY PURE JSON - NO MARKDOWN, NO CODE BLOCKS, NO OTHER TEXT.
         },
         safetySettings: [
           {
-            category: 'HARM_CATEGORY_HARASSMENT',
-            threshold: 'BLOCK_NONE',
+            category: HarmCategory.HARM_CATEGORY_HARASSMENT,
+            threshold: HarmBlockThreshold.BLOCK_NONE,
           },
           {
-            category: 'HARM_CATEGORY_HATE_SPEECH',
-            threshold: 'BLOCK_NONE',
+            category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+            threshold: HarmBlockThreshold.BLOCK_NONE,
           },
         ],
       });
@@ -1003,110 +1003,6 @@ Respond only with the JSON data, no additional text.
     } catch (error) {
       console.error('Error generating text with Gemini:', error);
       throw new Error('Failed to generate text');
-    }
-  }
-
-  async generateAdvancedCoverLetterVariations(options: {
-    personalInfo: any;
-    jobDescription: string;
-    jobTitle: string;
-    companyName: string;
-    resumeData?: any;
-    variationCount?: number;
-  }): Promise<Array<{ tone: string; content: string; strengths: string[]; }>> {
-    if (!this.model) {
-      throw new Error('Gemini API not configured. Please set GEMINI_API_KEY environment variable.');
-    }
-
-    const { personalInfo, jobDescription, jobTitle, companyName, resumeData, variationCount = 3 } = options;
-
-    const prompt = `
-You are an expert cover letter writer. Create ${variationCount} distinct cover letter variations for this job application, each with a different tone and approach, but all highly effective and tailored.
-
-CANDIDATE INFO:
-Name: ${personalInfo.firstName} ${personalInfo.lastName}
-Email: ${personalInfo.email}
-Location: ${personalInfo.location}
-
-JOB DETAILS:
-Position: ${jobTitle}
-Company: ${companyName}
-Job Description: ${jobDescription}
-
-RESUME DATA: ${resumeData ? JSON.stringify(resumeData, null, 2) : 'No resume provided'}
-
-Create exactly ${variationCount} variations with these tones:
-1. Professional & Strategic - Corporate, formal, emphasizing strategic thinking and leadership
-2. Enthusiastic & Passionate - Energetic, showing genuine excitement and cultural fit
-3. Results-Oriented & Analytical - Data-driven, focusing on metrics and concrete achievements
-
-For each variation, provide:
-- A complete, compelling cover letter (250-350 words)
-- Key strengths highlighted in that version
-- Specific value propositions emphasized
-
-Return as JSON array in this exact format:
-[
-  {
-    "tone": "professional",
-    "content": "Full cover letter text here...",
-    "strengths": ["strength 1", "strength 2", "strength 3"]
-  },
-  {
-    "tone": "enthusiastic", 
-    "content": "Full cover letter text here...",
-    "strengths": ["strength 1", "strength 2", "strength 3"]
-  },
-  {
-    "tone": "analytical",
-    "content": "Full cover letter text here...", 
-    "strengths": ["strength 1", "strength 2", "strength 3"]
-  }
-]
-
-Each cover letter should:
-- Have a compelling opening that grabs attention
-- Demonstrate clear understanding of the role and company
-- Highlight most relevant experience and achievements
-- Show personality appropriate to the tone
-- End with a strong call to action
-- Use industry-specific keywords naturally
-- Be ATS-optimized
-
-Respond only with the JSON array, no additional text.
-`;
-
-    try {
-      const result = await this.model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text();
-      
-      const variations = cleanAndParseJson(text);
-      
-      // Ensure we have valid variations
-      if (!Array.isArray(variations) || variations.length === 0) {
-        throw new Error('Invalid variations format received');
-      }
-      
-      return variations;
-    } catch (error) {
-      console.error('Error generating cover letter variations:', error);
-      // Fallback to single basic variation
-      const basicContent = await this.generateCoverLetter({
-        personalInfo,
-        jobDescription,
-        jobTitle,
-        companyName,
-        tone: 'professional',
-        resumeData,
-        keywordOptimization: true
-      });
-      
-      return [{
-        tone: 'professional',
-        content: basicContent,
-        strengths: ['Professional tone', 'Industry-relevant content', 'Clear value proposition']
-      }];
     }
   }
 

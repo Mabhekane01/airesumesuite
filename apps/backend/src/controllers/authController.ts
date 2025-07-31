@@ -7,6 +7,7 @@ import { generateTokenPair, verifyRefreshToken } from '../utils/jwt';
 import { AuthenticatedRequest } from '../middleware/auth';
 import { emailService } from '../services/emailService';
 import { notificationService } from '../services/notificationService';
+import { INotification } from '../models/Notification';
 import { recaptchaService, RecaptchaVerificationResult } from '../services/recaptchaService';
 import { otpService } from '../services/otpService';
 import * as crypto from 'crypto';

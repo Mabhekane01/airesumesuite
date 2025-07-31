@@ -126,8 +126,8 @@ LocationSchema.virtual('parent', {
 });
 
 LocationSchema.virtual('fullName').get(function() {
-  if (this.type === 'city' && this.parent) {
-    return `${this.name}, ${this.parent.name}`;
+  if (this.type === 'city' && this.$parent) {
+    return `${this.name}, ${this.$parent.name}`;
   }
   return this.name;
 });

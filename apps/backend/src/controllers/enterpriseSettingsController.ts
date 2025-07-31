@@ -337,10 +337,13 @@ export class EnterpriseSettingsController {
       // Sanitize updates
       const sanitizedUpdates = await this.sanitizeSettingsUpdates(updates);
 
-      const updatedSettings = await this.settingsService.updateUserSettings(
+      await this.settingsService.updateUserSettings(
         userId,
         sanitizedUpdates
       );
+
+      // Get the updated settings
+      const updatedSettings = await this.settingsService.getUserSettings(userId);
 
       // Filter response data
       const filteredSettings = await this.filterSettingsData(updatedSettings, req.user);
@@ -350,7 +353,6 @@ export class EnterpriseSettingsController {
         message: 'Settings updated successfully',
         data: {
           settings: filteredSettings,
-          version: updatedSettings.version,
           changes: Object.keys(updates)
         }
       });
@@ -418,9 +420,8 @@ export class EnterpriseSettingsController {
       const updates = req.body;
 
       const updatedSettings = await this.settingsService.updateSystemSettings(
-        new mongoose.Types.ObjectId(settingsId),
-        updates,
-        new mongoose.Types.ObjectId(req.user!.id)
+        settingsId,
+        updates
       );
 
       res.json({

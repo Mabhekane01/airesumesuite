@@ -3,7 +3,7 @@ import { interviewController, interviewValidation } from '../controllers/intervi
 import { authenticateToken } from '../middleware/auth';
 import { cacheMiddleware, staticDataCacheConfig } from '../middleware/cache';
 
-const router = Router();
+const router: Router = Router();
 
 // All routes require authentication
 router.use(authenticateToken);

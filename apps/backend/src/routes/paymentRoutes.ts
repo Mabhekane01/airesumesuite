@@ -17,7 +17,7 @@ import {
   generalRateLimit
 } from '../middleware/securityMiddleware';
 
-const router = express.Router();
+const router: express.Router = express.Router();
 
 // Apply security middleware
 router.use(securityHeaders);
@@ -27,7 +27,7 @@ router.use(validateRequest);
 
 // Webhook routes (no authentication required, but with raw body parsing)
 router.use('/webhook', express.raw({ type: 'application/json' }));
-router.post('/webhook/stripe', generalRateLimit, handleWebhook);
+router.post('/webhook/paystack', generalRateLimit, handleWebhook);
 router.post('/webhook/paypal', generalRateLimit, handleWebhook);
 
 // Protected routes (require authentication)

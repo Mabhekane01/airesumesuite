@@ -1,16 +1,4 @@
-// Import nodemailer conditionally to handle missing dependency gracefully
-let nodemailer: any;
-try {
-  nodemailer = require('nodemailer');
-} catch (error) {
-  console.warn('⚠️  nodemailer not found. Email notifications will be disabled. Run: pnpm add nodemailer');
-  nodemailer = {
-    createTransporter: () => ({
-      sendMail: () => Promise.resolve({ messageId: 'test' }),
-      verify: () => Promise.resolve(true)
-    })
-  };
-}
+import * as nodemailer from 'nodemailer';
 import { IInterview } from '../models/Interview';
 import { IUser } from '../models/User';
 import { IJobApplication } from '../models/JobApplication';
@@ -37,45 +25,18 @@ class EmailService {
   constructor() {
     // Check if SMTP credentials are configured
     if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
-      console.warn('⚠️  SMTP credentials not configured - using mock email service');
-      // Create a mock transporter that doesn't actually send emails
-      this.transporter = {
-        sendMail: async () => {
-          console.log('📧 Mock email sent (nodemailer not configured)');
-          return { messageId: 'mock-' + Date.now() };
-        },
-        verify: async () => {
-          console.log('📧 Mock email verification (nodemailer not configured)');
-          return false;
-        }
-      };
-      return;
+      throw new Error('SMTP credentials not configured. Please set SMTP_USER and SMTP_PASS environment variables.');
     }
 
-    try {
-      this.transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST || 'smtp.gmail.com',
-        port: parseInt(process.env.SMTP_PORT || '587'),
-        secure: process.env.SMTP_SECURE === 'true',
-        auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS
-        }
-      });
-    } catch (error) {
-      console.warn('⚠️  Failed to create email transporter:', error);
-      // Create a mock transporter that doesn't actually send emails
-      this.transporter = {
-        sendMail: async () => {
-          console.log('📧 Mock email sent (nodemailer not configured)');
-          return { messageId: 'mock-' + Date.now() };
-        },
-        verify: async () => {
-          console.log('📧 Mock email verification (nodemailer not configured)');
-          return false;
-        }
-      };
-    }
+    this.transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST || 'smtp.gmail.com',
+      port: parseInt(process.env.SMTP_PORT || '587'),
+      secure: process.env.SMTP_SECURE === 'true',
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS
+      }
+    });
   }
 
   async sendInterviewConfirmation(
@@ -1409,101 +1370,6 @@ This is an automated notification. Manage your preferences at: ${baseUrl}/dashbo
     }
   }
 
-  async sendOTPEmail(email: string, otp: string, firstName: string): Promise<boolean> {
-    try {
-      const template = this.generateOTPTemplate(otp, firstName);
-      
-      const mailOptions: any = {
-        from: `"${process.env.APP_NAME || 'AI Job Suite'}" <${process.env.SMTP_FROM || process.env.SMTP_USER}>`,
-        to: email,
-        subject: template.subject,
-        html: template.html,
-        text: template.text
-      };
-
-      await this.transporter.sendMail(mailOptions);
-      console.log(`📧 Registration OTP sent to ${email}`);
-      return true;
-    } catch (error) {
-      console.error('❌ Failed to send registration OTP:', error);
-      return false;
-    }
-  }
-
-  private generateOTPTemplate(otp: string, firstName: string): EmailTemplate {
-    const subject = `Your AI Job Suite Verification Code: ${otp}`;
-    
-    const html = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="utf-8">
-        <style>
-          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
-          .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
-          .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px; }
-          .otp-code { background: #4f46e5; color: white; font-size: 32px; font-weight: bold; text-align: center; padding: 20px; border-radius: 8px; letter-spacing: 4px; margin: 20px 0; }
-          .warning { background: #fef3c7; border: 1px solid #d97706; padding: 15px; border-radius: 6px; margin: 20px 0; }
-          .footer { text-align: center; color: #666; font-size: 12px; margin-top: 30px; }
-        </style>
-      </head>
-      <body>
-        <div class="header">
-          <h1>🔐 Verification Code</h1>
-        </div>
-        <div class="content">
-          <h2>Hi ${firstName}!</h2>
-          
-          <p>Your verification code for AI Job Suite registration is:</p>
-          
-          <div class="otp-code">${otp}</div>
-          
-          <p><strong>This code will expire in 10 minutes.</strong></p>
-          
-          <div class="warning">
-            <p><strong>⚠️ Security Notice:</strong></p>
-            <ul>
-              <li>Never share this code with anyone</li>
-              <li>AI Job Suite will never ask for this code via phone or email</li>
-              <li>If you didn't request this code, please ignore this email</li>
-            </ul>
-          </div>
-          
-          <p>Simply enter this code in the verification form to complete your registration.</p>
-          
-          <p>Welcome to AI Job Suite! 🎉</p>
-          
-          <div class="footer">
-            <p>© 2024 AI Job Suite. All rights reserved.</p>
-          </div>
-        </div>
-      </body>
-      </html>
-    `;
-
-    const text = `
-      AI Job Suite - Verification Code
-      
-      Hi ${firstName}!
-      
-      Your verification code is: ${otp}
-      
-      This code will expire in 10 minutes.
-      
-      Enter this code in the verification form to complete your registration.
-      
-      Security Notice:
-      - Never share this code with anyone
-      - AI Job Suite will never ask for this code via phone or email
-      - If you didn't request this code, please ignore this email
-      
-      Welcome to AI Job Suite!
-      
-      © 2024 AI Job Suite. All rights reserved.
-    `;
-
-    return { subject, html, text };
-  }
 
   async testConnection(): Promise<boolean> {
     try {

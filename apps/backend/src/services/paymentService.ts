@@ -1,31 +1,5 @@
-// Conditional imports with error handling
-let Stripe: any;
-let z: any;
-
-try {
-  Stripe = require('stripe');
-} catch {
-  Stripe = class {
-    constructor() {}
-    checkout = { sessions: { create: () => ({ id: 'mock', url: 'mock' }) } };
-    webhooks = { constructEvent: () => ({ type: 'mock', data: {} }) };
-    subscriptions = { retrieve: () => ({}), update: () => ({}) };
-  };
-}
-
-try {
-  z = require('zod');
-} catch {
-  z = {
-    object: (schema: any) => ({ parse: (data: any) => data }),
-    string: () => ({ uuid: () => ({}), email: () => ({}), length: () => ({ regex: () => ({}) }), min: () => ({ max: () => ({}) }) }),
-    enum: () => ({}),
-    number: () => ({ positive: () => ({ max: () => ({}) }) }),
-    boolean: () => ({}),
-    optional: () => ({})
-  };
-}
-
+import axios, { AxiosResponse } from 'axios';
+import { z } from 'zod';
 import crypto from 'crypto';
 import rateLimit from 'express-rate-limit';
 import { Database } from '../database/database';
@@ -39,37 +13,56 @@ import { User } from '../models/User';
 
 // Input validation schemas
 const CreatePaymentSessionSchema = z.object({
-  userId: z.string().uuid(),
+  userId: z.string(),
+  planType: z.enum(['monthly', 'yearly']),
+  successUrl: z.string().url(),
+  cancelUrl: z.string().url(),
+  metadata: z.record(z.any()).optional()
+});
+
+const CreatePaymentSessionFromControllerSchema = z.object({
+  userId: z.string(),
   userEmail: z.string().email(),
   planType: z.enum(['monthly', 'yearly']),
-  amount: z.number().positive().max(10000), // Max $10,000 to prevent abuse
-  currency: z.string().length(3).regex(/^[A-Z]{3}$/),
+  amount: z.number(),
+  currency: z.string(),
   location: z.object({
-    country: z.string().min(2).max(100),
-    continent: z.string().min(2).max(50),
+    country: z.string(),
+    continent: z.string(),
     isAfricanCountry: z.boolean(),
-    currency: z.string().length(3)
+    currency: z.string()
   }).optional()
 });
 
-interface PaymentSession {
-  sessionId: string;
-  checkoutUrl?: string;
-  paypalUrl?: string;
-  expiresAt: Date;
-}
+const HandleWebhookSchema = z.object({
+  event: z.string(),
+  data: z.object({
+    reference: z.string(),
+    amount: z.number(),
+    status: z.string(),
+    customer: z.object({
+      email: z.string().email()
+    }).optional()
+  })
+});
+
+// Pricing configuration
+const PRICING_CONFIG = {
+  monthly: { amount: 2900, currency: 'NGN' }, // ₦29 per month
+  yearly: { amount: 29000, currency: 'NGN' }   // ₦290 per year (save ~17%)
+};
 
 interface SubscriptionStatus {
   tier: 'free' | 'enterprise';
   status: 'active' | 'cancelled' | 'expired' | 'past_due';
   currentPeriodEnd?: Date;
   cancelAtPeriodEnd?: boolean;
-  stripeSubscriptionId?: string;
-  paypalSubscriptionId?: string;
+  paystackSubscriptionId?: string;
 }
 
 export class PaymentService {
-  private stripe: any;
+  private paystackSecretKey: string;
+  private paystackBaseUrl: string = 'https://api.paystack.co';
   private db: Database;
   
   // Rate limiting for payment operations
@@ -82,426 +75,285 @@ export class PaymentService {
   });
 
   constructor() {
-    if (!process.env.STRIPE_SECRET_KEY) {
-      console.warn('STRIPE_SECRET_KEY not found, using mock Stripe');
+    if (!process.env.PAYSTACK_SECRET_KEY) {
+      throw new Error('PAYSTACK_SECRET_KEY not configured. Please set PAYSTACK_SECRET_KEY environment variable.');
     }
     
-    try {
-      this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_mock', {
-        apiVersion: '2023-10-16',
-        typescript: true,
-      });
-    } catch (error) {
-      console.warn('Stripe initialization failed, using mock');
-      this.stripe = new Stripe();
-    }
-    
+    this.paystackSecretKey = process.env.PAYSTACK_SECRET_KEY;
     this.db = new Database();
   }
 
-  async createStripeSession(data: z.infer<typeof CreatePaymentSessionSchema>): Promise<PaymentSession> {
-    try {
-      // Validate input
-      const validatedData = CreatePaymentSessionSchema.parse(data);
-      
-      // Check for existing active subscription
-      const existingSubscription = await this.getSubscriptionStatus(validatedData.userId);
-      if (existingSubscription.tier === 'enterprise' && existingSubscription.status === 'active') {
-        throw new Error('User already has an active subscription');
+  async getPaymentHistory(userId: string): Promise<any[]> {
+    const payments = await Payment.find({ userId }).sort({ createdAt: -1 }).limit(50);
+    return payments.map(payment => ({
+      id: payment._id,
+      amount: payment.amount,
+      currency: payment.currency,
+      status: payment.status,
+      provider: payment.provider,
+      description: payment.description,
+      createdAt: payment.createdAt
+    }));
+  }
+
+  async verifyPayment(reference: string, userId: string, planType: string): Promise<any> {
+    // Verify payment with Paystack
+    const response = await axios.get(
+      `${this.paystackBaseUrl}/transaction/verify/${reference}`,
+      {
+        headers: {
+          Authorization: `Bearer ${this.paystackSecretKey}`
+        }
       }
+    );
 
-      // Fraud detection
-      await this.performFraudChecks(validatedData);
+    if (!response.data.status || response.data.data.status !== 'success') {
+      throw new Error('Payment verification failed');
+    }
 
-      // Create idempotency key to prevent duplicate payments
-      const idempotencyKey = crypto.createHash('sha256')
-        .update(`${validatedData.userId}-${validatedData.planType}-${Date.now()}`)
-        .digest('hex');
+    const paymentData = response.data.data;
+    
+    // Update payment record
+    await Payment.findOneAndUpdate(
+      { paystackReference: reference, userId },
+      { status: 'succeeded' }
+    );
 
-      // Create Stripe checkout session
-      const session = await this.stripe.checkout.sessions.create({
-        customer_email: validatedData.userEmail,
-        line_items: [{
-          price_data: {
-            currency: validatedData.currency.toLowerCase(),
-            product_data: {
-              name: `AI Job Suite Enterprise - ${validatedData.planType}`,
-              description: 'Unlimited AI-powered job search tools',
-              images: ['https://your-domain.com/enterprise-logo.png'],
-            },
-            unit_amount: Math.round(validatedData.amount * 100), // Convert to cents
-            recurring: {
-              interval: validatedData.planType === 'yearly' ? 'year' : 'month',
-            },
-          },
-          quantity: 1,
-        }],
-        mode: 'subscription',
-        success_url: `${process.env.FRONTEND_URL}/dashboard/upgrade/success?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${process.env.FRONTEND_URL}/dashboard/upgrade/cancelled`,
-        metadata: {
-          userId: validatedData.userId,
-          planType: validatedData.planType,
-          location: validatedData.location?.country || 'unknown',
-          originalAmount: validatedData.amount.toString(),
-        },
-        subscription_data: {
+    // Activate subscription if payment was successful
+    if (paymentData.status === 'success') {
+      await this.activateSubscription(userId, planType as 'monthly' | 'yearly');
+    }
+
+    return {
+      verified: true,
+      amount: paymentData.amount / 100,
+      currency: paymentData.currency,
+      status: paymentData.status
+    };
+  }
+
+  async createPaystackSession(data: z.infer<typeof CreatePaymentSessionFromControllerSchema> | z.infer<typeof CreatePaymentSessionSchema>): Promise<{ sessionId: string; checkoutUrl: string; expiresAt: Date }> {
+    try {
+      let validatedData: any;
+      let userEmail: string;
+      let successUrl: string = process.env.FRONTEND_URL + '/dashboard';
+      
+      // Check if this is from controller (has userEmail) or direct call (has successUrl)
+      if ('userEmail' in data) {
+        // From controller - convert format
+        validatedData = {
+          userId: data.userId,
+          planType: data.planType,
+          successUrl,
+          cancelUrl: successUrl,
+          metadata: { location: data.location }
+        };
+        userEmail = data.userEmail;
+      } else {
+        // Direct call - validate normally
+        validatedData = CreatePaymentSessionSchema.parse(data);
+        const user = await User.findById(validatedData.userId);
+        if (!user) {
+          throw new Error('User not found');
+        }
+        userEmail = user.email;
+        successUrl = validatedData.successUrl;
+      }
+      
+      // Get pricing for plan
+      const planConfig = PRICING_CONFIG[validatedData.planType];
+      
+      // Generate unique reference
+      const reference = `ai_job_suite_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+      // Initialize Paystack transaction
+      const paystackResponse = await axios.post(
+        `${this.paystackBaseUrl}/transaction/initialize`,
+        {
+          email: userEmail,
+          amount: planConfig.amount * 100, // Paystack expects amount in kobo
+          currency: planConfig.currency,
+          reference: reference,
+          callback_url: successUrl,
           metadata: {
             userId: validatedData.userId,
             planType: validatedData.planType,
-          },
+            ...validatedData.metadata
+          }
         },
-        payment_method_types: ['card'],
-        billing_address_collection: 'required',
-        phone_number_collection: {
-          enabled: true,
-        },
-        allow_promotion_codes: true,
-        automatic_tax: {
-          enabled: true,
-        },
-        expires_at: Math.floor(Date.now() / 1000) + (30 * 60), // 30 minutes
-      }, {
-        idempotencyKey,
-      });
-
-      // Store payment session in database
-      await PaymentSession.create({
-        sessionId: session.id,
-        userId: validatedData.userId,
-        planType: validatedData.planType,
-        amount: validatedData.amount,
-        currency: validatedData.currency,
-        provider: 'stripe',
-        expiresAt: new Date(session.expires_at! * 1000),
-        status: 'pending',
-      });
-
-      // Log security event
-      logger.info('Stripe payment session created', {
-        userId: validatedData.userId,
-        sessionId: session.id,
-        amount: validatedData.amount,
-        currency: validatedData.currency,
-        planType: validatedData.planType,
-        location: validatedData.location?.country,
-        timestamp: new Date().toISOString(),
-      });
-
-      return {
-        sessionId: session.id,
-        checkoutUrl: session.url!,
-        expiresAt: new Date(session.expires_at! * 1000),
-      };
-
-    } catch (error) {
-      logger.error('Failed to create Stripe session:', {
-        error: error instanceof Error ? error.message : 'Unknown error',
-        userId: data.userId,
-        stack: error instanceof Error ? error.stack : undefined,
-      });
-      
-      // Don't expose internal errors to client
-      if (error instanceof z.ZodError) {
-        throw new Error('Invalid payment data provided');
-      }
-      
-      throw new Error('Failed to create payment session');
-    }
-  }
-
-  async createPaystackSession(data: z.infer<typeof CreatePaymentSessionSchema>): Promise<PaymentSession> {
-    try {
-      // Validate input
-      const validatedData = CreatePaymentSessionSchema.parse(data);
-      
-      // Check for existing active subscription
-      const existingSubscription = await this.getSubscriptionStatus(validatedData.userId);
-      if (existingSubscription.tier === 'enterprise' && existingSubscription.status === 'active') {
-        throw new Error('User already has an active subscription');
-      }
-
-      // Fraud detection
-      await this.performFraudChecks(validatedData);
-
-      // Generate payment reference
-      const { paystackService } = await import('./paystackService');
-      const reference = paystackService.generateReference('ENTERPRISE');
-
-      // Store payment session in database FIRST to prevent race conditions
-      await PaymentSession.create({
-        sessionId: reference,
-        userId: validatedData.userId,
-        planType: validatedData.planType,
-        amount: validatedData.amount,
-        currency: validatedData.currency,
-        provider: 'paystack',
-        expiresAt: new Date(Date.now() + (30 * 60 * 1000)), // 30 minutes
-        status: 'pending',
-      });
-      logger.info('Local payment session created before redirecting to Paystack', { userId: validatedData.userId, reference });
-
-      // Initialize Paystack transaction
-      const paystackTransaction = await paystackService.initializeTransaction({
-        reference,
-        amount: validatedData.amount,
-        email: validatedData.userEmail,
-        currency: validatedData.currency,
-        callback_url: `${process.env.FRONTEND_URL}/dashboard/upgrade/success`,
-        metadata: {
-          userId: validatedData.userId,
-          planType: validatedData.planType,
-          location: validatedData.location?.country || 'unknown',
-          originalAmount: validatedData.amount,
-        },
-        channels: ['card', 'bank', 'ussd', 'qr', 'mobile_money', 'bank_transfer'],
-      });
-
-      if (!paystackTransaction.data) {
-        // If this fails, mark our local session as failed so it can't be used
-        await PaymentSession.findOneAndUpdate({ sessionId: reference }, { status: 'failed' });
-        throw new Error('Failed to initialize Paystack transaction');
-      }
-
-      // Log security event
-      logger.info('Paystack payment session created', {
-        userId: validatedData.userId,
-        reference,
-        amount: validatedData.amount,
-        currency: validatedData.currency,
-        planType: validatedData.planType,
-        location: validatedData.location?.country,
-        timestamp: new Date().toISOString(),
-      });
-
-      console.log('Paystack session created with reference:', reference, 'for user:', validatedData.userId);
-
-      return {
-        sessionId: reference,
-        checkoutUrl: paystackTransaction.data.authorization_url,
-        expiresAt: new Date(Date.now() + (30 * 60 * 1000)),
-      };
-
-    } catch (error) {
-      logger.error('Failed to create Paystack session:', {
-        error: error instanceof Error ? error.message : 'Unknown error',
-        userId: data.userId,
-        stack: error instanceof Error ? error.stack : undefined,
-      });
-      
-      // Don't expose internal errors to client
-      if (error instanceof z.ZodError) {
-        throw new Error('Invalid payment data provided');
-      }
-      
-      throw new Error('Failed to create payment session');
-    }
-  }
-
-  async handleStripeWebhook(event: Stripe.Event): Promise<void> {
-    try {
-      // Verify webhook signature is already done in controller
-      logger.info('Processing Stripe webhook', { 
-        type: event.type, 
-        id: event.id 
-      });
-
-      switch (event.type) {
-        case 'checkout.session.completed':
-          await this.handleCheckoutCompleted(event.data.object as Stripe.Checkout.Session);
-          break;
-          
-        case 'invoice.payment_succeeded':
-          await this.handlePaymentSucceeded(event.data.object as Stripe.Invoice);
-          break;
-          
-        case 'invoice.payment_failed':
-          await this.handlePaymentFailed(event.data.object as Stripe.Invoice);
-          break;
-          
-        case 'customer.subscription.updated':
-          await this.handleSubscriptionUpdated(event.data.object as Stripe.Subscription);
-          break;
-          
-        case 'customer.subscription.deleted':
-          await this.handleSubscriptionDeleted(event.data.object as Stripe.Subscription);
-          break;
-
-        default:
-          logger.info('Unhandled webhook event type', { type: event.type });
-      }
-
-    } catch (error) {
-      logger.error('Webhook processing failed:', {
-        eventType: event.type,
-        eventId: event.id,
-        error: error instanceof Error ? error.message : 'Unknown error',
-        stack: error instanceof Error ? error.stack : undefined,
-      });
-      throw error;
-    }
-  }
-
-  private async handleCheckoutCompleted(session: Stripe.Checkout.Session): Promise<void> {
-    const userId = session.metadata?.userId;
-    const planType = session.metadata?.planType;
-
-    if (!userId) {
-      logger.error('Missing userId in checkout session metadata', { sessionId: session.id });
-      return;
-    }
-
-    try {
-      // Update user subscription
-      await User.findByIdAndUpdate(userId, {
-        tier: 'enterprise',
-        subscription_status: 'active',
-        stripe_customer_id: session.customer,
-        subscription_start_date: new Date(),
-        updated_at: new Date(),
-      });
-
-      // Create subscription record
-      await Subscription.create({
-        userId: userId,
-        stripeSubscriptionId: session.subscription as string,
-        stripeCustomerId: session.customer as string,
-        planType: planType as 'monthly' | 'yearly',
-        status: 'active',
-        currentPeriodStart: new Date(),
-        currentPeriodEnd: new Date(Date.now() + (planType === 'yearly' ? 365 : 30) * 24 * 60 * 60 * 1000),
-        cancelAtPeriodEnd: false,
-      });
-
-      // Update payment session status
-      await PaymentSession.findOneAndUpdate(
-        { sessionId: session.id },
-        { 
-          status: 'completed',
-          completedAt: new Date(),
+        {
+          headers: {
+            Authorization: `Bearer ${this.paystackSecretKey}`,
+            'Content-Type': 'application/json'
+          }
         }
       );
-    } catch (error) {
-      logger.error('Failed to complete checkout:', error);
+
+      if (!paystackResponse.data.status) {
+        throw new Error('Failed to create Paystack transaction');
+      }
+
+      const expiresAt = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes
+
+      // Create payment session record
+      const paymentSession = new PaymentSession({
+        sessionId: reference,
+        userId: validatedData.userId,
+        planType: validatedData.planType,
+        amount: planConfig.amount,
+        currency: planConfig.currency,
+        provider: 'paystack',
+        status: 'pending',
+        expiresAt,
+        metadata: {
+          paystackAccessCode: paystackResponse.data.data.access_code,
+          paystackReference: reference,
+          ...validatedData.metadata
+        }
+      });
+
+      await paymentSession.save();
+      
+      logger.info('Paystack payment session created', {
+        sessionId: reference,
+        userId: validatedData.userId,
+        planType: validatedData.planType
+      });
+
+      return {
+        sessionId: reference,
+        checkoutUrl: paystackResponse.data.data.authorization_url,
+        expiresAt
+      };
+    } catch (error: any) {
+      logger.error('Failed to create Paystack session', { error: error.message });
       throw error;
     }
-
-    // Send success notification
-    await notificationService.sendSubscriptionActivated(userId);
-
-    logger.info('Subscription activated successfully', {
-      userId,
-      sessionId: session.id,
-      planType,
-      customerId: session.customer,
-    });
   }
 
-  private async handlePaymentSucceeded(invoice: Stripe.Invoice): Promise<void> {
-    const subscriptionId = invoice.subscription as string;
-    const subscription = await this.stripe.subscriptions.retrieve(subscriptionId);
-    const userId = subscription.metadata?.userId;
+  async handleWebhook(signature: string, payload: any): Promise<void> {
+    try {
+      // Verify webhook signature
+      const hash = crypto.createHmac('sha512', process.env.PAYSTACK_SECRET_KEY!)
+        .update(JSON.stringify(payload))
+        .digest('hex');
 
-    if (!userId) {
-      logger.error('Missing userId in subscription metadata', { subscriptionId });
+      if (hash !== signature) {
+        throw new Error('Invalid webhook signature');
+      }
+
+      const { event, data } = payload;
+
+      switch (event) {
+        case 'charge.success':
+          await this.handleSuccessfulPayment(data);
+          break;
+        case 'subscription.create':
+          await this.handleSubscriptionCreated(data);
+          break;
+        case 'subscription.disable':
+          await this.handleSubscriptionCancelled(data);
+          break;
+        default:
+          logger.info('Unhandled webhook event', { event });
+      }
+    } catch (error: any) {
+      logger.error('Webhook handling failed', { error: error.message });
+      throw error;
+    }
+  }
+
+  private async handleSuccessfulPayment(data: any): Promise<void> {
+    const { reference, amount, customer } = data;
+    
+    // Find payment session
+    const session = await PaymentSession.findOne({ 
+      sessionId: reference,
+      status: 'pending'
+    });
+
+    if (!session) {
+      logger.warn('Payment session not found for reference', { reference });
       return;
     }
 
-    // Record payment in database
-    await Payment.create({
-      userId: userId,
-      stripeInvoiceId: invoice.id,
-      amount: invoice.amount_paid / 100, // Convert from cents
-      currency: invoice.currency.toUpperCase(),
+    // Update payment session
+    session.status = 'completed';
+    session.completedAt = new Date();
+    await session.save();
+
+    // Create payment record
+    const payment = new Payment({
+      userId: session.userId,
+      paystackReference: reference,
+      amount: amount / 100, // Convert from kobo to naira
+      currency: 'NGN',
       status: 'succeeded',
-      provider: 'stripe',
-      description: 'Subscription payment',
+      provider: 'paystack',
+      metadata: { sessionId: session.sessionId }
+    });
+    await payment.save();
+
+    // Activate user subscription
+    await this.activateSubscription(session.userId, session.planType);
+
+    // Send success notification
+    await notificationService.createNotification({
+      userId: session.userId,
+      type: 'success',
+      category: 'payment',
+      title: 'Subscription Activated',
+      message: 'Your subscription has been successfully activated',
+      priority: 'medium'
     });
 
-    logger.info('Payment recorded successfully', {
-      userId,
-      invoiceId: invoice.id,
-      amount: invoice.amount_paid,
-      currency: invoice.currency,
-    });
-  }
-
-  private async handlePaymentFailed(invoice: Stripe.Invoice): Promise<void> {
-    const subscriptionId = invoice.subscription as string;
-    const subscription = await this.stripe.subscriptions.retrieve(subscriptionId);
-    const userId = subscription.metadata?.userId;
-
-    if (!userId) return;
-
-    // Update subscription status to past_due
-    await Subscription.findOneAndUpdate(
-      { stripeSubscriptionId: subscriptionId },
-      { status: 'past_due' }
-    );
-
-    // Send payment failed notification
-    await notificationService.sendPaymentFailed(userId);
-
-    logger.warn('Payment failed for subscription', {
-      userId,
-      subscriptionId,
-      invoiceId: invoice.id,
-      amount: invoice.amount_due,
+    logger.info('Subscription activated successfully', {
+      userId: session.userId,
+      reference: reference
     });
   }
 
-  private async performFraudChecks(data: z.infer<typeof CreatePaymentSessionSchema>): Promise<void> {
-    // Check for suspicious patterns
-    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
-    const recentPayments = await PaymentSession.countDocuments({
-      userId: data.userId,
-      createdAt: { $gt: oneHourAgo },
-      status: { $in: ['pending', 'completed'] }
-    });
-
-    if (recentPayments > 3) {
-      throw new Error('Too many payment attempts detected');
-    }
-
-    // Validate amount against expected pricing
-    const isValidAmount = await this.validatePricingAmount(
-      data.amount, 
-      data.planType, 
-      data.location?.isAfricanCountry
-    );
-
-    if (!isValidAmount) {
-      logger.warn('Suspicious payment amount detected', {
-        userId: data.userId,
-        amount: data.amount,
-        planType: data.planType,
-        location: data.location?.country,
-      });
-      throw new Error('Invalid payment amount');
-    }
+  private async handleSubscriptionCreated(data: any): Promise<void> {
+    // Handle subscription creation if using Paystack subscriptions
+    logger.info('Subscription created', { data });
   }
 
-  private async validatePricingAmount(
-    amount: number, 
-    planType: string, 
-    isAfricanCountry?: boolean
-  ): Promise<boolean> {
-    const baseMonthly = 50;
-    const baseYearly = 540;
-    const multiplier = isAfricanCountry ? 1 : 2;
-    
-    const expectedMonthly = baseMonthly * multiplier;
-    const expectedYearly = baseYearly * multiplier;
-    
-    const tolerance = 0.1; // 10% tolerance for currency conversion
+  private async handleSubscriptionCancelled(data: any): Promise<void> {
+    // Handle subscription cancellation
+    logger.info('Subscription cancelled', { data });
+  }
+
+  private async activateSubscription(userId: string, planType: 'monthly' | 'yearly'): Promise<void> {
+    const now = new Date();
+    const periodEnd = new Date(now);
     
     if (planType === 'monthly') {
-      return Math.abs(amount - expectedMonthly) <= expectedMonthly * tolerance;
+      periodEnd.setMonth(periodEnd.getMonth() + 1);
     } else {
-      return Math.abs(amount - expectedYearly) <= expectedYearly * tolerance;
+      periodEnd.setFullYear(periodEnd.getFullYear() + 1);
     }
-  }
 
+    // Create or update subscription
+    await Subscription.findOneAndUpdate(
+      { userId },
+      {
+        planType,
+        status: 'active',
+        currentPeriodStart: now,
+        currentPeriodEnd: periodEnd,
+        cancelAtPeriodEnd: false,
+        cancelledAt: null
+      },
+      { upsert: true, new: true }
+    );
+
+    // Update user tier
+    await User.findByIdAndUpdate(userId, {
+      tier: 'enterprise',
+      subscription_status: 'active',
+      subscription_end_date: periodEnd
+    });
+  }
 
   async getSubscriptionStatus(userId: string): Promise<SubscriptionStatus> {
     const subscription = await Subscription.findOne({
@@ -520,11 +372,11 @@ export class PaymentService {
     const user = await User.findById(userId).select('tier subscription_status');
 
     return {
-      tier: user?.tier || 'free',
+      tier: (user?.tier === 'enterprise' ? 'enterprise' : 'free') as 'free' | 'enterprise',
       status: subscription.status as any,
       currentPeriodEnd: subscription.currentPeriodEnd,
       cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
-      stripeSubscriptionId: subscription.stripeSubscriptionId,
+      paystackSubscriptionId: subscription.paystackSubscriptionId,
     };
   }
 
@@ -535,150 +387,20 @@ export class PaymentService {
       throw new Error('No active subscription found');
     }
 
-    if (subscription.stripeSubscriptionId) {
-      // Cancel at period end to allow user to use service until end of billing period
-      await this.stripe.subscriptions.update(subscription.stripeSubscriptionId, {
-        cancel_at_period_end: true,
-      });
-
-      // Update database
-      await Subscription.findOneAndUpdate(
-        { stripeSubscriptionId: subscription.stripeSubscriptionId },
-        { cancelAtPeriodEnd: true }
-      );
-
-      logger.info('Subscription cancelled', {
-        userId,
-        subscriptionId: subscription.stripeSubscriptionId,
-      });
-    }
-  }
-
-  // PayPal webhook handler (placeholder)
-  async handlePayPalWebhook(body: any, signature: string): Promise<void> {
-    // PayPal webhook implementation would go here
-    logger.info('PayPal webhook received', { signature });
-  }
-
-  // Get payment history for user
-  async getPaymentHistory(userId: string): Promise<any[]> {
-    try {
-      const payments = await Payment.find({ userId })
-        .sort({ createdAt: -1 })
-        .limit(50)
-        .lean();
-
-      return payments;
-    } catch (error) {
-      logger.error('Failed to get payment history', { userId, error });
-      return [];
-    }
-  }
-
-  // Additional security methods
-  private handleSubscriptionUpdated = async (subscription: Stripe.Subscription): Promise<void> => {
-    // Implementation for subscription updates
-  };
-
-  private handleSubscriptionDeleted = async (subscription: Stripe.Subscription): Promise<void> => {
-    // Implementation for subscription deletion
-  };
-
-  async verifyPayment(reference: string, userId: string, planType: 'monthly' | 'yearly'): Promise<any> {
-    try {
-      // 1. Check if this payment has already been successfully processed.
-      const existingPayment = await Payment.findOne({ paystackReference: reference, status: 'succeeded' });
-      if (existingPayment) {
-        logger.info('Payment has already been processed.', { reference, userId });
-        return {
-          reference: existingPayment.paystackReference,
-          status: 'completed',
-          message: 'Already processed',
-          subscriptionActivated: true,
-        };
+    await Subscription.findOneAndUpdate(
+      { userId, status: 'active' },
+      { 
+        cancelAtPeriodEnd: true,
+        cancelledAt: new Date()
       }
+    );
 
-      // 2. Verify with Paystack
-      const { paystackService } = await import('./paystackService');
-      const paystackResponse = await paystackService.verifyTransaction(reference);
+    logger.info('Subscription cancelled', { userId });
+  }
 
-      // 3. Process if Paystack verification is successful
-      if (paystackResponse.data && paystackResponse.data.status === 'success') {
-        
-        await Subscription.findOneAndUpdate(
-            { userId: userId },
-            {
-              paystackSubscriptionId: reference,
-              planType: planType,
-              status: 'active',
-              currentPeriodStart: new Date(),
-              currentPeriodEnd: new Date(Date.now() + (planType === 'yearly' ? 365 : 30) * 24 * 60 * 60 * 1000),
-              cancelAtPeriodEnd: false,
-              metadata: { paystackData: paystackResponse.data }
-            },
-            { new: true, upsert: true }
-        );
-
-        const updatedUser = await User.findByIdAndUpdate(userId, {
-            tier: 'enterprise',
-            subscription_status: 'active',
-            subscription_start_date: new Date(),
-        }, { new: true });
-
-        if (!updatedUser) {
-          throw new Error('Failed to update user after payment.');
-        }
-
-        await Payment.create({
-            userId: userId,
-            paystackReference: reference,
-            amount: paystackResponse.data.amount / 100,
-            currency: paystackResponse.data.currency?.toUpperCase(),
-            status: 'succeeded',
-            provider: 'paystack',
-            description: `${planType} subscription payment`,
-            metadata: { paystackData: paystackResponse.data }
-        });
-
-        // Optional: Mark local session as completed if it exists
-        await PaymentSession.findOneAndUpdate(
-            { sessionId: reference, userId: userId },
-            { status: 'completed', completedAt: new Date() }
-        ).catch(err => logger.warn('Could not update local payment session, but proceeding as payment is verified.', { reference, err }));
-
-        logger.info('Paystack payment completed and subscription activated', {
-          userId,
-          reference,
-          amount: paystackResponse.data.amount,
-          planType: planType
-        });
-        
-        return {
-          reference,
-          status: 'completed',
-          amount: paystackResponse.data.amount / 100,
-          currency: paystackResponse.data.currency?.toUpperCase(),
-          planType: planType,
-          provider: 'paystack',
-          subscriptionActivated: true,
-          user: updatedUser
-        };
-
-      } else {
-        logger.warn('Paystack verification failed or was not successful.', { reference, status: paystackResponse.data?.status });
-        return {
-          reference,
-          status: paystackResponse.data?.status || 'failed',
-        };
-      }
-    } catch (error) {
-      logger.error('Payment verification failed:', {
-        reference,
-        userId,
-        error: error instanceof Error ? error.message : 'Unknown error'
-      });
-      throw error;
-    }
+  // Rate limiting middleware
+  getPaymentRateLimit() {
+    return this.paymentRateLimit;
   }
 }
 
