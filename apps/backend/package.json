@@ -13,7 +13,11 @@
     "test:coverage": "jest --coverage",
     "test:watch": "jest --watch",
     "test:ci": "jest --coverage --ci --watchAll=false",
-    "clean": "echo Clean completed"
+    "clean": "echo Clean completed",
+    "postinstall": "echo 'Skipping Puppeteer Chromium download on production'"
+  },
+  "puppeteer": {
+    "skipDownload": true
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.24.3",

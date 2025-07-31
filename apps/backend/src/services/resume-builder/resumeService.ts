@@ -77,6 +77,7 @@ export class ResumeService {
       // Launch Puppeteer with optimized settings
       browser = await puppeteer.launch({
         headless: true,
+        executablePath: process.env.NODE_ENV === 'production' ? '/usr/bin/chromium-browser' : undefined,
         args: [
           '--no-sandbox',
           '--disable-setuid-sandbox',
