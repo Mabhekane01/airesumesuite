@@ -2,21 +2,27 @@
 # Use Puppeteer base image that includes Chrome
 FROM ghcr.io/puppeteer/puppeteer:latest AS base
 
+# Switch to root to install pnpm globally
+USER root
+
 # Install pnpm globally (Puppeteer image uses npm by default)
 RUN npm install -g pnpm
+
+# Switch back to pptruser
+USER pptruser
 
 # Set working directory
 WORKDIR /app
 
-# Copy workspace and package files
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
-COPY apps/backend/package.json ./apps/backend/
+# Copy workspace and package files with correct ownership
+COPY --chown=pptruser:pptruser package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
+COPY --chown=pptruser:pptruser apps/backend/package.json ./apps/backend/
 
 # Install dependencies (Puppeteer will download Chrome - needed for PDF generation)
 RUN pnpm install --frozen-lockfile
 
-# Copy source code
-COPY apps/backend ./apps/backend
+# Copy source code with correct ownership
+COPY --chown=pptruser:pptruser apps/backend ./apps/backend
 
 # Build stage
 FROM base AS build
@@ -35,12 +41,18 @@ FROM ghcr.io/puppeteer/puppeteer:latest AS production
 # Set working directory
 WORKDIR /app
 
+# Switch to root for pnpm installation in production stage
+USER root
+
 # Install pnpm globally 
 RUN npm install -g pnpm
 
-# Copy package files
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY apps/backend/package.json ./apps/backend/
+# Switch back to pptruser
+USER pptruser
+
+# Copy package files with correct ownership
+COPY --chown=pptruser:pptruser package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY --chown=pptruser:pptruser apps/backend/package.json ./apps/backend/
 
 # Install only production dependencies (Puppeteer Chrome needed for production)
 RUN pnpm install --frozen-lockfile --prod
