@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import LoginFormSimple from './LoginFormSimple';
 import RegisterForm from './RegisterForm';
@@ -11,6 +11,15 @@ interface AuthModalProps {
 
 export default function AuthModalSimple({ isOpen, onClose, initialMode = 'login' }: AuthModalProps) {
   const [mode, setMode] = useState<'login' | 'register'>(initialMode);
+
+  // Update mode when initialMode changes or modal opens
+  useEffect(() => {
+    console.log('🔍 AuthModalSimple: useEffect triggered - isOpen:', isOpen, 'initialMode:', initialMode);
+    if (isOpen) {
+      setMode(initialMode);
+      console.log('🔍 AuthModalSimple: Setting mode to:', initialMode);
+    }
+  }, [initialMode, isOpen]);
 
   const toggleMode = () => {
     setMode(prev => prev === 'login' ? 'register' : 'login');

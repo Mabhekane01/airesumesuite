@@ -35,6 +35,7 @@ export default function HeaderSimple() {
   ];
 
   const handleAuthClick = (mode: 'login' | 'register') => {
+    console.log('🔍 HeaderSimple: handleAuthClick called with mode:', mode);
     setAuthMode(mode);
     setAuthModalOpen(true);
   };
