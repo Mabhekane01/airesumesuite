@@ -24,7 +24,7 @@ export class TemplateRenderer {
       console.log('🚀 Launching new browser instance...');
       TemplateRenderer.browserInstance = await puppeteer.launch({
         headless: 'new',
-        executablePath: process.env.NODE_ENV === 'production' ? '/usr/bin/chromium-browser' : undefined,
+        executablePath: process.env.NODE_ENV === 'production' ? '/usr/bin/google-chrome-stable' : undefined,
         args: [
           '--no-sandbox', 
           '--disable-setuid-sandbox',

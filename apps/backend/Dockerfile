@@ -1,5 +1,6 @@
 # Multi-stage build for production
-FROM node:20-alpine AS base
+# Use Puppeteer base image that includes Chrome
+FROM ghcr.io/puppeteer/puppeteer:latest AS base
 
 # Install pnpm globally
 RUN npm install -g pnpm
@@ -25,14 +26,12 @@ WORKDIR /app/apps/backend
 RUN pnpm run build:prod
 
 # Production stage
-FROM node:20-alpine AS production
+FROM ghcr.io/puppeteer/puppeteer:latest AS production
 
-# Install dumb-init for proper signal handling
-RUN apk add --no-cache dumb-init
+# Install dumb-init for proper signal handling (Ubuntu-based image)
+RUN apt-get update && apt-get install -y dumb-init && rm -rf /var/lib/apt/lists/*
 
-# Create app user
-RUN addgroup -g 1001 -S nodejs
-RUN adduser -S nodejs -u 1001
+# Use existing pptruser from Puppeteer image (safer than creating new user)
 
 # Set working directory
 WORKDIR /app
@@ -48,13 +47,13 @@ COPY apps/backend/package.json ./apps/backend/
 RUN pnpm install --frozen-lockfile --prod
 
 # Copy built application from build stage
-COPY --from=build --chown=nodejs:nodejs /app/apps/backend/dist ./apps/backend/dist
+COPY --from=build --chown=pptruser:pptruser /app/apps/backend/dist ./apps/backend/dist
 
 # Create uploads directory (don't copy existing uploads)
-RUN mkdir -p ./apps/backend/uploads && chown -R nodejs:nodejs ./apps/backend/uploads
+RUN mkdir -p ./apps/backend/uploads && chown -R pptruser:pptruser ./apps/backend/uploads
 
-# Switch to non-root user
-USER nodejs
+# Switch to non-root user (pptruser exists in Puppeteer image)
+USER pptruser
 
 # Expose port
 EXPOSE 3001
