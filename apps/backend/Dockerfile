@@ -2,7 +2,7 @@
 # Use Puppeteer base image that includes Chrome
 FROM ghcr.io/puppeteer/puppeteer:latest AS base
 
-# Install pnpm globally
+# Install pnpm globally (Puppeteer image uses npm by default)
 RUN npm install -g pnpm
 
 # Set working directory
@@ -28,15 +28,14 @@ RUN pnpm run build:prod
 # Production stage
 FROM ghcr.io/puppeteer/puppeteer:latest AS production
 
-# Install dumb-init for proper signal handling (Ubuntu-based image)
-RUN apt-get update && apt-get install -y dumb-init && rm -rf /var/lib/apt/lists/*
+# Puppeteer image already has proper init handling, no need for dumb-init
 
 # Use existing pptruser from Puppeteer image (safer than creating new user)
 
 # Set working directory
 WORKDIR /app
 
-# Install pnpm
+# Install pnpm globally 
 RUN npm install -g pnpm
 
 # Copy package files
@@ -62,8 +61,7 @@ EXPOSE 3001
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD node -e "require('http').get('http://localhost:3001/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
 
-# Use dumb-init to handle signals properly
-ENTRYPOINT ["dumb-init", "--"]
+# Puppeteer image handles signals properly, no custom entrypoint needed
 
 # Start the application
 CMD ["node", "apps/backend/dist/index.js"]
