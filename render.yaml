@@ -1,0 +1,151 @@
+# Render.com deployment configuration
+services:
+  - type: web
+    name: ai-job-suite-backend
+    env: docker
+    dockerfilePath: ./apps/backend/Dockerfile
+    dockerContext: .
+    plan: starter
+    region: oregon
+    branch: main
+    buildCommand: ""
+    startCommand: ""
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3001
+      - key: API_VERSION
+        value: 1.0.0
+      - key: APP_NAME
+        value: AI Job Suite
+        
+      # Database Configuration
+      - key: MONGODB_URI
+        value: mongodb+srv://Nkhosingiphile:Bhek!!522@cluster0.pmman.mongodb.net/ai-job-suite-prod?retryWrites=true&w=majority
+      - key: REDIS_URL
+        value: redis://default:kN0SghGrJUvIxVXJVLsiccsNPqn264ng@redis-16093.c281.us-east-1-2.ec2.redns.redis-cloud.com:16093
+        
+      # URLs
+      - key: FRONTEND_URL
+        value: https://airesumesuite.web.app
+      - key: BACKEND_URL
+        value: https://airesumesuite.onrender.com
+      - key: ALLOWED_ORIGINS
+        value: https://airesumesuite.web.app,https://airesumesuite.onrender.com
+        
+      # JWT Authentication
+      - key: JWT_SECRET
+        value: ed23f5a6a74ed9bcb0e38c5d3f4298a89176cb750e198e6e1e470ad9246b95b2076f60f222e62b3e1de7f3a1dfc6780b6bfb4c94930ddc9d89aee6c64b76e731
+      - key: JWT_REFRESH_SECRET
+        value: 7c9a3e1b5cf90241bc0a38ccf402cde8eaab0a23a1e4dff4a493ee9b56ad9bacee204d2ef0f36e85b03c85e5c98288933c730e53f1cfd7e2ab3656e58bdfcf3d
+      - key: JWT_ACCESS_EXPIRES_IN
+        value: 15m
+      - key: JWT_REFRESH_EXPIRES_IN
+        value: 7d
+        
+      # Email Configuration
+      - key: SMTP_HOST
+        value: smtp.gmail.com
+      - key: SMTP_PORT
+        value: 587
+      - key: SMTP_SECURE
+        value: false
+      - key: SMTP_USER
+        value: bntando522@gmail.com
+      - key: SMTP_PASS
+        value: fezkessyqtezmwli
+      - key: SMTP_FROM
+        value: bntando522@gmail.com
+        
+      # AI API Keys
+      - key: GEMINI_API_KEY
+        value: AIzaSyCtBf6MjCPWkNR560Zlyitq_2cmqWZ3hro
+      - key: OPENAI_API_KEY
+        value: sk-your-production-openai-api-key
+      - key: ANTHROPIC_API_KEY
+        value: your-production-anthropic-api-key
+        
+      # Google OAuth
+      - key: GOOGLE_CLIENT_ID
+        value: 202022666226-ahhpa9jc4e8cka53h0bv52pqs2tpqohn.apps.googleusercontent.com
+      - key: GOOGLE_CLIENT_SECRET
+        value: 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
+      - key: GOOGLE_CALLBACK_URL
+        value: https://airesumesuite.onrender.com/api/v1/auth/google/callback
+        
+      # reCAPTCHA
+      - key: RECAPTCHA_SITE_KEY
+        value: 6LfkOJQrAAAAAGfteUzaGCwQihtZoz1O221RSXs1
+      - key: RECAPTCHA_SECRET_KEY
+        value: 6LfkOJQrAAAAADxZMvomhgtwNB1FmpnyqVKeho9B
+      - key: RECAPTCHA_MIN_SCORE
+        value: 0.7
+        
+      # Security
+      - key: SESSION_SECRET
+        value: d397bfd0f6e8cf8a0fa4129e51be9463747d1ea3a6c77e03e241e3df71e6e42848d671ffb947db7458d14ce564b3c9c55a86aeb7e5bc4c957e508dc6c43a93a3
+      - key: ADMIN_API_KEY
+        value: ad3c4d19ef9f41a582dce3bf164eabfd
+      - key: SERVICE_API_KEY
+        value: 3a8658a09b68430db2e755d0e9d4bb13
+      - key: ENCRYPTION_KEY
+        value: fb82eae9a7f1a62fc1f4e58b3945a7f1ac34b8f72e4f3946f51d3b9b0bdf9a45
+        
+      # Payment Processing
+      - key: PAYSTACK_SECRET_KEY
+        value: sk_test_0a299384fcbc0e19cbb348a2f1d686c63329c1a9
+      - key: PAYSTACK_PUBLISHABLE_KEY
+        value: pk_test_40ddd9743e90fcd42000a071259b80713833f6e4
+        
+      # External APIs
+      - key: IPGEOLOCATION_API_KEY
+        value: af4552558b2d471f871ca869d829671b
+      - key: FIXER_API_KEY
+        value: d0b9b766de40fbbe55e1e2214e57eb4d
+      - key: CURRENCYAPI_KEY
+        value: c299c4db8cd77f8e1c900888c07bc46b7a2b
+        
+      # Monitoring
+      - key: SENTRY_DSN
+        value: https://e5cfaa159c3404393d2aa5ff5ab2d7ad@o4509756801351680.ingest.de.sentry.io/4509756804038736
+      - key: GA_TRACKING_ID
+        value: G-Y4CHQRKG7R
+        
+      # Feature Flags
+      - key: ENABLE_AI_FEATURES
+        value: true
+      - key: ENABLE_PAYMENT_PROCESSING
+        value: true
+      - key: ENABLE_EMAIL_NOTIFICATIONS
+        value: true
+      - key: ENABLE_JOB_SCRAPING
+        value: true
+      - key: ENABLE_ANALYTICS
+        value: true
+      - key: ENABLE_RECAPTCHA
+        value: true
+        
+      # Production Settings
+      - key: LOG_LEVEL
+        value: info
+      - key: ENABLE_REQUEST_LOGGING
+        value: false
+      - key: ENABLE_CORS
+        value: true
+      - key: TRUST_PROXY
+        value: true
+        
+      # File Upload
+      - key: MAX_FILE_SIZE
+        value: 10485760
+      - key: UPLOAD_DIR
+        value: uploads
+        
+      # Rate Limiting
+      - key: RATE_LIMIT_WINDOW_MS
+        value: 900000
+      - key: RATE_LIMIT_MAX_REQUESTS
+        value: 100
+      - key: SESSION_TIMEOUT
+        value: 28800000
