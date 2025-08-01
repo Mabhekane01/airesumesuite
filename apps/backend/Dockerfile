@@ -50,8 +50,8 @@ RUN pnpm install --frozen-lockfile --prod
 # Copy built application from build stage
 COPY --from=build --chown=nodejs:nodejs /app/apps/backend/dist ./apps/backend/dist
 
-# Copy any other necessary files
-COPY --chown=nodejs:nodejs apps/backend/uploads ./apps/backend/uploads
+# Create uploads directory (don't copy existing uploads)
+RUN mkdir -p ./apps/backend/uploads && chown -R nodejs:nodejs ./apps/backend/uploads
 
 # Switch to non-root user
 USER nodejs
