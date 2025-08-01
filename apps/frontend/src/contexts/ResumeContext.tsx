@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Resume } from '../types';
+import { useAuthStore } from '../stores/authStore';
 
 interface AIEnhancementData {
   atsScore?: number;
@@ -45,12 +46,42 @@ export const ResumeProvider: React.FC<ResumeProviderProps> = ({ children }) => {
   const [aiData, setAIData] = useState<AIEnhancementData>({});
   const [isAutoSaving, setIsAutoSaving] = useState(false);
   const [saveTimeout, setSaveTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  
+  const { user } = useAuthStore();
 
-  // Load data from localStorage on mount
+  // Clear resume data when user changes (login/logout)
   useEffect(() => {
+    const newUserId = user?.id || null;
+    
+    // If user changed (login/logout/switch user), clear resume data
+    if (currentUserId !== newUserId) {
+      console.log('User changed - clearing resume data', { 
+        previousUser: currentUserId, 
+        newUser: newUserId 
+      });
+      
+      setResumeData({});
+      setAIData({});
+      
+      // Clear localStorage resume data
+      localStorage.removeItem('resume-builder-data');
+      localStorage.removeItem('resume-ai-data');
+      
+      setCurrentUserId(newUserId);
+    }
+  }, [user?.id, currentUserId]);
+
+  // Load data from localStorage on mount (only if user is logged in)
+  useEffect(() => {
+    if (!user?.id) return;
+    
     try {
-      const savedResumeData = localStorage.getItem('resume-builder-data');
-      const savedAIData = localStorage.getItem('resume-ai-data');
+      const userResumeKey = `resume-builder-data-${user.id}`;
+      const userAIKey = `resume-ai-data-${user.id}`;
+      
+      const savedResumeData = localStorage.getItem(userResumeKey);
+      const savedAIData = localStorage.getItem(userAIKey);
       
       if (savedResumeData) {
         setResumeData(JSON.parse(savedResumeData));
@@ -62,7 +93,7 @@ export const ResumeProvider: React.FC<ResumeProviderProps> = ({ children }) => {
     } catch (error) {
       console.warn('Failed to load resume data from localStorage:', error);
     }
-  }, []);
+  }, [user?.id]);
 
   // Auto-save to localStorage when data changes (debounced)
   useEffect(() => {
@@ -120,10 +151,18 @@ export const ResumeProvider: React.FC<ResumeProviderProps> = ({ children }) => {
   };
 
   const saveToStorage = () => {
+    if (!user?.id) {
+      console.warn('Cannot save - no user logged in');
+      return;
+    }
+    
     try {
       setIsAutoSaving(true);
-      localStorage.setItem('resume-builder-data', JSON.stringify(resumeData));
-      localStorage.setItem('resume-ai-data', JSON.stringify(aiData));
+      const userResumeKey = `resume-builder-data-${user.id}`;
+      const userAIKey = `resume-ai-data-${user.id}`;
+      
+      localStorage.setItem(userResumeKey, JSON.stringify(resumeData));
+      localStorage.setItem(userAIKey, JSON.stringify(aiData));
       
       // Simulate saving delay
       setTimeout(() => {
@@ -136,8 +175,17 @@ export const ResumeProvider: React.FC<ResumeProviderProps> = ({ children }) => {
   };
 
   const clearStorage = () => {
+    // Clear both old format and user-specific format
     localStorage.removeItem('resume-builder-data');
     localStorage.removeItem('resume-ai-data');
+    
+    if (user?.id) {
+      const userResumeKey = `resume-builder-data-${user.id}`;
+      const userAIKey = `resume-ai-data-${user.id}`;
+      localStorage.removeItem(userResumeKey);
+      localStorage.removeItem(userAIKey);
+    }
+    
     setResumeData({});
     setAIData({});
   };

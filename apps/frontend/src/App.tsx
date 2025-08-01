@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from 'sonner'
 import { useAuthStore } from './stores/authStore'
-import { NavNotificationProvider } from './contexts/NavNotificationContext'
+import { NotificationProvider } from './contexts/NotificationContext'
 import { SearchProvider } from './contexts/SearchContext'
 import Layout from './components/layout/Layout'
 import DashboardLayout from './components/dashboard/DashboardLayout'
@@ -29,7 +29,7 @@ function App() {
   return (
     <div className="dark bg-dark-primary min-h-screen">
       <QueryClientProvider client={queryClient}>
-        <NavNotificationProvider>
+        <NotificationProvider>
           <SearchProvider>
             <Router>
               <Routes>
@@ -51,7 +51,7 @@ function App() {
               <Toaster position="top-right" />
             </Router>
           </SearchProvider>
-        </NavNotificationProvider>
+        </NotificationProvider>
       </QueryClientProvider>
     </div>
   )

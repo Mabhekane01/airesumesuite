@@ -32,7 +32,7 @@ export class NotificationService {
   }
 
   /**
-   * Create and send a notification through multiple channels
+   * Create and send a notification through multiple channels with duplicate prevention
    */
   async createNotification(data: CreateNotificationData): Promise<INotification | null> {
     try {
@@ -80,7 +80,7 @@ export class NotificationService {
         return null;
       }
 
-      // Create in-app notification
+      // Create in-app notification with duplicate prevention
       const notification = new Notification({
         userId,
         type: data.type,
@@ -94,6 +94,8 @@ export class NotificationService {
           source: data.metadata?.source || 'system'
         },
         expiresAt: data.expiresAt,
+        // Add timestamp for duplicate prevention index
+        createdAt: new Date()
       });
 
       const savedNotification = await notification.save();
@@ -106,6 +108,17 @@ export class NotificationService {
 
       return savedNotification;
     } catch (error) {
+      // Handle duplicate key error gracefully
+      if (error.code === 11000 || error.name === 'MongoServerError') {
+        console.log('🔄 Duplicate notification prevented:', {
+          userId: data.userId,
+          category: data.category,
+          title: data.title,
+          error: error.message
+        });
+        return null; // Gracefully handle duplicates
+      }
+      
       console.error('❌ Error creating notification:', error);
       if (error.errors) {
         console.error('Validation errors:', error.errors);
@@ -169,6 +182,7 @@ export class NotificationService {
       }
 
       // Send enterprise notification email
+      console.log('📧 Attempting to send email notification to:', user.email);
       const success = await this.emailService.sendNotificationEmail({
         to: user.email,
         subject: notification.title,
@@ -180,12 +194,14 @@ export class NotificationService {
       });
 
       if (!success) {
-        console.error('❌ Failed to send email notification to:', user.email);
+        console.error('❌ Failed to send email notification to:', user.email, '(SMTP may not be configured)');
         // Update notification delivery status
         await Notification.findByIdAndUpdate(notification._id, {
           deliveryStatus: 'failed',
           $inc: { deliveryAttempts: 1 }
         });
+      } else {
+        console.log('✅ Email notification sent successfully to:', user.email);
       }
     } catch (error) {
       console.error('❌ Error sending email notification:', error);

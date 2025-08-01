@@ -6,7 +6,7 @@ import {
   useLocation,
   useNavigate,
 } from "react-router-dom";
-import { useNavNotifications } from '../../contexts/NavNotificationContext';
+import { useNotifications } from '../../contexts/NotificationContext';
 import SearchModal from '../search/SearchModal';
 import DashboardHome from "./DashboardHome";
 import ResumeBuilder from "../../pages/resume-builder/ResumeBuilder";
@@ -101,7 +101,7 @@ const quickActions = [
 
 export default function DashboardLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { notifications, unreadCount, loading: notificationsLoading, markAsRead, markAllAsRead, clearAll } = useNavNotifications();
+  const { notifications, unreadCount, isLoading: notificationsLoading, markAsRead, markAllAsRead, clearAll } = useNotifications();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
@@ -394,13 +394,13 @@ export default function DashboardLayout() {
                         <div className="py-2">
                           {notifications.map((notification) => (
                             <div
-                              key={notification.id}
+                              key={notification._id}
                               className={`px-4 py-3 hover:bg-dark-tertiary/60 transition-all duration-200 cursor-pointer border-l-2 ${
                                 notification.read 
                                   ? 'border-transparent' 
                                   : 'border-accent-primary bg-accent-primary/5'
                               }`}
-                              onClick={() => !notification.read && markAsRead(notification.id)}
+                              onClick={() => !notification.read && markAsRead(notification._id)}
                             >
                               <div className="flex items-start space-x-3">
                                 <div className="flex-shrink-0 mt-0.5">
@@ -427,7 +427,7 @@ export default function DashboardLayout() {
                                       {notification.title}
                                     </p>
                                     <span className="text-xs text-dark-text-secondary/70">
-                                      {Math.floor((new Date().getTime() - new Date(notification.timestamp).getTime()) / 60000)}m ago
+                                      {Math.floor((new Date().getTime() - new Date(notification.createdAt).getTime()) / 60000)}m ago
                                     </span>
                                   </div>
                                   <p className="text-xs text-dark-text-secondary mt-1">

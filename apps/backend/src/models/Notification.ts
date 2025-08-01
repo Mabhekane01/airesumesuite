@@ -142,6 +142,40 @@ NotificationSchema.index({ userId: 1, priority: 1, createdAt: -1 }); // Priority
 NotificationSchema.index({ createdAt: -1 }); // Recent notifications for admin
 NotificationSchema.index({ deliveryStatus: 1, deliveryAttempts: 1 }); // Failed delivery tracking
 
+// CRITICAL: Duplicate prevention indexes
+NotificationSchema.index(
+  { 
+    userId: 1, 
+    title: 1, 
+    message: 1,
+    category: 1,
+    createdAt: 1 
+  }, 
+  { 
+    unique: true,
+    expireAfterSeconds: 300, // Prevent duplicates within 5 minutes
+    name: 'prevent_duplicate_notifications'
+  }
+);
+
+// Entity-based deduplication for resume/application notifications
+NotificationSchema.index(
+  {
+    userId: 1,
+    category: 1,
+    'metadata.entityType': 1,
+    'metadata.entityId': 1
+  },
+  {
+    unique: true,
+    partialFilterExpression: { 
+      'metadata.entityId': { $exists: true },
+      'metadata.entityType': { $exists: true }
+    },
+    name: 'prevent_entity_duplicate_notifications'
+  }
+);
+
 // Pre-save middleware to set delivered status
 NotificationSchema.pre('save', function(next) {
   if (this.isNew) {

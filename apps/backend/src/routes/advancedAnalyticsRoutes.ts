@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { advancedAnalyticsController } from '../controllers/advancedAnalyticsController';
-import { authMiddleware as authenticateToken, AuthenticatedRequest } from '../middleware/auth';
+import { authMiddleware as authenticateToken, AuthenticatedRequest, requireSubscription } from '../middleware/auth';
 import { query } from 'express-validator';
 
 const router: Router = Router();
@@ -9,6 +9,7 @@ const router: Router = Router();
 router.get(
   '/comprehensive',
   authenticateToken,
+  requireSubscription('premium'),
   (req: AuthenticatedRequest, res) => advancedAnalyticsController.getComprehensiveAnalytics(req, res)
 );
 
@@ -16,6 +17,7 @@ router.get(
 router.get(
   '/companies',
   authenticateToken,
+  requireSubscription('premium'),
   (req: AuthenticatedRequest, res) => advancedAnalyticsController.getCompanyAnalysis(req, res)
 );
 
@@ -23,6 +25,7 @@ router.get(
 router.get(
   '/skills/gap-analysis',
   authenticateToken,
+  requireSubscription('premium'),
   (req: AuthenticatedRequest, res) => advancedAnalyticsController.getSkillGapAnalysis(req, res)
 );
 
@@ -30,6 +33,7 @@ router.get(
 router.get(
   '/job-matching',
   authenticateToken,
+  requireSubscription('premium'),
   (req: AuthenticatedRequest, res) => advancedAnalyticsController.getJobMatchingInsights(req, res)
 );
 
@@ -37,6 +41,7 @@ router.get(
 router.get(
   '/predictive',
   authenticateToken,
+  requireSubscription('premium'),
   (req: AuthenticatedRequest, res) => advancedAnalyticsController.getPredictiveInsights(req, res)
 );
 
@@ -44,6 +49,7 @@ router.get(
 router.get(
   '/summary',
   authenticateToken,
+  requireSubscription('premium'),
   (req: AuthenticatedRequest, res) => advancedAnalyticsController.getAnalyticsSummary(req, res)
 );
 
@@ -51,6 +57,7 @@ router.get(
 router.get(
   '/trends',
   authenticateToken,
+  requireSubscription('premium'),
   query('timeframe')
     .optional()
     .isIn(['3months', '6months', '12months'])
@@ -62,6 +69,7 @@ router.get(
 router.get(
   '/market',
   authenticateToken,
+  requireSubscription('premium'),
   (req: AuthenticatedRequest, res) => advancedAnalyticsController.getMarketInsights(req, res)
 );
 

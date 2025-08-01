@@ -232,9 +232,9 @@ export default function RegisterForm({ onToggleMode, onClose, recaptchaState }: 
     >
       <div className="text-center mb-8">
         <h2 className="text-3xl font-bold gradient-text-dark">
-          Create Account
+          Create Your Free Account ✨
         </h2>
-        <p className="dark-text-secondary mt-2">Join AI Job Suite today</p>
+        <p className="dark-text-secondary mt-2">Join AI Job Suite and land your dream job</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -455,9 +455,9 @@ export default function RegisterForm({ onToggleMode, onClose, recaptchaState }: 
           Already have an account?{' '}
           <button
             onClick={onToggleMode}
-            className="text-purple-400 hover:text-purple-300 font-medium transition-colors"
+            className="text-accent-primary hover:text-accent-primary/80 font-medium transition-colors"
           >
-            Sign in
+            Sign in here
           </button>
         </p>
         

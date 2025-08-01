@@ -83,13 +83,13 @@ export default function CoverLetterDashboard() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-dark p-8">
+      <div className="min-h-screen bg-gradient-dark py-4 xs:py-6 sm:py-8 px-2 xs:px-3 sm:px-4 md:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="animate-pulse">
-            <div className="h-8 bg-dark-secondary rounded mb-6"></div>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="h-6 xs:h-8 bg-dark-secondary rounded mb-4 xs:mb-6"></div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 xs:gap-4 sm:gap-6">
               {[1, 2, 3].map(i => (
-                <div key={i} className="h-48 bg-dark-secondary rounded-lg"></div>
+                <div key={i} className="h-40 xs:h-48 bg-dark-secondary rounded-lg"></div>
               ))}
             </div>
           </div>
@@ -99,56 +99,58 @@ export default function CoverLetterDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-dark p-8">
+    <div className="min-h-screen bg-gradient-dark py-4 xs:py-6 sm:py-8 px-2 xs:px-3 sm:px-4 md:px-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold gradient-text-dark mb-2">
+        <div className="mb-4 xs:mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
+            <div className="flex-1">
+              <h1 className="text-xl xs:text-2xl sm:text-3xl font-bold gradient-text-dark mb-2">
                 Cover Letters
               </h1>
-              <p className="text-dark-text-secondary">
+              <p className="text-dark-text-secondary text-sm xs:text-base">
                 Create, manage, and optimize your cover letters with AI assistance
               </p>
             </div>
             
-            <div className="flex space-x-3">
+            <div className="flex flex-col xs:flex-row space-y-2 xs:space-y-0 xs:space-x-3">
               <Button
                 onClick={() => navigate('/dashboard/cover-letter/ai')}
-                className="btn-primary-dark"
+                className="btn-primary-dark w-full xs:w-auto justify-center"
               >
                 <ChatBubbleLeftRightIcon className="w-4 h-4 mr-2" />
-                AI Assistant
+                <span className="hidden xs:inline">AI Assistant</span>
+                <span className="xs:hidden">AI Chat</span>
               </Button>
               
               <Button
                 onClick={() => navigate('/dashboard/cover-letter/builder')}
                 variant="outline"
-                className="btn-secondary-dark"
+                className="btn-secondary-dark w-full xs:w-auto justify-center"
               >
                 <BeakerIcon className="w-4 h-4 mr-2" />
-                Advanced Builder
+                <span className="hidden xs:inline">Advanced Builder</span>
+                <span className="xs:hidden">Builder</span>
               </Button>
             </div>
           </div>
         </div>
 
         {/* Quick Actions */}
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 xs:gap-4 sm:gap-6 mb-4 xs:mb-6 sm:mb-8">
           <Card 
-            className="card-dark p-6 cursor-pointer hover:scale-105 transition-transform border border-accent-primary/30 bg-gradient-to-br from-accent-primary/10 to-accent-primary/5"
+            className="card-dark p-4 xs:p-5 sm:p-6 cursor-pointer hover:scale-105 transition-transform border border-accent-primary/30 bg-gradient-to-br from-accent-primary/10 to-accent-primary/5"
             onClick={() => navigate('/dashboard/cover-letter/ai')}
           >
             <div className="flex items-center">
-              <div className="w-12 h-12 bg-accent-primary/20 rounded-lg flex items-center justify-center mr-4">
-                <ChatBubbleLeftRightIcon className="w-6 h-6 text-accent-primary" />
+              <div className="w-10 h-10 xs:w-12 xs:h-12 bg-accent-primary/20 rounded-lg flex items-center justify-center mr-3 xs:mr-4 flex-shrink-0">
+                <ChatBubbleLeftRightIcon className="w-5 h-5 xs:w-6 xs:h-6 text-accent-primary" />
               </div>
-              <div>
-                <h3 className="font-semibold text-dark-text-primary mb-1">
+              <div className="min-w-0">
+                <h3 className="font-semibold text-dark-text-primary mb-1 text-sm xs:text-base">
                   Conversational AI
                 </h3>
-                <p className="text-sm text-dark-text-secondary">
+                <p className="text-xs xs:text-sm text-dark-text-secondary line-clamp-2">
                   Chat with AI to create your perfect cover letter
                 </p>
               </div>
@@ -156,34 +158,34 @@ export default function CoverLetterDashboard() {
           </Card>
 
           <Card 
-            className="card-dark p-6 cursor-pointer hover:scale-105 transition-transform border border-accent-tertiary/30 bg-gradient-to-br from-accent-tertiary/10 to-accent-tertiary/5"
+            className="card-dark p-4 xs:p-5 sm:p-6 cursor-pointer hover:scale-105 transition-transform border border-accent-tertiary/30 bg-gradient-to-br from-accent-tertiary/10 to-accent-tertiary/5"
             onClick={() => navigate('/dashboard/cover-letter/builder')}
           >
             <div className="flex items-center">
-              <div className="w-12 h-12 bg-accent-tertiary/20 rounded-lg flex items-center justify-center mr-4">
-                <BeakerIcon className="w-6 h-6 text-accent-tertiary" />
+              <div className="w-10 h-10 xs:w-12 xs:h-12 bg-accent-tertiary/20 rounded-lg flex items-center justify-center mr-3 xs:mr-4 flex-shrink-0">
+                <BeakerIcon className="w-5 h-5 xs:w-6 xs:h-6 text-accent-tertiary" />
               </div>
-              <div>
-                <h3 className="font-semibold text-dark-text-primary mb-1">
+              <div className="min-w-0">
+                <h3 className="font-semibold text-dark-text-primary mb-1 text-sm xs:text-base">
                   Advanced Builder
                 </h3>
-                <p className="text-sm text-dark-text-secondary">
+                <p className="text-xs xs:text-sm text-dark-text-secondary line-clamp-2">
                   Full-featured builder with analysis tools
                 </p>
               </div>
             </div>
           </Card>
 
-          <Card className="card-dark p-6 border border-accent-secondary/30 bg-gradient-to-br from-accent-secondary/10 to-accent-secondary/5">
+          <Card className="card-dark p-4 xs:p-5 sm:p-6 border border-accent-secondary/30 bg-gradient-to-br from-accent-secondary/10 to-accent-secondary/5 sm:col-span-2 lg:col-span-1">
             <div className="flex items-center">
-              <div className="w-12 h-12 bg-accent-secondary/20 rounded-lg flex items-center justify-center mr-4">
-                <ClockIcon className="w-6 h-6 text-accent-secondary" />
+              <div className="w-10 h-10 xs:w-12 xs:h-12 bg-accent-secondary/20 rounded-lg flex items-center justify-center mr-3 xs:mr-4 flex-shrink-0">
+                <ClockIcon className="w-5 h-5 xs:w-6 xs:h-6 text-accent-secondary" />
               </div>
-              <div>
-                <h3 className="font-semibold text-dark-text-primary mb-1">
+              <div className="min-w-0">
+                <h3 className="font-semibold text-dark-text-primary mb-1 text-sm xs:text-base">
                   {coverLetters.length} Cover Letters
                 </h3>
-                <p className="text-sm text-dark-text-secondary">
+                <p className="text-xs xs:text-sm text-dark-text-secondary line-clamp-2">
                   Ready to use and customize
                 </p>
               </div>
@@ -193,18 +195,18 @@ export default function CoverLetterDashboard() {
 
         {/* Cover Letters List */}
         {coverLetters.length === 0 ? (
-          <Card className="card-dark p-12 text-center">
-            <DocumentTextIcon className="w-16 h-16 text-dark-text-muted mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-dark-text-primary mb-2">
+          <Card className="card-dark p-6 xs:p-8 sm:p-12 text-center">
+            <DocumentTextIcon className="w-12 h-12 xs:w-16 xs:h-16 text-dark-text-muted mx-auto mb-3 xs:mb-4" />
+            <h3 className="text-lg xs:text-xl font-semibold text-dark-text-primary mb-2">
               No cover letters yet
             </h3>
-            <p className="text-dark-text-secondary mb-6">
+            <p className="text-dark-text-secondary mb-4 xs:mb-6 text-sm xs:text-base">
               Create your first AI-powered cover letter to get started
             </p>
-            <div className="flex justify-center space-x-3">
+            <div className="flex flex-col xs:flex-row justify-center space-y-2 xs:space-y-0 xs:space-x-3">
               <Button
                 onClick={() => navigate('/dashboard/cover-letter/ai')}
-                className="btn-primary-dark"
+                className="btn-primary-dark w-full xs:w-auto"
               >
                 <SparklesIcon className="w-4 h-4 mr-2" />
                 Start with AI
@@ -212,7 +214,7 @@ export default function CoverLetterDashboard() {
               <Button
                 onClick={() => navigate('/dashboard/cover-letter/builder')}
                 variant="outline"
-                className="btn-secondary-dark"
+                className="btn-secondary-dark w-full xs:w-auto"
               >
                 <PlusIcon className="w-4 h-4 mr-2" />
                 Create Manually
@@ -220,35 +222,35 @@ export default function CoverLetterDashboard() {
             </div>
           </Card>
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 xs:gap-4 sm:gap-6">
             {coverLetters.map((coverLetter) => (
-              <Card key={coverLetter._id} className="card-dark p-6">
-                <div className="mb-4">
-                  <h3 className="font-semibold text-dark-text-primary mb-2 line-clamp-2">
+              <Card key={coverLetter._id} className="card-dark p-4 xs:p-5 sm:p-6">
+                <div className="mb-3 xs:mb-4">
+                  <h3 className="font-semibold text-dark-text-primary mb-2 line-clamp-2 text-sm xs:text-base">
                     {coverLetter.title}
                   </h3>
-                  <div className="space-y-1 text-sm text-dark-text-secondary">
-                    <p><strong>Position:</strong> {coverLetter.jobTitle}</p>
-                    <p><strong>Company:</strong> {coverLetter.companyName}</p>
+                  <div className="space-y-1 text-xs xs:text-sm text-dark-text-secondary">
+                    <p><strong>Position:</strong> <span className="truncate inline-block max-w-[200px]">{coverLetter.jobTitle}</span></p>
+                    <p><strong>Company:</strong> <span className="truncate inline-block max-w-[200px]">{coverLetter.companyName}</span></p>
                     <p><strong>Tone:</strong> <span className="capitalize">{coverLetter.tone}</span></p>
                   </div>
                 </div>
 
-                <div className="text-xs text-dark-text-muted mb-4">
+                <div className="text-xs text-dark-text-muted mb-3 xs:mb-4">
                   Created: {new Date(coverLetter.createdAt).toLocaleDateString()}
                   {coverLetter.updatedAt !== coverLetter.createdAt && (
-                    <span className="ml-2">
-                      • Updated: {new Date(coverLetter.updatedAt).toLocaleDateString()}
+                    <span className="block xs:inline xs:ml-2">
+                      <span className="hidden xs:inline">• </span>Updated: {new Date(coverLetter.updatedAt).toLocaleDateString()}
                     </span>
                   )}
                 </div>
 
-                <div className="flex space-x-2">
+                <div className="flex flex-col xs:flex-row space-y-2 xs:space-y-0 xs:space-x-2">
                   <Button
                     onClick={() => navigate(`/cover-letter/${coverLetter._id}`)}
                     size="sm"
                     variant="outline"
-                    className="flex-1 btn-secondary-dark"
+                    className="flex-1 btn-secondary-dark justify-center"
                   >
                     <EyeIcon className="w-3 h-3 mr-1" />
                     View
@@ -258,52 +260,56 @@ export default function CoverLetterDashboard() {
                     onClick={() => navigate(`/cover-letter/${coverLetter._id}/edit`)}
                     size="sm"
                     variant="outline"
-                    className="flex-1 btn-secondary-dark"
+                    className="flex-1 btn-secondary-dark justify-center"
                   >
                     <PencilSquareIcon className="w-3 h-3 mr-1" />
                     Edit
                   </Button>
                   
-                  <div className="relative group">
+                  <div className="flex xs:flex-col space-x-2 xs:space-x-0 xs:space-y-0">
+                    <div className="relative group flex-1 xs:flex-none">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="btn-secondary-dark w-full xs:px-3 justify-center"
+                      >
+                        <ArrowDownTrayIcon className="w-3 h-3 xs:mr-0 mr-1" />
+                        <span className="xs:hidden">Download</span>
+                      </Button>
+                      
+                      {/* Download Dropdown */}
+                      <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block bg-dark-secondary border border-dark-border rounded-lg shadow-xl py-2 min-w-[120px] z-50">
+                        <button
+                          onClick={() => handleDownload(coverLetter._id, 'pdf')}
+                          className="block w-full text-left px-4 py-2 text-sm text-dark-text-primary hover:bg-dark-accent/10 transition-colors"
+                        >
+                          Download PDF
+                        </button>
+                        <button
+                          onClick={() => handleDownload(coverLetter._id, 'docx')}
+                          className="block w-full text-left px-4 py-2 text-sm text-dark-text-primary hover:bg-dark-accent/10 transition-colors"
+                        >
+                          Download DOCX
+                        </button>
+                        <button
+                          onClick={() => handleDownload(coverLetter._id, 'txt')}
+                          className="block w-full text-left px-4 py-2 text-sm text-dark-text-primary hover:bg-dark-accent/10 transition-colors"
+                        >
+                          Download TXT
+                        </button>
+                      </div>
+                    </div>
+                    
                     <Button
+                      onClick={() => handleDelete(coverLetter._id)}
                       size="sm"
                       variant="outline"
-                      className="btn-secondary-dark px-3"
+                      className="btn-secondary-dark flex-1 xs:flex-none xs:px-3 hover:border-red-500 hover:text-red-400 justify-center"
                     >
-                      <ArrowDownTrayIcon className="w-3 h-3" />
+                      <TrashIcon className="w-3 h-3 xs:mr-0 mr-1" />
+                      <span className="xs:hidden">Delete</span>
                     </Button>
-                    
-                    {/* Download Dropdown */}
-                    <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block bg-dark-secondary border border-dark-border rounded-lg shadow-xl py-2 min-w-[120px] z-50">
-                      <button
-                        onClick={() => handleDownload(coverLetter._id, 'pdf')}
-                        className="block w-full text-left px-4 py-2 text-sm text-dark-text-primary hover:bg-dark-accent/10 transition-colors"
-                      >
-                        Download PDF
-                      </button>
-                      <button
-                        onClick={() => handleDownload(coverLetter._id, 'docx')}
-                        className="block w-full text-left px-4 py-2 text-sm text-dark-text-primary hover:bg-dark-accent/10 transition-colors"
-                      >
-                        Download DOCX
-                      </button>
-                      <button
-                        onClick={() => handleDownload(coverLetter._id, 'txt')}
-                        className="block w-full text-left px-4 py-2 text-sm text-dark-text-primary hover:bg-dark-accent/10 transition-colors"
-                      >
-                        Download TXT
-                      </button>
-                    </div>
                   </div>
-                  
-                  <Button
-                    onClick={() => handleDelete(coverLetter._id)}
-                    size="sm"
-                    variant="outline"
-                    className="btn-secondary-dark px-3 hover:border-red-500 hover:text-red-400"
-                  >
-                    <TrashIcon className="w-3 h-3" />
-                  </Button>
                 </div>
               </Card>
             ))}

@@ -3,6 +3,7 @@ import { AuthenticatedRequest } from '../middleware/auth';
 import { subscriptionService } from '../services/subscriptionService';
 import { logger } from '../utils/logger';
 import { User } from '../models/User';
+import { notificationService } from '../services/notificationService';
 
 // Get subscription analytics dashboard data
 export const getSubscriptionAnalytics = async (req: AuthenticatedRequest, res: Response) => {
@@ -163,6 +164,9 @@ export const renewSubscription = async (req: AuthenticatedRequest, res: Response
       timestamp: new Date()
     });
 
+    // Send notification
+    await notificationService.sendPaymentNotification(userId, 'subscription_renewed', { planType });
+
     res.json({
       success: true,
       message: `Subscription renewed successfully for ${planType} plan`
@@ -220,6 +224,9 @@ export const cancelSubscription = async (req: AuthenticatedRequest, res: Respons
       immediate,
       timestamp: new Date()
     });
+
+    // Send notification
+    await notificationService.sendPaymentNotification(userId, 'subscription_cancelled', { immediate });
 
     res.json({
       success: true,

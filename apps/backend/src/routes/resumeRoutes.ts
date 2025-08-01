@@ -6,7 +6,7 @@ import {
   jobUrlValidation,
   atsValidation 
 } from '../controllers/resumeController';
-import { authMiddleware, AuthenticatedRequest } from '../middleware/auth';
+import { authMiddleware, AuthenticatedRequest, requireSubscription } from '../middleware/auth';
 import { requireEnterpriseSubscription, trackFeatureUsage, subscriptionRateLimit } from '../middleware/subscriptionValidation';
 
 const router: Router = express.Router();
@@ -207,38 +207,38 @@ router.post('/download/:format', (req: AuthenticatedRequest, res: Response) => {
   resumeController.downloadResume(req, res);
 });
 
-// POST /api/v1/resumes/parse - Parse resume from text
-router.post('/parse', (req: AuthenticatedRequest, res: Response) => resumeController.parseResumeFromText(req, res));
+// POST /api/v1/resumes/parse - Parse resume from text (AI feature)
+router.post('/parse', requireEnterpriseSubscription, subscriptionRateLimit('ai-parsing'), trackFeatureUsage('ai-resume-parsing'), (req: AuthenticatedRequest, res: Response) => resumeController.parseResumeFromText(req, res));
 
 // POST /api/v1/resumes/generate-summary - Generate summary for saved or unsaved resume
 router.post('/generate-summary', authMiddleware, requireEnterpriseSubscription, subscriptionRateLimit('ai-resume-builder'), trackFeatureUsage('ai-resume-generation'), (req: AuthenticatedRequest, res: Response) => resumeController.generateProfessionalSummary(req, res));
 
 // POST /api/v1/resumes/optimize-for-job - Optimize unsaved resume for job
-router.post('/optimize-for-job', (req: AuthenticatedRequest, res: Response) => resumeController.optimizeUnsavedResumeForJob(req, res));
+router.post('/optimize-for-job', requireEnterpriseSubscription, (req: AuthenticatedRequest, res: Response) => resumeController.optimizeUnsavedResumeForJob(req, res));
 
 // POST /api/v1/resumes/job-alignment - Check job alignment for unsaved resume
-router.post('/job-alignment', (req: AuthenticatedRequest, res: Response) => resumeController.checkJobAlignmentForUnsavedResume(req, res));
+router.post('/job-alignment', requireEnterpriseSubscription, (req: AuthenticatedRequest, res: Response) => resumeController.checkJobAlignmentForUnsavedResume(req, res));
 
 // POST /api/v1/resumes/analyze-job-url - Analyze job posting from URL (no resume required)
-router.post('/analyze-job-url', (req: AuthenticatedRequest, res: Response) => resumeController.analyzeJobFromUrl(req, res));
+router.post('/analyze-job-url', requireEnterpriseSubscription, (req: AuthenticatedRequest, res: Response) => resumeController.analyzeJobFromUrl(req, res));
 
 // POST /api/v1/resumes/job-matching - Get job matching score without saved resume
-router.post('/job-matching', (req: AuthenticatedRequest, res: Response) => resumeController.getJobMatchingScoreUnsaved(req, res));
+router.post('/job-matching', requireEnterpriseSubscription, (req: AuthenticatedRequest, res: Response) => resumeController.getJobMatchingScoreUnsaved(req, res));
 
 // POST /api/v1/resumes/optimize-job-url - Optimize unsaved resume with job URL
-router.post('/optimize-job-url', (req: AuthenticatedRequest, res: Response) => resumeController.optimizeUnsavedResumeWithJobUrl(req, res));
+router.post('/optimize-job-url', requireEnterpriseSubscription, (req: AuthenticatedRequest, res: Response) => resumeController.optimizeUnsavedResumeWithJobUrl(req, res));
 
 // POST /api/v1/resumes/analyze-ats - Analyze ATS compatibility for unsaved resume
-router.post('/analyze-ats', (req: AuthenticatedRequest, res: Response) => resumeController.analyzeATSCompatibilityUnsaved(req, res));
+router.post('/analyze-ats', requireEnterpriseSubscription, (req: AuthenticatedRequest, res: Response) => resumeController.analyzeATSCompatibilityUnsaved(req, res));
 
 // GET /api/v1/resumes/:id - Get specific resume
 router.get('/:id', (req: AuthenticatedRequest, res: Response) => resumeController.getResumeById(req, res));
 
 // POST /api/v1/resumes - Create new resume
-router.post('/', (req: AuthenticatedRequest, res: Response) => resumeController.createResumeWithoutValidation(req, res));
+router.post('/', requireSubscription('premium'), (req: AuthenticatedRequest, res: Response) => resumeController.createResumeWithoutValidation(req, res));
 
 // PUT /api/v1/resumes/:id - Update resume
-router.put('/:id', resumeValidation, (req: AuthenticatedRequest, res: Response) => resumeController.updateResume(req, res));
+router.put('/:id', requireSubscription('premium'), resumeValidation, (req: AuthenticatedRequest, res: Response) => resumeController.updateResume(req, res));
 
 // DELETE /api/v1/resumes/:id - Delete resume
 router.delete('/:id', (req: AuthenticatedRequest, res: Response) => resumeController.deleteResume(req, res));
@@ -256,7 +256,7 @@ router.post('/:id/ats-analysis', authMiddleware, requireEnterpriseSubscription, 
 router.post('/:id/job-alignment', authMiddleware, requireEnterpriseSubscription, subscriptionRateLimit('ai-resume-builder'), trackFeatureUsage('ai-job-alignment'), (req: AuthenticatedRequest, res: Response) => resumeController.getJobAlignmentScore(req, res));
 
 // POST /api/v1/resumes/enhance - Enhance unsaved resume data
-router.post('/enhance', authMiddleware, (req: AuthenticatedRequest, res: Response) => resumeController.enhanceUnsavedResume(req, res));
+router.post('/enhance', authMiddleware, requireEnterpriseSubscription, (req: AuthenticatedRequest, res: Response) => resumeController.enhanceUnsavedResume(req, res));
 
 // POST /api/v1/resumes/:id/enhance - Comprehensive AI enhancement
 router.post('/:id/enhance', authMiddleware, requireEnterpriseSubscription, subscriptionRateLimit('ai-resume-builder'), trackFeatureUsage('ai-resume-enhancement'), (req: AuthenticatedRequest, res: Response) => resumeController.enhanceResumeComprehensively(req, res));
@@ -274,3 +274,13 @@ router.get('/:id/suggestions', (req: AuthenticatedRequest, res: Response) => res
 // Additional dev endpoints (conditionally enabled)
 
 export default router;
+
+// Error handling middleware
+router.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+  console.error('Error in resume routes:', err);
+  res.status(500).json({
+    success: false,
+    message: 'An unexpected error occurred',
+    error: err.message
+  });
+});

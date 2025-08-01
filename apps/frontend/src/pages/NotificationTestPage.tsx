@@ -11,7 +11,7 @@ import {
   Cog6ToothIcon
 } from '@heroicons/react/24/outline';
 import { notificationService } from '../services/notificationService';
-import { useNavNotifications } from '../contexts/NavNotificationContext';
+import { useNotifications } from '../contexts/NotificationContext';
 import { toast } from 'sonner';
 import NotificationPreferences from '../components/settings/NotificationPreferences';
 
@@ -55,7 +55,7 @@ export default function NotificationTestPage() {
     priority: 'medium'
   });
 
-  const { refreshNotifications, notifications, unreadCount } = useNavNotifications();
+  const { refreshNotifications, notifications, unreadCount } = useNotifications();
 
   const sendTestNotification = async () => {
     try {

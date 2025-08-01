@@ -4,6 +4,7 @@ import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import { EnterpriseSettingsController } from '../controllers/enterpriseSettingsController';
 import { authMiddleware, requirePermissions } from '../middleware/auth';
+import { requireEnterpriseSubscription, trackFeatureUsage, subscriptionRateLimit } from '../middleware/subscriptionValidation';
 import { validateRequest } from '../middleware/validation';
 import { auditLogger } from '../middleware/enterpriseErrorHandler';
 import { Redis } from 'ioredis';
@@ -65,6 +66,9 @@ router.use(globalRateLimit);
 
 // Authentication middleware for all routes
 router.use(authMiddleware);
+
+// Enterprise subscription required for all settings routes
+router.use(requireEnterpriseSubscription);
 
 // Audit logging middleware
 router.use(auditLogger);

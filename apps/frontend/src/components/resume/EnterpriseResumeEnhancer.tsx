@@ -22,6 +22,8 @@ import { api } from '../../services/api';
 import AILoadingOverlay from '../ui/AILoadingOverlay';
 import { useAIProgress } from '../../hooks/useAIProgress';
 import { toast } from 'sonner';
+import { useSubscriptionModal } from '../../hooks/useSubscriptionModal';
+import SubscriptionModal from '../subscription/SubscriptionModal';
 
 interface AIAnalysis {
   overallScore: number;
@@ -74,15 +76,34 @@ export default function EnterpriseResumeEnhancer({
   const jobMatchingProgress = useAIProgress('job-matching');
   const jobOptimizationProgress = useAIProgress('job-optimization');
   
+  // Subscription modal
+  const { isModalOpen, modalProps, closeModal, checkAIFeature } = useSubscriptionModal();
+  
   const template = getTemplateById(resume.template) || resumeTemplates[0];
+
+  // Helper function to check if error is subscription-related
+  const isSubscriptionError = (error: any): boolean => {
+    return error?.response?.status === 403 || 
+           error?.isSubscriptionError ||
+           error?.response?.data?.code?.includes('SUBSCRIPTION');
+  };
 
   // REAL AI Analysis - Actually calls backend AI services  
   const runComprehensiveAnalysis = useCallback(async () => {
     if (enhancementProgress.isLoading) return; // Prevent multiple simultaneous calls
     
+    // Check subscription access first
+    if (!checkAIFeature('AI Resume Enhancement')) {
+      return; // Modal shown automatically
+    }
+    
     enhancementProgress.startProgress();
     
     try {
+      // Track successful API calls
+      let successfulCalls = 0;
+      let totalCalls = 3; // summary, ATS, enhancement
+      
       // First, generate REAL AI professional summary
       console.log('📝 Generating REAL AI professional summary...');
       let aiSummary = null;
@@ -92,14 +113,31 @@ export default function EnterpriseResumeEnhancer({
         });
         aiSummary = summaryResponse.data.data || summaryResponse.data.summary;
         console.log('✅ REAL AI summary generated:', aiSummary?.substring(0, 50) + '...');
+        successfulCalls++;
       } catch (summaryError) {
         console.warn('⚠️ AI summary generation failed:', summaryError.response?.data || summaryError.message);
+        if (isSubscriptionError(summaryError)) {
+          enhancementProgress.cancelProgress();
+          return; // Stop processing - subscription error
+        }
       }
 
       // Second, run ATS analysis with AI
       console.log('🔍 Running AI-powered ATS analysis...');
-      const atsResponse = await resumeService.analyzeATSCompatibility(resume);
-      console.log('✅ ATS analysis completed. Score:', atsResponse.score);
+      let atsResponse;
+      try {
+        atsResponse = await resumeService.analyzeATSCompatibility(resume);
+        console.log('✅ ATS analysis completed. Score:', atsResponse.score);
+        successfulCalls++;
+      } catch (atsError) {
+        console.warn('⚠️ ATS analysis failed:', atsError);
+        if (isSubscriptionError(atsError)) {
+          enhancementProgress.cancelProgress();
+          return; // Stop processing - subscription error
+        }
+        // Use fallback data
+        atsResponse = { score: 70, strengths: [], recommendations: [], improvementAreas: [] };
+      }
 
       // Third, get job alignment score for industry analysis
       console.log('📊 Analyzing industry alignment...');
@@ -135,8 +173,13 @@ export default function EnterpriseResumeEnhancer({
           enhancementData = enhanceResponse.data.data;
         }
         console.log('✅ REAL AI comprehensive enhancement completed:', enhancementData);
+        successfulCalls++;
       } catch (enhanceError) {
         console.warn('⚠️ AI enhancement failed:', enhanceError.response?.data || enhanceError.message);
+        if (isSubscriptionError(enhanceError)) {
+          enhancementProgress.cancelProgress();
+          return; // Stop processing - subscription error
+        }
       }
 
       // Process all the REAL AI responses
@@ -170,9 +213,17 @@ export default function EnterpriseResumeEnhancer({
 
       enhancementProgress.completeProgress();
       
-      toast.success('AI analysis completed successfully', {
-        description: `ATS Score: ${analysis.atsCompatibility}% | ${analysis.improvements.length} improvements identified`
-      });
+      // Only show success if we had actual AI successes
+      if (successfulCalls > 0) {
+        toast.success('AI analysis completed successfully', {
+          description: `ATS Score: ${analysis.atsCompatibility}% | ${analysis.improvements.length} improvements identified | ${successfulCalls}/${totalCalls} AI services used`
+        });
+      } else {
+        // All AI calls failed - show fallback message
+        toast.warning('Analysis completed with limited features', {
+          description: 'AI services unavailable. Using basic analysis instead.'
+        });
+      }
 
     } catch (error: any) {
       console.error('❌ AI Analysis completely failed:', error);
@@ -211,6 +262,11 @@ export default function EnterpriseResumeEnhancer({
     if (!jobUrl.trim()) {
       toast.error('Please enter a valid job URL');
       return;
+    }
+    
+    // Check subscription access first
+    if (!checkAIFeature('AI Job Optimization')) {
+      return; // Modal shown automatically
     }
 
     jobOptimizationProgress.startProgress();
@@ -275,6 +331,13 @@ export default function EnterpriseResumeEnhancer({
     } catch (error) {
       console.error('Job optimization error:', error);
       jobOptimizationProgress.cancelProgress();
+      
+      // Check if it's a subscription error
+      if (isSubscriptionError(error)) {
+        // Subscription error already handled by API interceptor/modal
+        return;
+      }
+      
       toast.error('Job optimization failed. Please check the URL and try again.');
     }
   }, [resume, updateResumeData, onResumeUpdate, jobOptimizationProgress]);
@@ -856,6 +919,15 @@ export default function EnterpriseResumeEnhancer({
         currentStep={jobMatchingProgress.currentStep}
         estimatedTime={jobMatchingProgress.estimatedTime}
         onCancel={jobMatchingProgress.cancelProgress}
+      />
+
+      {/* Subscription Modal */}
+      <SubscriptionModal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        featureName={modalProps.featureName}
+        title={modalProps.title}
+        description={modalProps.description}
       />
 
     </div>

@@ -219,11 +219,11 @@ router.get(
 );
 
 /**
- * @route   PUT /api/notifications/:notificationId/read
+ * @route   PATCH /api/notifications/:notificationId/read
  * @desc    Mark notification as read
  * @access  Private
  */
-router.put(
+router.patch(
   '/:notificationId/read',
   [
     param('notificationId')
@@ -235,22 +235,22 @@ router.put(
 );
 
 /**
- * @route   PUT /api/notifications/mark-all-read
+ * @route   PATCH /api/notifications/mark-all-read
  * @desc    Mark all notifications as read
  * @access  Private
  */
-router.put(
+router.patch(
   '/mark-all-read',
   notificationController.markAllAsRead
 );
 
 /**
- * @route   PUT /api/notifications/bulk-mark-read
+ * @route   PATCH /api/notifications/bulk-read
  * @desc    Bulk mark notifications as read
  * @access  Private
  */
-router.put(
-  '/bulk-mark-read',
+router.patch(
+  '/bulk-read',
   bulkMarkAsReadValidation,
   validateRequest,
   notificationController.bulkMarkAsRead

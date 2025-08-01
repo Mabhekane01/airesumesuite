@@ -1,6 +1,7 @@
 import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import { User } from '../models/User';
+import * as bcrypt from 'bcryptjs';
 
 passport.use(new GoogleStrategy({
   clientID: process.env['GOOGLE_CLIENT_ID']!,
@@ -17,11 +18,18 @@ passport.use(new GoogleStrategy({
     user = await User.findOne({ email: profile.emails?.[0]?.value });
     
     if (user) {
+      // Link existing local account with Google
       user.googleId = profile.id;
       user.provider = 'google';
+      user.isEmailVerified = true; // Google accounts are always verified
       await user.save();
+      console.log('✅ Linked existing account with Google:', user.email);
       return done(null, user);
     }
+
+    // Generate a secure random password for Google OAuth users
+    const randomPassword = Math.random().toString(36).slice(-12) + Math.random().toString(36).slice(-12);
+    const hashedPassword = await bcrypt.hash(randomPassword, 12);
 
     const newUser = new User({
       googleId: profile.id,
@@ -30,7 +38,7 @@ passport.use(new GoogleStrategy({
       lastName: profile.name?.familyName || '',
       provider: 'google',
       isEmailVerified: true,
-      password: 'google-oauth'
+      password: hashedPassword
     });
 
     await newUser.save();

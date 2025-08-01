@@ -15,14 +15,14 @@ import { Menu, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
-import { useNavNotifications } from '../../contexts/NavNotificationContext';
+import { useNotifications } from '../../contexts/NotificationContext';
 import AuthModalSimple from '../auth/AuthModalSimple';
 import NotificationDropdown from './NotificationDropdown';
 
 export default function HeaderSimple() {
   const location = useLocation();
   const { user, isAuthenticated, logout } = useAuthStore();
-  const { notifications, unreadCount, markAsRead, markAllAsRead, clearAll } = useNavNotifications();
+  const { notifications, unreadCount, markAsRead, markAllAsRead, clearAll } = useNotifications();
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
   const [notificationDropdownOpen, setNotificationDropdownOpen] = useState(false);
@@ -46,8 +46,8 @@ export default function HeaderSimple() {
   return (
     <>
       <header className="bg-dark-primary/95 backdrop-blur-lg border-b border-dark-border/70 sticky top-0 z-40 overflow-visible">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16 overflow-visible">
+        <div className="max-w-7xl mx-auto px-2 xs:px-3 sm:px-4 md:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-14 xs:h-15 sm:h-16 overflow-visible">
             {/* Logo */}
             <div className="flex items-center">
               <Link to="/" className="flex items-center space-x-2 group">
@@ -62,21 +62,22 @@ export default function HeaderSimple() {
 
             {/* Navigation */}
             {isAuthenticated && (
-              <nav className="hidden md:flex space-x-2">
-                {navigation.map((item) => {
+              <nav className="hidden sm:flex space-x-1 md:space-x-2">
+                {navigation.map((item, index) => {
                   const Icon = item.icon;
                   return (
                     <Link
                       key={item.name}
                       to={item.href}
-                      className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
+                      className={`flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 rounded-md sm:rounded-lg text-xs sm:text-sm font-medium transition-all duration-300 ${
                         item.current
                           ? 'bg-accent-primary/20 text-accent-primary border border-accent-primary/30'
                           : 'text-dark-text-secondary hover:text-accent-primary hover:bg-accent-primary/10'
-                      }`}
+                      } ${index > 1 ? 'hidden md:flex' : ''}`}
                     >
-                      <Icon className="h-4 w-4" />
-                      <span>{item.name}</span>
+                      <Icon className="h-3 w-3 sm:h-4 sm:w-4" />
+                      <span className="hidden sm:inline">{item.name}</span>
+                      <span className="sm:hidden">{item.name.split(' ')[0]}</span>
                     </Link>
                   );
                 })}
@@ -84,19 +85,19 @@ export default function HeaderSimple() {
             )}
 
             {/* Auth Section */}
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 sm:space-x-3 md:space-x-4">
               {isAuthenticated && user ? (
                 <>
                   {/* Notification Bell */}
                   <div className="relative">
                     <button
                       onClick={() => setNotificationDropdownOpen(!notificationDropdownOpen)}
-                      className="p-2 rounded-lg hover:bg-dark-tertiary/60 transition-all duration-300 hover:shadow-glow-sm relative"
+                      className="p-1.5 sm:p-2 rounded-md sm:rounded-lg hover:bg-dark-tertiary/60 transition-all duration-300 hover:shadow-glow-sm relative"
                     >
-                      <BellIcon className="h-5 w-5 text-dark-text-secondary hover:text-accent-primary transition-colors" />
+                      <BellIcon className="h-4 w-4 sm:h-5 sm:w-5 text-dark-text-secondary hover:text-accent-primary transition-colors" />
                       {/* Notification Badge */}
                       {unreadCount > 0 && (
-                        <span className="absolute -top-1 -right-1 h-4 w-4 bg-accent-primary rounded-full flex items-center justify-center">
+                        <span className="absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 h-3 w-3 sm:h-4 sm:w-4 bg-accent-primary rounded-full flex items-center justify-center">
                           <span className="text-xs font-medium text-white">
                             {unreadCount > 9 ? '9+' : unreadCount}
                           </span>
@@ -113,7 +114,20 @@ export default function HeaderSimple() {
                           onClick={() => setNotificationDropdownOpen(false)}
                         />
                         <NotificationDropdown
-                          notifications={notifications}
+                          notifications={notifications?.map((notification: any) => ({
+                            id: notification._id || notification.id || '',
+                            type: notification.type === 'deadline' ? 'deadline' : 
+                                  notification.type === 'error' ? 'warning' : 
+                                  notification.type || 'info',
+                            title: notification.title || 'Notification',
+                            message: notification.message || '',
+                            timestamp: notification.createdAt || new Date().toISOString(),
+                            read: Boolean(notification.read),
+                            action: notification.action ? {
+                              label: notification.action.label || 'View',
+                              href: notification.action.url || '#'
+                            } : undefined
+                          })) || []}
                           onMarkAsRead={markAsRead}
                           onMarkAllAsRead={markAllAsRead}
                           onClearAll={clearAll}
@@ -125,16 +139,16 @@ export default function HeaderSimple() {
               ) : null}
               {isAuthenticated && user ? (
                 <Menu as="div" className="relative z-50">
-                  <Menu.Button className="flex items-center space-x-2 p-2 rounded-lg hover:bg-dark-tertiary/60 transition-all duration-300 hover:shadow-glow-sm">
-                    <div className="w-8 h-8 bg-gradient-to-br from-accent-primary to-accent-secondary rounded-full flex items-center justify-center shadow-glow-sm">
-                      <span className="text-white text-sm font-medium">
+                  <Menu.Button className="flex items-center space-x-1 sm:space-x-2 p-1.5 sm:p-2 rounded-md sm:rounded-lg hover:bg-dark-tertiary/60 transition-all duration-300 hover:shadow-glow-sm">
+                    <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-br from-accent-primary to-accent-secondary rounded-full flex items-center justify-center shadow-glow-sm">
+                      <span className="text-white text-xs sm:text-sm font-medium">
                         {user.firstName[0]}{user.lastName[0]}
                       </span>
                     </div>
-                    <span className="text-sm font-medium text-dark-text-primary hidden sm:block">
+                    <span className="text-xs sm:text-sm font-medium text-dark-text-primary hidden md:block">
                       {user.firstName}
                     </span>
-                    <ChevronDownIcon className="h-4 w-4 text-dark-text-secondary" />
+                    <ChevronDownIcon className="h-3 w-3 sm:h-4 sm:w-4 text-dark-text-secondary" />
                   </Menu.Button>
 
                   <Transition
@@ -193,18 +207,19 @@ export default function HeaderSimple() {
                   </Transition>
                 </Menu>
               ) : (
-                <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-2 sm:space-x-3">
                   <button
                     onClick={() => handleAuthClick('login')}
-                    className="text-dark-text-secondary hover:text-accent-primary transition-all duration-300 font-medium"
+                    className="text-dark-text-secondary hover:text-accent-primary transition-all duration-300 font-medium text-xs sm:text-sm px-2 sm:px-0"
                   >
                     Sign In
                   </button>
                   <button
                     onClick={() => handleAuthClick('register')}
-                    className="btn-primary-dark transform hover:scale-105"
+                    className="btn-primary-dark transform hover:scale-105 text-xs sm:text-sm px-3 sm:px-6 py-2 sm:py-3"
                   >
-                    Get Started
+                    <span className="hidden xs:inline">Create Account</span>
+                    <span className="xs:hidden">Sign Up</span>
                   </button>
                 </div>
               )}

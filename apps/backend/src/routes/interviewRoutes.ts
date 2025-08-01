@@ -1,12 +1,13 @@
 import { Router } from 'express';
 import { interviewController, interviewValidation } from '../controllers/interviewController';
-import { authenticateToken } from '../middleware/auth';
+import { authenticateToken, requireSubscription } from '../middleware/auth';
 import { cacheMiddleware, staticDataCacheConfig } from '../middleware/cache';
 
 const router: Router = Router();
 
 // All routes require authentication
 router.use(authenticateToken);
+router.use(requireSubscription('premium'));
 
 // Interview CRUD operations
 router.post(

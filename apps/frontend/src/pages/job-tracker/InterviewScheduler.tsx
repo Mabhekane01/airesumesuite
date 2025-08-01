@@ -183,40 +183,41 @@ export default function InterviewScheduler() {
   return (
     <div className="space-y-6 animate-slide-up-soft">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold gradient-text-dark">Interview Scheduler</h1>
-          <p className="text-dark-text-secondary">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
+        <div className="flex-1">
+          <h1 className="text-xl xs:text-2xl font-bold gradient-text-dark">Interview Scheduler</h1>
+          <p className="text-dark-text-secondary text-sm xs:text-base">
             Manage and track your upcoming interviews
           </p>
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
-          className="btn-primary-dark flex items-center px-4 py-2 rounded-lg"
+          className="btn-primary-dark flex items-center justify-center px-4 py-2 rounded-lg w-full sm:w-auto"
         >
           <PlusIcon className="w-4 h-4 mr-2" />
-          Schedule Interview
+          <span className="hidden xs:inline">Schedule Interview</span>
+          <span className="xs:hidden">Schedule</span>
         </button>
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="card-dark rounded-lg border border-dark-border p-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 xs:gap-3 sm:gap-4">
+        <div className="card-dark rounded-lg border border-dark-border p-3 xs:p-4">
           <div className="flex items-center">
-            <CalendarIcon className="w-8 h-8 text-blue-400" />
-            <div className="ml-3">
-              <p className="text-sm font-medium text-dark-text-secondary">Today's Interviews</p>
-              <p className="text-lg font-semibold text-dark-text-primary">{todayInterviews.length}</p>
+            <CalendarIcon className="w-6 h-6 xs:w-8 xs:h-8 text-blue-400 flex-shrink-0" />
+            <div className="ml-2 xs:ml-3 min-w-0">
+              <p className="text-xs xs:text-sm font-medium text-dark-text-secondary truncate">Today's Interviews</p>
+              <p className="text-base xs:text-lg font-semibold text-dark-text-primary">{todayInterviews.length}</p>
             </div>
           </div>
         </div>
         
-        <div className="card-dark rounded-lg border border-dark-border p-4">
+        <div className="card-dark rounded-lg border border-dark-border p-3 xs:p-4">
           <div className="flex items-center">
-            <ClockIcon className="w-8 h-8 text-yellow-400" />
-            <div className="ml-3">
-              <p className="text-sm font-medium text-dark-text-secondary">Upcoming This Week</p>
-              <p className="text-lg font-semibold text-dark-text-primary">
+            <ClockIcon className="w-6 h-6 xs:w-8 xs:h-8 text-yellow-400 flex-shrink-0" />
+            <div className="ml-2 xs:ml-3 min-w-0">
+              <p className="text-xs xs:text-sm font-medium text-dark-text-secondary truncate">This Week</p>
+              <p className="text-base xs:text-lg font-semibold text-dark-text-primary">
                 {upcomingInterviews.filter(i => {
                   const interviewDate = new Date(i.scheduledDate);
                   const weekFromNow = new Date();
@@ -228,36 +229,36 @@ export default function InterviewScheduler() {
           </div>
         </div>
         
-        <div className="card-dark rounded-lg border border-dark-border p-4">
+        <div className="card-dark rounded-lg border border-dark-border p-3 xs:p-4">
           <div className="flex items-center">
-            <CheckCircleIcon className="w-8 h-8 text-green-400" />
-            <div className="ml-3">
-              <p className="text-sm font-medium text-dark-text-secondary">Completed</p>
-              <p className="text-lg font-semibold text-dark-text-primary">
+            <CheckCircleIcon className="w-6 h-6 xs:w-8 xs:h-8 text-green-400 flex-shrink-0" />
+            <div className="ml-2 xs:ml-3 min-w-0">
+              <p className="text-xs xs:text-sm font-medium text-dark-text-secondary truncate">Completed</p>
+              <p className="text-base xs:text-lg font-semibold text-dark-text-primary">
                 {interviews.filter(i => i.status === 'completed').length}
               </p>
             </div>
           </div>
         </div>
         
-        <div className="card-dark rounded-lg border border-dark-border p-4">
+        <div className="card-dark rounded-lg border border-dark-border p-3 xs:p-4">
           <div className="flex items-center">
-            <UserGroupIcon className="w-8 h-8 text-purple-400" />
-            <div className="ml-3">
-              <p className="text-sm font-medium text-dark-text-secondary">Total Scheduled</p>
-              <p className="text-lg font-semibold text-dark-text-primary">{interviews.length}</p>
+            <UserGroupIcon className="w-6 h-6 xs:w-8 xs:h-8 text-purple-400 flex-shrink-0" />
+            <div className="ml-2 xs:ml-3 min-w-0">
+              <p className="text-xs xs:text-sm font-medium text-dark-text-secondary truncate">Total</p>
+              <p className="text-base xs:text-lg font-semibold text-dark-text-primary">{interviews.length}</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Filters and View Toggle */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
+      <div className="flex flex-col xs:flex-row xs:items-center xs:justify-between space-y-3 xs:space-y-0">
+        <div className="flex items-center space-x-3 xs:space-x-4">
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="input-field-dark px-3 py-2 rounded-lg"
+            className="input-field-dark px-3 py-2 rounded-lg text-sm xs:text-base flex-1 xs:flex-none"
           >
             <option value="all">All Statuses</option>
             {Object.entries(STATUS_CONFIG).map(([key, config]) => (
@@ -266,10 +267,10 @@ export default function InterviewScheduler() {
           </select>
         </div>
 
-        <div className="flex items-center space-x-1 bg-dark-secondary/20 rounded-lg p-1 border border-dark-border">
+        <div className="flex items-center space-x-1 bg-dark-secondary/20 rounded-lg p-1 border border-dark-border w-full xs:w-auto">
           <button
             onClick={() => setViewMode('list')}
-            className={`px-3 py-1 text-sm font-medium rounded transition-colors ${
+            className={`flex-1 xs:flex-none px-3 py-1 text-sm font-medium rounded transition-colors ${
               viewMode === 'list' ? 'bg-dark-accent text-white shadow-sm' : 'text-dark-text-secondary'
             }`}
           >
@@ -277,7 +278,7 @@ export default function InterviewScheduler() {
           </button>
           <button
             onClick={() => setViewMode('calendar')}
-            className={`px-3 py-1 text-sm font-medium rounded transition-colors ${
+            className={`flex-1 xs:flex-none px-3 py-1 text-sm font-medium rounded transition-colors ${
               viewMode === 'calendar' ? 'bg-dark-accent text-white shadow-sm' : 'text-dark-text-secondary'
             }`}
           >
@@ -287,12 +288,12 @@ export default function InterviewScheduler() {
       </div>
 
       {/* Interview List */}
-      <div className="space-y-4">
+      <div className="space-y-3 xs:space-y-4">
         {filteredInterviews.length === 0 ? (
-          <div className="card-dark rounded-lg border border-dark-border p-8 text-center">
-            <CalendarIcon className="w-12 h-12 text-dark-text-muted mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-dark-text-primary mb-2">No interviews scheduled</h3>
-            <p className="text-dark-text-secondary mb-4">
+          <div className="card-dark rounded-lg border border-dark-border p-6 xs:p-8 text-center">
+            <CalendarIcon className="w-10 h-10 xs:w-12 xs:h-12 text-dark-text-muted mx-auto mb-3 xs:mb-4" />
+            <h3 className="text-base xs:text-lg font-medium text-dark-text-primary mb-2">No interviews scheduled</h3>
+            <p className="text-dark-text-secondary mb-3 xs:mb-4 text-sm xs:text-base">
               Schedule your first interview to start tracking your progress.
             </p>
             <button
@@ -312,27 +313,27 @@ export default function InterviewScheduler() {
             return (
               <div
                 key={interview.id}
-                className={`card-dark rounded-lg border border-dark-border p-6 ${
+                className={`card-dark rounded-lg border border-dark-border p-4 xs:p-5 sm:p-6 ${
                   isToday ? 'ring-2 ring-blue-500/50' : ''
                 }`}
               >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-start space-x-4">
-                    <div className="p-2 bg-dark-secondary/20 rounded-lg">
-                      {interviewType && <interviewType.icon className="w-5 h-5 text-dark-accent" />}
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between space-y-3 sm:space-y-0 mb-4">
+                  <div className="flex items-start space-x-3 xs:space-x-4 flex-1 min-w-0">
+                    <div className="p-2 bg-dark-secondary/20 rounded-lg flex-shrink-0">
+                      {interviewType && <interviewType.icon className="w-4 h-4 xs:w-5 xs:h-5 text-dark-accent" />}
                     </div>
-                    <div>
-                      <h3 className="text-lg font-medium text-dark-text-primary">
+                    <div className="min-w-0 flex-1">
+                      <h3 className="text-base xs:text-lg font-medium text-dark-text-primary line-clamp-2">
                         {interview.jobTitle} - {interviewType?.label} (Round {interview.round})
                       </h3>
-                      <p className="text-dark-text-secondary">{interview.companyName}</p>
-                      <div className="flex items-center space-x-4 mt-2 text-sm text-dark-text-muted">
+                      <p className="text-dark-text-secondary truncate">{interview.companyName}</p>
+                      <div className="flex flex-col xs:flex-row xs:items-center xs:space-x-4 mt-2 text-xs xs:text-sm text-dark-text-muted space-y-1 xs:space-y-0">
                         <div className="flex items-center space-x-1">
-                          <CalendarIcon className="w-4 h-4" />
+                          <CalendarIcon className="w-3 h-3 xs:w-4 xs:h-4" />
                           <span>{new Date(interview.scheduledDate).toLocaleDateString()}</span>
                         </div>
                         <div className="flex items-center space-x-1">
-                          <ClockIcon className="w-4 h-4" />
+                          <ClockIcon className="w-3 h-3 xs:w-4 xs:h-4" />
                           <span>{new Date(interview.scheduledDate).toLocaleTimeString()}</span>
                         </div>
                         <span>({interview.duration} min)</span>
@@ -340,7 +341,7 @@ export default function InterviewScheduler() {
                     </div>
                   </div>
                   
-                  <div className="flex items-center space-x-3">
+                  <div className="flex flex-wrap items-center gap-2 flex-shrink-0">
                     <span className={`
                       inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border
                       ${statusConfig.color}
@@ -374,15 +375,15 @@ export default function InterviewScheduler() {
                 )}
 
                 {/* Meeting Details */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div className="grid grid-cols-1 xs:grid-cols-1 sm:grid-cols-2 gap-3 xs:gap-4 mb-4">
                   {interview.meetingLink && (
                     <div className="flex items-center space-x-2">
-                      <VideoCameraIcon className="w-4 h-4 text-dark-text-muted" />
+                      <VideoCameraIcon className="w-4 h-4 text-dark-text-muted flex-shrink-0" />
                       <a
                         href={interview.meetingLink}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-dark-accent hover:text-dark-accent/80 text-sm"
+                        className="text-dark-accent hover:text-dark-accent/80 text-sm truncate"
                       >
                         Join Meeting
                       </a>
@@ -390,9 +391,9 @@ export default function InterviewScheduler() {
                   )}
                   
                   {interview.location && (
-                    <div className="flex items-center space-x-2">
-                      <MapPinIcon className="w-4 h-4 text-dark-text-muted" />
-                      <span className="text-sm text-dark-text-primary">{interview.location}</span>
+                    <div className="flex items-center space-x-2 min-w-0">
+                      <MapPinIcon className="w-4 h-4 text-dark-text-muted flex-shrink-0" />
+                      <span className="text-sm text-dark-text-primary truncate">{interview.location}</span>
                     </div>
                   )}
                 </div>
@@ -408,20 +409,21 @@ export default function InterviewScheduler() {
                 )}
 
                 {/* Actions */}
-                <div className="flex items-center justify-between pt-4 border-t border-dark-border">
-                  <div className="flex items-center space-x-3">
+                <div className="flex flex-col xs:flex-row xs:items-center xs:justify-between pt-4 border-t border-dark-border space-y-3 xs:space-y-0">
+                  <div className="flex flex-wrap items-center gap-2 xs:gap-3">
                     {interview.status === 'scheduled' && isUpcoming && (
                       <>
                         <button
                           onClick={() => updateInterviewStatus(interview.id, 'completed')}
-                          className="text-green-400 hover:text-green-300 text-sm flex items-center space-x-1"
+                          className="text-green-400 hover:text-green-300 text-xs xs:text-sm flex items-center space-x-1 touch-target"
                         >
                           <CheckCircleIcon className="w-4 h-4" />
-                          <span>Mark Complete</span>
+                          <span className="hidden xs:inline">Mark Complete</span>
+                          <span className="xs:hidden">Complete</span>
                         </button>
                         <button
                           onClick={() => updateInterviewStatus(interview.id, 'cancelled')}
-                          className="text-red-400 hover:text-red-300 text-sm flex items-center space-x-1"
+                          className="text-red-400 hover:text-red-300 text-xs xs:text-sm flex items-center space-x-1 touch-target"
                         >
                           <XMarkIcon className="w-4 h-4" />
                           <span>Cancel</span>
@@ -433,7 +435,8 @@ export default function InterviewScheduler() {
                   <div className="flex items-center space-x-2">
                     <button
                       onClick={() => setSelectedInterview(interview)}
-                      className="text-dark-accent hover:text-dark-accent/80"
+                      className="text-dark-accent hover:text-dark-accent/80 p-2 rounded-md hover:bg-dark-accent/10 touch-target"
+                      title="Edit Interview"
                     >
                       <PencilIcon className="w-4 h-4" />
                     </button>
@@ -506,8 +509,8 @@ function CreateInterviewModal({
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit} className="space-y-4 xs:space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 xs:gap-4">
             <div>
               <label className="block text-sm font-medium text-dark-text-secondary mb-2">
                 Job Application

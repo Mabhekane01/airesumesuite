@@ -229,8 +229,36 @@ export const verifyRegistrationOTP = async (req: Request, res: Response) => {
     await user.save();
     console.log('✅ User registered and email verified via OTP:', user._id);
 
-    // Send welcome email (no auto-login)  
+    // Send welcome email
     await emailService.sendWelcomeEmail(user);
+
+    // --- BEGIN AUTHENTICATION ---
+    // Generate tokens for immediate login
+    const { accessToken, refreshToken } = generateTokenPair(user);
+    
+    // Create session
+    const sessionId = crypto.randomUUID();
+    const sessionData = {
+      userId: user._id,
+      sessionId,
+      loginTime: new Date(),
+      location: {
+        ipAddress: req.ip || req.socket.remoteAddress || null
+      },
+      userAgent: {
+        browser: req.get('User-Agent') || 'Unknown'
+      },
+      isActive: true,
+      refreshTokens: [refreshToken]
+    };
+    
+    const userSession = new UserSession(sessionData);
+    await userSession.save();
+    
+    user.refreshTokens.push(refreshToken);
+    user.lastLoginAt = new Date();
+    await user.save();
+    // --- END AUTHENTICATION ---
 
     // Send registration completion notification
     try {
@@ -243,7 +271,7 @@ export const verifyRegistrationOTP = async (req: Request, res: Response) => {
     }
 
     return res.status(201).json({
-      message: 'Registration successful! Your email has been verified. Please login with your credentials.',
+      message: 'Registration successful! Welcome to AI Job Suite!',
       user: {
         id: user._id,
         email: user.email,
@@ -252,8 +280,9 @@ export const verifyRegistrationOTP = async (req: Request, res: Response) => {
         provider: user.provider,
         isEmailVerified: true
       },
-      nextStep: 'login_required',
-      requiresLogin: true
+      accessToken,
+      refreshToken,
+      sessionId
     });
 
   } catch (error) {
@@ -793,18 +822,61 @@ export const googleCallback = async (req: Request, res: Response) => {
   try {
     const user = req.user as IUser;
     
+    if (!user) {
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+      return res.redirect(`${frontendUrl}/auth/error?message=authentication_failed`);
+    }
+    
     const { accessToken, refreshToken } = generateTokenPair(user);
     
+    // Create session (consistent with local auth)
+    const sessionId = crypto.randomUUID();
+    const sessionData = {
+      userId: user._id,
+      sessionId,
+      loginTime: new Date(),
+      location: {
+        ipAddress: req.ip || req.socket.remoteAddress || null
+      },
+      userAgent: {
+        browser: req.get('User-Agent') || 'Unknown'
+      },
+      isActive: true,
+      refreshTokens: [refreshToken]
+    };
+    
+    const userSession = new UserSession(sessionData);
+    await userSession.save();
+    
+    // Update user tokens and login time
     user.refreshTokens.push(refreshToken);
     user.lastLoginAt = new Date();
     await user.save();
 
+    // Send login notification (consistent with local auth)
+    try {
+      await notificationService.sendAuthNotification(
+        user._id.toString(),
+        'login_success',
+        {
+          loginTime: new Date(),
+          location: 'Google OAuth',
+          userAgent: req.get('User-Agent') || 'Unknown browser'
+        }
+      );
+    } catch (notificationError) {
+      console.warn('⚠️ Failed to send Google OAuth login notification:', notificationError);
+    }
+
+    console.log('✅ Google OAuth login successful:', user.email);
+
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
     
-    return res.redirect(`${frontendUrl}/auth/success?token=${accessToken}&refresh=${refreshToken}`);
+    return res.redirect(`${frontendUrl}/auth/success?token=${accessToken}&refresh=${refreshToken}&sessionId=${sessionId}`);
   } catch (error) {
+    console.error('❌ Google OAuth callback error:', error);
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-    return res.redirect(`${frontendUrl}/auth/error`);
+    return res.redirect(`${frontendUrl}/auth/error?message=server_error`);
   }
 };
 

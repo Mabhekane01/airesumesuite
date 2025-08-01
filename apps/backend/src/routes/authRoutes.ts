@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { body } from 'express-validator';
-// import passport from 'passport';
+import passport from 'passport';
 import { login, refreshToken, logout, logoutAll, googleAuth, googleCallback, getProfile, checkEmailExists, sendRegistrationOTP, verifyRegistrationOTP, resendRegistrationOTP } from '../controllers/authController';
 import { authMiddleware, AuthenticatedRequest } from '../middleware/auth';
 import { handleValidationErrors } from '../middleware/validation';
@@ -75,11 +75,11 @@ router.post('/logout', authMiddleware, (req: AuthenticatedRequest, res: Response
 router.post('/logout-all', authMiddleware, (req: AuthenticatedRequest, res: Response) => logoutAll(req, res));
 router.get('/profile', authMiddleware, (req: AuthenticatedRequest, res: Response) => getProfile(req, res));
 
-// Google OAuth routes (temporarily disabled until passport is installed)
-// router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
-// router.get('/google/callback', 
-//   passport.authenticate('google', { session: false }), 
-//   googleCallback
-// );
+// Google OAuth routes
+router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+router.get('/google/callback', 
+  passport.authenticate('google', { session: false }), 
+  googleCallback
+);
 
 export default router;

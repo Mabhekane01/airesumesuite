@@ -9,7 +9,7 @@ export default function Layout({ children }: LayoutProps) {
   return (
     <div className="min-h-screen bg-gradient-dark">
       <HeaderSimple />
-      <main>{children}</main>
+      <main className="min-h-screen">{children}</main>
     </div>
   );
 }

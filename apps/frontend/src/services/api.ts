@@ -238,6 +238,33 @@ api.interceptors.response.use(
       }
     }
 
+    // Handle subscription errors (403 with subscription codes)
+    if (error.response?.status === 403) {
+      const errorData = error.response.data;
+      const subscriptionCodes = [
+        'SUBSCRIPTION_REQUIRED',
+        'AI_FEATURE_SUBSCRIPTION_REQUIRED', 
+        'FEATURE_SUBSCRIPTION_REQUIRED'
+      ];
+      
+      if (errorData?.code && subscriptionCodes.includes(errorData.code)) {
+        console.warn('🔒 Subscription required error:', {
+          feature: errorData.data?.feature,
+          message: errorData.message,
+          upgradeUrl: errorData.data?.upgradeUrl
+        });
+        
+        // Enhance error with subscription info for frontend handling
+        const subscriptionError = new Error(errorData.message || 'Subscription required');
+        (subscriptionError as any).isSubscriptionError = true;
+        (subscriptionError as any).code = errorData.code;
+        (subscriptionError as any).featureName = errorData.data?.feature;
+        (subscriptionError as any).upgradeUrl = errorData.data?.upgradeUrl;
+        
+        return Promise.reject(subscriptionError);
+      }
+    }
+
     return Promise.reject(error);
   }
 );
@@ -1089,6 +1116,176 @@ export const analyticsAPI = {
     data?: any;
   }> {
     const response = await api.get('/analytics/dashboard');
+    return response.data;
+  }
+};
+
+// Notification API
+export const notificationAPI = {
+  async getNotifications(params?: {
+    page?: number;
+    limit?: number;
+    unreadOnly?: boolean;
+    category?: string;
+    type?: string;
+  }): Promise<{
+    success: boolean;
+    data?: {
+      notifications: any[];
+      unreadCount: number;
+      totalCount: number;
+      hasMore: boolean;
+    };
+  }> {
+    const response = await api.get('/notifications', { params });
+    return response.data;
+  },
+
+  async getUnreadCount(): Promise<{
+    success: boolean;
+    data?: {
+      unreadCount: number;
+    };
+  }> {
+    const response = await api.get('/notifications/unread-count');
+    return response.data;
+  },
+
+  async markAsRead(notificationId: string): Promise<{
+    success: boolean;
+    message: string;
+  }> {
+    const response = await api.patch(`/notifications/${notificationId}/read`);
+    return response.data;
+  },
+
+  async markAllAsRead(): Promise<{
+    success: boolean;
+    message: string;
+  }> {
+    const response = await api.patch('/notifications/mark-all-read');
+    return response.data;
+  },
+
+  async deleteNotification(notificationId: string): Promise<{
+    success: boolean;
+    message: string;
+  }> {
+    const response = await api.delete(`/notifications/${notificationId}`);
+    return response.data;
+  },
+
+  async clearAllNotifications(): Promise<{
+    success: boolean;
+    message: string;
+  }> {
+    const response = await api.delete('/notifications');
+    return response.data;
+  },
+
+  async getNotificationStats(): Promise<{
+    success: boolean;
+    data?: {
+      total: number;
+      unread: number;
+      byCategory: Record<string, number>;
+      byType: Record<string, number>;
+    };
+  }> {
+    const response = await api.get('/notifications/stats');
+    return response.data;
+  },
+
+  async getPreferences(): Promise<{
+    success: boolean;
+    data?: any;
+  }> {
+    const response = await api.get('/notifications/preferences');
+    return response.data;
+  },
+
+  async updatePreferences(preferences: any): Promise<{
+    success: boolean;
+    data?: any;
+    message: string;
+  }> {
+    const response = await api.put('/notifications/preferences', preferences);
+    return response.data;
+  },
+
+  async updateCategoryPreferences(category: string, preferences: {
+    enabled?: boolean;
+    channels?: string[];
+    priority?: string;
+  }): Promise<{
+    success: boolean;
+    data?: any;
+    message: string;
+  }> {
+    const response = await api.put(`/notifications/preferences/${category}`, preferences);
+    return response.data;
+  },
+
+  async sendTestNotification(data?: {
+    type?: string;
+    category?: string;
+    title?: string;
+    message?: string;
+    priority?: string;
+  }): Promise<{
+    success: boolean;
+    data?: any;
+    message: string;
+  }> {
+    const response = await api.post('/notifications/test', data);
+    return response.data;
+  },
+
+  async createNotification(data: {
+    type: string;
+    category: string;
+    title: string;
+    message: string;
+    priority?: string;
+    action?: any;
+    metadata?: any;
+    expiresAt?: string;
+    channels?: string[];
+  }): Promise<{
+    success: boolean;
+    data?: any;
+    message: string;
+  }> {
+    const response = await api.post('/notifications', data);
+    return response.data;
+  },
+
+  async getNotificationsByCategory(category: string, params?: {
+    page?: number;
+    limit?: number;
+  }): Promise<{
+    success: boolean;
+    data?: {
+      notifications: any[];
+      unreadCount: number;
+      totalCount: number;
+      hasMore: boolean;
+    };
+  }> {
+    const response = await api.get(`/notifications/category/${category}`, { params });
+    return response.data;
+  },
+
+  async bulkMarkAsRead(notificationIds: string[]): Promise<{
+    success: boolean;
+    data?: {
+      total: number;
+      successful: number;
+      failed: number;
+    };
+    message: string;
+  }> {
+    const response = await api.patch('/notifications/bulk-read', { notificationIds });
     return response.data;
   }
 };

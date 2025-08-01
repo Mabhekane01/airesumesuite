@@ -35,6 +35,8 @@ import { Resume } from '../../types';
 import { resumeService } from '../../services/resumeService';
 import { ResumeProvider, useResume } from '../../contexts/ResumeContext';
 import { toast } from 'sonner';
+import { useSubscriptionModal } from '../../hooks/useSubscriptionModal';
+import SubscriptionModal from '../../components/subscription/SubscriptionModal';
 
 interface Step {
   id: string;
@@ -156,6 +158,9 @@ const ComprehensiveResumeBuilderContent: React.FC = () => {
   
   // AI Progress for final step improvement
   const aiImprovementProgress = useAIProgress('professional-summary');
+  
+  // Subscription modal
+  const { isModalOpen, modalProps, closeModal, checkAIFeature } = useSubscriptionModal();
 
   useEffect(() => {
     const templateId = location.state?.templateId;
@@ -231,6 +236,11 @@ const ComprehensiveResumeBuilderContent: React.FC = () => {
   };
 
   const handleAIImprovement = async () => {
+    // Check subscription access first
+    if (!checkAIFeature('AI Professional Summary Enhancement')) {
+      return; // Modal shown automatically
+    }
+    
     aiImprovementProgress.startProgress();
     try {
       // Validate resume data before AI enhancement
@@ -265,13 +275,20 @@ const ComprehensiveResumeBuilderContent: React.FC = () => {
         description: 'Your professional summary has been optimized.'
       });
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to generate AI summary:', error);
       aiImprovementProgress.cancelProgress();
       
-      toast.error('AI enhancement failed', {
-        description: 'Please check your connection and try again.'
-      });
+      // Check if it's a subscription error (handled by API interceptor)
+      const isSubscriptionError = error?.response?.status === 403 || 
+                                 error?.isSubscriptionError ||
+                                 error?.response?.data?.code?.includes('SUBSCRIPTION');
+      
+      if (!isSubscriptionError) {
+        toast.error('AI enhancement failed', {
+          description: 'Please check your connection and try again.'
+        });
+      }
     }
   };
 
@@ -693,6 +710,15 @@ const ComprehensiveResumeBuilderContent: React.FC = () => {
     <JobOptimizationModal
         isOpen={isJobOptimizationModalOpen}
         onClose={() => setIsJobOptimizationModalOpen(false)}
+      />
+      
+      {/* Subscription Modal */}
+      <SubscriptionModal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        featureName={modalProps.featureName}
+        title={modalProps.title}
+        description={modalProps.description}
       />
     </div>
   );

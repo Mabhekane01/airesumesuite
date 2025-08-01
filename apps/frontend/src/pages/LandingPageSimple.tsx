@@ -129,7 +129,7 @@ export default function LandingPageSimple() {
                     onClick={handleGetStarted}
                     className="btn-primary-dark px-8 py-4 text-lg flex items-center group transform hover:scale-105 shadow-glow-md hover:shadow-glow-lg"
                   >
-                    Get Started Free ✨
+                    Create Free Account ✨
                     <ArrowRightIcon className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" />
                   </button>
                   <button
@@ -383,7 +383,7 @@ export default function LandingPageSimple() {
                 className="bg-white text-accent-primary px-8 py-4 rounded-lg font-medium text-lg hover:bg-gray-100 transition-all duration-300 shadow-glow-lg transform hover:scale-105 animate-slide-up-soft"
                 style={{ animationDelay: '0.4s' }}
               >
-                Start Your Free Trial ✨
+                Create Your Free Account ✨
               </button>
             )}
           </div>

@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { locationService, LocationData } from '../services/locationService';
 import { Notification } from '../services/notificationService';
+import { storageUtils } from '../utils/storageUtils';
 
 export interface User {
   id: string;
@@ -317,7 +318,7 @@ export const useAuthStore = create<AuthState>()(
       },
 
       logout: async () => {
-        const { refreshToken, accessToken } = get();
+        const { refreshToken, accessToken, user } = get();
         
         try {
           if (refreshToken && accessToken) {
@@ -333,6 +334,9 @@ export const useAuthStore = create<AuthState>()(
         } catch (error) {
           console.error('Logout error:', error);
         } finally {
+          // Clear all user-related storage (auth + resume data + preferences)
+          storageUtils.clearAllUserStorage(user?.id);
+          
           set({
             user: null,
             accessToken: null,
@@ -340,15 +344,11 @@ export const useAuthStore = create<AuthState>()(
             isAuthenticated: false,
             error: null,
           });
-          
-          // Clear localStorage tokens
-          localStorage.removeItem('token');
-          localStorage.removeItem('authToken');
         }
       },
 
       logoutAll: async () => {
-        const { accessToken } = get();
+        const { accessToken, user } = get();
         
         try {
           if (accessToken) {
@@ -362,6 +362,9 @@ export const useAuthStore = create<AuthState>()(
         } catch (error) {
           console.error('Logout all error:', error);
         } finally {
+          // Clear all user-related storage (auth + resume data + preferences)
+          storageUtils.clearAllUserStorage(user?.id);
+          
           set({
             user: null,
             accessToken: null,
@@ -369,10 +372,6 @@ export const useAuthStore = create<AuthState>()(
             isAuthenticated: false,
             error: null,
           });
-          
-          // Clear localStorage tokens
-          localStorage.removeItem('token');
-          localStorage.removeItem('authToken');
         }
       },
 

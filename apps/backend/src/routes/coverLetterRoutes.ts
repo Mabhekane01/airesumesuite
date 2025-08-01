@@ -4,7 +4,7 @@ import {
   coverLetterValidation, 
   jobUrlValidation 
 } from '../controllers/coverLetterController';
-import { authMiddleware, AuthenticatedRequest } from '../middleware/auth';
+import { authMiddleware, AuthenticatedRequest, requireSubscription } from '../middleware/auth';
 import { requireEnterpriseSubscription, trackFeatureUsage, subscriptionRateLimit } from '../middleware/subscriptionValidation';
 
 const router: Router = express.Router();
@@ -19,13 +19,13 @@ router.get('/', (req: AuthenticatedRequest, res: Response) => coverLetterControl
 router.get('/:id', (req: AuthenticatedRequest, res: Response) => coverLetterController.getCoverLetterById(req, res));
 
 // POST /api/v1/cover-letters - Create new cover letter
-router.post('/', coverLetterValidation, (req: AuthenticatedRequest, res: Response) => coverLetterController.createCoverLetter(req, res));
+router.post('/', requireSubscription('premium'), coverLetterValidation, (req: AuthenticatedRequest, res: Response) => coverLetterController.createCoverLetter(req, res));
 
 // POST /api/v1/cover-letters/generate-from-job - Generate cover letter from job URL
 router.post('/generate-from-job', requireEnterpriseSubscription, subscriptionRateLimit('ai-cover-letter'), trackFeatureUsage('ai-cover-letter-generate'), jobUrlValidation, (req: AuthenticatedRequest, res: Response) => coverLetterController.generateFromJobUrl(req, res));
 
 // PUT /api/v1/cover-letters/:id - Update cover letter
-router.put('/:id', (req: AuthenticatedRequest, res: Response) => coverLetterController.updateCoverLetter(req, res));
+router.put('/:id', requireSubscription('premium'), (req: AuthenticatedRequest, res: Response) => coverLetterController.updateCoverLetter(req, res));
 
 // PUT /api/v1/cover-letters/:id/intelligent-update - Intelligently update cover letter with AI enhancement
 router.put('/:id/intelligent-update', requireEnterpriseSubscription, subscriptionRateLimit('ai-cover-letter'), trackFeatureUsage('ai-cover-letter-update'), (req: AuthenticatedRequest, res: Response) => coverLetterController.intelligentUpdateCoverLetter(req, res));

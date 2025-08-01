@@ -205,6 +205,9 @@ export const handleWebhook = async (req: Request, res: Response) => {
 
     // Handle Paystack webhook
     await paymentService.handleWebhook(sig, req.body);
+    
+    // Note: Payment notifications are handled within the webhook handler
+    
     res.json({ received: true });
 
   } catch (error) {

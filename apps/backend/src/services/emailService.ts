@@ -25,7 +25,10 @@ class EmailService {
   constructor() {
     // Check if SMTP credentials are configured
     if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
-      throw new Error('SMTP credentials not configured. Please set SMTP_USER and SMTP_PASS environment variables.');
+      console.warn('⚠️ SMTP credentials not configured. Email notifications will be disabled. Please set SMTP_USER and SMTP_PASS environment variables.');
+      // Don't throw error in production, just log warning and disable email functionality
+      this.transporter = null as any;
+      return;
     }
 
     this.transporter = nodemailer.createTransport({
@@ -1148,6 +1151,12 @@ The AI Job Suite Team
     category?: string;
   }): Promise<boolean> {
     try {
+      // Check if email service is available
+      if (!this.transporter) {
+        console.warn('⚠️ Email service not available. SMTP not configured.');
+        return false;
+      }
+      
       const template = this.generateNotificationTemplate(params);
       
       const mailOptions = {
@@ -1373,6 +1382,11 @@ This is an automated notification. Manage your preferences at: ${baseUrl}/dashbo
 
   async testConnection(): Promise<boolean> {
     try {
+      if (!this.transporter) {
+        console.warn('⚠️ Email service not available. SMTP not configured.');
+        return false;
+      }
+      
       await this.transporter.verify();
       console.log('📧 Email service connection verified');
       return true;

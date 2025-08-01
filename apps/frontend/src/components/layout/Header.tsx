@@ -16,14 +16,14 @@ import { Menu, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
-import { useNavNotifications } from '../../contexts/NavNotificationContext';
+import { useNotifications } from '../../contexts/NotificationContext';
 import AuthModal from '../auth/AuthModal';
-import NotificationDropdown from './NotificationDropdown';
+import NotificationDropdown, { NavNotification } from './NotificationDropdown';
 
 export default function Header() {
   const location = useLocation();
   const { user, isAuthenticated, logout } = useAuthStore();
-  const { notifications, unreadCount, markAsRead, markAllAsRead, clearAll } = useNavNotifications();
+  const { notifications, unreadCount, markAsRead, markAllAsRead, clearAll } = useNotifications();
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
   const [notificationDropdownOpen, setNotificationDropdownOpen] = useState(false);
@@ -43,6 +43,38 @@ export default function Header() {
   const handleLogout = async () => {
     await logout();
   };
+
+  // Convert INotification to NavNotification format with proper error handling
+  const convertToNavNotifications = (notifications: any[]): NavNotification[] => {
+    if (!Array.isArray(notifications)) {
+      console.warn('🔔 Notifications is not an array:', notifications);
+      return [];
+    }
+    
+    return notifications.map((notification) => {
+      if (!notification) {
+        console.warn('🔔 Null notification found');
+        return null;
+      }
+      
+      return {
+        id: notification._id || notification.id || '',
+        type: notification.type === 'deadline' ? 'deadline' : 
+              notification.type === 'error' ? 'warning' : 
+              notification.type || 'info',
+        title: notification.title || 'Notification',
+        message: notification.message || '',
+        timestamp: notification.createdAt || new Date().toISOString(),
+        read: Boolean(notification.read),
+        action: notification.action ? {
+          label: notification.action.label || 'View',
+          href: notification.action.url || '#'
+        } : undefined
+      };
+    }).filter(Boolean) as NavNotification[];
+  };
+
+  const navNotifications = convertToNavNotifications(notifications);
 
   return (
     <>
@@ -225,7 +257,7 @@ export default function Header() {
                     onClick={() => handleAuthClick('register')}
                     className="btn-primary-dark"
                   >
-                    Get Started
+                    Create Account
                   </motion.button>
                 </div>
               )}

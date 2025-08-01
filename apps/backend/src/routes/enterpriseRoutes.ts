@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { query, body, param } from 'express-validator';
 import { enterpriseController } from '../controllers/enterpriseController';
 import { authMiddleware as authenticateToken, AuthenticatedRequest } from '../middleware/auth';
+import { requireEnterpriseSubscription, trackFeatureUsage, subscriptionRateLimit } from '../middleware/subscriptionValidation';
 import { Response } from 'express';
 
 const router: Router = Router();
@@ -78,6 +79,9 @@ router.get(
 router.get(
   '/reports/performance',
   authenticateToken,
+  requireEnterpriseSubscription,
+  subscriptionRateLimit('ai-analytics'),
+  trackFeatureUsage('ai-performance-report'),
   timeframeValidation,
   (req: AuthenticatedRequest, res: Response) => enterpriseController.generatePerformanceReport(req, res)
 );
@@ -85,6 +89,9 @@ router.get(
 // Generate market intelligence report
 router.get(
   '/reports/market-intelligence',
+  requireEnterpriseSubscription,
+  subscriptionRateLimit('ai-analytics'),
+  trackFeatureUsage('ai-market-intelligence'),
   marketIntelligenceValidation,
   (req: AuthenticatedRequest, res: Response) => enterpriseController.generateMarketIntelligenceReport(req, res)
 );
@@ -92,6 +99,9 @@ router.get(
 // Generate skills analysis report
 router.get(
   '/reports/skills-analysis',
+  requireEnterpriseSubscription,
+  subscriptionRateLimit('ai-analytics'),
+  trackFeatureUsage('ai-skills-analysis'),
   skillsAnalysisValidation,
   (req: AuthenticatedRequest, res: Response) => enterpriseController.generateSkillsAnalysisReport(req, res)
 );
@@ -100,6 +110,9 @@ router.get(
 router.get(
   '/recommendations/automated',
   authenticateToken,
+  requireEnterpriseSubscription,
+  subscriptionRateLimit('ai-recommendations'),
+  trackFeatureUsage('ai-automated-recommendations'),
   (req: AuthenticatedRequest, res: Response) => enterpriseController.getAutomatedRecommendations(req, res)
 );
 
@@ -122,6 +135,9 @@ router.post(
 // Execute bulk analysis
 router.post(
   '/analysis/bulk',
+  requireEnterpriseSubscription,
+  subscriptionRateLimit('ai-bulk-analysis'),
+  trackFeatureUsage('ai-bulk-analysis'),
   bulkAnalysisValidation,
   (req: AuthenticatedRequest, res: Response) => enterpriseController.executeBulkAnalysis(req, res)
 );
@@ -129,6 +145,9 @@ router.post(
 // Generate predictive insights
 router.get(
   '/insights/predictive',
+  requireEnterpriseSubscription,
+  subscriptionRateLimit('ai-insights'),
+  trackFeatureUsage('ai-predictive-insights'),
   predictiveInsightsValidation,
   (req: AuthenticatedRequest, res: Response) => enterpriseController.generatePredictiveInsights(req, res)
 );
@@ -137,6 +156,9 @@ router.get(
 router.post(
   '/optimization/strategy',
   authenticateToken,
+  requireEnterpriseSubscription,
+  subscriptionRateLimit('ai-optimization'),
+  trackFeatureUsage('ai-strategy-optimization'),
   strategyOptimizationValidation,
   (req: AuthenticatedRequest, res: Response) => enterpriseController.optimizeJobSearchStrategy(req, res)
 );
@@ -147,6 +169,9 @@ router.post(
 router.post(
   '/batch/user-analysis',
   authenticateToken,
+  requireEnterpriseSubscription,
+  subscriptionRateLimit('ai-batch-user-analysis'),
+  trackFeatureUsage('ai-batch-user-analysis'),
   body('userIds').isArray({ min: 1 }).withMessage('User IDs must be a non-empty array'),
   body('analysisType').isIn(['performance', 'recommendations', 'competitive']).withMessage('Invalid analysis type'),
   async (req: AuthenticatedRequest, res: Response) => {

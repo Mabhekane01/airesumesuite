@@ -53,4 +53,56 @@ export const requirePermissions = (...permissions: string[]) => {
   };
 };
 
+// Subscription requirement middleware - creates middleware that checks for specific subscription tiers
+export const requireSubscription = (tier: 'free' | 'premium' | 'enterprise') => {
+  return async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ 
+          success: false, 
+          message: 'Authentication required',
+          code: 'AUTH_REQUIRED'
+        });
+      }
+
+      const user = await User.findById(req.user.id).select('tier');
+      if (!user) {
+        return res.status(404).json({ 
+          success: false, 
+          message: 'User not found',
+          code: 'USER_NOT_FOUND'
+        });
+      }
+
+      const userTier = user.tier || 'free';
+      
+      // Define tier hierarchy: free < premium < enterprise
+      const tierHierarchy = { free: 0, premium: 1, enterprise: 2 };
+      const requiredLevel = tierHierarchy[tier];
+      const userLevel = tierHierarchy[userTier as keyof typeof tierHierarchy] || 0;
+
+      if (userLevel < requiredLevel) {
+        return res.status(403).json({
+          success: false,
+          message: `This feature requires a ${tier} subscription`,
+          code: 'SUBSCRIPTION_REQUIRED',
+          data: {
+            currentTier: userTier,
+            requiredTier: tier,
+            upgradeUrl: '/dashboard/upgrade'
+          }
+        });
+      }
+
+      next();
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        message: 'Internal server error during subscription validation',
+        code: 'SUBSCRIPTION_VALIDATION_ERROR'
+      });
+    }
+  };
+};
+
 export { authMiddleware as authenticateToken };

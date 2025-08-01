@@ -211,7 +211,7 @@ export default function LoginFormSimple({ onToggleMode, onClose }: LoginFormProp
         <h2 className="text-3xl font-bold gradient-text-dark animate-slide-up-soft">
           Welcome Back 👋
         </h2>
-        <p className="text-dark-text-secondary mt-2 animate-slide-up-soft" style={{ animationDelay: '0.1s' }}>Sign in to your account</p>
+        <p className="text-dark-text-secondary mt-2 animate-slide-up-soft" style={{ animationDelay: '0.1s' }}>Sign in to continue to AI Job Suite</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -408,12 +408,12 @@ export default function LoginFormSimple({ onToggleMode, onClose }: LoginFormProp
 
       <div className="mt-6 text-center">
         <p className="text-sm text-dark-text-secondary">
-          Don't have an account?{' '}
+          New to AI Job Suite?{' '}
           <button
             onClick={onToggleMode}
             className="text-accent-primary hover:text-accent-primary/80 font-medium transition-colors"
           >
-            Sign up
+            Create your free account
           </button>
         </p>
       </div>

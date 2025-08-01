@@ -1,7 +1,8 @@
 import { Router, Response, NextFunction } from 'express';
 import { body, param, query } from 'express-validator';
 import { jobApplicationController } from '../controllers/jobApplicationController';
-import { authMiddleware as authenticateToken, AuthenticatedRequest } from '../middleware/auth';
+import { authMiddleware as authenticateToken, AuthenticatedRequest, requireSubscription } from '../middleware/auth';
+import { requireEnterpriseSubscription, trackFeatureUsage, subscriptionRateLimit } from '../middleware/subscriptionValidation';
 
 const router: Router = Router();
 
@@ -335,11 +336,12 @@ const paginationValidation = [
 ];
 
 // Routes
+router.use(authenticateToken);
+router.use(requireSubscription('premium'));
 
 // Create job application
 router.post(
   '/',
-  authenticateToken,
   createApplicationValidation,
   (req: AuthenticatedRequest, res: Response) => jobApplicationController.createApplication(req, res)
 );
@@ -347,7 +349,6 @@ router.post(
 // Get all applications with filtering and pagination
 router.get(
   '/',
-  authenticateToken,
   paginationValidation,
   (req: AuthenticatedRequest, res: Response) => jobApplicationController.getApplications(req, res)
 );
@@ -355,14 +356,12 @@ router.get(
 // Get application statistics
 router.get(
   '/stats',
-  authenticateToken,
   (req: AuthenticatedRequest, res: Response) => jobApplicationController.getApplicationStats(req, res)
 );
 
 // Get upcoming interviews
 router.get(
   '/interviews/upcoming',
-  authenticateToken,
   query('days').optional().isInt({ min: 1, max: 365 }).withMessage('Days must be between 1 and 365'),
   (req: AuthenticatedRequest, res: Response) => jobApplicationController.getUpcomingInterviews(req, res)
 );
@@ -370,7 +369,6 @@ router.get(
 // Get pending tasks
 router.get(
   '/tasks/pending',
-  authenticateToken,
   query('priority').optional().isIn(['low', 'medium', 'high', 'urgent']).withMessage('Invalid priority'),
   query('overdue').optional().isBoolean().withMessage('Overdue must be a boolean'),
   (req: AuthenticatedRequest, res: Response) => jobApplicationController.getPendingTasks(req, res)
@@ -379,7 +377,6 @@ router.get(
 // Export applications
 router.get(
   '/export',
-  authenticateToken,
   query('format').optional().isIn(['json', 'csv', 'pdf']).withMessage('Invalid format'),
   query('includeArchived').optional().isBoolean().withMessage('Include archived must be a boolean'),
   (req: AuthenticatedRequest, res: Response) => jobApplicationController.exportApplications(req, res)
@@ -388,7 +385,6 @@ router.get(
 // Bulk update applications
 router.patch(
   '/bulk',
-  authenticateToken,
   bulkUpdateValidation,
   (req: AuthenticatedRequest, res: Response) => jobApplicationController.bulkUpdateApplications(req, res)
 );
@@ -396,7 +392,6 @@ router.patch(
 // Get specific application
 router.get(
   '/:applicationId',
-  authenticateToken,
   mongoIdValidation,
   (req: AuthenticatedRequest, res: Response) => jobApplicationController.getApplication(req, res)
 );
@@ -404,7 +399,6 @@ router.get(
 // Update application
 router.put(
   '/:applicationId',
-  authenticateToken,
   mongoIdValidation,
   updateApplicationValidation,
   (req: AuthenticatedRequest, res: Response) => jobApplicationController.updateApplication(req, res)
@@ -413,7 +407,6 @@ router.put(
 // Delete application
 router.delete(
   '/:applicationId',
-  authenticateToken,
   mongoIdValidation,
   (req: AuthenticatedRequest, res: Response) => jobApplicationController.deleteApplication(req, res)
 );
@@ -421,7 +414,6 @@ router.delete(
 // Archive application
 router.patch(
   '/:applicationId/archive',
-  authenticateToken,
   mongoIdValidation,
   (req: AuthenticatedRequest, res: Response) => jobApplicationController.archiveApplication(req, res)
 );
@@ -429,14 +421,12 @@ router.patch(
 // Test Gemini connection
 router.get(
   '/test-gemini',
-  authenticateToken,
   (req: AuthenticatedRequest, res: Response) => jobApplicationController.testGeminiConnection(req, res)
 );
 
 // Debug match score calculation
 router.get(
   '/:applicationId/debug-match-score',
-  authenticateToken,
   mongoIdValidation,
   (req: AuthenticatedRequest, res: Response) => jobApplicationController.debugMatchScore(req, res)
 );
@@ -444,14 +434,15 @@ router.get(
 // Reset match scores for fresh analysis
 router.post(
   '/reset-match-scores',
-  authenticateToken,
   (req: AuthenticatedRequest, res: Response) => jobApplicationController.resetMatchScores(req, res)
 );
 
 // Calculate AI match score
 router.post(
   '/:applicationId/match-score',
-  authenticateToken,
+  requireEnterpriseSubscription,
+  subscriptionRateLimit('ai-job-matching'),
+  trackFeatureUsage('ai-job-matching'),
   mongoIdValidation,
   (req: AuthenticatedRequest, res: Response) => jobApplicationController.calculateMatchScore(req, res)
 );
@@ -459,7 +450,9 @@ router.post(
 // Batch calculate match scores for applications with missing scores
 router.post(
   '/batch/match-scores',
-  authenticateToken,
+  requireEnterpriseSubscription,
+  subscriptionRateLimit('ai-job-matching'),
+  trackFeatureUsage('ai-batch-matching'),
   query('limit').optional().isInt({ min: 1, max: 50 }).withMessage('Limit must be between 1 and 50'),
   (req: AuthenticatedRequest, res: Response) => jobApplicationController.batchCalculateMatchScores(req, res)
 );
@@ -467,7 +460,6 @@ router.post(
 // Get job match analysis
 router.get(
   '/:applicationId/analysis',
-  authenticateToken,
   mongoIdValidation,
   (req: AuthenticatedRequest, res: Response) => jobApplicationController.getJobMatchAnalysis(req, res)
 );
@@ -475,7 +467,9 @@ router.get(
 // Generate cover letter
 router.post(
   '/:applicationId/cover-letter',
-  authenticateToken,
+  requireEnterpriseSubscription,
+  subscriptionRateLimit('ai-cover-letter'),
+  trackFeatureUsage('ai-cover-letter-generation'),
   mongoIdValidation,
   body('template').optional().isString().withMessage('Template must be a string'),
   (req: AuthenticatedRequest, res: Response) => jobApplicationController.generateCoverLetter(req, res)
@@ -484,7 +478,9 @@ router.post(
 // Get interview prep
 router.get(
   '/:applicationId/interview-prep',
-  authenticateToken,
+  requireEnterpriseSubscription,
+  subscriptionRateLimit('ai-interview-prep'),
+  trackFeatureUsage('ai-interview-prep'),
   mongoIdValidation,
   query('interviewType')
     .optional()
@@ -496,7 +492,6 @@ router.get(
 // Add interview
 router.post(
   '/:applicationId/interviews',
-  authenticateToken,
   mongoIdValidation,
   addInterviewValidation,
   (req: AuthenticatedRequest, res: Response) => jobApplicationController.addInterview(req, res)
@@ -505,7 +500,6 @@ router.post(
 // Update interview
 router.put(
   '/:applicationId/interviews/:interviewId',
-  authenticateToken,
   mongoIdPairValidation,
   updateInterviewValidation,
   (req: AuthenticatedRequest, res: Response) => jobApplicationController.updateInterview(req, res)
@@ -514,7 +508,6 @@ router.put(
 // Add communication
 router.post(
   '/:applicationId/communications',
-  authenticateToken,
   mongoIdValidation,
   addCommunicationValidation,
   (req: AuthenticatedRequest, res: Response) => jobApplicationController.addCommunication(req, res)
@@ -523,7 +516,6 @@ router.post(
 // Add task
 router.post(
   '/:applicationId/tasks',
-  authenticateToken,
   mongoIdValidation,
   addTaskValidation,
   (req: AuthenticatedRequest, res: Response) => jobApplicationController.addTask(req, res)
@@ -532,7 +524,6 @@ router.post(
 // Complete task
 router.patch(
   '/:applicationId/tasks/:taskId/complete',
-  authenticateToken,
   taskIdValidation,
   body('notes').optional().isLength({ max: 500 }).withMessage('Notes must be 500 characters or less'),
   (req: AuthenticatedRequest, res: Response) => jobApplicationController.completeTask(req, res)

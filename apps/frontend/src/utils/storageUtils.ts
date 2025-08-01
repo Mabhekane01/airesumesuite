@@ -65,6 +65,76 @@ export const storageUtils = {
   },
 
   /**
+   * Clear all user-specific data (resume, preferences, etc.)
+   */
+  clearUserData: (userId?: string) => {
+    const baseKeys = [
+      'resume-builder-data',
+      'resume-ai-data',
+      'user-preferences',
+      'job-applications',
+      'cover-letters',
+      'interview-data',
+      'form-data',
+      'draft-data'
+    ];
+
+    // Clear base keys (old format)
+    baseKeys.forEach(key => {
+      try {
+        localStorage.removeItem(key);
+      } catch (error) {
+        console.warn(`Failed to remove ${key} from localStorage:`, error);
+      }
+    });
+
+    // Clear user-specific keys if userId provided
+    if (userId) {
+      const userSpecificKeys = [
+        `resume-builder-data-${userId}`,
+        `resume-ai-data-${userId}`,
+        `user-preferences-${userId}`,
+        `job-applications-${userId}`,
+        `cover-letters-${userId}`,
+        `interview-data-${userId}`,
+        `form-data-${userId}`,
+        `draft-data-${userId}`
+      ];
+
+      userSpecificKeys.forEach(key => {
+        try {
+          localStorage.removeItem(key);
+        } catch (error) {
+          console.warn(`Failed to remove ${key} from localStorage:`, error);
+        }
+      });
+    }
+
+    // Also clear any remaining user-specific keys by scanning localStorage
+    try {
+      const keysToRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && baseKeys.some(baseKey => key.startsWith(`${baseKey}-`))) {
+          keysToRemove.push(key);
+        }
+      }
+      keysToRemove.forEach(key => localStorage.removeItem(key));
+    } catch (error) {
+      console.warn('Failed to scan and clear user-specific keys:', error);
+    }
+  },
+
+  /**
+   * Clear all user-related storage (auth + user data)
+   */
+  clearAllUserStorage: (userId?: string) => {
+    storageUtils.clearAuthStorage();
+    storageUtils.clearUserData(userId);
+    console.log('All user storage cleared');
+  },
+
+  /**
    * Reset all app storage (use with caution)
    */
   resetAllStorage: () => {

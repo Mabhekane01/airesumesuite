@@ -985,8 +985,8 @@ Thank you for considering my application. I look forward to the opportunity to d
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 20 }}
             className={viewMode === 'grid' 
-              ? 'grid grid-cols-1 lg:grid-cols-2 gap-6 justify-items-center'
-              : 'space-y-4'
+              ? 'grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3 xs:gap-4 sm:gap-6 justify-items-center'
+              : 'space-y-3 xs:space-y-4'
             }
           >
             {filteredResumes.length === 0 ? (
@@ -1037,8 +1037,8 @@ Thank you for considering my application. I look forward to the opportunity to d
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             className={viewMode === 'grid' 
-              ? 'grid grid-cols-1 lg:grid-cols-2 gap-6 justify-items-center'
-              : 'space-y-4'
+              ? 'grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3 xs:gap-4 sm:gap-6 justify-items-center'
+              : 'space-y-3 xs:space-y-4'
             }
           >
             {filteredCoverLetters.length === 0 ? (
@@ -1234,16 +1234,16 @@ function ResumeCard({ resume, viewMode, actionLoading, onPreview, onEdit, onDele
     return (
       <motion.div
         layout
-        className="card-dark rounded-lg p-4 shadow-dark-lg hover:shadow-glow-md transition-all duration-300"
+        className="card-dark rounded-lg p-3 xs:p-4 shadow-dark-lg hover:shadow-glow-md transition-all duration-300"
       >
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="w-12 h-16 bg-gradient-to-br from-accent-primary to-accent-secondary rounded-lg flex items-center justify-center shadow-glow-sm">
-              <DocumentTextIcon className="w-6 h-6 text-white" />
+          <div className="flex items-center space-x-3 xs:space-x-4 flex-1 min-w-0">
+            <div className="w-10 h-12 xs:w-12 xs:h-16 bg-gradient-to-br from-accent-primary to-accent-secondary rounded-lg flex items-center justify-center shadow-glow-sm flex-shrink-0">
+              <DocumentTextIcon className="w-5 h-5 xs:w-6 xs:h-6 text-white" />
             </div>
-            <div>
-              <h3 className="text-lg font-semibold text-dark-text-primary">{resume.title}</h3>
-              <p className="text-sm text-dark-text-secondary">
+            <div className="min-w-0 flex-1">
+              <h3 className="text-base xs:text-lg font-semibold text-dark-text-primary truncate">{resume.title}</h3>
+              <p className="text-xs xs:text-sm text-dark-text-secondary truncate">
                 Updated {formatDate(resume.updatedAt || resume.createdAt)}
               </p>
             </div>
@@ -1264,11 +1264,11 @@ function ResumeCard({ resume, viewMode, actionLoading, onPreview, onEdit, onDele
     <motion.div
       layout
       whileHover={{ y: -4, scale: 1.02 }}
-      className="bg-dark-secondary rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 group border border-dark-border/50"
-      style={{ width: '470px' }}
+      className="bg-dark-secondary rounded-xl xs:rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 group border border-dark-border/50 w-full max-w-sm sm:max-w-md"
+      style={{ maxWidth: '380px' }}
     >
-      {/* Resume Preview - Fixed PDF Size */}
-      <div className="relative bg-white overflow-hidden" style={{ width: '470px', height: '520px' }}>
+      {/* Resume Preview - Responsive PDF Size */}
+      <div className="relative bg-white overflow-hidden aspect-[8.5/11] w-full">
         <ResumePreviewThumbnail resume={resume} />
         
         {/* Hover Actions Overlay */}
@@ -1291,20 +1291,20 @@ function ResumeCard({ resume, viewMode, actionLoading, onPreview, onEdit, onDele
       </div>
 
       {/* Resume Info Section */}
-      <div className="p-5">
-        <h3 className="text-lg font-bold text-dark-text-primary group-hover:text-blue-400 transition-colors mb-2 truncate">
+      <div className="p-3 xs:p-4 sm:p-5">
+        <h3 className="text-sm xs:text-base sm:text-lg font-bold text-dark-text-primary group-hover:text-blue-400 transition-colors mb-2 truncate">
           {resume.title}
         </h3>
-        <p className="text-sm text-dark-text-secondary mb-4">
+        <p className="text-xs xs:text-sm text-dark-text-secondary mb-3 xs:mb-4">
           Updated {formatDate(resume.updatedAt || resume.createdAt)}
         </p>
 
-        {/* Action Buttons - Now clickable to open view */}
-        <div className="flex items-center justify-between pt-3 border-t border-dark-border/30">
-          <div className="flex items-center gap-2">
+        {/* Action Buttons - Mobile optimized */}
+        <div className="flex items-center justify-between pt-2 xs:pt-3 border-t border-dark-border/30">
+          <div className="flex items-center gap-1 xs:gap-2">
             <button
               onClick={onPreview}
-              className="p-2 text-dark-text-muted hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-all duration-200"
+              className="p-1.5 xs:p-2 text-dark-text-muted hover:text-blue-400 hover:bg-blue-500/10 rounded-md xs:rounded-lg transition-all duration-200 touch-target"
               title="View Resume"
             >
               <EyeIcon className="w-4 h-4" />
@@ -1312,7 +1312,7 @@ function ResumeCard({ resume, viewMode, actionLoading, onPreview, onEdit, onDele
             <button
               onClick={onDuplicate}
               disabled={actionLoading === `duplicate-${resume._id}`}
-              className="p-2 text-dark-text-muted hover:text-yellow-400 hover:bg-yellow-500/10 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="p-1.5 xs:p-2 text-dark-text-muted hover:text-yellow-400 hover:bg-yellow-500/10 rounded-md xs:rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed touch-target"
               title="Duplicate"
             >
               <DocumentDuplicateIcon className="w-4 h-4" />
@@ -1320,14 +1320,14 @@ function ResumeCard({ resume, viewMode, actionLoading, onPreview, onEdit, onDele
             <button
               onClick={onDownload}
               disabled={actionLoading === `download-${resume._id}`}
-              className="p-2 text-dark-text-muted hover:text-purple-400 hover:bg-purple-500/10 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="p-1.5 xs:p-2 text-dark-text-muted hover:text-purple-400 hover:bg-purple-500/10 rounded-md xs:rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed touch-target"
               title="Download PDF"
             >
               <ArrowDownTrayIcon className="w-4 h-4" />
             </button>
             <button
               onClick={onPrint}
-              className="p-2 text-dark-text-muted hover:text-gray-400 hover:bg-gray-500/10 rounded-lg transition-all duration-200"
+              className="hidden xs:flex p-1.5 xs:p-2 text-dark-text-muted hover:text-gray-400 hover:bg-gray-500/10 rounded-md xs:rounded-lg transition-all duration-200 touch-target"
               title="Print Resume"
             >
               <PrinterIcon className="w-4 h-4" />
@@ -1335,7 +1335,7 @@ function ResumeCard({ resume, viewMode, actionLoading, onPreview, onEdit, onDele
             <button
               onClick={onShare}
               disabled={actionLoading === `share-${resume._id}`}
-              className="p-2 text-dark-text-muted hover:text-indigo-400 hover:bg-indigo-500/10 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="p-1.5 xs:p-2 text-dark-text-muted hover:text-indigo-400 hover:bg-indigo-500/10 rounded-md xs:rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed touch-target"
               title="Share Resume"
             >
               <ShareIcon className="w-4 h-4" />
@@ -1344,7 +1344,7 @@ function ResumeCard({ resume, viewMode, actionLoading, onPreview, onEdit, onDele
           
           <button
             onClick={onDelete}
-            className="p-2 text-dark-text-muted hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all duration-200"
+            className="p-1.5 xs:p-2 text-dark-text-muted hover:text-red-400 hover:bg-red-500/10 rounded-md xs:rounded-lg transition-all duration-200 touch-target"
             title="Delete"
           >
             <TrashIcon className="w-4 h-4" />
@@ -1451,19 +1451,19 @@ function CoverLetterCard({ coverLetter, viewMode, onEdit, onDelete, onDuplicate 
     return (
       <motion.div
         layout
-        className="card-dark rounded-lg p-4 shadow-dark-lg hover:shadow-glow-md transition-all duration-300"
+        className="card-dark rounded-lg p-3 xs:p-4 shadow-dark-lg hover:shadow-glow-md transition-all duration-300"
       >
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="w-12 h-16 bg-gradient-to-br from-accent-secondary to-accent-tertiary rounded-lg flex items-center justify-center shadow-glow-sm">
-              <PencilIcon className="w-6 h-6 text-white" />
+          <div className="flex items-center space-x-3 xs:space-x-4 flex-1 min-w-0">
+            <div className="w-10 h-12 xs:w-12 xs:h-16 bg-gradient-to-br from-accent-secondary to-accent-tertiary rounded-lg flex items-center justify-center shadow-glow-sm flex-shrink-0">
+              <PencilIcon className="w-5 h-5 xs:w-6 xs:h-6 text-white" />
             </div>
-            <div>
-              <h3 className="text-lg font-semibold text-dark-text-primary">{coverLetter.title}</h3>
-              <p className="text-sm text-dark-text-secondary">
+            <div className="min-w-0 flex-1">
+              <h3 className="text-base xs:text-lg font-semibold text-dark-text-primary truncate">{coverLetter.title}</h3>
+              <p className="text-xs xs:text-sm text-dark-text-secondary truncate">
                 {coverLetter.jobTitle} at {coverLetter.companyName}
               </p>
-              <p className="text-xs text-dark-text-muted">
+              <p className="text-xs text-dark-text-muted truncate">
                 Updated {formatDate(coverLetter.updatedAt || coverLetter.createdAt)}
               </p>
             </div>
@@ -1485,11 +1485,11 @@ function CoverLetterCard({ coverLetter, viewMode, onEdit, onDelete, onDuplicate 
     <motion.div
       layout
       whileHover={{ y: -2 }}
-      className="card-dark rounded-xl p-6 shadow-dark-lg hover:shadow-glow-md transition-all duration-300 group"
+      className="card-dark rounded-lg xs:rounded-xl p-3 xs:p-4 sm:p-6 shadow-dark-lg hover:shadow-glow-md transition-all duration-300 group max-w-sm mx-auto"
     >
-      {/* Cover Letter Preview - Fixed PDF Size */}
-      <div className="relative mb-4 flex justify-center">
-        <div className="bg-white rounded-lg overflow-hidden shadow-2xl border border-gray-300" style={{ width: '340px', height: '440px' }}>
+      {/* Cover Letter Preview - Responsive PDF Size */}
+      <div className="relative mb-3 xs:mb-4 flex justify-center">
+        <div className="bg-white rounded-lg overflow-hidden shadow-2xl border border-gray-300 w-full aspect-[8.5/11] max-w-[280px] xs:max-w-[320px] sm:max-w-[340px]">
           <CoverLetterPreviewThumbnail coverLetter={coverLetter} />
         </div>
         
@@ -1506,11 +1506,11 @@ function CoverLetterCard({ coverLetter, viewMode, onEdit, onDelete, onDuplicate 
       </div>
 
       {/* Cover Letter Info */}
-      <div className="space-y-2">
-        <h3 className="text-lg font-semibold text-dark-text-primary group-hover:text-accent-primary transition-colors">
+      <div className="space-y-1 xs:space-y-2">
+        <h3 className="text-sm xs:text-base sm:text-lg font-semibold text-dark-text-primary group-hover:text-accent-primary transition-colors truncate">
           {coverLetter.title}
         </h3>
-        <p className="text-sm text-dark-text-secondary">
+        <p className="text-xs xs:text-sm text-dark-text-secondary truncate">
           {coverLetter.jobTitle} at {coverLetter.companyName}
         </p>
         <p className="text-xs text-dark-text-muted">
@@ -1519,25 +1519,25 @@ function CoverLetterCard({ coverLetter, viewMode, onEdit, onDelete, onDuplicate 
       </div>
 
       {/* Actions */}
-      <div className="mt-4 pt-4 border-t border-dark-border flex items-center justify-between">
-        <div className="flex items-center space-x-2">
+      <div className="mt-3 xs:mt-4 pt-3 xs:pt-4 border-t border-dark-border flex items-center justify-between">
+        <div className="flex items-center space-x-1 xs:space-x-2">
           <button
             onClick={onDuplicate}
-            className="text-dark-text-muted hover:text-accent-primary transition-colors"
+            className="p-1.5 xs:p-2 text-dark-text-muted hover:text-accent-primary hover:bg-accent-primary/10 rounded-md transition-colors touch-target"
             title="Duplicate"
           >
             <DocumentDuplicateIcon className="w-4 h-4" />
           </button>
           <button
             onClick={() => handleDownloadCoverLetter(coverLetter)}
-            className="text-dark-text-muted hover:text-accent-primary transition-colors"
+            className="p-1.5 xs:p-2 text-dark-text-muted hover:text-accent-primary hover:bg-accent-primary/10 rounded-md transition-colors touch-target"
             title="Download PDF"
           >
             <ArrowDownTrayIcon className="w-4 h-4" />
           </button>
           <button
             onClick={() => handleShareCoverLetter(coverLetter)}
-            className="text-dark-text-muted hover:text-accent-primary transition-colors"
+            className="p-1.5 xs:p-2 text-dark-text-muted hover:text-accent-primary hover:bg-accent-primary/10 rounded-md transition-colors touch-target"
             title="Share Cover Letter"
           >
             <ShareIcon className="w-4 h-4" />
@@ -1546,7 +1546,7 @@ function CoverLetterCard({ coverLetter, viewMode, onEdit, onDelete, onDuplicate 
         
         <button
           onClick={onDelete}
-          className="text-dark-text-muted hover:text-red-400 transition-colors"
+          className="p-1.5 xs:p-2 text-dark-text-muted hover:text-red-400 hover:bg-red-500/10 rounded-md transition-colors touch-target"
           title="Delete"
         >
           <TrashIcon className="w-4 h-4" />
