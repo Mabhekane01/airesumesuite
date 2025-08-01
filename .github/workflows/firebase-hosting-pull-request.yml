@@ -13,9 +13,46 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: pnpm install && pnpm run build
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          
+      - name: Install pnpm
+        run: npm install -g pnpm
+        
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: apps/frontend
+        
+      - name: Build project
+        run: pnpm run build
+        working-directory: apps/frontend
+        env:
+          VITE_NODE_ENV: production
+          VITE_APP_NAME: AI Job Suite
+          VITE_APP_VERSION: 1.0.0
+          VITE_API_BASE_URL: https://airesumesuite.onrender.com/api/v1
+          VITE_APP_URL: https://airesumesuite.web.app
+          VITE_GOOGLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_CLIENT_ID }}
+          VITE_RECAPTCHA_SITE_KEY: ${{ secrets.VITE_RECAPTCHA_SITE_KEY }}
+          VITE_GA_TRACKING_ID: ${{ secrets.VITE_GA_TRACKING_ID }}
+          VITE_PAYSTACK_PUBLISHABLE_KEY: ${{ secrets.VITE_PAYSTACK_PUBLISHABLE_KEY }}
+          VITE_ENABLE_AI_FEATURES: true
+          VITE_ENABLE_PAYMENT_PROCESSING: true
+          VITE_ENABLE_ANALYTICS: true
+          VITE_ENABLE_RECAPTCHA: true
+          VITE_ENABLE_GOOGLE_AUTH: true
+          VITE_DEBUG_MODE: false
+          VITE_LOG_LEVEL: error
+          VITE_SENTRY_DSN: ${{ secrets.VITE_SENTRY_DSN }}
+          VITE_ENABLE_PWA: true
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_AIRESUMESUITE }}
           projectId: airesumesuite
+          entryPoint: apps/frontend
+        env:
+          FIREBASE_CLI_EXPERIMENTS: webframeworks
