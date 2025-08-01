@@ -18,8 +18,12 @@ WORKDIR /app
 COPY --chown=pptruser:pptruser package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
 COPY --chown=pptruser:pptruser apps/backend/package.json ./apps/backend/
 
-# Install dependencies (Puppeteer will download Chrome - needed for PDF generation)
-RUN pnpm install --frozen-lockfile
+# Set Puppeteer environment variables to skip Chrome download (Chrome already in image)
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+ENV PUPPETEER_SKIP_DOWNLOAD=true
+
+# Install dependencies (skip Chrome download - already in Puppeteer image)
+RUN PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true PUPPETEER_SKIP_DOWNLOAD=true pnpm install --frozen-lockfile
 
 # Copy source code with correct ownership
 COPY --chown=pptruser:pptruser apps/backend ./apps/backend
@@ -54,8 +58,12 @@ USER pptruser
 COPY --chown=pptruser:pptruser package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY --chown=pptruser:pptruser apps/backend/package.json ./apps/backend/
 
-# Install only production dependencies (Puppeteer Chrome needed for production)
-RUN pnpm install --frozen-lockfile --prod
+# Set Puppeteer environment variables for production stage too
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+ENV PUPPETEER_SKIP_DOWNLOAD=true
+
+# Install only production dependencies (skip Chrome download - already in image)
+RUN PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true PUPPETEER_SKIP_DOWNLOAD=true pnpm install --frozen-lockfile --prod
 
 # Copy built application from build stage
 COPY --from=build --chown=pptruser:pptruser /app/apps/backend/dist ./apps/backend/dist
