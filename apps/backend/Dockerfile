@@ -11,7 +11,7 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
 COPY apps/backend/package.json ./apps/backend/
 
-# Install dependencies
+# Install dependencies (Puppeteer will download Chrome - needed for PDF generation)
 RUN pnpm install --frozen-lockfile
 
 # Copy source code
@@ -44,7 +44,7 @@ RUN npm install -g pnpm
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/backend/package.json ./apps/backend/
 
-# Install only production dependencies
+# Install only production dependencies (Puppeteer Chrome needed for production)
 RUN pnpm install --frozen-lockfile --prod
 
 # Copy built application from build stage

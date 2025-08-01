@@ -23,7 +23,7 @@
     "postinstall": "echo 'Skipping Puppeteer Chromium download on production'"
   },
   "puppeteer": {
-    "skipDownload": true
+    "skipDownload": false
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.24.3",
