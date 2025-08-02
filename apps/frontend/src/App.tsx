@@ -7,6 +7,8 @@ import { SearchProvider } from './contexts/SearchContext'
 import Layout from './components/layout/Layout'
 import DashboardLayout from './components/dashboard/DashboardLayout'
 import LandingPageSimple from './pages/LandingPageSimple'
+import GoogleAuthCallback from './pages/auth/GoogleAuthCallback'
+import GoogleAuthError from './pages/auth/GoogleAuthError'
 // Removed old verification pages - now using OTP-based verification
 import './utils/apiDebug' // Load API debug tools
 
@@ -41,6 +43,9 @@ function App() {
                     </Layout>
                   } 
                 />
+                {/* Google OAuth callback routes */}
+                <Route path="/auth/success" element={<GoogleAuthCallback />} />
+                <Route path="/auth/error" element={<GoogleAuthError />} />
                 {/* Legacy verification routes removed - now using in-modal OTP verification */}
                 <Route path="/dashboard/*" element={
                   <ProtectedRoute>

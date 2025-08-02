@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { 
   DocumentTextIcon, 
   PencilIcon, 
@@ -10,6 +11,7 @@ import {
   SparklesIcon
 } from '@heroicons/react/24/outline';
 import { Link } from 'react-router-dom';
+import { toast } from 'sonner';
 import AuthModal from '../components/auth/AuthModalSimple';
 import { useAuthStore } from '../stores/authStore';
 
@@ -50,7 +52,43 @@ const stats = [
 export default function LandingPageSimple() {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'register'>('register');
+  const [searchParams] = useSearchParams();
   const { isAuthenticated } = useAuthStore();
+
+  // Handle auth error messages from URL parameters
+  useEffect(() => {
+    const authError = searchParams.get('auth');
+    const message = searchParams.get('message');
+    
+    if (authError === 'error' && message) {
+      let errorMessage = 'Authentication failed';
+      
+      switch (message) {
+        case 'authentication_failed':
+          errorMessage = 'Google authentication failed. Please try again.';
+          break;
+        case 'server_error':
+          errorMessage = 'A server error occurred. Please try again later.';
+          break;
+        case 'missing_tokens':
+          errorMessage = 'Authentication tokens were not received. Please try again.';
+          break;
+        case 'callback_error':
+          errorMessage = 'An error occurred while processing your sign-in. Please try again.';
+          break;
+        default:
+          errorMessage = decodeURIComponent(message);
+      }
+      
+      toast.error(errorMessage);
+      
+      // Clean up URL parameters
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.delete('auth');
+      newUrl.searchParams.delete('message');
+      window.history.replaceState({}, '', newUrl.toString());
+    }
+  }, [searchParams]);
 
   const handleGetStarted = () => {
     if (isAuthenticated) {

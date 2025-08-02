@@ -337,7 +337,8 @@ const paginationValidation = [
 
 // Routes
 router.use(authenticateToken);
-router.use(requireSubscription('premium'));
+// Note: Basic job application features should be available to all users
+// Only advanced AI features require premium/enterprise subscriptions
 
 // Create job application
 router.post(
