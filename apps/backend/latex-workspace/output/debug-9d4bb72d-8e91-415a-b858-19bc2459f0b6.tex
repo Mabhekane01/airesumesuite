@@ -1,0 +1,163 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{enumitem}
+
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[protrusion=true,expansion=true]{microtype}
+\usepackage{amsmath,amsfonts,amsthm}     
+\usepackage{graphicx}                    
+\usepackage[svgnames]{xcolor}           
+\usepackage[margin=0.5in]{geometry}
+\setlength{\textheight}{700pt}
+\usepackage{url}
+
+\usepackage{tikz}
+% Removed kpfonts as it conflicts with lmodern and other font definitions.
+% Removed color package as xcolor provides its functionality.
+\newcommand*\Hs{\ensuremath{\color{red}\varheartsuit}}
+
+\newcommand{\heartstab}{%
+\begin{tikzpicture}[baseline=(current bounding box.center)]%
+\draw [line width=0.0mm, white] (3.5ex,0.4ex) -- (3.5ex,0.4ex);
+\node at (0,0) {\Large{$\Hs$}};
+\draw [line width=0.30mm, black] (-0.7ex,0.7ex) -- (1.2ex,1.2ex);%
+\draw [line width=0.50mm, black] (0.8ex,0.65ex) -- (0.55ex,1.45ex);%
+\end{tikzpicture}%
+}
+
+\newcommand{\squigarr}{%
+{\Large \color{blue}$\rightsquigarrow$}%
+}
+
+\usepackage[colorlinks=true,urlcolor=purple]{hyperref}
+
+\frenchspacing              
+\pagestyle{empty}           
+
+\usepackage{sectsty}
+
+% Fixed sectionfont definition: removed problematic comments and replaced phv font with lmodern sans-serif bold.
+\sectionfont{\sffamily\bfseries\sectionrule{0pt}{0pt}{-5pt}{3pt}}
+
+\newlength{\spacebox}
+\settowidth{\spacebox}{8888888888}			
+\newcommand{\sepspace}{\vspace*{0.5em}}		
+
+\newcommand{\MyName}[1]{% Name
+		\Huge \sffamily\bfseries \hfill #1
+		\par \normalsize \normalfont}
+		
+\newcommand{\MySlogan}[1]{% Slogan (optional)
+		\large \sffamily\itshape\hfill #1
+		\par \normalsize \normalfont}
+		
+\newcommand{\NameEmailPhoneSiteGithub}[5]{
+        \Huge \sffamily\bfseries #1 
+        \large \sffamily \hfill #2\hspace{25pt}#3
+        
+        \sffamily\itshape Anti Curriculum Vitae\hfill \textit{website } #4 \hspace{25pt}\textit{github } #5 
+        \par \normalsize \normalfont
+}
+
+\newcommand{\NewPart}[1]{\section*{\uppercase{#1}}}
+
+\newcommand{\SkillsEntry}[2]{      
+		\noindent\hangindent=2em\hangafter=0 
+		\parbox{\spacebox}{        
+		\textit{#1}}			   
+		\hspace{1.5em} #2 \par}    
+
+\begin{document}
+
+%\begin{wrapfigure}{l}{0.5\textwidth}
+%	\vspace*{-2em}
+%		% Image removed
+%\end{wrapfigure}
+
+\iffalse
+\begin{figure}
+%  % Image removed
+%  \caption{
+    % Image removed
+%    caption{left aligned image}
+%    \label{fig:me}
+\end{figure}
+\fi
+
+%\MyName{Stephen Fay}
+%\MySlogan{Curriculum Vitae}
+
+\NameEmailPhoneSiteGithub{Bheki Ngwenya}{0797394470}{ngwenyabheki276@gmail.com}{\href{http://johndoe.com}{johndoe.com}}{\href{https://github.com/Mabhekane01}{github.com/Mabhekane01}}
+
+\sepspace
+
+\NewPart{Summary}
+Experienced professional with strong technical skills.
+
+\sepspace
+
+\NewPart{Key}
+
+\begin{itemize}
+    \item[\heartstab] Heart-stab. Professional rejections and things I messed up.
+    \item[\squigarr] Squiggly arrow. What did I learn? What were the consequences?
+\end{itemize}
+
+\NewPart{Education}
+
+\begin{itemize}
+    \item \textbf{BSc in Computer Science:} North-West University (2020)
+    \item[\heartstab] \textbf{High-school:} Never took German class seriously. To this day I don't speak German. 
+    \item[\squigarr] I think I learned my lesson. I regret not having learned German, I wish I could speak to my German colleagues in their mother tongue now. 
+\end{itemize}
+
+\sepspace
+
+\NewPart{Work Experience}
+
+\begin{itemize}
+    \item \textbf{Network Engineer \& Software Developer} at CMC Networks, Building H, The Woodlands, Office Park, 20 Woodlands Dr, Woodmead, Sandton, 2191 (2023-07-01 - Present)
+    \begin{itemize}[nosep]
+        \item Engineered and maintained real-time monitoring systems achieving 99.9\% uptime across critical infrastructure; using Python and monitoring tools;
+        \item Developed automated reporting dashboards reducing manual report generation time by 60\% through data integration and visualization;
+        \item Collaborated with cross-functional teams to implement security policies and anomaly detection systems, strengthening network perimeter defense;
+        \item Led incident response and root cause analysis for critical system failures, documenting solutions and implementing preventive measures;
+        \item Built centralized Data Lake architecture streamlining performance metrics collection and analysis across multiple systems;
+        \item Integrated multiple service platforms (Fresh Services, PRTG, inventory systems) enabling real-time asset visibility and management.
+        \item \textit{Achievements:} Improved efficiency.
+    \end{itemize}
+    \item[\heartstab] Summer 2021 Rejected from XYZ. 
+    \item[\heartstab] Summer 2021, didn't participate in the final round of the Alibaba math competition. 
+    \item[\heartstab] Spring 2021 University research scholarship, my sloppy last minute application was rejected \squigarr Don't make a last minute sloppy application. Write multiple drafts days in advance. 
+    \item[\heartstab] DEF, rejected \squigarr they replied and were cordial, and told me they would get back to me if they needed me in the future.
+    \item[\heartstab] Lorem Ipsum rejected me \squigarr twitter DMs work better than cold emails.
+\end{itemize}
+
+\sepspace
+
+\NewPart{Skills}
+
+\SkillsEntry{Java}{Proficient}
+\SkillsEntry{C\#}{Proficient}
+\SkillsEntry{Node.js}{Proficient}
+\SkillsEntry{React.js}{Proficient}
+\SkillsEntry{MongoDB}{Proficient}
+\SkillsEntry{Docker}{Proficient}
+\SkillsEntry{TypeScript}{Proficient}
+
+\sepspace
+
+\NewPart{Achievements and Interests}
+
+\begin{itemize}
+    \item[\heartstab] Dropped out of University Club summer 2021 as the team lead. \squigarr Don't bite off more than you can chew. Don't accept something just because you can. 
+    \item[\heartstab] Didn't complete the 2021 DEFG international math competition final round because of self-esteem issues. \squigarr Don't be scared of losing at stuff. Nothing ever comes out of self pity.
+    \item[\heartstab] Never applied to University entrance scholarship \squigarr this would have been good to have, as a credential, and for money, even though the fees are not too dear here it's still easy money. 
+    \item[\heartstab] I haven't played any music in years \squigarr sometimes you need to make sacrifices to get what you want. You can't have everything you want at the same time. Though sad I think it was a good decision. 
+\end{itemize}
+% Added missing \end{itemize}
+\end{itemize}
+% Removed stray closing brace.
+\end{document}

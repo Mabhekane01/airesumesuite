@@ -76,7 +76,13 @@ router.post('/logout-all', authMiddleware, (req: AuthenticatedRequest, res: Resp
 router.get('/profile', authMiddleware, (req: AuthenticatedRequest, res: Response) => getProfile(req, res));
 
 // Google OAuth routes
-router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+router.get('/google', (req, res, next) => {
+  // Store redirect URL in session for later use
+  if (req.query.redirect) {
+    req.session.redirectAfterLogin = req.query.redirect as string;
+  }
+  passport.authenticate('google', { scope: ['profile', 'email'] })(req, res, next);
+});
 router.get('/google/callback', 
   passport.authenticate('google', { session: false }), 
   googleCallback

@@ -74,13 +74,17 @@ export default function LanguagesForm() {
                 label="Language"
                 value={language.name}
                 onChange={(e) => updateLanguage(index, 'name', e.target.value)}
-                placeholder="English, Spanish, French, etc."
+                placeholder="e.g., English, Spanish, French"
+                required
+                helpText="Name of the language you speak"
               />
               <Select
                 label="Proficiency Level"
                 value={language.proficiency}
                 onChange={(e) => updateLanguage(index, 'proficiency', e.target.value as Language['proficiency'])}
                 options={proficiencyLevels}
+                required
+                helpText="Your skill level in this language"
               />
             </div>
           </Card>

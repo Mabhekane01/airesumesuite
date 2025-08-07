@@ -6,6 +6,7 @@ import {
   ArrowRightIcon
 } from '@heroicons/react/24/outline';
 import { useAuthStore } from '../../stores/authStore';
+import { useSubscription } from '../../hooks/useSubscription';
 import { Link } from 'react-router-dom';
 
 interface SubscriptionGateProps {
@@ -24,6 +25,7 @@ export default function SubscriptionGate({
   showUpgrade = true 
 }: SubscriptionGateProps) {
   const { user } = useAuthStore();
+  const { hasActiveSubscription, isEnterprise, canUseAI } = useSubscription();
   
   // Debug logging
   console.log('SubscriptionGate check:', {
@@ -31,16 +33,19 @@ export default function SubscriptionGate({
     userTier: user?.tier,
     subscriptionStatus: user?.subscriptionStatus,
     requiresEnterprise,
-    hasAccess: user?.tier === 'enterprise'
+    isEnterprise,
+    hasActiveSubscription,
+    canUseAI,
+    hasAccess: requiresEnterprise ? hasActiveSubscription : true
   });
-  
-  // If user has enterprise tier and active subscription, show the content
-  if (user?.tier === 'enterprise' && (user?.subscriptionStatus === 'active' || !user?.subscriptionStatus)) {
-    return <>{children}</>;
-  }
   
   // If feature doesn't require enterprise, show the content
   if (!requiresEnterprise) {
+    return <>{children}</>;
+  }
+  
+  // For enterprise features, use proper subscription validation
+  if (requiresEnterprise && hasActiveSubscription) {
     return <>{children}</>;
   }
   

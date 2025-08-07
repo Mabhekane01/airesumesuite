@@ -1,0 +1,148 @@
+% Template01 - Creative Anti-CV Style - Standardized Version  
+% Maintains original creative styling but uses unified placeholders
+% Compatible with standardizedTemplateService.ts
+
+\documentclass[a4paper,11pt]{article} 
+							
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[protrusion=true,expansion=true]{microtype}
+\usepackage{amsmath,amsfonts,amsthm}     
+\usepackage{graphicx}                    
+\usepackage[svgnames]{xcolor}           
+\usepackage[margin=0.5in]{geometry}
+\setlength{\textheight}{700pt}
+\usepackage{url}
+
+\usepackage{tikz}
+\usepackage{lmodern} % Replaced kpfonts for compatibility
+\usepackage{color}
+\newcommand*\Hs{\ensuremath{\color{red}\varheartsuit}}
+
+%%% Heart-stab command (keep template's unique elements)
+\newcommand{\heartstab}{%
+\begin{tikzpicture}[baseline=(current bounding box.center)]%
+\draw [line width=0.0mm, white] (3.5ex,0.4ex) -- (3.5ex,0.4ex);
+\node at (0,0) {\Large{$\Hs$}};
+\draw [line width=0.30mm, black] (-0.7ex,0.7ex) -- (1.2ex,1.2ex);%
+\draw [line width=0.50mm, black] (0.8ex,0.65ex) -- (0.55ex,1.45ex);%
+\end{tikzpicture}%
+}
+
+%%% Squiggly arrow
+\newcommand{\squigarr}{%
+{\Large \color{blue}$\rightsquigarrow$}%
+}
+
+\usepackage[hidelinks]{hyperref} % Standardized hyperref
+
+\frenchspacing              
+\pagestyle{empty}           
+
+\usepackage{titlesec} % Replaced sectsty for compatibility
+
+\titleformat{\section}{\usefont{OT1}{phv}{b}{n}\large}{\thesection}{1em}{}[\titlerule]
+
+\newlength{\spacebox}
+\settowidth{\spacebox}{8888888888}
+\newcommand{\sepspace}{\vspace*{0.5em}}
+
+% Template-specific commands for content rendering
+\newcommand{\renderWorkExperience}[4]{
+    \noindent\textbf{#1} \hfill \textit{#2}\\
+    \textit{#3} \hfill #4\\[0.3em]
+}
+
+\newcommand{\renderEducation}[4]{
+    \noindent\textbf{#1} \hfill \textit{#2}\\
+    \textit{#3} \hfill #4\\[0.3em]
+}
+
+\newcommand{\renderSkill}[2]{
+    \noindent\hangindent=2em\hangafter=0
+    \parbox{\spacebox}{\textit{#1}}\hspace{1.5em} #2 \par
+}
+
+\begin{document}
+
+% STANDARDIZED PERSONAL INFO SECTION
+\begin{center}
+\Huge \usefont{OT1}{phv}{b}{n} \textbf{Bheki Ngwenya}\\[0.5em]
+\large \textit{Software Engineer \& Network Engineer}\\[0.3em]
+\normalsize ngwenyabheki276@gmail.com | 0797394470{{#IF_LOCATION}} | Johannesburg South Africa{{/IF_LOCATION}}\\
+\textit{LinkedIn: }https://www.linkedin.com/in/bheki-ntando-ngwenya01{{#IF_LINKEDIN}} | {{/IF_LINKEDIN}}\textit{GitHub: }https://github.com/Mabhekane0100000{{#IF_LINKEDIN}}{{#IF_GITHUB}}{{/IF_GITHUB}}{{/IF_LINKEDIN}}\textit{Website: }https://bankhosa.commmmmmmmvvvv
+\end{center}
+
+\sepspace
+
+% PROFESSIONAL SUMMARY - Always Present
+\section*{PROFESSIONAL SUMMARY}
+Results-driven Software Development Manager with 10+ years of experience spearheading Agile teams of up to 15 engineers in the fast-paced Fintech and digital payments industry. Drives the full software development lifecycle (SDLC) to deliver robust, high-performance mobile and web applications, increasing system efficiency by over 20\% through expert architecture of scalable Java-based systems, RESTful APIs, and integrated database solutions.
+
+\sepspace
+
+% WORK EXPERIENCE - Conditional
+
+\section*{PROFESSIONAL EXPERIENCE}
+\noindent\textbf{Network Engineer \& Software Developer} \hfill \textit{2023-07-01 - Present}\\
+\textit{, Building H, The Woodlands, Office Park, 20 Woodlands Dr, Woodmead, Sandton, 2191}\\[0.3em]
+\begin{itemize}[leftmargin=1em]
+\item Directed the complete software development lifecycle (SDLC) for key projects, from requirements gathering and design to deployment and ongoing maintenance.
+\item Led development of scalable, high-availability software solutions and API integrations using Python, SQL, and NoSQL databases.
+\item Engineered a Python-based, real-time monitoring system for mission-critical infrastructure, consistently achieving and maintaining 99.9\% uptime.
+\item Developed automated reporting dashboards by integrating disparate data sources via APIs, slashing manual reporting efforts by 60\%.
+\item Spearheaded a cross-functional security initiative to deploy automated anomaly detection systems, strengthening perimeter defense and data integrity for digital payment solutions.
+\item Led incident response and root cause analysis (RCA) efforts, developing preventative software fixes that cut recurring critical system failures by 30\%.
+\item Architected a centralized Data Lake using NoSQL databases, which streamlined performance metric collection and accelerated data analysis across all enterprise systems.
+\item Orchestrated the complex API integration of 3+ platforms, including PRTG and Fresh Services, to create a unified dashboard for real-time asset visibility.
+\end{itemize}\vspace{0.5em}
+\sepspace
+
+
+% EDUCATION - Conditional
+
+\section*{EDUCATION}
+\noindent\textbf{BSc} \hfill \textit{2022-12-01}\\
+\textit{North-West University , } (GPA: 65)\\[0.3em]
+\sepspace
+
+
+% SKILLS - Conditional
+
+\section*{CORE COMPETENCIES}
+\noindent\textbf{Technical:} java, c\#, nodejs, reactjs, mongodb, docker, typescript, javascript, c++, system analysis\\[0.2em]
+\sepspace
+
+
+% PROJECTS - Conditional
+
+
+% CERTIFICATIONS - Conditional
+
+
+% LANGUAGES - Conditional
+
+
+% VOLUNTEER EXPERIENCE - Conditional
+
+
+% AWARDS - Conditional
+
+
+% PUBLICATIONS - Conditional
+
+
+% REFERENCES - Conditional
+
+
+% HOBBIES - Conditional
+
+\section*{INTERESTS \& HOBBIES}
+\noindent\textbf{Other:} \\[0.2em]
+\sepspace
+
+
+% ADDITIONAL SECTIONS - Conditional
+
+
+\end{document}

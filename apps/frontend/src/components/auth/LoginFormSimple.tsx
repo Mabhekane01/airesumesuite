@@ -10,9 +10,10 @@ import { RECAPTCHA_CONFIG } from '../../services/recaptchaService';
 interface LoginFormProps {
   onToggleMode: () => void;
   onClose: () => void;
+  onSuccess?: () => void;
 }
 
-export default function LoginFormSimple({ onToggleMode, onClose }: LoginFormProps) {
+export default function LoginFormSimple({ onToggleMode, onClose, onSuccess }: LoginFormProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -116,6 +117,11 @@ export default function LoginFormSimple({ onToggleMode, onClose }: LoginFormProp
       await login(email, password, null, recaptchaToken);
       toast.success('Welcome back!');
       onClose();
+      
+      // Call success callback for notification refresh
+      if (onSuccess) {
+        onSuccess();
+      }
     } catch (error: any) {
       console.error('❌ Login failed:', error);
       

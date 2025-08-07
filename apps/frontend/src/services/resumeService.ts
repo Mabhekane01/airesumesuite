@@ -2,6 +2,35 @@ import { api } from './api';
 import { Certification } from '../types';
 import { useAuthStore } from '../stores/authStore';
 
+/**
+ * Convert MongoDB ObjectId (including Buffer format) to string
+ */
+function convertObjectIdToString(id: any): string {
+  if (!id) return '';
+  
+  if (typeof id === 'string') {
+    return id;
+  }
+  
+  // Handle MongoDB ObjectId Buffer format
+  if (id.buffer && id.buffer.data && Array.isArray(id.buffer.data)) {
+    const bytes = Array.from(id.buffer.data);
+    return bytes.map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+  
+  // Try toString method
+  if (id.toString && typeof id.toString === 'function') {
+    const result = id.toString();
+    if (result !== '[object Object]') {
+      return result;
+    }
+  }
+  
+  // Fallback - log error and return empty string
+  console.error('❌ Cannot convert ObjectId to string:', id);
+  return '';
+}
+
 export interface PersonalInfo {
   firstName: string;
   lastName: string;
@@ -70,12 +99,56 @@ export interface OptimizeResumeRequest {
 }
 
 export class ResumeService {
+  private enhancementCache: Map<string, { data: Blob; timestamp: number; ttl: number }> = new Map();
+  private readonly CACHE_TTL = 10 * 60 * 1000; // 10 minutes
+
   private getAccessToken = (): string => {
     const token = useAuthStore.getState().accessToken;
     if (!token) {
       throw new Error('No access token found. Please log in.');
     }
     return token;
+  }
+
+  private getCacheKey(resumeData: any, templateId: string, options?: any): string {
+    const resumeHash = JSON.stringify({
+      personalInfo: resumeData.personalInfo,
+      workExperience: resumeData.workExperience,
+      education: resumeData.education,
+      skills: resumeData.skills,
+      templateId,
+      options
+    });
+    
+    // Simple hash function
+    let hash = 0;
+    for (let i = 0; i < resumeHash.length; i++) {
+      const char = resumeHash.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32bit integer
+    }
+    return hash.toString();
+  }
+
+  private getCachedData(key: string): Blob | null {
+    const cached = this.enhancementCache.get(key);
+    if (!cached) return null;
+    
+    const now = Date.now();
+    if (now - cached.timestamp > cached.ttl) {
+      this.enhancementCache.delete(key);
+      return null;
+    }
+    
+    return cached.data;
+  }
+
+  private setCachedData(key: string, data: Blob, ttl: number = this.CACHE_TTL): void {
+    this.enhancementCache.set(key, {
+      data,
+      timestamp: Date.now(),
+      ttl
+    });
   }
 
   getUserResumes = async (): Promise<ResumeData[]> => {
@@ -313,7 +386,7 @@ export class ResumeService {
       .split(/\s+/)
       .filter(word => word.length > 3)
       .filter(word => !['that', 'with', 'have', 'will', 'this', 'they', 'from', 'were', 'been'].includes(word));
-    return [...new Set(words)].slice(0, 20);
+    return Array.from(new Set(words)).slice(0, 20);
   }
 
   optimizeResumeForJob = async (resumeData: any, options: {
@@ -347,7 +420,9 @@ export class ResumeService {
     recommendations: string[];
   }> => {
     try {
-      const response = await api.post('/resumes/analyze-job-url', options);
+      const response = await api.post('/resumes/analyze-job-url', options, {
+        timeout: 180000 // 3 minutes for job URL analysis
+      });
       return response.data.data;
     } catch (error) {
       console.error('Error analyzing job from URL:', error);
@@ -355,11 +430,19 @@ export class ResumeService {
     }
   }
 
-  optimizeResumeWithJobUrl = async (resumeData: any, jobUrl: string): Promise<{
+  optimizeResumeWithJobUrl = async (resumeData: any, jobUrl: string, options?: {
+    templateCode?: string;
+    templateId?: string;
+  }): Promise<{
     originalResume: any;
-    improvedResume: any;
+    optimizedResume?: any;
+    improvedResume?: any;
     enhancedResume?: any;
+    optimizedLatexCode?: string;
     improvements: string[];
+    keywordsAdded?: string[];
+    atsScore?: number;
+    jobMatchAnalysis?: any;
     atsAnalysis?: any;
     jobAlignment?: any;
     qualityScore?: any;
@@ -368,22 +451,135 @@ export class ResumeService {
     scrapedJobDetails?: any;
   }> => {
     try {
-      let endpoint = '/resumes/optimize-job-url';
-      let payload: { jobUrl: string, resumeData?: any } = { jobUrl, resumeData };
+      let endpoint = '/resumes/optimize-for-job';
+      let payload: { 
+        jobUrl: string; 
+        resumeData?: any; 
+        templateCode?: string;
+        templateId?: string;
+      } = { 
+        jobUrl, 
+        resumeData,
+        templateCode: options?.templateCode,
+        templateId: options?.templateId
+      };
       
       // Only use ID-based endpoint if resume has real database ID (not temp-id)
       if ((resumeData._id || resumeData.id) && !resumeData['temp-id']) {
         const resumeId = resumeData._id || resumeData.id;
-        endpoint = `/resumes/${resumeId}/optimize-job-url`;
-        payload = { jobUrl }; // Don't send resumeData for saved resumes
-        console.log(`🎯 Using saved resume job optimization endpoint: ${endpoint}`);
+        endpoint = `/resumes/${resumeId}/optimize-with-url`;
+        payload = { 
+          jobUrl,
+          templateCode: options?.templateCode,
+          templateId: options?.templateId
+        }; // Don't send resumeData for saved resumes
+        console.log(`🎯 Using saved resume job optimization endpoint: ${endpoint}`, {
+          hasTemplateCode: !!options?.templateCode,
+          templateId: options?.templateId
+        });
       } else {
-        console.log(`🎯 Using unsaved resume job optimization endpoint: ${endpoint}`);
+        console.log(`🎯 Using unsaved resume job optimization endpoint: ${endpoint}`, {
+          hasTemplateCode: !!options?.templateCode,
+          templateId: options?.templateId
+        });
       }
-      const response = await api.post(endpoint, payload);
-      return response.data.data;
+      
+      // Job optimization with LaTeX compilation can take 3-5 minutes
+      const response = await api.post(endpoint, payload, {
+        timeout: 300000 // 5 minutes timeout for job optimization with LaTeX
+      });
+      
+      // The backend returns { success: true, data: { optimizedResume: ... } }
+      // So we need to extract response.data.data, but handle cases where it might be different
+      const result = response.data?.data || response.data;
+      
+      if (!result) {
+        console.error('❌ No data in API response:', response);
+        throw new Error('No data received from server');
+      }
+      
+      return result;
     } catch (error) {
-      console.error('Error optimizing resume with job URL:', error);
+      console.error('❌ CRITICAL: Error optimizing resume with job URL:', {
+        error,
+        message: error?.message,
+        response: error?.response,
+        status: error?.response?.status,
+        data: error?.response?.data,
+        stack: error?.stack
+      });
+      
+      // Check if it's a network/timeout error
+      if (error?.code === 'ECONNABORTED' || error?.message?.includes('timeout')) {
+        throw new Error('Request timed out. Job optimization is taking longer than expected. Please try again.');
+      }
+      
+      // Check if it's an authentication error
+      if (error?.response?.status === 401) {
+        throw new Error('Authentication failed. Please log in again.');
+      }
+      
+      // Check if it's a server error
+      if (error?.response?.status >= 500) {
+        throw new Error('Server error occurred. Please try again later.');
+      }
+      
+      // Re-throw original error with more context
+      throw new Error(error?.message || 'Job optimization failed');
+    }
+  }
+
+  // New method for Job Optimization with PDF generation (like enhanceResumeWithAIPDF)
+  optimizeResumeWithJobUrlPDF = async (
+    resumeData: any, 
+    jobUrl: string, 
+    options?: {
+      templateCode?: string;
+      templateId?: string;
+    }
+  ): Promise<Blob> => {
+    try {
+      let endpoint = '/resumes/optimize-for-job-pdf';
+      let payload: { 
+        jobUrl: string; 
+        resumeData?: any; 
+        templateCode?: string;
+        templateId?: string;
+      } = { 
+        jobUrl, 
+        resumeData,
+        templateCode: options?.templateCode,
+        templateId: options?.templateId
+      };
+      
+      // Only use ID-based endpoint if resume has real database ID (not temp-id)
+      if ((resumeData._id || resumeData.id) && !resumeData['temp-id']) {
+        const resumeId = resumeData._id || resumeData.id;
+        endpoint = `/resumes/${resumeId}/optimize-with-url`;
+        payload = { 
+          jobUrl,
+          templateCode: options?.templateCode,
+          templateId: options?.templateId
+        }; // Don't send resumeData for saved resumes
+        console.log(`🎯 Using saved resume job optimization PDF endpoint: ${endpoint}`);
+      } else {
+        console.log(`🎯 Using unsaved resume job optimization PDF endpoint: ${endpoint}`);
+      }
+      
+      // Job optimization with LaTeX compilation can take 3-5 minutes
+      const response = await api.post(endpoint, payload, {
+        timeout: 300000, // 5 minutes timeout for job optimization with LaTeX
+        responseType: 'blob', // Expect PDF blob response like enhance service
+        headers: {
+          'Accept': 'application/pdf',
+          'Response-Type': 'blob'
+        }
+      });
+      
+      // Return the PDF blob directly like enhance service
+      return response.data;
+    } catch (error) {
+      console.error('Error optimizing resume with job URL (PDF):', error);
       throw error;
     }
   }
@@ -396,18 +592,21 @@ export class ResumeService {
     jobDetails: any;
   }> => {
     try {
-      let endpoint = '/resumes/job-matching';
+      let endpoint = '/resumes/job-alignment';
       let payload: { jobUrl: string, resumeData?: any } = { jobUrl };
       
       // Check for resume ID (both _id from database and id from frontend)
       const resumeId = resumeData._id || resumeData.id;
       if (resumeId && !resumeData['temp-id']) {
-        endpoint = `/resumes/${resumeId}/job-matching`;
+        endpoint = `/resumes/${resumeId}/job-match-score`;
+        payload = { jobUrl }; // For ID-based endpoint, only send jobUrl
       } else {
-        payload.resumeData = resumeData;
+        payload.resumeData = resumeData; // For general endpoint, include resume data
       }
       
-      const response = await api.post(endpoint, payload);
+      const response = await api.post(endpoint, payload, {
+        timeout: 180000 // 3 minutes for job alignment analysis
+      });
       return response.data.data;
     } catch (error) {
       console.error('Error getting job matching score:', error);
@@ -471,7 +670,7 @@ export class ResumeService {
   private downloadCache = new Map<string, { blob: Blob; timestamp: number }>();
   private readonly CACHE_DURATION = 5 * 60 * 1000;
 
-  private getCacheKey = (resumeData: any, format: string): string => {
+  private getDownloadCacheKey = (resumeData: any, format: string): string => {
     const keyData = {
       personalInfo: resumeData?.personalInfo,
       template: resumeData?.template,
@@ -486,7 +685,7 @@ export class ResumeService {
 
   downloadResume = async (resumeData: any, format: 'pdf' | 'docx' | 'txt'): Promise<Blob> => {
     try {
-      const cacheKey = this.getCacheKey(resumeData, format);
+      const cacheKey = this.getDownloadCacheKey(resumeData, format);
       const cachedEntry = this.downloadCache.get(cacheKey);
       if (cachedEntry && this.isValidCacheEntry(cachedEntry)) {
         console.log(`💾 Using cached ${format} download`);
@@ -509,7 +708,14 @@ export class ResumeService {
         volunteerExperience: resumeData?.volunteerExperience,
         awards: resumeData?.awards,
         hobbies: resumeData?.hobbies,
-        template: resumeData?.template
+        // CRITICAL FIX: Include previously missing fields
+        publications: resumeData?.publications,
+        references: resumeData?.references,
+        additionalSections: resumeData?.additionalSections,
+        template: resumeData?.template,
+        // Also include template-related fields
+        templateId: resumeData?.templateId,
+        isLatexTemplate: resumeData?.isLatexTemplate
       };
       const response = await api.post(`/resumes/download/${format}`, { 
         resumeData: optimizedResumeData 
@@ -536,11 +742,11 @@ export class ResumeService {
 
   private cleanupCache = (): void => {
     const now = Date.now();
-    for (const [key, entry] of this.downloadCache.entries()) {
+    Array.from(this.downloadCache.entries()).forEach(([key, entry]) => {
       if (!this.isValidCacheEntry(entry)) {
         this.downloadCache.delete(key);
       }
-    }
+    });
   }
 
 
@@ -560,7 +766,7 @@ export class ResumeService {
   }> => {
     try {
       console.log('🛡️ Optimizing resume for ATS compatibility...');
-      const response = await api.post('/resumes/optimize-ats', {
+      const response = await api.post('/resumes/optimize-for-job', {
         resumeData,
         options
       });
@@ -584,6 +790,181 @@ export class ResumeService {
       };
     }
   }
+
+  // New method for AI Enhancement with PDF generation and progress updates
+  enhanceResumeWithAIPDF = async (
+    resumeData: any, 
+    templateId: string,
+    options?: {
+      focusAreas?: string[];
+      improvementLevel?: 'basic' | 'comprehensive' | 'expert';
+    },
+    progressCallback?: (progress: string) => void
+  ): Promise<Blob> => {
+    try {
+      console.log('🤖 Enhancing resume with AI and generating PDF...');
+      
+      // Check cache first
+      const cacheKey = this.getCacheKey(resumeData, templateId, options);
+      const cachedData = this.getCachedData(cacheKey);
+      
+      if (cachedData && !progressCallback) {
+        console.log('📦 Using cached enhanced PDF');
+        return cachedData;
+      }
+
+      progressCallback?.('Checking for optimizations...');
+      
+      const token = this.getAccessToken();
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+      
+      // Use streaming endpoint if progress callback is provided
+      const endpoint = progressCallback ? 'enhance-with-latex-stream' : 'enhance-with-latex';
+      const url = `${baseUrl}/api/v1/resumes/${endpoint}`;
+
+      if (progressCallback) {
+        const result = await this.enhanceResumeWithStreaming(url, {
+          resumeData,
+          templateId,
+          options
+        }, progressCallback);
+        
+        // Cache the result
+        this.setCachedData(cacheKey, result);
+        return result;
+      }
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          resumeData,
+          templateId,
+          options
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      // Return the PDF blob
+      const result = await response.blob();
+      
+      // Cache the result
+      this.setCachedData(cacheKey, result);
+      return result;
+    } catch (error) {
+      console.error('❌ AI Enhancement with PDF failed:', error);
+      throw error;
+    }
+  };
+
+  // Streaming enhancement method for real-time progress updates
+  private enhanceResumeWithStreaming = async (
+    url: string,
+    payload: any,
+    progressCallback: (progress: string) => void
+  ): Promise<Blob> => {
+    const token = this.getAccessToken();
+    
+    return new Promise((resolve, reject) => {
+      fetch(url, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      }).then(async (response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const reader = response.body?.getReader();
+        if (!reader) {
+          throw new Error('No response body reader available');
+        }
+
+        const decoder = new TextDecoder();
+        let buffer = '';
+        let pdfData: Uint8Array | null = null;
+        let isPdfData = false;
+
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            if (isPdfData) {
+              // Collect PDF binary data
+              if (!pdfData) {
+                pdfData = value;
+              } else {
+                const combined = new Uint8Array(pdfData.length + value.length);
+                combined.set(pdfData);
+                combined.set(value, pdfData.length);
+                pdfData = combined;
+              }
+              continue;
+            }
+
+            const chunk = decoder.decode(value, { stream: true });
+            buffer += chunk;
+
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || ''; // Keep incomplete line in buffer
+
+            for (const line of lines) {
+              if (line.trim() === '') continue;
+
+              if (line === 'PDF_DATA:') {
+                isPdfData = true;
+                continue;
+              }
+
+              if (line.startsWith('PDF_READY')) {
+                progressCallback('PDF ready for download');
+                continue;
+              }
+
+              if (line.startsWith('PDF_SIZE:')) {
+                const size = parseInt(line.split(':')[1]);
+                progressCallback(`PDF generated (${(size / 1024).toFixed(1)}KB)`);
+                continue;
+              }
+
+              if (line.startsWith('ERROR:')) {
+                throw new Error(line.substring(6));
+              }
+
+              if (line.startsWith('ENHANCEMENT_COMPLETE')) {
+                progressCallback('Enhancement completed');
+                continue;
+              }
+
+              // Regular progress update
+              if (line.trim()) {
+                progressCallback(line.trim());
+              }
+            }
+          }
+
+          if (pdfData) {
+            resolve(new Blob([pdfData], { type: 'application/pdf' }));
+          } else {
+            throw new Error('No PDF data received');
+          }
+        } finally {
+          reader.releaseLock();
+        }
+      }).catch(reject);
+    });
+  };
 
   enhanceResumeWithAI = async (resumeData: any, options?: {
     focusAreas?: string[];
@@ -623,7 +1004,7 @@ export class ResumeService {
         console.log(`🎯 Using saved resume enhancement endpoint: ${url}`);
       } else {
         // For unsaved/temp resumes, use the general enhancement endpoint
-        url = `${baseUrl}/api/v1/resumes/enhance`;
+        url = `${baseUrl}/api/v1/resumes/enhance-unsaved`;
         requestBody = JSON.stringify({
           resumeData,
           options
@@ -732,6 +1113,271 @@ export class ResumeService {
     if (resumeData?.education?.length > 0) score += 10;
     if (resumeData?.skills?.length > 0) score += 15;
     return Math.min(score, 95);
+  }
+
+  // ===== LaTeX Template Methods =====
+
+  /**
+   * Get available LaTeX/Overleaf templates
+   */
+  async getLatexTemplates() {
+    try {
+      const response = await api.get('/resumes/latex-templates');
+      return response.data.data || [];
+    } catch (error) {
+      console.error('Failed to fetch LaTeX templates:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Generate PDF preview using LaTeX engine
+   */
+  async generateLatexPDFPreview(resumeData: any, templateId: string): Promise<Blob> {
+    try {
+      const response = await api.post('/resumes/generate-preview-pdf', {
+        resumeData,
+        templateId,
+        engine: 'latex',
+        temporary: true
+      }, {
+        responseType: 'blob'
+      });
+
+      return response.data;
+    } catch (error) {
+      console.error('Failed to generate LaTeX PDF preview:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Download resume with LaTeX engine option and optimized content
+   */
+  async downloadResumeWithEngine(
+    resumeData: any, 
+    format: 'pdf' | 'docx' | 'txt' = 'pdf',
+    options?: {
+      engine?: 'latex' | 'html';
+      templateId?: string;
+      optimizedLatexCode?: string;
+    }
+  ): Promise<Blob> {
+    try {
+      console.log('📥 Downloading resume with engine:', {
+        engine: options?.engine,
+        hasOptimizedLatex: !!options?.optimizedLatexCode,
+        templateId: options?.templateId
+      });
+
+      const stringResumeId = convertObjectIdToString(resumeData._id);
+      
+      // For PDF downloads, use POST to avoid download manager interception
+      if (format === 'pdf') {
+        const response = await api.post(`/resumes/download/pdf`, {
+          resumeId: stringResumeId,
+          resumeData,
+          engine: options?.engine,
+          templateId: options?.templateId,
+          optimizedLatexCode: options?.optimizedLatexCode
+        });
+        
+        // Handle JSON response format
+        if (response.data?.success && response.data?.data?.pdfData) {
+          const base64Data = response.data.data.pdfData;
+          const binaryString = atob(base64Data);
+          const bytes = new Uint8Array(binaryString.length);
+          for (let i = 0; i < binaryString.length; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+          }
+          return new Blob([bytes], { type: 'application/pdf' });
+        } else {
+          throw new Error('Invalid PDF response format');
+        }
+      } else {
+        // For other formats (docx, etc.), use traditional blob response
+        const response = await api.post(`/resumes/download/${format}`, {
+          resumeId: stringResumeId,
+          resumeData,
+          engine: options?.engine,
+          templateId: options?.templateId,
+          optimizedLatexCode: options?.optimizedLatexCode
+        }, {
+          responseType: 'blob'
+        });
+
+        return response.data;
+      }
+    } catch (error) {
+      console.error('❌ Resume download failed:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Save PDF to database
+   */
+  async savePDFToDatabase(
+    resumeId: string,
+    options: {
+      templateId: string;
+      optimizedLatexCode?: string;
+      jobOptimized?: {
+        jobUrl: string;
+        jobTitle: string;
+        companyName: string;
+      };
+      resumeData?: any;
+      pdfBlob?: Blob;
+    }
+  ): Promise<{ success: boolean; size?: number }> {
+    try {
+      console.log('🔍 savePDFToDatabase called with resumeId:', resumeId, 'type:', typeof resumeId);
+      
+      // Convert resumeId using helper function
+      const safeResumeId = convertObjectIdToString(resumeId);
+      if (!safeResumeId) {
+        throw new Error('Invalid resume ID format');
+      }
+      console.log('🔍 safeResumeId:', safeResumeId);
+      let pdfBlobBase64 = null;
+      
+      // Convert PDF blob to base64 if provided
+      if (options.pdfBlob) {
+        pdfBlobBase64 = await new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.readAsDataURL(options.pdfBlob!);
+        });
+      }
+
+      const response = await api.post(`/resumes/${safeResumeId}/save-pdf`, {
+        templateId: options.templateId,
+        optimizedLatexCode: options.optimizedLatexCode,
+        jobOptimized: options.jobOptimized,
+        resumeData: options.resumeData,
+        pdfBlob: pdfBlobBase64
+      });
+      return response.data;
+    } catch (error) {
+      console.error('❌ Failed to save PDF to database:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get saved PDF from database
+   */
+  async getSavedPDF(resumeId: any): Promise<Blob> {
+    try {
+      const stringResumeId = convertObjectIdToString(resumeId);
+      if (!stringResumeId) {
+        throw new Error('Invalid resume ID');
+      }
+      
+      // Use the download/pdf endpoint with JSON response to avoid download manager interception
+      const response = await api.post(`/resumes/download/pdf`, {
+        resumeId: stringResumeId
+      });
+      
+      // Convert base64 response back to Blob
+      if (response.data?.success && response.data?.data?.pdfData) {
+        const base64Data = response.data.data.pdfData;
+        const binaryString = atob(base64Data);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+        }
+        return new Blob([bytes], { type: 'application/pdf' });
+      } else {
+        throw new Error('Invalid PDF response format');
+      }
+    } catch (error) {
+      console.error('❌ Failed to get saved PDF:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get saved PDF information
+   */
+  async getSavedPDFInfo(resumeId: any): Promise<{
+    hasSavedPDF: boolean;
+    filename?: string;
+    generatedAt?: string;
+    isOptimized?: boolean;
+    size?: number;
+  }> {
+    try {
+      const stringResumeId = convertObjectIdToString(resumeId);
+      if (!stringResumeId) {
+        throw new Error('Invalid resume ID');
+      }
+      const response = await api.get(`/resumes/${stringResumeId}/pdf-info`);
+      return response.data.data;
+    } catch (error) {
+      console.error('❌ Failed to get saved PDF info:', error);
+      return { hasSavedPDF: false };
+    }
+  }
+
+  /**
+   * Generate template preview image
+   */
+  async generateTemplatePreview(templateId: string): Promise<{
+    screenshot: string;
+    thumbnail: string;
+  }> {
+    try {
+      const response = await api.get(`/resumes/latex-templates/${templateId}/preview`);
+      return response.data.data;
+    } catch (error) {
+      console.error('Failed to generate template preview:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Validate if resume data is ready for LaTeX PDF generation
+   */
+  validateForLatexGeneration(resumeData: any): {
+    isValid: boolean;
+    errors: string[];
+  } {
+    const errors: string[] = [];
+    
+    if (!resumeData.personalInfo?.firstName) errors.push('First name is required');
+    if (!resumeData.personalInfo?.lastName) errors.push('Last name is required');
+    if (!resumeData.personalInfo?.email) errors.push('Email is required');
+    if (!resumeData.personalInfo?.phone) errors.push('Phone number is required');
+    if (!resumeData.professionalSummary?.trim()) errors.push('Professional summary is required');
+    
+    if (!resumeData.workExperience || resumeData.workExperience.length === 0) {
+      errors.push('At least one work experience is required');
+    }
+    
+    if (!resumeData.education || resumeData.education.length === 0) {
+      errors.push('At least one education entry is required');
+    }
+    
+    if (!resumeData.skills || resumeData.skills.length === 0) {
+      errors.push('At least one skill is required');
+    }
+    
+    return {
+      isValid: errors.length === 0,
+      errors
+    };
+  }
+
+  async getAvailableLatexTemplates() {
+    try {
+      const response = await api.get('/resumes/latex-templates');
+      return response.data.data || [];
+    } catch (error) {
+      console.error('Failed to load LaTeX templates:', error);
+      throw error;
+    }
   }
 }
 

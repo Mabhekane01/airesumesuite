@@ -1,0 +1,184 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage{amssymb}
+\usepackage{enumitem}
+\usepackage{lmodern}
+\usepackage[T1]{fontenc}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% LaTeX Template: Curriculum Vitae
+%
+% Source: http://www.howtotex.com/
+% Feel free to distribute this template, but please keep the
+% referal to HowToTeX.com.
+% Date: July 2011
+% 
+% Author of Anti-CV: Stephen Fay
+% Fork on github https://github.com/dcxSt/anti-cv
+% 
+							
+\usepackage[english]{babel}
+\usepackage[utf8x]{inputenc}
+\usepackage[protrusion=true,expansion=true]{microtype}
+\usepackage{amsmath,amsfonts,amsthm}     % Math packages
+\usepackage{graphicx}                    % Enable pdflatex
+\usepackage[svgnames]{xcolor}            % Colors by their 'svgnames'
+\usepackage[margin=0.5in]{geometry}
+	\textheight=700pt                    % Saving trees ;-)
+\usepackage{url}
+
+\usepackage{tikz}
+\usepackage{kpfonts} % for \varheartsuit , also changes font
+\usepackage{color}
+\newcommand*\Hs{\ensuremath{\color{red}\varheartsuit}}
+
+%%% Heart-stab command
+\newcommand{\heartstab}{%
+\begin{tikzpicture}%
+\draw [line width=0.0mm, white] (3.5ex,0.4ex) -- (3.5ex,0.4ex);
+\Large{$\Hs$};
+\draw [line width=0.30mm, black] (-0.7ex,0.7ex) -- (1.2ex,1.2ex);%
+\draw [line width=0.50mm, black] (0.8ex,0.65ex) -- (0.55ex,1.45ex);%
+\end{tikzpicture}%
+}
+
+%%% Squiggly arrow
+\newcommand{\squigarr}{
+{\Large \color{blue}$\rightsquigarrow$}
+}
+
+\usepackage[colorlinks=true,urlcolor=purple]{hyperref}
+
+\frenchspacing              % Better looking spacings after periods
+\pagestyle{empty}           % No pagenumbers/headers/footers
+
+%%% Custom sectioning (sectsty package)
+%%% ------------------------------------------------------------
+\usepackage{sectsty}
+
+\sectionfont{%			            % Change font of \section command
+	\usefont{OT1}{phv}{b}{n}%		% bch-b-n: CharterBT-Bold font
+	\sectionrule{0pt}{0pt}{-5pt}{3pt}}
+
+%%% Macros
+%%% ------------------------------------------------------------
+\newlength{\spacebox}
+\settowidth{\spacebox}{8888888888}			% Box to align text
+\newcommand{\sepspace}{\vspace*{0.5em}}		% Vertical space macro
+
+\newcommand{\MyName}[1]{ % Name
+		\Huge \usefont{OT1}{phv}{b}{n} \hfill #1
+		\par \normalsize \normalfont}
+		
+\newcommand{\MySlogan}[1]{ % Slogan (optional)
+		\large \usefont{OT1}{phv}{m}{n}\hfill \textit{#1}
+		\par \normalsize \normalfont}
+		
+        
+\newcommand{\NameEmailPhoneSiteGithub}[5]{
+        \Huge \usefont{OT1}{phv}{m}{n} \textbf{#1} 
+        \large \usefont{OT1}{phv}{m}{n} \hfill #2\hspace{25pt}#3
+        
+        \textit{Anti Curriculum Vitae}\hfill \textit{website } #4 \hspace{25pt}\textit{github } #5 
+        \par \normalsize \normalfont
+}
+
+\newcommand{\NewPart}[1]{\section*{\uppercase{#1}}}
+
+\newcommand{\SkillsEntry}[2]{      % Same as \PersonalEntry
+		\noindent\hangindent=2em\hangafter=0 % Indentation
+		\parbox{\spacebox}{        % Box to align text
+		\textit{#1}}			   % Entry name (birth, address, etc.)
+		\hspace{1.5em} #2 \par}    % Entry value	
+		
+
+
+%%% Begin Document
+%%% ------------------------------------------------------------
+\begin{document}
+
+%% you can upload a photo and include it here...
+%\begin{wrapfigure}{l}{0.5\textwidth}
+%	\vspace*{-2em}
+%		% External image removed
+%\end{wrapfigure}
+
+% ALTERNATIVE PICTURE SETTINGS TO THE ABOVE :
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\iffalse
+\begin{figure}
+%  % External image removed
+%  \caption{
+    % External image removed
+%    caption{left aligned image}
+%    \label{fig:me}
+\end{figure}
+\fi
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%\MyName{Stephen Fay}
+
+%\MySlogan{Curriculum Vitae}
+
+\NameEmailPhoneSiteGithub{Bheki Ngwenya}{0797394470}{ngwenyabheki276@gmail.com}{\href{https://portfolio.com}{portfolio.com}}{\href{https://github.com/Mabhekane01}{GitHub}}
+
+
+\sepspace
+
+%%% Education
+%%% ------------------------------------------------------------
+\NewPart{Key}{}
+\begin{itemize}
+    \item[\heartstab] Heart-stab. Professional rejections and things I messed up.
+    \item[\squigarr] Squigly arrow. What did I learn? What were the consequences?
+\end{itemize}
+
+\NewPart{Education}{}
+
+% Jesse said to make a hybrid of bothe CV's, so more bullet-points but also need adequate description
+\begin{itemize}
+    \item[\heartstab] During my BSc at North-West University, I struggled significantly with a core programming module, almost failing it. \squigarr This forced me to dedicate extra time and seek help, ultimately strengthening my foundational understanding of software development.
+\end{itemize}
+
+\sepspace
+
+
+
+%%% Work experience
+%%% ------------------------------------------------------------
+\NewPart{Work Experiance}{}
+
+\begin{itemize}
+    \item[\heartstab] Early in my role as Network Engineer at CMC Networks, I overlooked a critical configuration detail, leading to a brief service interruption. \squigarr This taught me the absolute necessity of meticulous pre-deployment checks and peer reviews.
+    \item[\heartstab] My first attempt at automating a routine network task using a script had a bug that caused an incorrect data entry. \squigarr I learned the hard way about robust error handling and thorough testing in automation.
+    \item[\heartstab] I initially underestimated the complexity of integrating a new monitoring tool, leading to project delays. \squigarr This experience highlighted the importance of detailed planning and realistic scope assessment for new technologies.
+\end{itemize}
+
+
+
+\sepspace
+
+%%% Skills
+%%% ------------------------------------------------------------
+\NewPart{Skills}{}
+
+\SkillsEntry{Java}{I still find myself struggling with advanced Java concurrency patterns and memory management in large applications.}
+\SkillsEntry{C\#}{My experience with C\# is primarily theoretical; I haven't had the opportunity to build many large-scale production applications with it.}
+\SkillsEntry{Node.js}{I often spend too much time debugging asynchronous code and callback hell issues in complex Node.js applications.}
+\SkillsEntry{React.js}{I sometimes over-engineer React components, making them more complex and harder to maintain than necessary.}
+\SkillsEntry{MongoDB}{I'm still learning to optimize complex MongoDB queries and schema designs for very large datasets and high-performance scenarios.}
+
+%%% Achievements
+%%% -----------------------------------------------------------
+
+\NewPart{Achievements and Interests}{}
+
+\begin{itemize}
+    \item[\heartstab] Dropped out of University Club summer 2021 as the team lead. \squigarr Don't bite off more than you can chew. Don't accept something just because you can. 
+    \item[\heartstab] Didn't complete the 2021 DEFG international math competition final round because of self-esteem issues. \squigarr Don't be scared of losing at stuff. Nothing ever comes out of self pity.
+    \item[\heartstab] Never applied to University entrance scholarship \squigarr this would have been good to have, as a credential, and for money, even though the fees are not too dear here it's still easy money. 
+    \item[\heartstab] I haven't played any music in years \squigarr sometimes you need to make sacrifices to get what you want. You can't have everything you want at the same time. Though sad I think it was a good decision. 
+\end{itemize}
+    
+%\fi
+
+
+\end{document}

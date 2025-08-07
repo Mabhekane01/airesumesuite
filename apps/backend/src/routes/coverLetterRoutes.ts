@@ -21,8 +21,11 @@ router.get('/:id', (req: AuthenticatedRequest, res: Response) => coverLetterCont
 // POST /api/v1/cover-letters - Create new cover letter
 router.post('/', requireSubscription('premium'), coverLetterValidation, (req: AuthenticatedRequest, res: Response) => coverLetterController.createCoverLetter(req, res));
 
-// POST /api/v1/cover-letters/generate-from-job - Generate cover letter from job URL
+// POST /api/v1/cover-letters/generate-from-job - Generate cover letter from job URL (legacy)
 router.post('/generate-from-job', requireEnterpriseSubscription, subscriptionRateLimit('ai-cover-letter'), trackFeatureUsage('ai-cover-letter-generate'), jobUrlValidation, (req: AuthenticatedRequest, res: Response) => coverLetterController.generateFromJobUrl(req, res));
+
+// POST /api/v1/cover-letters/ai-generate-from-url - New AI-powered job URL analysis and cover letter generation
+router.post('/ai-generate-from-url', requireEnterpriseSubscription, subscriptionRateLimit('ai-cover-letter'), trackFeatureUsage('ai-cover-letter-advanced'), jobUrlValidation, (req: AuthenticatedRequest, res: Response) => coverLetterController.aiGenerateFromJobUrl(req, res));
 
 // PUT /api/v1/cover-letters/:id - Update cover letter
 router.put('/:id', requireSubscription('premium'), (req: AuthenticatedRequest, res: Response) => coverLetterController.updateCoverLetter(req, res));

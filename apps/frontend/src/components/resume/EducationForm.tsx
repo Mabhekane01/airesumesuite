@@ -2,6 +2,7 @@ import React from 'react';
 import { useResume } from '../../contexts/ResumeContext';
 import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
+import { DatePicker } from '../ui/DatePicker';
 import { PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { Education } from '../../types';
 
@@ -54,12 +55,16 @@ export function EducationForm() {
               name="institution"
               value={edu.institution}
               onChange={(e) => handleChange(edu.id, e)}
+              required
+              placeholder="e.g., Harvard University, MIT"
             />
             <Input
               label="Degree"
               name="degree"
               value={edu.degree}
               onChange={(e) => handleChange(edu.id, e)}
+              required
+              placeholder="e.g., Bachelor of Science, Master of Arts"
             />
           </div>
           <Input
@@ -67,29 +72,54 @@ export function EducationForm() {
             name="fieldOfStudy"
             value={edu.fieldOfStudy}
             onChange={(e) => handleChange(edu.id, e)}
+            required
+            placeholder="e.g., Computer Science, Business Administration"
           />
           <div className="grid md:grid-cols-2 gap-4">
-            <Input
+            <DatePicker
               label="Start Date"
-              name="startDate"
-              type="date"
               value={edu.startDate}
-              onChange={(e) => handleChange(edu.id, e)}
+              onChange={(value) => {
+                const updatedEducation = education?.map(education =>
+                  education.id === edu.id ? { ...education, startDate: value } : education
+                );
+                handleDataChange('education', updatedEducation);
+              }}
+              required
+              allowFuture={false}
+              helpText="When you started this program"
             />
-            <Input
+            <DatePicker
               label="End Date"
-              name="endDate"
-              type="date"
               value={edu.endDate}
-              onChange={(e) => handleChange(edu.id, e)}
+              onChange={(value) => {
+                const updatedEducation = education?.map(education =>
+                  education.id === edu.id ? { ...education, endDate: value } : education
+                );
+                handleDataChange('education', updatedEducation);
+              }}
+              allowFuture={true}
+              helpText="When you graduated or expect to graduate"
             />
           </div>
-          <Input
-            label="GPA"
-            name="gpa"
-            value={edu.gpa}
-            onChange={(e) => handleChange(edu.id, e)}
-          />
+          <div className="grid md:grid-cols-2 gap-4">
+            <Input
+              label="GPA"
+              name="gpa"
+              value={edu.gpa}
+              onChange={(e) => handleChange(edu.id, e)}
+              placeholder="e.g., 3.8, 3.75 (optional)"
+              helpText="Only include if 3.5 or higher"
+            />
+            <Input
+              label="Location"
+              name="location"
+              value={edu.location}
+              onChange={(e) => handleChange(edu.id, e)}
+              placeholder="e.g., Cambridge, MA"
+              helpText="City and state of the institution (optional)"
+            />
+          </div>
           <div className="flex justify-end">
             <Button variant="danger" onClick={() => handleRemoveEducation(edu.id)} className="accent-danger">
               <TrashIcon className="w-4 h-4 mr-2" />

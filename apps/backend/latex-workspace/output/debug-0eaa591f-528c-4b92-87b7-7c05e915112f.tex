@@ -1,0 +1,213 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage{amssymb}
+\usepackage{enumitem}
+\usepackage{lmodern}
+\usepackage[T1]{fontenc}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% LaTeX Template: Curriculum Vitae
+%
+% Source: http://www.howtotex.com/
+% Feel free to distribute this template, but please keep the
+% referal to HowToTeX.com.
+% Date: July 2011
+% 
+% Author of Anti-CV: Stephen Fay
+% Fork on github https://github.com/dcxSt/anti-cv
+% 
+							
+\usepackage[english]{babel}
+\usepackage[utf8x]{inputenc}
+\usepackage[protrusion=true,expansion=true]{microtype}
+\usepackage{amsmath,amsfonts,amsthm}     % Math packages
+\usepackage{graphicx}                    % Enable pdflatex
+\usepackage[svgnames]{xcolor}            % Colors by their 'svgnames'
+\usepackage[margin=0.5in]{geometry}
+	\textheight=700pt                    % Saving trees ;-)
+\usepackage{url}
+
+\usepackage{tikz}
+\usepackage{kpfonts} % for \varheartsuit , also changes font
+\usepackage{color}
+\newcommand*\Hs{\ensuremath{\color{red}\varheartsuit}}
+
+%%% Heart-stab command
+\newcommand{\heartstab}{%
+\begin{tikzpicture}%
+\draw [line width=0.0mm, white] (3.5ex,0.4ex) -- (3.5ex,0.4ex);
+\Large{$\Hs$};
+\draw [line width=0.30mm, black] (-0.7ex,0.7ex) -- (1.2ex,1.2ex);%
+\draw [line width=0.50mm, black] (0.8ex,0.65ex) -- (0.55ex,1.45ex);%
+\end{tikzpicture}%
+}
+
+%%% Squiggly arrow
+\newcommand{\squigarr}{
+{\Large \color{blue}$\rightsquigarrow$}
+}
+
+\usepackage[colorlinks=true,urlcolor=purple]{hyperref}
+
+\frenchspacing              % Better looking spacings after periods
+\pagestyle{empty}           % No pagenumbers/headers/footers
+
+%%% Custom sectioning (sectsty package)
+%%% ------------------------------------------------------------
+\usepackage{sectsty}
+
+\sectionfont{%			            % Change font of \section command
+	\usefont{OT1}{phv}{b}{n}%		% bch-b-n: CharterBT-Bold font
+	\sectionrule{0pt}{0pt}{-5pt}{3pt}}
+
+%%% Macros
+%%% ------------------------------------------------------------
+\newlength{\spacebox}
+\settowidth{\spacebox}{8888888888}			% Box to align text
+\newcommand{\sepspace}{\vspace*{0.5em}}		% Vertical space macro
+
+\newcommand{\MyName}[1]{ % Name
+		\Huge \usefont{OT1}{phv}{b}{n} \hfill #1
+		\par \normalsize \normalfont}
+		
+\newcommand{\MySlogan}[1]{ % Slogan (optional)
+		\large \usefont{OT1}{phv}{m}{n}\hfill \textit{#1}
+		\par \normalsize \normalfont}
+		
+        
+\newcommand{\NameEmailPhoneSiteGithub}[5]{ % This line had a typo in the original template, fixed to accept 5 arguments
+        \Huge \usefont{OT1}{phv}{m}{n} \textbf{#1} 
+        \large \usefont{OT1}{phv}{m}{n} \hfill #2\hspace{25pt}#3
+        
+        \textit{Anti Curriculum Vitae}\hfill \textit{website } #4 \hspace{25pt}\textit{github } #5 
+        \par \normalsize \normalfont
+}
+
+\newcommand{\NewPart}[1]{\section*{\uppercase{#1}}}
+
+\newcommand{\SkillsEntry}[2]{      % Same as \PersonalEntry
+		\noindent\hangindent=2em\hangafter=0 % Indentation
+		\parbox{\spacebox}{        % Box to align text
+		\textit{#1}}			   % Entry name (birth, address, etc.)
+		\hspace{1.5em} #2 \par}    % Entry value	
+		
+
+
+%%% Begin Document
+%%% ------------------------------------------------------------
+\begin{document}
+
+%% you can upload a photo and include it here...
+%\begin{wrapfigure}{l}{0.5\textwidth}
+%	\vspace*{-2em}
+%		% External image removed
+%\end{wrapfigure}
+
+% ALTERNATIVE PICTURE SETTINGS TO THE ABOVE :
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\iffalse
+\begin{figure}
+%  % External image removed
+%  \caption{
+    % External image removed
+%    caption{left aligned image}
+%    \label{fig:me}
+\end{figure}
+\fi
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%\MyName{Stephen Fay}
+
+%\MySlogan{Curriculum Vitae}
+
+\NameEmailPhoneSiteGithub{Bheki Ngwenya}{0797394470}{ngwenyabheki276@gmail.com}{\href{https://portfolio.com}{portfolio.com}}{\href{https://github.com/Mabhekane01}{GitHub}}
+
+
+\sepspace
+
+%%% Key
+%%% ------------------------------------------------------------
+\NewPart{Key}{}
+\begin{itemize}
+    \item[\heartstab] Heart-stab. Professional rejections and things I messed up.
+    \item[\squigarr] Squigly arrow. What did I learn? What were the consequences?
+\end{itemize}
+
+\sepspace
+
+%%% Professional Summary
+%%% ------------------------------------------------------------
+\NewPart{Professional Summary}{}
+Highly versatile professional with a proven track record as both a Network Engineer and Software Developer at CMC Networks. Armed with a BSc from North-West University, Bheki leverages a unique blend of networking acumen and software development proficiency to design, implement, and optimize complex technical infrastructures and applications. Adept at bridging the gap between infrastructure and software, he is dedicated to delivering innovative, high-performance solutions that enhance operational efficiency and drive technological advancement.
+
+\sepspace
+
+%%% Education (Anti-CV style - for rejections/lessons learned)
+%%% ------------------------------------------------------------
+\NewPart{Education}{}
+% This section is for "Anti-CV" education entries (rejections/lessons learned).
+% No such entries were provided by the user, so it remains empty.
+\begin{itemize}
+\end{itemize}
+
+\sepspace
+
+%%% Academic Background (for actual education)
+%%% ------------------------------------------------------------
+\NewPart{Academic Background}{}
+\begin{itemize}
+    \item \textbf{BSc in Field of Study} from North-West University (Graduation Date)
+\end{itemize}
+
+\sepspace
+
+%%% Work experience (Anti-CV style - for rejections/lessons learned)
+%%% ------------------------------------------------------------
+\NewPart{Work Experiance}{}
+% This section is for "Anti-CV" work experience entries (rejections/lessons learned).
+% No such entries were provided by the user, so it remains empty.
+\begin{itemize}
+\end{itemize}
+
+\sepspace
+
+%%% Professional Experience (for actual work experience)
+%%% ------------------------------------------------------------
+\NewPart{Professional Experience}{}
+\begin{itemize}
+    \item \textbf{Network Engineer \& Software Developer} at CMC Networks (2023-07-01 - Present)
+    \begin{itemize}
+        \item Engineered and maintained real-time monitoring systems achieving 99.9\% uptime across critical infrastructure
+        \item Notable achievement description
+    \end{itemize}
+\end{itemize}
+
+\sepspace
+
+%%% Skills (Anti-CV style - for struggles)
+%%% ------------------------------------------------------------
+\NewPart{Skills}{}
+% This section is for "Anti-CV" skills entries (struggles).
+% No such entries were provided by the user, so it remains empty.
+
+\sepspace
+
+%%% Technical Skills (for actual skills)
+%%% ------------------------------------------------------------
+\NewPart{Technical Skills}{}
+\SkillsEntry{Programming Languages}{Java, C\#, Node.js}
+\SkillsEntry{Frameworks/Libraries}{React.js}
+\SkillsEntry{Databases}{MongoDB}
+
+\sepspace
+
+%%% Achievements and Interests (Anti-CV style - for rejections/lessons learned)
+%%% -----------------------------------------------------------
+\NewPart{Achievements and Interests}{}
+% This section is for "Anti-CV" achievements/interests entries (rejections/lessons learned).
+% No such entries were provided by the user, so it remains empty.
+\begin{itemize}
+\end{itemize}
+    
+%\fi
+
+
+\end{document}

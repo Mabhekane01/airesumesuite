@@ -1,11 +1,13 @@
-import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
+import { GoogleGenAI } from '@google/genai';
 
 const API_KEY = process.env.GEMINI_API_KEY;
 
-let genAI: GoogleGenerativeAI | null = null;
+let genAI: GoogleGenAI | null = null;
 
 if (API_KEY) {
-  genAI = new GoogleGenerativeAI(API_KEY);
+  genAI = new GoogleGenAI({
+    apiKey: API_KEY,
+  });
 } else {
   console.warn('GEMINI_API_KEY not found. AI features will be disabled.');
 }
@@ -40,18 +42,52 @@ function cleanAndParseJson(rawText: string): any {
     .replace(/`{3,}/g, '')           // three or more backticks
     .replace(/^`+|`+$/g, '')         // backticks at start/end
     
-    // Remove common prefixes/suffixes AI might add
+    // Remove ALL common prefixes/suffixes that cause JSON parse failures
     .replace(/^Here's the JSON:?\s*/i, '')
     .replace(/^The JSON response is:?\s*/i, '')
     .replace(/^Response:?\s*/i, '')
     .replace(/\s*That's the analysis\.?$/i, '')
+    .replace(/^\[Candidate.*?\]/gi, '') // [Candidate...]
+    .replace(/^\[Your Job.*?\]/gi, '') // [Your Job...]
+    .replace(/^\[Your Profe.*?\]/gi, '') // [Your Profe...]
+    .replace(/^\[Job Title.*?\]/gi, '') // [Job Title...]
+    .replace(/^\[Professional.*?\]/gi, '') // [Professional...]
+    .replace(/^\[Summary.*?\]/gi, '') // [Summary...]
+    .replace(/^\[.*?\]\s*/gi, '') // Any other bracketed prefix
+    .replace(/^Based on.*?:\s*/gi, '') // "Based on..."
+    .replace(/^\*\*.*?\*\*\s*/gi, '') // **Bold text**
+    .replace(/^\d+\.\s*/gm, '') // Numbered list items
+    .replace(/^[-•]\s*/gm, '') // Bullet points
     
     // Clean whitespace
     .trim();
   
-  // Extract JSON object - find the FIRST complete JSON object
-  const jsonRegex = /\{(?:[^{}]|{(?:[^{}]|{[^{}]*})*})*\}/;
-  const jsonMatch = cleanedText.match(jsonRegex);
+  // COMPREHENSIVE JSON extraction - multiple strategies
+  let jsonMatch;
+  
+  // Strategy 1: Complete JSON object with nested support
+  jsonMatch = cleanedText.match(/\{(?:[^{}]|{(?:[^{}]|{[^{}]*})*})*\}/);
+  
+  // Strategy 2: JSON array
+  if (!jsonMatch) {
+    jsonMatch = cleanedText.match(/\[(?:[^\[\]]|\[(?:[^\[\]]|\[[^\[\]]*\])*\])*\]/);
+  }
+  
+  // Strategy 3: Find content between first/last braces
+  if (!jsonMatch) {
+    const firstBrace = cleanedText.indexOf('{');
+    const lastBrace = cleanedText.lastIndexOf('}');
+    const firstBracket = cleanedText.indexOf('[');
+    const lastBracket = cleanedText.lastIndexOf(']');
+    
+    if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+      const extracted = cleanedText.substring(firstBrace, lastBrace + 1);
+      jsonMatch = [extracted];
+    } else if (firstBracket !== -1 && lastBracket !== -1 && lastBracket > firstBracket) {
+      const extracted = cleanedText.substring(firstBracket, lastBracket + 1);
+      jsonMatch = [extracted];
+    }
+  }
   
   if (jsonMatch) {
     cleanedText = jsonMatch[0];
@@ -60,8 +96,14 @@ function cleanAndParseJson(rawText: string): any {
     console.log('⚠️ No JSON object pattern found, using full cleaned text');
   }
   
-  // Final cleanup
-  cleanedText = cleanedText.trim();
+  // Final cleanup - fix common JSON syntax issues
+  cleanedText = cleanedText
+    .trim()
+    .replace(/,\s*}/g, '}')  // Remove trailing commas
+    .replace(/,\s*]/g, ']')  // Remove trailing commas in arrays
+    .replace(/"\s*\n\s*"/g, '", "') // Fix broken string concatenation
+    .replace(/\n/g, ' ')     // Replace newlines with spaces
+    .replace(/\s+/g, ' ');   // Normalize whitespace
   
   console.log('🧹 Final cleaned text (first 200 chars):', cleanedText.substring(0, 200));
   console.log('🧹 Final cleaned text (last 50 chars):', cleanedText.substring(Math.max(0, cleanedText.length - 50)));
@@ -70,21 +112,57 @@ function cleanAndParseJson(rawText: string): any {
     const parsed = JSON.parse(cleanedText);
     console.log('✅ JSON parsed successfully!');
     return parsed;
-  } catch (error) {
+  } catch (error: any) {
     console.error('❌ FINAL JSON PARSE FAILED:');
     console.error('Raw length:', rawText.length);
     console.error('Cleaned length:', cleanedText.length);
     console.error('First 500 chars of cleaned text:', cleanedText.substring(0, 500));
     console.error('Parse error:', error.message);
     
-    // Try one more desperate attempt - look for any JSON-like structure
-    const desperateMatch = rawText.match(/\{[\s\S]*?"matchScore"[\s\S]*?\}/);
-    if (desperateMatch) {
-      console.log('🚨 Attempting desperate JSON extraction...');
-      try {
-        return JSON.parse(desperateMatch[0]);
-      } catch (e) {
-        console.log('💥 Desperate attempt also failed');
+    // COMPREHENSIVE fallback attempts for all scenarios
+    const fallbackAttempts = [
+      // Attempt 1: Look for matchScore pattern (job matching)
+      /\{[\s\S]*?"matchScore"[\s\S]*?\}/,
+      // Attempt 2: Look for array pattern (summaries)
+      /\[[\s\S]*?"[\s\S]*?"[\s\S]*?\]/,
+      // Attempt 3: Look for any object with key-value pairs
+      /\{[^{}]*"[^"]*"[^{}]*:[^{}]*\}/,
+      // Attempt 4: Extract quoted strings as array
+      /"([^"]{10,200})"/g,
+      // Attempt 5: Try to reconstruct from specific patterns
+      /"matchScore"\s*:\s*(\d+)/
+    ];
+    
+    for (let i = 0; i < fallbackAttempts.length; i++) {
+      const match = rawText.match(fallbackAttempts[i]);
+      if (match) {
+        console.log(`🚨 Attempting fallback extraction #${i + 1}...`);
+        try {
+          if (i === 3) { // Special handling for quoted strings (summaries)
+            const quotes = rawText.match(/"([^"]{10,200})"/g);
+            if (quotes && quotes.length > 0) {
+              return quotes.map(q => q.replace(/"/g, '')).slice(0, 3);
+            }
+          } else if (i === 4) { // Special handling for matchScore pattern
+            const score = parseInt(match[1]);
+            return {
+              matchScore: score,
+              matchReasons: ['Basic analysis - JSON parsing failed'],
+              improvementSuggestions: ['Improve AI response format'],
+              keywordMatches: ['Unable to extract'],
+              skillsAlignment: {
+                matched: ['Analysis incomplete'],
+                missing: ['Analysis incomplete']
+              },
+              experienceAlignment: 'Unable to analyze due to parsing error',
+              overallAssessment: 'Analysis incomplete due to response format issues'
+            };
+          } else {
+            return JSON.parse(match[0]);
+          }
+        } catch (e) {
+          console.log(`💥 Fallback attempt #${i + 1} also failed`);
+        }
       }
     }
     
@@ -93,10 +171,52 @@ function cleanAndParseJson(rawText: string): any {
 }
 
 export class GeminiService {
-  public model = genAI?.getGenerativeModel({ model: 'gemini-2.5-flash' }) || null;
+  public client = genAI || null;
+
+  /**
+   * Generic method for generating content with Gemini
+   */
+  async generateContent(options: {
+    model?: string;
+    contents: string;
+    config?: {
+      temperature?: number;
+      topK?: number;
+      topP?: number;
+      maxOutputTokens?: number;
+      candidateCount?: number;
+    };
+  }): Promise<{ text: string }> {
+    if (!this.client) {
+      throw new Error('Gemini API not configured. Please set GEMINI_API_KEY environment variable.');
+    }
+
+    try {
+      const model = this.client.getGenerativeModel({ model: options.model || "gemini-2.5-flash" });
+      
+      const result = await model.generateContent({
+        contents: [{ role: 'user', parts: [{ text: options.contents }] }],
+        generationConfig: {
+          temperature: options.config?.temperature || 0.7,
+          topK: options.config?.topK || 40,
+          topP: options.config?.topP || 0.9,
+          maxOutputTokens: options.config?.maxOutputTokens || 8192,
+          candidateCount: options.config?.candidateCount || 1,
+        }
+      });
+
+      const response = result.response;
+      const text = response.text();
+      
+      return { text };
+    } catch (error) {
+      console.error('Gemini API error:', error);
+      throw new Error(`Gemini generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
 
   async optimizeResume(params: ResumeOptimizationParams): Promise<any> {
-    if (!this.model) {
+    if (!this.client) {
       throw new Error('Gemini API not configured. Please set GEMINI_API_KEY environment variable.');
     }
     const prompt = `
@@ -130,9 +250,11 @@ Respond only with the optimized JSON data, no additional text.
 `;
 
     try {
-      const result = await this.model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text();
+      const response = await this.client.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: prompt,
+      });
+      const text = response.text;
       
       // Parse the JSON response
       const optimizedResume = cleanAndParseJson(text);
@@ -153,7 +275,7 @@ Respond only with the optimized JSON data, no additional text.
     customInstructions?: string;
     keywordOptimization?: boolean;
   }): Promise<string> {
-    if (!this.model) {
+    if (!this.client) {
       throw new Error('Gemini API not configured. Please set GEMINI_API_KEY environment variable.');
     }
     
@@ -276,9 +398,11 @@ Generate the complete cover letter now. Return ONLY the cover letter content wit
 `;
 
     try {
-      const result = await this.model.generateContent(prompt);
-      const response = await result.response;
-      let coverLetter = response.text();
+      const response = await this.client.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: prompt,
+      });
+      let coverLetter = response.text;
       
       // Post-process for consistency and formatting
       coverLetter = this.postProcessCoverLetter(coverLetter, personalInfo, tone);
@@ -291,7 +415,7 @@ Generate the complete cover letter now. Return ONLY the cover letter content wit
   }
 
   async generateProfessionalSummary(resumeData: any): Promise<string> {
-    if (!this.model) {
+    if (!this.client) {
       throw new Error('Gemini API not configured. Please set GEMINI_API_KEY environment variable.');
     }
 
@@ -323,9 +447,12 @@ Return only the professional summary text, no additional formatting or explanati
 `;
 
     try {
-      const result = await this.model.generateContent(prompt);
-      const response = await result.response;
-      return response.text().trim();
+      const response = await this.client.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: prompt + "\n\nReturn as an array with a single professional summary string.",
+      });
+      const summaries = JSON.parse(response.text.trim());
+      return Array.isArray(summaries) ? summaries[0] || '' : '';
     } catch (error) {
       console.error('Error generating professional summary with Gemini:', error);
       throw new Error('Failed to generate professional summary');
@@ -333,7 +460,7 @@ Return only the professional summary text, no additional formatting or explanati
   }
 
   async generateMultipleProfessionalSummaries(resumeData: any): Promise<string[]> {
-    if (!this.model) {
+    if (!this.client) {
       throw new Error('Gemini API not configured. Please set GEMINI_API_KEY environment variable.');
     }
 
@@ -363,16 +490,26 @@ Each summary should:
 - Avoid generic phrases and clichés
 - Be compelling and memorable
 
-Return the response as a JSON array of exactly 3 strings:
-["summary option 1", "summary option 2", "summary option 3"]
+You must return a JSON array with exactly 3 professional summaries.
 
-Respond only with the JSON array, no additional text.
+RETURN ONLY THIS FORMAT (no explanations, no markdown, no other text):
+["Professional summary 1", "Professional summary 2", "Professional summary 3"]
+
+Generate exactly 3 professional summary variations. Each should be:
+- A complete professional summary (2-4 sentences)
+- Unique and offer a different perspective on the candidate
+- Include specific metrics and achievements from the provided data
+- Use industry-relevant keywords for ATS optimization
+- Avoid generic phrases and clichés
+- Be compelling and memorable
 `;
 
     try {
-      const result = await this.model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text().trim();
+      const response = await this.client.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: prompt,
+      });
+      const text = response.text.trim();
       
       const summaries = cleanAndParseJson(text);
       if (!Array.isArray(summaries) || summaries.length !== 3) {
@@ -393,7 +530,7 @@ Respond only with the JSON array, no additional text.
     formatScore: number;
     contentScore: number;
   }> {
-    if (!this.model) {
+    if (!this.client) {
       throw new Error('Gemini API not configured. Please set GEMINI_API_KEY environment variable.');
     }
 
@@ -446,9 +583,11 @@ Respond only with the JSON data, no additional text.
 `;
 
     try {
-      const result = await this.model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text();
+      const response = await this.client.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: prompt,
+      });
+      const text = response.text;
       
       const atsAnalysis = cleanAndParseJson(text);
       return atsAnalysis;
@@ -459,7 +598,7 @@ Respond only with the JSON data, no additional text.
   }
 
   async improveResumeWithFeedback(resumeData: any, feedback: string): Promise<any> {
-    if (!this.model) {
+    if (!this.client) {
       throw new Error('Gemini API not configured. Please set GEMINI_API_KEY environment variable.');
     }
 
@@ -487,9 +626,11 @@ Respond only with the improved JSON data, no additional text.
 `;
 
     try {
-      const result = await this.model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text();
+      const response = await this.client.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: prompt,
+      });
+      const text = response.text;
       
       const improvedResume = cleanAndParseJson(text);
       return improvedResume;
@@ -511,7 +652,7 @@ Respond only with the improved JSON data, no additional text.
     experienceAlignment: string;
     overallAssessment: string;
   }> {
-    if (!this.model) {
+    if (!this.client) {
       throw new Error('Gemini API not configured. Please set GEMINI_API_KEY environment variable.');
     }
 
@@ -648,31 +789,49 @@ RESPOND WITH ONLY PURE JSON - NO MARKDOWN, NO CODE BLOCKS, NO OTHER TEXT.
       console.log(`🤖 [${analysisId}] Initiating FRESH Gemini analysis...`);
       console.log(`📊 [${analysisId}] Entropy data:`, entropy);
       
+      // Add timeout wrapper with retry logic
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('AI request timeout')), 45000); // Increased to 45s
+      });
+
       // Use generateContent with fresh configuration optimized for JSON
-      const result = await this.model.generateContent({
-        contents: [{ role: 'user', parts: [{ text: prompt }] }],
-        generationConfig: {
+      const aiPromise = this.client.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: prompt,
+        config: {
           temperature: 0.3, // Lower temperature for more consistent JSON format
           topK: 20,         // Reduce randomness to improve JSON compliance
           topP: 0.6,        // More focused responses
-          maxOutputTokens: 2048,
+          maxOutputTokens: 4096,
           candidateCount: 1,
-          // responseMimeType: 'application/json', // Not supported in this version
         },
-        safetySettings: [
-          {
-            category: HarmCategory.HARM_CATEGORY_HARASSMENT,
-            threshold: HarmBlockThreshold.BLOCK_NONE,
-          },
-          {
-            category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
-            threshold: HarmBlockThreshold.BLOCK_NONE,
-          },
-        ],
       });
       
-      const response = await result.response;
-      const text = response.text();
+      const response = await Promise.race([aiPromise, timeoutPromise]) as any;
+      
+      // Enhanced text extraction with multiple fallback strategies
+      let text = '';
+      if (response.text) {
+        text = response.text;
+      } else if (response.candidates && Array.isArray(response.candidates) && response.candidates.length > 0) {
+        const candidate = response.candidates[0];
+        if (candidate.content && candidate.content.parts && Array.isArray(candidate.content.parts) && candidate.content.parts.length > 0) {
+          text = candidate.content.parts[0].text || '';
+        } else if (candidate.text) {
+          text = candidate.text;
+        } else if (typeof candidate === 'string') {
+          text = candidate;
+        }
+      } else if (response.content && response.content.parts && Array.isArray(response.content.parts) && response.content.parts.length > 0) {
+        text = response.content.parts[0].text || '';
+      } else if (response.parts && Array.isArray(response.parts) && response.parts.length > 0) {
+        text = response.parts[0].text || '';
+      }
+      
+      if (!text) {
+        console.error('❌ Unexpected response structure:', JSON.stringify(response, null, 2));
+        throw new Error('Unable to extract text from Gemini response');
+      }
       
       console.log(`📝 [${analysisId}] Raw Gemini response (${text.length} chars):`);
       console.log(`   First 300 chars: ${text.substring(0, 300)}...`);
@@ -719,18 +878,64 @@ RESPOND WITH ONLY PURE JSON - NO MARKDOWN, NO CODE BLOCKS, NO OTHER TEXT.
           entropy
         }
       };
-    } catch (error) {
+    } catch (error: any) {
       console.error(`❌ [${analysisId}] Critical analysis failure:`, {
         error: error.message,
         stack: error.stack,
         entropy
       });
+      
+      // Handle timeout errors with retry
+      if (error.message === 'AI request timeout') {
+        console.log(`🔄 [${analysisId}] Timeout detected, attempting retry with shorter content...`);
+        try {
+          // Retry with truncated inputs to avoid timeout
+          const shorterJobDesc = jobDescription.substring(0, 1000);
+          const shorterResume = resumeContent.substring(0, 1500);
+          
+          const retryPromise = this.client.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: prompt.replace(jobDescription, shorterJobDesc).replace(resumeContent, shorterResume),
+            config: {
+              temperature: 0.3,
+              topK: 10,
+              topP: 0.5,
+              maxOutputTokens: 2048,
+              candidateCount: 1,
+            },
+          });
+          
+          const retryTimeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('Retry timeout')), 30000);
+          });
+          
+          const retryResponse = await Promise.race([retryPromise, retryTimeoutPromise]) as any;
+          const retryText = retryResponse.text;
+          const retryAnalysis = cleanAndParseJson(retryText);
+          
+          console.log(`✅ [${analysisId}] Retry succeeded with shortened content`);
+          return {
+            ...retryAnalysis,
+            _metadata: {
+              analysisId,
+              sessionId,
+              timestamp: new Date().toISOString(),
+              entropy,
+              retry: true
+            }
+          };
+        } catch (retryError) {
+          console.error(`❌ [${analysisId}] Retry also failed:`, retryError);
+          throw new Error(`Failed to calculate job match score after retry [${analysisId}]: ${retryError.message}`);
+        }
+      }
+      
       throw new Error(`Failed to calculate job match score [${analysisId}]: ${error.message}`);
     }
   }
 
   async extractResumeFromText(resumeText: string): Promise<any> {
-    if (!this.model) {
+    if (!this.client) {
       throw new Error('Gemini API not configured. Please set GEMINI_API_KEY environment variable.');
     }
     const prompt = `
@@ -809,9 +1014,11 @@ Respond only with the JSON data, no additional text.
 `;
 
     try {
-      const result = await this.model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text();
+      const response = await this.client.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: prompt,
+      });
+      const text = response.text;
       
       // Parse the JSON response
       const extractedData = cleanAndParseJson(text);
@@ -920,6 +1127,82 @@ Respond only with the JSON data, no additional text.
     return processed;
   }
 
+  /**
+   * Dedicated method for LaTeX generation with enhanced validation
+   */
+  async generateLatex(prompt: string): Promise<string> {
+    if (!this.client) {
+      throw new Error('Gemini API not configured. Please set GEMINI_API_KEY environment variable.');
+    }
+    
+    try {
+      console.log('🎯 Using LaTeX-optimized generation settings...');
+      console.log('📝 PROMPT LENGTH:', prompt.length);
+      console.log('📝 PROMPT PREVIEW (first 500 chars):', prompt.substring(0, 500));
+      
+      // Apply production-ready LaTeX rules to the prompt
+      const enhancedPrompt = this.enhanceLatexPrompt(prompt);
+      
+      const response = await this.client.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: enhancedPrompt,
+        config: {
+          temperature: 0.1, // Lower temperature for more consistent LaTeX syntax
+          topK: 20,
+          topP: 0.7,
+          maxOutputTokens: 50000,
+          candidateCount: 1,
+        },
+      });
+      
+      console.log('🔍 RAW API RESPONSE OBJECT KEYS:', Object.keys(response));
+      console.log('🔍 RAW API RESPONSE STRUCTURE:', JSON.stringify(response, null, 2).substring(0, 500));
+      
+      // Enhanced text extraction with multiple fallback strategies
+      let rawText = '';
+      const responseAny = response as any;
+      
+      if (responseAny.text) {
+        rawText = responseAny.text;
+      } else if (responseAny.candidates && Array.isArray(responseAny.candidates) && responseAny.candidates.length > 0) {
+        const candidate = responseAny.candidates[0];
+        if (candidate.content && candidate.content.parts && Array.isArray(candidate.content.parts) && candidate.content.parts.length > 0) {
+          rawText = candidate.content.parts[0].text || '';
+        } else if (candidate.text) {
+          rawText = candidate.text;
+        } else if (typeof candidate === 'string') {
+          rawText = candidate;
+        }
+      } else if (responseAny.content && responseAny.content.parts && Array.isArray(responseAny.content.parts) && responseAny.content.parts.length > 0) {
+        rawText = responseAny.content.parts[0].text || '';
+      } else if (responseAny.parts && Array.isArray(responseAny.parts) && responseAny.parts.length > 0) {
+        rawText = responseAny.parts[0].text || '';
+      }
+      
+      if (!rawText) {
+        console.error('❌ Unexpected response structure:', JSON.stringify(response, null, 2));
+        throw new Error('Unable to extract text from Gemini response');
+      }
+      
+      console.log('🔍 EXTRACTED TEXT LENGTH:', rawText.length);
+      if (rawText.length > 0) {
+        console.log('🔍 TEXT PREVIEW:', rawText.substring(0, 200));
+      }
+      
+      if (!rawText) {
+        throw new Error('No text extracted from Gemini response');
+      }
+      
+      // Apply LaTeX validation and fixes to the output
+      const validatedLatex = this.validateAndFixLatexOutput(rawText);
+      
+      return validatedLatex;
+    } catch (error) {
+      console.error('❌ LaTeX generation error:', error);
+      throw new Error(`Failed to generate LaTeX: ${error.message}`);
+    }
+  }
+
   async generateAdvancedCoverLetterVariations(options: {
     personalInfo: any;
     jobDescription: string;
@@ -991,19 +1274,455 @@ Respond only with the JSON data, no additional text.
     return strengths;
   }
 
-  async generateText(prompt: string): Promise<string> {
-    if (!this.model) {
+  async generateText(prompt: string, retryCount: number = 0): Promise<string> {
+    if (!this.client) {
       throw new Error('Gemini API not configured. Please set GEMINI_API_KEY environment variable.');
     }
     
+    const maxRetries = 3;
+    const baseDelay = 1000; // 1 second base delay
+    
     try {
-      const result = await this.model.generateContent(prompt);
-      const response = await result.response;
-      return response.text();
+      // Standard generation for all content - removed automatic LaTeX detection
+      console.log('📝 STANDARD GENERATION - PROMPT LENGTH:', prompt.length);
+      if (retryCount > 0) {
+        console.log(`🔄 RETRY ATTEMPT ${retryCount}/${maxRetries}`);
+      }
+      
+      const response = await this.client.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: prompt,
+      });
+      
+      console.log('🔍 STANDARD RAW API RESPONSE KEYS:', Object.keys(response));
+      
+      // Enhanced text extraction with multiple fallback strategies
+      let text = '';
+      const responseAny = response as any;
+      
+      if (responseAny.text) {
+        text = responseAny.text;
+      } else if (responseAny.candidates && Array.isArray(responseAny.candidates) && responseAny.candidates.length > 0) {
+        const candidate = responseAny.candidates[0];
+        if (candidate.content && candidate.content.parts && Array.isArray(candidate.content.parts) && candidate.content.parts.length > 0) {
+          text = candidate.content.parts[0].text || '';
+        } else if (candidate.text) {
+          text = candidate.text;
+        } else if (typeof candidate === 'string') {
+          text = candidate;
+        }
+      } else if (responseAny.content && responseAny.content.parts && Array.isArray(responseAny.content.parts) && responseAny.content.parts.length > 0) {
+        text = responseAny.content.parts[0].text || '';
+      } else if (responseAny.parts && Array.isArray(responseAny.parts) && responseAny.parts.length > 0) {
+        text = responseAny.parts[0].text || '';
+      }
+      
+      if (!text) {
+        console.error('❌ Unexpected response structure:', JSON.stringify(response, null, 2));
+        throw new Error('Unable to extract text from Gemini response');
+      }
+      
+      console.log('🔍 STANDARD EXTRACTED TEXT LENGTH:', text.length);
+      
+      return text;
     } catch (error) {
-      console.error('Error generating text with Gemini:', error);
-      throw new Error('Failed to generate text');
+      console.error('❌ CRITICAL: Gemini generateText error:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name,
+        code: error.code,
+        status: error.status,
+        statusCode: error.statusCode,
+        details: error.details,
+        retryCount,
+        fullError: error
+      });
+      
+      // Handle quota exceeded error with fallback
+      if (error.message && error.message.includes('429') && error.message.includes('quota')) {
+        console.error('❌ Gemini API quota exceeded. Using fallback basic template.');
+        throw new Error('AI_QUOTA_EXCEEDED');
+      }
+      
+      // Handle authentication errors (don't retry these)
+      if (error.message && (error.message.includes('API_KEY') || error.message.includes('authentication'))) {
+        console.error('❌ Gemini API authentication error - check GEMINI_API_KEY');
+        throw new Error('AI_AUTH_ERROR');
+      }
+      
+      // Handle retryable errors (500, network issues, rate limits)
+      const isRetryableError = 
+        error.message.includes('500 Internal Server Error') ||
+        error.message.includes('502 Bad Gateway') ||
+        error.message.includes('503 Service Unavailable') ||
+        error.message.includes('504 Gateway Timeout') ||
+        error.message.includes('network') ||
+        error.message.includes('timeout') ||
+        error.message.includes('INTERNAL');
+      
+      if (isRetryableError && retryCount < maxRetries) {
+        const delay = baseDelay * Math.pow(2, retryCount); // Exponential backoff
+        console.log(`🔄 Retryable error detected, waiting ${delay}ms before retry ${retryCount + 1}/${maxRetries}`);
+        
+        await new Promise(resolve => setTimeout(resolve, delay));
+        return this.generateText(prompt, retryCount + 1);
+      }
+      
+      // Handle other API errors
+      if (error.message && error.message.includes('GoogleGenAIError')) {
+        console.error('❌ Google Generative AI error:', error.message);
+        throw new Error('AI_SERVICE_ERROR');
+      }
+      
+      throw new Error(`Failed to generate text after ${retryCount} retries: ${error.message}`);
     }
+  }
+
+  /**
+   * Enhance LaTeX prompts with production-ready rules from infotouse.md
+   */
+  private enhanceLatexPrompt(prompt: string): string {
+    const latexRules = `
+🚨 ULTRA-CRITICAL LATEX RULES - THESE SPECIFIC ERRORS CAUSE IMMEDIATE FAILURE:
+
+## ❌ FATAL ERROR #1: Content Before \\begin{document}
+🚨 NEVER PUT ANY CONTENT (text, sections, commands) BEFORE \\begin{document}
+✅ CORRECT ORDER:
+\\documentclass[11pt, letterpaper]{article}
+\\usepackage[utf8]{inputenc}
+\\usepackage[T1]{fontenc}
+\\usepackage{geometry}
+\\usepackage{enumitem}
+\\usepackage{titlesec}
+\\usepackage[hidelinks]{hyperref}
+
+% ONLY custom command definitions here - NO content
+\\newcommand{\\resumeItem}[1]{\\item\\small{#1}}
+
+\\begin{document}
+% ALL ACTUAL CONTENT GOES HERE - sections, text, everything
+\\section{Education}
+\\textbf{John Doe}
+\\end{document}
+
+❌ WRONG - WILL FAIL:
+\\documentclass{article}
+\\section{Education}  % ← FATAL: content before \\begin{document}
+\\begin{document}
+\\end{document}
+
+## ❌ FATAL ERROR #2: Malformed \\newcommand Syntax
+🚨 THESE CAUSE endcsname ERRORS - NEVER USE:
+❌ \\newcommand\\*\\  (incomplete syntax)
+❌ \\newcommand\\*   (missing braces)
+❌ ewcommand        (missing backslash)
+
+✅ CORRECT SYNTAX ONLY:
+\\newcommand{\\mycommand}[1]{#1}
+\\newcommand*{\\mycommand}[2]{#1 #2}
+
+## ❌ FATAL ERROR #3: \\uppercase Commands
+🚨 THESE CAUSE Missing \\endcsname ERRORS:
+❌ {\\uppercase}     (incomplete)
+❌ \\uppercase       (without braces)
+
+✅ CORRECT REPLACEMENT:
+\\MakeUppercase{text}
+
+## Document Structure - EXACT Template
+\\documentclass[11pt, letterpaper]{article}
+\\usepackage[utf8]{inputenc}
+\\usepackage[T1]{fontenc}
+\\usepackage{geometry}
+\\usepackage{enumitem}
+\\usepackage{titlesec}
+\\usepackage[hidelinks]{hyperref}
+
+% Custom commands ONLY (no content)
+\\newcommand{\\resumeItem}[1]{\\item\\small{#1 \\vspace{-2pt}}}
+
+\\begin{document}
+% ALL content here: sections, text, formatting
+\\end{document}
+
+## Package Safety - ONLY These Are Safe
+APPROVED PACKAGES:
+- \\usepackage[utf8]{inputenc}
+- \\usepackage[T1]{fontenc}  
+- \\usepackage{geometry}
+- \\usepackage{enumitem}
+- \\usepackage{titlesec}
+- \\usepackage[hidelinks]{hyperref} (MUST be last)
+
+BANNED (cause failures): fontspec, charter, cmbright, lato, paracol, multicol
+
+## Character Escaping
+& → \\&
+% → \\%  
+# → \\#
+_ → \\_
+C++ → C\\+\\+
+
+## Environment Safety
+Every \\begin{X} needs \\end{X}:
+\\begin{itemize}
+\\item First item
+\\end{itemize}
+
+## OUTPUT RULES - NO EXCEPTIONS
+1. Start IMMEDIATELY with \\documentclass
+2. NO explanatory text (Here is..., This code...)
+3. NO markdown (backticks)
+4. End with \\end{document}
+5. MUST compile with pdflatex
+
+## VALIDATION CHECKLIST - Check Before Output:
+- [ ] Starts with \\documentclass
+- [ ] NO content before \\begin{document}
+- [ ] All \\newcommand properly formatted
+- [ ] NO \\uppercase commands
+- [ ] All braces balanced
+- [ ] All environments closed
+- [ ] Special characters escaped
+
+`;
+
+    return `${latexRules}
+
+${prompt}
+
+🚨 CRITICAL: Follow the validation checklist above. Generate ONLY valid LaTeX code that will compile without errors.`;
+  }
+
+  /**
+   * Validate and fix LaTeX output using rules from infotouse.md
+   */
+  private validateAndFixLatexOutput(rawText: string): string {
+    let latex = rawText.trim();
+    
+    console.log('🧹 Starting AGGRESSIVE LaTeX validation and fixes...');
+    console.log(`📝 Input length: ${latex.length} chars`);
+    
+    // 1. AGGRESSIVE: Remove ALL explanatory text patterns
+    latex = latex.replace(/^.*?Here\s+is\s+the.*?(?=\\documentclass|$)/is, '');
+    latex = latex.replace(/^.*?This\s+is\s+the.*?(?=\\documentclass|$)/is, '');
+    latex = latex.replace(/^.*?Below\s+is\s+the.*?(?=\\documentclass|$)/is, '');
+    latex = latex.replace(/^.*?corrected.*?code.*?(?=\\documentclass|$)/is, '');
+    latex = latex.replace(/^```(?:latex|tex)?\s*/gmi, '');
+    latex = latex.replace(/```\s*$/gm, '');
+    latex = latex.replace(/^\s*`+\s*/gm, '');
+    latex = latex.replace(/\s*`+\s*$/gm, '');
+    
+    // 2. Find LaTeX content boundaries more aggressively
+    const docClassMatch = latex.match(/\\documentclass(?:\[[^\]]*\])?\{[^}]+\}/);
+    if (docClassMatch) {
+      const docClassStart = latex.indexOf(docClassMatch[0]);
+      if (docClassStart > 0) {
+        console.log(`🔧 Removing ${docClassStart} chars before \\documentclass`);
+        latex = latex.substring(docClassStart);
+      }
+    }
+    
+    const endDocIndex = latex.lastIndexOf('\\end{document}');
+    if (endDocIndex > -1) {
+      latex = latex.substring(0, endDocIndex + '\\end{document}'.length);
+    }
+    
+    // 3. ULTRA-AGGRESSIVE FIX: Move ALL content that's before \begin{document}
+    const beginDocIndex = latex.indexOf('\\begin{document}');
+    const docClassMatch2 = latex.match(/\\documentclass(?:\[[^\]]*\])?\{[^}]+\}/);
+    
+    if (beginDocIndex > -1 && docClassMatch2) {
+      const docClassEnd = latex.indexOf(docClassMatch2[0]) + docClassMatch2[0].length;
+      const preamble = latex.substring(0, beginDocIndex);
+      const content = latex.substring(beginDocIndex);
+      
+      console.log(`🔧 Analyzing preamble length: ${preamble.length} chars`);
+      console.log(`🔧 Preamble content: "${preamble.substring(docClassEnd, Math.min(docClassEnd + 200, preamble.length))}"`);
+      
+      // Extract any content that should be inside document (much broader pattern)
+      const contentBeforeBegin = preamble.substring(docClassEnd);
+      
+      // Find ALL problematic content patterns
+      const problematicPatterns = [
+        /\\section\*?\{[^}]*\}/g,
+        /\\subsection\*?\{[^}]*\}/g,
+        /\\textbf\{[^}]*\}/g,
+        /\\textit\{[^}]*\}/g,
+        /\\emph\{[^}]*\}/g,
+        /\\item\s+[^\n\\]*/g,
+        /\\maketitle/g,
+        /\\noindent\s+[^\n\\]*/g,
+        /\\vspace\{[^}]*\}/g,
+        /\\hspace\{[^}]*\}/g,
+        /\\centerline\{[^}]*\}/g,
+        /\\centering/g,
+        /\\large\s+[^\n\\]*/g,
+        /\\Large\s+[^\n\\]*/g,
+        /\\huge\s+[^\n\\]*/g,
+        /\\begin\{center\}[\s\S]*?\\end\{center\}/g,
+        /\\begin\{itemize\}[\s\S]*?\\end\{itemize\}/g,
+        /\\begin\{enumerate\}[\s\S]*?\\end\{enumerate\}/g,
+        // Match any standalone text content (not comments, not package commands)
+        /^[^%\\][^\n]*$/gm
+      ];
+      
+      let allProblematicContent = [];
+      let cleanedContentBeforeBegin = contentBeforeBegin;
+      
+      for (const pattern of problematicPatterns) {
+        const matches = contentBeforeBegin.match(pattern);
+        if (matches) {
+          allProblematicContent.push(...matches);
+          // Remove from preamble
+          cleanedContentBeforeBegin = cleanedContentBeforeBegin.replace(pattern, '');
+        }
+      }
+      
+      if (allProblematicContent.length > 0) {
+        console.log(`🚨 ULTRA-AGGRESSIVE FIX: Moving ${allProblematicContent.length} content items inside document`);
+        console.log(`🚨 Problematic content: ${allProblematicContent.slice(0, 3).join(', ')}...`);
+        
+        // Build clean preamble
+        let cleanPreamble = latex.substring(0, docClassEnd);
+        
+        // Add essential packages if missing
+        const essentialPackages = [
+          '\\usepackage[utf8]{inputenc}',
+          '\\usepackage[T1]{fontenc}', 
+          '\\usepackage{geometry}',
+          '\\usepackage{enumitem}',
+          '\\usepackage{titlesec}',
+          '\\usepackage[hidelinks]{hyperref}'
+        ];
+        
+        for (const pkg of essentialPackages) {
+          if (!cleanPreamble.includes(pkg)) {
+            cleanPreamble += '\n' + pkg;
+          }
+        }
+        
+        // Add any legitimate preamble content (newcommand, etc.)
+        const legitimatePreambleContent = cleanedContentBeforeBegin
+          .split('\n')
+          .filter(line => {
+            const trimmed = line.trim();
+            return trimmed.startsWith('\\newcommand') || 
+                   trimmed.startsWith('\\renewcommand') ||
+                   trimmed.startsWith('\\def') ||
+                   trimmed.startsWith('%') ||
+                   trimmed === '';
+          })
+          .join('\n');
+        
+        if (legitimatePreambleContent.trim()) {
+          cleanPreamble += '\n' + legitimatePreambleContent;
+        }
+        
+        // Move ALL problematic content inside document
+        const fixedContent = content.replace('\\begin{document}', 
+          '\\begin{document}\n\n' + allProblematicContent.join('\n') + '\n');
+        
+        latex = cleanPreamble + '\n\n' + fixedContent;
+        console.log(`✅ Content restructuring complete. New length: ${latex.length}`);
+      }
+    }
+    
+    // 4. ULTRA-AGGRESSIVE FIX: Fix ALL malformed newcommand syntax
+    console.log('🔧 Fixing newcommand syntax issues...');
+    
+    // Count problematic patterns before fixing
+    const problematicNewcommands = [
+      latex.match(/\\newcommand\*\\[a-zA-Z]+(?!\{)/g) || [],
+      latex.match(/\\renewcommand\*\\[a-zA-Z]+(?!\{)/g) || [],
+      latex.match(/\\newcommand\\[a-zA-Z]+(?!\{)/g) || [],
+      latex.match(/ewcommand/g) || [],
+      latex.match(/\\newcommand\*\\\s*$/gm) || [],
+      latex.match(/\\newcommand\\\s*$/gm) || []
+    ];
+    
+    const totalProblematic = problematicNewcommands.reduce((sum, arr) => sum + arr.length, 0);
+    if (totalProblematic > 0) {
+      console.log(`🚨 Found ${totalProblematic} malformed newcommand patterns - fixing aggressively`);
+    }
+    
+    // Fix all malformed patterns
+    latex = latex.replace(/\\newcommand\*\\([a-zA-Z]+)(?!\{)/g, '\\newcommand*{\\$1}');
+    latex = latex.replace(/\\renewcommand\*\\([a-zA-Z]+)(?!\{)/g, '\\renewcommand*{\\$1}');
+    latex = latex.replace(/\\newcommand\\([a-zA-Z]+)(?!\{)/g, '\\newcommand{\\$1}');
+    latex = latex.replace(/\\renewcommand\\([a-zA-Z]+)(?!\{)/g, '\\renewcommand{\\$1}');
+    latex = latex.replace(/ewcommand/g, '\\newcommand');
+    
+    // Fix incomplete newcommand patterns - remove entirely
+    latex = latex.replace(/\\newcommand\*\\\s*$/gm, '% incomplete newcommand removed');
+    latex = latex.replace(/\\newcommand\\\s*$/gm, '% incomplete newcommand removed');
+    latex = latex.replace(/\\newcommand\*\s*$/gm, '% incomplete newcommand removed');
+    latex = latex.replace(/\\renewcommand\*\\\s*$/gm, '% incomplete renewcommand removed');
+    
+    // Fix other malformed command patterns
+    latex = latex.replace(/\\newcommand\{\\([a-zA-Z]+)\}\*\{/g, '\\newcommand*{\\$1}{');
+    latex = latex.replace(/\\newcommand\{\\([a-zA-Z]+)\}\*/g, '\\newcommand*{\\$1}');
+    
+    // Remove orphaned backslashes that could cause issues
+    latex = latex.replace(/\\(\s*\n)/g, '% orphaned backslash removed$1');
+    
+    console.log('✅ Newcommand syntax fixing complete');
+    
+    // 5. CRITICAL FIX: Fix uppercase command issues (causes Missing \endcsname)
+    latex = latex.replace(/\{\\uppercase\}/g, '{\\MakeUppercase{#1}}');
+    latex = latex.replace(/\\uppercase(?!\{)/g, '\\MakeUppercase');
+    latex = latex.replace(/\\uppercase\{#1\}/g, '\\MakeUppercase{#1}');
+    
+    // 6. Fix banned packages
+    const bannedPackages = ['fontspec', 'charter', 'cmbright', 'lato', 'paracol', 'multicol', 'kpfonts'];
+    for (const pkg of bannedPackages) {
+      latex = latex.replace(new RegExp(`\\\\usepackage(?:\\[[^\\]]*\\])?\\{${pkg}\\}`, 'g'), 
+        `% ${pkg} removed - incompatible with pdflatex`);
+    }
+    
+    // 7. Fix bracket syntax in packages
+    latex = latex.replace(/\\usepackage\[([^\]]+)\)\{([^}]+)\}/g, '\\usepackage[$1]{$2}');
+    
+    // 8. Ensure proper document structure
+    if (!latex.includes('\\begin{document}')) {
+      const docClassEnd = latex.search(/\\documentclass(?:\[[^\]]*\])?\{[^}]+\}/);
+      if (docClassEnd > -1) {
+        const insertPos = latex.indexOf('}', docClassEnd) + 1;
+        latex = latex.slice(0, insertPos) + '\n\\begin{document}\n' + latex.slice(insertPos);
+      } else {
+        latex = '\\documentclass[11pt, letterpaper]{article}\n\\begin{document}\n' + latex;
+      }
+    }
+    
+    if (!latex.includes('\\end{document}')) {
+      latex += '\n\\end{document}';
+    }
+    
+    // 9. Fix unmatched braces more carefully
+    const openCount = (latex.match(/\{/g) || []).length;
+    const closeCount = (latex.match(/\}/g) || []).length;
+    if (openCount > closeCount) {
+      const endDoc = latex.lastIndexOf('\\end{document}');
+      if (endDoc > -1) {
+        const missing = '}}'.repeat(openCount - closeCount);
+        latex = latex.slice(0, endDoc) + missing + '\n' + latex.slice(endDoc);
+        console.log(`🔧 Added ${openCount - closeCount} missing closing braces`);
+      }
+    }
+    
+    // 10. Escape special characters
+    latex = latex.replace(/([^\\])&/g, '$1\\&');
+    latex = latex.replace(/([^\\])%/g, '$1\\%');
+    latex = latex.replace(/([^\\])#/g, '$1\\#');
+    latex = latex.replace(/([^\\])_/g, '$1\\_');
+    latex = latex.replace(/C\+\+/g, 'C\\+\\+');
+    
+    console.log(`✅ AGGRESSIVE LaTeX fixes completed. Output length: ${latex.length} chars`);
+    console.log(`🔍 Starts with \\documentclass: ${latex.startsWith('\\documentclass')}`);
+    console.log(`🔍 Contains \\begin{document}: ${latex.includes('\\begin{document}')}`);
+    console.log(`🔍 Ends with \\end{document}: ${latex.includes('\\end{document}')}`);
+    
+    return latex;
   }
 
   async enhanceContent(options: {
@@ -1012,7 +1731,7 @@ Respond only with the JSON data, no additional text.
     focusAreas?: string[];
     tone?: string;
   }): Promise<{ enhancedContent: string; improvements: string[]; }> {
-    if (!this.model) {
+    if (!this.client) {
       throw new Error('Gemini API not configured. Please set GEMINI_API_KEY environment variable.');
     }
 
@@ -1058,9 +1777,11 @@ Respond only with the JSON object, no additional text.
 
     try {
       console.log('🤖 Sending enhancement request to Gemini...');
-      const result = await this.model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text();
+      const response = await this.client.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: prompt,
+      });
+      const text = response.text;
       
       console.log('📝 Raw Gemini response (first 200 chars):', text.substring(0, 200));
       
@@ -1096,6 +1817,221 @@ Respond only with the JSON object, no additional text.
       };
     }
   }
+
+  /**
+   * Scrape job posting from URL and extract structured information
+   */
+  async scrapeJobFromUrl(jobUrl: string, retryCount: number = 0): Promise<{
+    jobDescription: string;
+    jobTitle: string;
+    companyName: string;
+    requirements: string[];
+    benefits: string[];
+    location?: string;
+    salary?: string;
+    // Additional properties that the code expects
+    requiredSkills?: string[];
+    preferredSkills?: string[];
+    experienceLevel?: string;
+    responsibilities?: string[];
+    qualifications?: string[];
+    keywords?: string[];
+    recommendations?: string[];
+  }> {
+    if (!this.client) {
+      throw new Error('Gemini API not configured');
+    }
+
+    const maxRetries = 3;
+    const baseDelay = 2000; // 2 second base delay for job scraping
+
+    try {
+      console.log('🔍 Scraping job from URL:', jobUrl);
+      if (retryCount > 0) {
+        console.log(`🔄 JOB SCRAPING RETRY ATTEMPT ${retryCount}/${maxRetries}`);
+      }
+
+      const prompt = `Please access and read the content of this job posting URL: ${jobUrl}
+
+Read the job posting content and extract the following information in JSON format:
+
+{
+  "jobTitle": "exact job title from the posting",
+  "companyName": "company name", 
+  "location": "job location if mentioned",
+  "salary": "salary range if mentioned",
+  "jobDescription": "complete job description text",
+  "requirements": ["key requirements listed in the posting"],
+  "benefits": ["benefits mentioned in the posting"]
+}
+
+Important:
+- Only read the content at this specific URL
+- Extract information directly from the job posting text
+- If you cannot access the URL, set jobDescription to "URL_ACCESS_FAILED"
+- Return valid JSON only, no additional text
+
+URL to read: ${jobUrl}`;
+
+      const response = await this.client.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: prompt,
+      });
+      
+      // Enhanced text extraction with multiple fallback strategies
+      let text = '';
+      const responseAny = response as any;
+      
+      if (responseAny.text) {
+        text = responseAny.text;
+      } else if (responseAny.candidates && Array.isArray(responseAny.candidates) && responseAny.candidates.length > 0) {
+        const candidate = responseAny.candidates[0];
+        if (candidate.content && candidate.content.parts && Array.isArray(candidate.content.parts) && candidate.content.parts.length > 0) {
+          text = candidate.content.parts[0].text || '';
+        } else if (candidate.text) {
+          text = candidate.text;
+        } else if (typeof candidate === 'string') {
+          text = candidate;
+        }
+      } else if (responseAny.content && responseAny.content.parts && Array.isArray(responseAny.content.parts) && responseAny.content.parts.length > 0) {
+        text = responseAny.content.parts[0].text || '';
+      } else if (responseAny.parts && Array.isArray(responseAny.parts) && responseAny.parts.length > 0) {
+        text = responseAny.parts[0].text || '';
+      }
+      
+      if (!text) {
+        console.error('❌ Unexpected response structure:', JSON.stringify(response, null, 2));
+        throw new Error('Unable to extract text from Gemini response');
+      }
+
+      // Try to parse JSON response
+      try {
+        const cleanedText = text.replace(/```json|```/g, '').trim();
+        const jobData = JSON.parse(cleanedText);
+        
+        // Check if URL access failed
+        if (jobData.jobDescription === "URL_ACCESS_FAILED") {
+          console.warn('⚠️ Gemini could not access the URL, returning fallback');
+          return {
+            jobDescription: `Could not access job posting at ${jobUrl}. Please paste the job description manually for better optimization results.`,
+            jobTitle: 'Job Title Not Available',
+            companyName: 'Company Not Available',
+            requirements: [],
+            benefits: [],
+            location: undefined,
+            salary: undefined,
+            requiredSkills: [],
+            preferredSkills: [],
+            experienceLevel: undefined,
+            responsibilities: [],
+            qualifications: [],
+            keywords: [],
+            recommendations: []
+          };
+        }
+        
+        return {
+          jobDescription: jobData.jobDescription || '',
+          jobTitle: jobData.jobTitle || 'Job Title Not Found',
+          companyName: jobData.companyName || 'Company Not Found',
+          requirements: jobData.requirements || [],
+          benefits: jobData.benefits || [],
+          location: jobData.location,
+          salary: jobData.salary,
+          requiredSkills: jobData.requiredSkills || [],
+          preferredSkills: jobData.preferredSkills || [],
+          experienceLevel: jobData.experienceLevel,
+          responsibilities: jobData.responsibilities || [],
+          qualifications: jobData.qualifications || [],
+          keywords: jobData.keywords || [],
+          recommendations: jobData.recommendations || []
+        };
+      } catch (parseError) {
+        console.warn('Failed to parse job data as JSON, analyzing raw response for URL access issues');
+        
+        // Check if the raw text indicates URL access failure
+        if (text.toLowerCase().includes('cannot access') || 
+            text.toLowerCase().includes('unable to access') ||
+            text.toLowerCase().includes('access denied') ||
+            text.toLowerCase().includes('url_access_failed')) {
+          console.warn('⚠️ Raw response indicates URL access failure');
+          return {
+            jobDescription: `Could not access job posting at ${jobUrl}. Please paste the job description manually for better optimization results.`,
+            jobTitle: 'Job Title Not Available',
+            companyName: 'Company Not Available',
+            requirements: [],
+            benefits: [],
+            location: undefined,
+            salary: undefined,
+            requiredSkills: [],
+            preferredSkills: [],
+            experienceLevel: undefined,
+            responsibilities: [],
+            qualifications: [],
+            keywords: [],
+            recommendations: []
+          };
+        }
+        
+        // If JSON parsing failed but content seems valid, use raw text
+        return {
+          jobDescription: text,
+          jobTitle: 'Job Title Not Found',
+          companyName: 'Company Not Found',
+          requirements: [],
+          benefits: [],
+          location: undefined,
+          salary: undefined,
+          requiredSkills: [],
+          preferredSkills: [],
+          experienceLevel: undefined,
+          responsibilities: [],
+          qualifications: [],
+          keywords: [],
+          recommendations: []
+        };
+      }
+    } catch (error) {
+      console.error('❌ Error scraping job from URL:', error);
+      
+      // Handle retryable errors for job scraping
+      const isRetryableError = 
+        error.message.includes('500 Internal Server Error') ||
+        error.message.includes('502 Bad Gateway') ||
+        error.message.includes('503 Service Unavailable') ||
+        error.message.includes('504 Gateway Timeout') ||
+        error.message.includes('network') ||
+        error.message.includes('timeout') ||
+        error.message.includes('INTERNAL');
+      
+      if (isRetryableError && retryCount < maxRetries) {
+        const delay = baseDelay * Math.pow(2, retryCount); // Exponential backoff
+        console.log(`🔄 Job scraping retryable error detected, waiting ${delay}ms before retry ${retryCount + 1}/${maxRetries}`);
+        
+        await new Promise(resolve => setTimeout(resolve, delay));
+        return this.scrapeJobFromUrl(jobUrl, retryCount + 1);
+      }
+      
+      // If all retries failed or non-retryable error, return fallback data
+      console.warn(`⚠️ Job scraping failed after ${retryCount} retries, returning fallback data`);
+      return {
+        jobDescription: `Unable to scrape job posting from ${jobUrl}. Please paste the job description manually.`,
+        jobTitle: 'Job Title Not Available',
+        companyName: 'Company Not Available',
+        requirements: [],
+        benefits: [],
+        location: undefined,
+        salary: undefined,
+        requiredSkills: [],
+        preferredSkills: [],
+        experienceLevel: undefined,
+        responsibilities: [],
+        qualifications: [],
+        keywords: [],
+        recommendations: []
+      };
+    }
+  }
 }
 
 export const geminiService = new GeminiService();
@@ -1105,10 +2041,11 @@ export const getGeminiStream = async (prompt: string): Promise<NodeJS.ReadableSt
     throw new Error('Gemini API not configured. Please set GEMINI_API_KEY environment variable.');
   }
 
-  const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
-  
   try {
-    const result = await model.generateContentStream(prompt);
+    const result = await genAI.models.generateContentStream({
+      model: 'gemini-2.5-flash',
+      contents: prompt,
+    });
     
     // Create a readable stream that will emit the streaming response
     const { Readable } = require('stream');
@@ -1120,8 +2057,8 @@ export const getGeminiStream = async (prompt: string): Promise<NodeJS.ReadableSt
     // Process the stream asynchronously
     (async () => {
       try {
-        for await (const chunk of result.stream) {
-          const chunkText = chunk.text();
+        for await (const chunk of result) {
+          const chunkText = chunk.text;
           if (chunkText) {
             stream.push(chunkText);
           }

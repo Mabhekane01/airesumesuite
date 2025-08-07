@@ -26,11 +26,16 @@ import EnhancementFeedbackModal from './EnhancementFeedbackModal';
 import { useResume } from '../../contexts/ResumeContext';
 import TemplateRenderer from './TemplateRenderer';
 import CoverLetterIntegration from './CoverLetterIntegration';
+import PDFPreview from './PDFPreview';
 import { resumeService } from '../../services/resumeService';
+import { useSubscriptionModal } from '../../hooks/useSubscriptionModal';
+import SubscriptionModal from '../subscription/SubscriptionModal';
 import { toast } from 'sonner';
 
 interface EnhancedResumePreviewProps {
   resume: Resume;
+  templateId?: string;
+  isLatexTemplate?: boolean;
   onAIImprovement?: () => void;
   onATSCheck?: () => void;
   onJobOptimization?: () => void;
@@ -41,6 +46,8 @@ interface EnhancedResumePreviewProps {
 
 export default function EnhancedResumePreview({ 
   resume, 
+  templateId,
+  isLatexTemplate = false,
   onAIImprovement,
   onATSCheck,
   onJobOptimization,
@@ -48,10 +55,24 @@ export default function EnhancedResumePreview({
   atsScore,
   aiGenerated = false
 }: EnhancedResumePreviewProps) {
-  const { aiData, updateAIData, isAutoSaving, updateResumeData } = useResume();
+  const { 
+    aiData, 
+    updateAIData, 
+    isAutoSaving, 
+    updateResumeData,
+    setCachedPdf,
+    generateResumeHash,
+    isCacheValid,
+    downloadPdf,
+    savePdfToLibrary
+  } = useResume();
+  const { checkAIFeature, isModalOpen, modalProps, closeModal } = useSubscriptionModal();
   const [activeTab, setActiveTab] = useState<'preview' | 'ai-insights' | 'ats-analysis' | 'downloads'>('preview');
   const [isJobOptimizationOpen, setIsJobOptimizationOpen] = useState(false);
   const [isATSCheckerOpen, setIsATSCheckerOpen] = useState(false);
+  const [previewMode, setPreviewMode] = useState<'html' | 'pdf'>('html');
+  const [pdfGenerating, setPdfGenerating] = useState(false);
+  const [tempPdfUrl, setTempPdfUrl] = useState<string | null>(null);
   const [showEnhancementModal, setShowEnhancementModal] = useState(false);
   const [enhancementResult, setEnhancementResult] = useState<any>(null);
   const [showComparison, setShowComparison] = useState(false);
@@ -131,9 +152,8 @@ export default function EnhancedResumePreview({
     }
   };
 
-  // AI Enhancement function - works with in-memory resume data
+  // AI Enhancement function - works with in-memory resume data  
   const handleAIImprovement = async (enhancementType: string = 'comprehensive') => {
-
     try {
       setAiLoading(enhancementType);
       toast.loading('🤖 Enhancing your resume with AI...', { id: 'ai-enhance' });
@@ -142,6 +162,7 @@ export default function EnhancedResumePreview({
       setOriginalResume({ ...resume });
 
       // Use the in-memory resume data directly for AI enhancement
+      // Backend will handle subscription validation
       const result = await resumeService.enhanceResumeWithAI(resume, {
         improvementLevel: enhancementType as 'basic' | 'comprehensive' | 'expert'
       });
@@ -165,7 +186,7 @@ export default function EnhancedResumePreview({
       };
 
       setEnhancementResult(result);
-      setEnhancementResults(result.enhancedResume);
+      setEnhancementResults(result.optimizedResume || result.enhancedResume);
       console.log('Original resume stored:', originalResume);
       console.log('Enhanced result stored:', result);
       
@@ -321,12 +342,30 @@ export default function EnhancedResumePreview({
   };
 
   const renderPreview = () => {
+    // Use actual PDF preview for ALL templates (LaTeX and HTML)
+    const currentHash = generateResumeHash();
+    const cachedPdfUrl = isCacheValid(currentHash) ? aiData.cachedPdfUrl : null;
+    
     return (
-      <div className="resume-preview-container">
-        <TemplateRenderer resume={resume} template={template} />
+      <div className="resume-preview-container relative">
+        <PDFPreview 
+          pdfUrl={cachedPdfUrl}
+          pdfBlob={aiData.pdfBlob}
+          templateId={templateId || resume.template}
+          resumeData={resume}
+          title={isLatexTemplate ? "LaTeX Resume Preview" : "Professional Resume Preview"}
+          className="w-full"
+          onPdfGenerated={(pdfUrl, blob) => {
+            console.log('📄 PDF generated, caching...', { pdfUrl: !!pdfUrl, blob: !!blob });
+            setCachedPdf(pdfUrl, currentHash, blob);
+          }}
+          onGenerationStart={() => {
+            console.log('📄 PDF generation started...');
+          }}
+        />
         {/* Real-time AI enhancement indicators */}
         {aiGenerated && (
-          <div className="absolute top-4 right-4 bg-purple-500/20 border border-purple-400/30 rounded-lg p-2 flex items-center">
+          <div className="absolute top-4 right-4 bg-purple-500/20 border border-purple-400/30 rounded-lg p-2 flex items-center z-10">
             <SparklesIcon className="w-4 h-4 text-purple-400 mr-1" />
             <span className="text-xs text-purple-400 font-medium">AI Enhanced</span>
           </div>
@@ -1493,7 +1532,13 @@ export default function EnhancedResumePreview({
         {activeTab === 'preview' && renderPreview()}
         {activeTab === 'ai-insights' && renderAIInsights()}
         {activeTab === 'ats-analysis' && renderATSAnalysis()}
-        {activeTab === 'downloads' && <ResumeDownloadManager resumeData={resume} />}
+        {activeTab === 'downloads' && (
+          <ResumeDownloadManager 
+            resumeData={resume} 
+            templateId={templateId}
+            isLatexTemplate={isLatexTemplate}
+          />
+        )}
       </div>
 
       {/* Quick Actions Bar */}
@@ -1667,14 +1712,14 @@ export default function EnhancedResumePreview({
                       <div>
                         <h5 className="font-medium text-gray-700">Professional Summary</h5>
                         <p className="text-sm text-gray-600 mt-1">
-                          {enhancementResult.enhancedResume?.professionalSummary || 'No summary provided'}
+                          {(enhancementResult.optimizedResume || enhancementResult.enhancedResume)?.professionalSummary || 'No summary provided'}
                         </p>
                       </div>
                       
-                      {enhancementResult.enhancedResume?.workExperience?.length > 0 && (
+                      {(enhancementResult.optimizedResume || enhancementResult.enhancedResume)?.workExperience?.length > 0 && (
                         <div>
                           <h5 className="font-medium text-gray-700">Work Experience</h5>
-                          {enhancementResult.enhancedResume.workExperience.slice(0, 2).map((exp, index) => (
+                          {(enhancementResult.optimizedResume || enhancementResult.enhancedResume).workExperience.slice(0, 2).map((exp, index) => (
                             <div key={index} className="text-sm text-gray-600 mt-1">
                               <p className="font-medium">{exp.jobTitle} at {exp.company}</p>
                               {exp.achievements?.slice(0, 2).map((achievement, i) => (
@@ -1753,7 +1798,7 @@ export default function EnhancedResumePreview({
                 <button
                   onClick={() => {
                     if (enhancementResult) {
-                      updateResumeData(enhancementResult.enhancedResume);
+                      updateResumeData(enhancementResult.optimizedResume || enhancementResult.enhancedResume);
                       toast.success('🎉 Resume updated with AI enhancements!');
                     }
                     setShowComparison(false);
@@ -1773,6 +1818,13 @@ export default function EnhancedResumePreview({
         resume={resume}
         isOpen={showCoverLetterModal}
         onClose={() => setShowCoverLetterModal(false)}
+      />
+
+      {/* Subscription Modal for AI Features */}
+      <SubscriptionModal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        {...modalProps}
       />
 
     </div>

@@ -76,25 +76,28 @@ export default function HobbiesForm() {
               label="Hobby/Interest"
               value={hobby.name}
               onChange={(e) => updateHobby(index, 'name', e.target.value)}
-              placeholder="Photography, Basketball, Coding, etc."
+              placeholder="e.g., Photography, Basketball, Coding"
+              required
+              helpText="Name of your hobby or interest"
             />
             <Select
               label="Category"
               value={hobby.category}
               onChange={(e) => updateHobby(index, 'category', e.target.value as Hobby['category'])}
               options={hobbyCategories}
+              helpText="Choose the most relevant category"
             />
           </div>
 
-          <div className="mb-4">
-            <Textarea
-              label="Description (Optional)"
-              value={hobby.description || ''}
-              onChange={(e) => updateHobby(index, 'description', e.target.value)}
-              placeholder="Brief description of your involvement or achievements..."
-              rows={2}
-            />
-          </div>
+          <Textarea
+            label="Description"
+            value={hobby.description || ''}
+            onChange={(e) => updateHobby(index, 'description', e.target.value)}
+            placeholder="Brief description of your involvement or achievements..."
+            rows={2}
+            helpText="Optional: Describe your level of involvement (optional)"
+            className="mb-4"
+          />
         </Card>
       ))}
 

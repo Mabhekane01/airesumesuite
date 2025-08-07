@@ -1,7 +1,7 @@
 import { CoverLetter, ICoverLetter } from '../../models/CoverLetter';
 import { Resume, IResume } from '../../models/Resume';
 import { geminiService } from '../ai/gemini';
-import { jobScrapingService } from '../job-scraper/jobScrapingService';
+import { aiJobAnalyzer, JobAnalysisResult } from '../ai/aiJobAnalyzer';
 import { redisClient } from '../../config/redis';
 import mongoose from 'mongoose';
 import puppeteer from 'puppeteer';
@@ -26,6 +26,14 @@ export interface GenerateCoverLetterFromJobData {
   tone: 'professional' | 'casual' | 'enthusiastic' | 'conservative';
 }
 
+export interface AIGenerateCoverLetterData {
+  userId: string;
+  resumeId?: string;
+  jobUrl: string;
+  tone: 'professional' | 'casual' | 'enthusiastic' | 'conservative';
+  customInstructions?: string;
+}
+
 export interface UpdateCoverLetterData extends Partial<CreateCoverLetterData> {
   content?: string;
 }
@@ -48,7 +56,7 @@ export class CoverLetterService {
 
       // Get resume data for context
       let resumeData: IResume | null = null;
-      if (data.resumeId) {
+      if (data.resumeId && mongoose.Types.ObjectId.isValid(data.resumeId)) {
         resumeData = await Resume.findOne({
           _id: new mongoose.Types.ObjectId(data.resumeId),
           userId: new mongoose.Types.ObjectId(data.userId)
@@ -83,7 +91,7 @@ export class CoverLetterService {
 
       const coverLetter = new CoverLetter({
         userId: new mongoose.Types.ObjectId(data.userId),
-        resumeId: data.resumeId ? new mongoose.Types.ObjectId(data.resumeId) : undefined,
+        resumeId: (data.resumeId && mongoose.Types.ObjectId.isValid(data.resumeId)) ? new mongoose.Types.ObjectId(data.resumeId) : undefined,
         title: data.title,
         content,
         jobTitle: data.jobTitle,
@@ -895,6 +903,244 @@ ${options.targetKeywords ? `- Target keywords: ${options.targetKeywords.join(', 
     content += `[Your Name]\n`;
     
     return content;
+  }
+
+  /**
+   * New AI-powered method that analyzes job URL and generates cover letter in one step
+   */
+  async aiGenerateCoverLetterFromUrl(data: AIGenerateCoverLetterData): Promise<{
+    coverLetter: ICoverLetter;
+    jobAnalysis: JobAnalysisResult;
+  }> {
+    try {
+      console.log('🤖 Starting AI-powered cover letter generation from URL:', data.jobUrl);
+      
+      // Step 1: AI analyzes the job URL
+      console.log('📊 Analyzing job posting with AI...');
+      const jobAnalysis = await aiJobAnalyzer.analyzeJobFromUrl(data.jobUrl);
+      
+      console.log('✅ Job analysis completed:', {
+        title: jobAnalysis.jobTitle,
+        company: jobAnalysis.companyName,
+        confidence: jobAnalysis.confidence
+      });
+
+      // Step 2: Get resume data for personalization
+      let resumeData: IResume | null = null;
+      if (data.resumeId && mongoose.Types.ObjectId.isValid(data.resumeId)) {
+        resumeData = await Resume.findOne({
+          _id: new mongoose.Types.ObjectId(data.resumeId),
+          userId: new mongoose.Types.ObjectId(data.userId)
+        });
+      }
+
+      // Step 3: Generate enhanced cover letter with full job context
+      console.log('✍️ Generating personalized cover letter...');
+      const coverLetterContent = await this.aiGenerateEnhancedCoverLetter({
+        jobAnalysis,
+        resumeData,
+        tone: data.tone,
+        customInstructions: data.customInstructions
+      });
+
+      // Step 4: Save the cover letter
+      const coverLetter = new CoverLetter({
+        userId: new mongoose.Types.ObjectId(data.userId),
+        resumeId: (data.resumeId && mongoose.Types.ObjectId.isValid(data.resumeId)) ? new mongoose.Types.ObjectId(data.resumeId) : undefined,
+        title: `Cover Letter - ${jobAnalysis.jobTitle} at ${jobAnalysis.companyName}`,
+        content: coverLetterContent,
+        jobTitle: jobAnalysis.jobTitle,
+        companyName: jobAnalysis.companyName,
+        jobUrl: data.jobUrl,
+        jobDescription: jobAnalysis.jobDescription,
+        tone: data.tone,
+        templateId: 'ai-generated'
+      });
+
+      const savedCoverLetter = await coverLetter.save();
+      
+      // Clear cache
+      await this.clearUserCoverLettersCache(data.userId);
+
+      console.log('🎉 AI cover letter generation completed successfully');
+      
+      return {
+        coverLetter: savedCoverLetter,
+        jobAnalysis
+      };
+    } catch (error) {
+      console.error('❌ Error in AI cover letter generation:', error);
+      throw new Error(`Failed to generate AI-powered cover letter: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * AI-powered enhanced cover letter generation with job analysis context
+   */
+  private async aiGenerateEnhancedCoverLetter(options: {
+    jobAnalysis: JobAnalysisResult;
+    resumeData: IResume | null;
+    tone: 'professional' | 'casual' | 'enthusiastic' | 'conservative';
+    customInstructions?: string;
+  }): Promise<string> {
+    const { jobAnalysis, resumeData, tone, customInstructions } = options;
+
+    const personalInfo = resumeData?.personalInfo || {
+      firstName: 'Your',
+      lastName: 'Name',
+      email: 'your.email@example.com',
+      location: 'Your Location'
+    };
+
+    // Enhanced prompt that uses the complete job analysis
+    const prompt = `
+You are an award-winning professional cover letter writer with 15+ years of experience. Create an exceptional, highly personalized cover letter using the comprehensive job analysis provided.
+
+🎯 CANDIDATE PROFILE:
+Name: ${personalInfo.firstName} ${personalInfo.lastName}
+Email: ${personalInfo.email}
+Location: ${personalInfo.location}
+
+📋 PROFESSIONAL BACKGROUND:
+${resumeData?.professionalSummary ? `Summary: ${resumeData.professionalSummary}` : ''}
+
+Work Experience:
+${resumeData?.workExperience?.map((exp: any) => `
+• ${exp.jobTitle} at ${exp.company} (${exp.startDate} - ${exp.isCurrentJob ? 'Present' : exp.endDate})
+  Key Responsibilities: ${exp.responsibilities?.slice(0, 3).join(', ')}
+  Achievements: ${exp.achievements?.slice(0, 2).join(', ')}`).join('') || 'Experience details not provided'}
+
+Key Skills: ${resumeData?.skills?.map((s: any) => s.name).slice(0, 10).join(', ') || 'Skills not provided'}
+Education: ${resumeData?.education?.map((edu: any) => `${edu.degree} in ${edu.fieldOfStudy} from ${edu.institution}`).join(', ') || 'Education not provided'}
+
+🔍 COMPREHENSIVE JOB ANALYSIS:
+Job Title: ${jobAnalysis.jobTitle}
+Company: ${jobAnalysis.companyName}
+Location: ${jobAnalysis.location}
+Experience Level: ${jobAnalysis.experienceLevel}
+Employment Type: ${jobAnalysis.employmentType}
+
+Job Description:
+${jobAnalysis.jobDescription}
+
+Key Requirements:
+${jobAnalysis.requirements.map(req => `• ${req}`).join('\n')}
+
+Key Responsibilities:
+${jobAnalysis.responsibilities.map(resp => `• ${resp}`).join('\n')}
+
+Required Skills:
+${jobAnalysis.skills.map(skill => `• ${skill}`).join('\n')}
+
+${jobAnalysis.salary ? `Compensation: ${jobAnalysis.salary}` : ''}
+
+Company Information:
+Industry: ${jobAnalysis.companyInfo?.industry}
+Company Size: ${jobAnalysis.companyInfo?.size}
+About Company: ${jobAnalysis.companyInfo?.description}
+
+🎨 TONE & STYLE: ${tone}
+${customInstructions ? `\n✨ CUSTOM INSTRUCTIONS: ${customInstructions}` : ''}
+
+📝 COVER LETTER REQUIREMENTS:
+
+Create a compelling cover letter that:
+
+1. **INTELLIGENT MATCHING**: Analyze the job requirements and match them with the candidate's background
+2. **COMPANY RESEARCH**: Use the company information to show genuine interest and knowledge
+3. **SKILLS ALIGNMENT**: Highlight skills that directly match the job requirements  
+4. **QUANTIFIED ACHIEVEMENTS**: Include specific metrics and accomplishments from the resume
+5. **ROLE-SPECIFIC LANGUAGE**: Use industry terms and keywords from the job posting
+6. **COMPELLING NARRATIVE**: Tell a story that shows progression and fit for this specific role
+
+STRUCTURE:
+- Opening: Hook that shows immediate value and knowledge of the company
+- Body 1: Match top 2-3 qualifications with specific examples from resume
+- Body 2: Show knowledge of company/industry and explain why this role fits career goals  
+- Closing: Confident call to action with specific next steps
+
+FORMAT REQUIREMENTS:
+- Professional business letter format with proper date and salutation
+- MINIMUM 400-600 words (this is critical - DO NOT make it shorter)
+- Include specific details and examples, not generic statements
+- Use active voice and compelling language throughout
+- Include quantified achievements when possible
+- ${tone === 'professional' ? 'Formal tone with "Dear Hiring Manager"' : ''}
+${tone === 'casual' ? 'Conversational but professional tone' : ''}
+${tone === 'enthusiastic' ? 'Energetic and passionate language' : ''}
+${tone === 'conservative' ? 'Traditional business language' : ''}
+
+🚨 CRITICAL REQUIREMENTS:
+- The cover letter MUST be detailed and comprehensive (400-600 words minimum)
+- Include specific examples that demonstrate relevant experience
+- Show deep understanding of the role and company
+- Make compelling arguments for why the candidate is the perfect fit
+- Use keywords and phrases from the job description naturally
+- End with a confident, specific call to action
+
+Generate the complete, detailed cover letter now. Return ONLY the cover letter content with proper formatting - no explanations or additional text.
+`;
+
+    try {
+      const response = await geminiService.generateContent({
+        model: "gemini-2.5-flash",
+        contents: prompt,
+        config: {
+          temperature: 0.4, // Slightly higher for more creative and detailed output
+          topK: 30,
+          topP: 0.9,
+          maxOutputTokens: 4000, // Increased to allow for longer, detailed cover letters
+          candidateCount: 1,
+        }
+      });
+
+      let coverLetterContent = response.text.trim();
+      
+      // Clean up the response
+      coverLetterContent = coverLetterContent
+        .replace(/```.*$/gm, '') // Remove any code block markers
+        .replace(/^\s*\n/gm, '') // Remove empty lines at start
+        .trim();
+
+      return coverLetterContent;
+    } catch (error) {
+      console.error('Error generating AI-enhanced cover letter:', error);
+      
+      // Fallback to basic generation if AI fails
+      return this.generateBasicCoverLetter(jobAnalysis, personalInfo, tone);
+    }
+  }
+
+  /**
+   * Fallback method for basic cover letter generation
+   */
+  private generateBasicCoverLetter(
+    jobAnalysis: JobAnalysisResult, 
+    personalInfo: any, 
+    tone: string
+  ): string {
+    const date = new Date().toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+
+    const salutation = tone === 'casual' ? 'Hello,' : 'Dear Hiring Manager,';
+    const closing = tone === 'enthusiastic' ? 'With excitement,' : 
+                   tone === 'casual' ? 'Best regards,' : 'Sincerely,';
+
+    return `${date}
+
+${salutation}
+
+I am writing to express my strong interest in the ${jobAnalysis.jobTitle} position at ${jobAnalysis.companyName}. Based on your job posting, I believe my background and skills make me an excellent candidate for this role.
+
+Your requirements for ${jobAnalysis.skills.slice(0, 3).join(', ')} align perfectly with my experience. I am particularly drawn to this opportunity because of ${jobAnalysis.companyInfo?.description || 'your company\'s reputation in the industry'}.
+
+I would welcome the opportunity to discuss how my qualifications can contribute to ${jobAnalysis.companyName}'s continued success. Thank you for your consideration, and I look forward to hearing from you.
+
+${closing}
+${personalInfo.firstName} ${personalInfo.lastName}`;
   }
 }
 

@@ -1,4 +1,21 @@
 import React, { useState, useEffect } from 'react';
+
+// Helper function to convert MongoDB ObjectId to string
+const convertObjectIdToString = (id: any): string => {
+  if (!id) return '';
+  
+  if (typeof id === 'string') {
+    return id;
+  }
+  
+  // Handle MongoDB ObjectId Buffer format
+  if (id.buffer && id.buffer.data && Array.isArray(id.buffer.data)) {
+    const bytes = Array.from(id.buffer.data);
+    return bytes.map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+  
+  return String(id);
+};
 import { createFileName } from '../utils/validation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -21,7 +38,7 @@ import { Link } from 'react-router-dom';
 import { resumeService, ResumeData } from '../services/resumeService';
 import { coverLetterService, CoverLetterData } from '../services/coverLetterService';
 import { api } from '../services/api';
-import ResumePDFPreview from '../components/documents/ResumePDFPreview';
+import ResumePDFPreviewSimple from '../components/documents/ResumePDFPreviewSimple';
 import CoverLetterEditor from '../components/documents/CoverLetterEditor';
 import DocumentActions from '../components/documents/DocumentActions';
 import DocumentLoadingSkeleton from '../components/documents/DocumentLoadingSkeleton';
@@ -29,6 +46,13 @@ import TemplateRenderer from '../components/resume/TemplateRenderer';
 import { resumeTemplates, getTemplateById } from '../data/resumeTemplates';
 import { Resume } from '../types';
 import { toast } from 'sonner';
+
+// Utility function to detect LaTeX templates
+const isLatexTemplateId = (templateId: string): boolean => {
+  // Templates in /public/templates/ are LaTeX templates (template01, template02, etc.)
+  // Regular resumeTemplates are HTML-based
+  return templateId?.startsWith('template') && !templateId.includes('modern-creative');
+};
 
 type DocumentType = 'resumes' | 'cover-letters';
 type ViewMode = 'grid' | 'list';
@@ -179,7 +203,8 @@ export default function DocumentManager() {
   };
 
   const handleDownloadResume = async (resume: ResumeData) => {
-    if (!resume._id) {
+    const resumeId = convertObjectIdToString(resume._id);
+    if (!resumeId) {
       toast.error('Cannot download: Resume ID is missing');
       return;
     }
@@ -190,20 +215,35 @@ export default function DocumentManager() {
     }
 
     const loadingToast = toast.loading('🏢 Enterprise PDF generation in progress...');
-    setActionLoading(`download-${resume._id}`);
+    setActionLoading(`download-${resumeId}`);
     
     try {
-      console.log('🚀 Starting enterprise server-side PDF generation...', resume._id);
+      console.log('🚀 Starting smart PDF download...', resumeId);
       
-      // Make API call to server-side PDF generation endpoint using configured API service
-      const response = await api.post('/resumes/download/pdf', {
-        resumeData: resume
-      }, {
-        responseType: 'blob' // Important: Tell axios to expect a blob response
-      });
+      // Check if saved PDF exists and is current
+      const pdfInfo = await resumeService.getSavedPDFInfo(resumeId);
       
-      // With axios, response.data contains the blob directly
-      const pdfBlob = response.data;
+      let pdfBlob: Blob;
+      
+      if (pdfInfo.hasSavedPDF) {
+        console.log('📁 Using saved PDF from database');
+        toast.dismiss(loadingToast);
+        toast.loading('📁 Retrieving saved PDF...');
+        
+        pdfBlob = await resumeService.getSavedPDF(resumeId);
+        console.log('✅ Retrieved saved PDF successfully');
+      } else {
+        console.log('🔧 Generating new PDF with LaTeX engine');
+        
+        // Generate new PDF using standardized LaTeX template system
+        const templateId = resume.template || resume.templateId || 'template01';
+        
+        pdfBlob = await resumeService.downloadResumeWithEngine(resume, 'pdf', {
+          engine: 'latex', // All templates now use LaTeX
+          templateId: templateId
+        });
+        console.log('✅ Generated new PDF successfully');
+      }
       
       if (pdfBlob.size === 0) {
         throw new Error('Received empty PDF file from server');
@@ -230,11 +270,17 @@ export default function DocumentManager() {
       toast.dismiss(loadingToast);
       toast.success(`🎉 Enterprise PDF downloaded successfully! File: ${fileName}`);
       
-      // Show enterprise success message
+      // Show success message based on source
       setTimeout(() => {
-        toast.success('💼 Professional-grade PDF ready for enterprise use!', {
-          duration: 4000
-        });
+        if (pdfInfo.hasSavedPDF) {
+          toast.success('💾 Saved PDF downloaded instantly!', {
+            duration: 3000
+          });
+        } else {
+          toast.success('💼 Fresh PDF generated with LaTeX engine!', {
+            duration: 4000
+          });
+        }
       }, 1000);
       
     } catch (error: any) {
@@ -274,326 +320,86 @@ export default function DocumentManager() {
   };
 
   const handlePrintResume = async (resume: ResumeData) => {
-    if (!resume._id) {
+    const resumeId = convertObjectIdToString(resume._id);
+    if (!resumeId) {
       toast.error('Cannot print: Resume ID is missing');
       return;
     }
-
-    if (!resume.personalInfo?.firstName || !resume.personalInfo?.lastName) {
-      toast.error('Cannot print: Resume is missing required personal information');
-      return;
-    }
+    
+    setActionLoading(`print-${resumeId}`);
+    const loadingToast = toast.loading('Preparing PDF for printing...');
 
     try {
-      // Create a temporary div to render the resume for printing
-      const printDiv = document.createElement('div');
-      printDiv.style.position = 'absolute';
-      printDiv.style.left = '-9999px';
-      printDiv.style.width = '8.5in';
-      printDiv.style.minHeight = '11in';
-      printDiv.style.backgroundColor = 'white';
-      printDiv.style.padding = '0.5in';
-      printDiv.style.fontFamily = 'Arial, sans-serif';
+      const pdfBlob = await resumeService.downloadResumeWithEngine(resume, 'pdf', {
+        engine: 'latex',
+        templateId: resume.template || resume.templateId || 'template01'
+      });
+
+      const pdfUrl = URL.createObjectURL(pdfBlob);
       
-      // Get the exact template used and ensure consistency
-      const template = getTemplateById(resume.templateId || 'modern-creative-1') || resumeTemplates[0];
-      console.log(`🖨️ Printing template: ${template.name} (${template.id})`);
-      
-      // Create print-optimized HTML content
-      const printContent = `
-        <div style="font-family: Arial, sans-serif; font-size: 12px; line-height: 1.4; color: #333;">
-          <div style="text-align: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid ${template.colors.primary};">
-            <h1 style="font-size: 24px; margin: 0 0 10px 0; color: ${template.colors.primary}; font-weight: bold;">
-              ${resume.personalInfo.firstName} ${resume.personalInfo.lastName}
-            </h1>
-            <div style="font-size: 14px; color: #666;">
-              ${resume.personalInfo.email} • ${resume.personalInfo.phone} • ${resume.personalInfo.location}
-            </div>
-          </div>
-          
-          ${resume.professionalSummary ? `
-            <div style="margin-bottom: 20px;">
-              <h2 style="font-size: 16px; margin-bottom: 10px; color: ${template.colors.primary}; border-bottom: 1px solid #ccc; padding-bottom: 5px; font-weight: bold;">PROFESSIONAL SUMMARY</h2>
-              <p style="margin: 0; text-align: justify; line-height: 1.6;">${resume.professionalSummary}</p>
-            </div>
-          ` : ''}
-          
-          ${resume.workExperience && resume.workExperience.length > 0 ? `
-            <div style="margin-bottom: 20px;">
-              <h2 style="font-size: 16px; margin-bottom: 10px; color: ${template.colors.primary}; border-bottom: 1px solid #ccc; padding-bottom: 5px; font-weight: bold;">WORK EXPERIENCE</h2>
-              ${resume.workExperience.map(job => `
-                <div style="margin-bottom: 15px;">
-                  <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                    <h3 style="font-size: 14px; margin: 0; font-weight: bold; color: #333;">${job.jobTitle}</h3>
-                    <span style="font-size: 12px; color: #666;">${job.startDate} - ${job.isCurrentJob ? 'Present' : job.endDate}</span>
-                  </div>
-                  <div style="font-size: 13px; color: ${template.colors.primary}; margin-bottom: 5px; font-weight: 600;">${job.company}, ${job.location}</div>
-                  ${job.responsibilities && job.responsibilities.length > 0 ? `
-                    <ul style="margin: 5px 0; padding-left: 20px;">
-                      ${job.responsibilities.map(resp => `<li style="margin-bottom: 3px; font-size: 12px;">${resp}</li>`).join('')}
-                    </ul>
-                  ` : ''}
-                  ${job.achievements && job.achievements.length > 0 ? `
-                    <ul style="margin: 5px 0; padding-left: 20px;">
-                      ${job.achievements.map(ach => `<li style="margin-bottom: 3px; font-size: 12px; font-weight: 500;">${ach}</li>`).join('')}
-                    </ul>
-                  ` : ''}
-                </div>
-              `).join('')}
-            </div>
-          ` : ''}
-          
-          ${resume.education && resume.education.length > 0 ? `
-            <div style="margin-bottom: 20px;">
-              <h2 style="font-size: 16px; margin-bottom: 10px; color: ${template.colors.primary}; border-bottom: 1px solid #ccc; padding-bottom: 5px; font-weight: bold;">EDUCATION</h2>
-              ${resume.education.map(edu => `
-                <div style="margin-bottom: 10px;">
-                  <div style="display: flex; justify-content: space-between;">
-                    <div>
-                      <h3 style="font-size: 14px; margin: 0 0 3px 0; font-weight: bold;">${edu.degree}</h3>
-                      <div style="font-size: 13px; color: ${template.colors.primary}; font-weight: 600;">${edu.institution}</div>
-                      ${edu.gpa ? `<div style="font-size: 12px; color: #666;">GPA: ${edu.gpa}</div>` : ''}
-                    </div>
-                    <span style="font-size: 12px; color: #666;">${new Date(edu.graduationDate).getFullYear()}</span>
-                  </div>
-                </div>
-              `).join('')}
-            </div>
-          ` : ''}
-          
-          ${resume.skills && resume.skills.length > 0 ? `
-            <div style="margin-bottom: 20px;">
-              <h2 style="font-size: 16px; margin-bottom: 10px; color: ${template.colors.primary}; border-bottom: 1px solid #ccc; padding-bottom: 5px; font-weight: bold;">SKILLS</h2>
-              <p style="margin: 0; line-height: 1.6;">${resume.skills.map(skill => skill.name).join(' • ')}</p>
-            </div>
-          ` : ''}
-        </div>
-      `;
-      
-      printDiv.innerHTML = printContent;
-      document.body.appendChild(printDiv);
-      
-      // Create a new window for printing
-      const printWindow = window.open('', '_blank', 'width=800,height=600');
+      const printWindow = window.open(pdfUrl, '_blank');
       if (printWindow) {
-        printWindow.document.write(`
-          <!DOCTYPE html>
-          <html>
-          <head>
-            <title>${resume.title || 'Resume'} - Print</title>
-            <style>
-              @media print {
-                body { margin: 0.5in; }
-                @page { margin: 0.5in; size: letter; }
-              }
-              body { 
-                font-family: Arial, sans-serif; 
-                margin: 0.5in; 
-                background: white; 
-                font-size: 12px; 
-                line-height: 1.4; 
-              }
-            </style>
-          </head>
-          <body>
-            ${printContent}
-          </body>
-          </html>
-        `);
-        printWindow.document.close();
-        
-        // Wait for content to load then print
-        setTimeout(() => {
-          printWindow.focus();
-          printWindow.print();
-          printWindow.close();
-        }, 500);
-        
-        toast.success('🖨️ Print dialog opened for resume!');
+        printWindow.onload = () => {
+          // A timeout gives the PDF viewer time to load the document.
+          setTimeout(() => {
+            try {
+              printWindow.print();
+            } catch (e) {
+               toast.error('Print failed. Please use the browser print function (Ctrl+P).');
+            } finally {
+               URL.revokeObjectURL(pdfUrl);
+            }
+          }, 250);
+        };
       } else {
-        throw new Error('Failed to open print window');
+        toast.error("Could not open print window. Please disable pop-up blockers.");
       }
-      
-      // Clean up
-      document.body.removeChild(printDiv);
-      
     } catch (error) {
       console.error('Print error:', error);
-      toast.error('Failed to print resume. Please try again.');
+      toast.error('Failed to generate PDF for printing.');
+    } finally {
+      toast.dismiss(loadingToast);
+      setActionLoading(null);
     }
   };
 
   const handleShareResume = async (resume: ResumeData) => {
-    if (!resume._id) {
+    const resumeId = convertObjectIdToString(resume._id);
+    if (!resumeId) {
       toast.error('Cannot share: Resume ID is missing');
       return;
     }
 
-    if (!resume.title) {
-      toast.error('Cannot share: Resume title is missing');
-      return;
-    }
+    setActionLoading(`share-${resumeId}`);
+    const loadingToast = toast.loading('Preparing PDF for sharing...');
 
-    setActionLoading(`share-${resume._id}`);
-    
     try {
-      // Generate secure shareable link with expiration
-      const shareUrl = `${window.location.origin}/shared/resume/${resume._id}?token=${generateSecureToken()}`;
-      const personalName = `${resume.personalInfo?.firstName || ''} ${resume.personalInfo?.lastName || ''}`.trim();
-      
-      // Enterprise-grade sharing modal with dark glassy theme
-      const createEnterpriseShareModal = () => {
-        const shareModal = document.createElement('div');
-        shareModal.className = 'fixed inset-0 z-[70] flex items-center justify-center bg-black/80 backdrop-blur-xl';
-        shareModal.innerHTML = `
-          <div class="bg-dark-secondary/95 backdrop-blur-xl rounded-2xl shadow-2xl max-w-lg mx-4 overflow-hidden border border-dark-border/50 shadow-glow-lg">
-            <div class="bg-gradient-to-r from-accent-primary to-accent-secondary px-6 py-4 border-b border-dark-border/30">
-              <h3 class="text-xl font-bold text-white">📤 Share Resume</h3>
-              <p class="text-white/80 text-sm mt-1">${resume.title} - ${personalName}</p>
-            </div>
-            
-            <div class="p-6 space-y-4">
-              <!-- Link Section -->
-              <div class="bg-dark-tertiary/30 backdrop-blur-sm p-4 rounded-lg border border-dark-border/30">
-                <div class="flex items-center justify-between mb-2">
-                  <label class="text-sm font-semibold text-dark-text-primary">🔗 Shareable Link</label>
-                  <button onclick="copyLink('${shareUrl}')" class="text-accent-primary hover:text-accent-secondary text-sm font-medium transition-colors">
-                    Copy Link
-                  </button>
-                </div>
-                <input type="text" value="${shareUrl}" readonly class="w-full text-xs bg-dark-quaternary/50 border border-dark-border/50 rounded px-3 py-2 text-dark-text-secondary backdrop-blur-sm" />
-                <p class="text-xs text-dark-text-muted mt-1">🔒 Link expires in 30 days</p>
-              </div>
+      const pdfBlob = await resumeService.downloadResumeWithEngine(resume, 'pdf', {
+        engine: 'latex',
+        templateId: resume.template || resume.templateId || 'template01'
+      });
 
-              <!-- Professional Platforms -->
-              <div class="space-y-3">
-                <h4 class="font-semibold text-dark-text-primary">📋 Professional Platforms</h4>
-                <div class="grid grid-cols-2 gap-3">
-                  <button onclick="shareToLinkedIn('${encodeURIComponent(shareUrl)}', '${encodeURIComponent(resume.title)}', '${encodeURIComponent(personalName)}')" 
-                          class="flex items-center p-3 bg-dark-tertiary/20 backdrop-blur-sm border border-dark-border/30 rounded-lg hover:bg-blue-500/10 hover:border-blue-400/30 transition-all group">
-                    <div class="w-8 h-8 bg-blue-600 rounded flex items-center justify-center mr-3 shadow-glow-sm group-hover:shadow-glow-md transition-all">
-                      <span class="text-white font-bold text-xs">in</span>
-                    </div>
-                    <div class="text-left">
-                      <div class="font-medium text-sm text-dark-text-primary group-hover:text-blue-400 transition-colors">LinkedIn</div>
-                      <div class="text-xs text-dark-text-secondary">Professional network</div>
-                    </div>
-                  </button>
-                  
-                  <button onclick="shareViaEmail('${encodeURIComponent(shareUrl)}', '${encodeURIComponent(resume.title)}', '${encodeURIComponent(personalName)}')" 
-                          class="flex items-center p-3 bg-dark-tertiary/20 backdrop-blur-sm border border-dark-border/30 rounded-lg hover:bg-green-500/10 hover:border-green-400/30 transition-all group">
-                    <div class="w-8 h-8 bg-green-600 rounded flex items-center justify-center mr-3 shadow-glow-sm group-hover:shadow-glow-md transition-all">
-                      <span class="text-white font-bold text-xs">✉</span>
-                    </div>
-                    <div class="text-left">
-                      <div class="font-medium text-sm text-dark-text-primary group-hover:text-green-400 transition-colors">Email</div>
-                      <div class="text-xs text-dark-text-secondary">Direct to inbox</div>
-                    </div>
-                  </button>
-                </div>
-              </div>
+      const fileName = `${resume.personalInfo?.firstName || 'Resume'}_${resume.personalInfo?.lastName || 'PDF'}.pdf`;
+      const file = new File([pdfBlob], fileName, { type: 'application/pdf' });
 
-              <!-- Analytics & Control -->
-              <div class="bg-accent-primary/10 backdrop-blur-sm p-4 rounded-lg border border-accent-primary/20">
-                <h4 class="font-semibold text-accent-primary mb-2">📊 Enterprise Features</h4>
-                <div class="space-y-2 text-sm text-dark-text-secondary">
-                  <div class="flex items-center">
-                    <span class="w-2 h-2 bg-green-400 rounded-full mr-2 shadow-glow-sm"></span>
-                    View tracking enabled
-                  </div>
-                  <div class="flex items-center">
-                    <span class="w-2 h-2 bg-blue-400 rounded-full mr-2 shadow-glow-sm"></span>
-                    Download analytics available
-                  </div>
-                  <div class="flex items-center">
-                    <span class="w-2 h-2 bg-purple-400 rounded-full mr-2 shadow-glow-sm"></span>
-                    Automatic expiration in 30 days
-                  </div>
-                </div>
-              </div>
-
-              <!-- Actions -->
-              <div class="flex gap-3 pt-4 border-t border-dark-border/30">
-                <button onclick="this.closest('.fixed').remove()" 
-                        class="flex-1 px-4 py-2 bg-dark-tertiary/30 backdrop-blur-sm border border-dark-border/50 rounded-lg hover:bg-dark-quaternary/50 font-medium text-dark-text-primary transition-all">
-                  Cancel
-                </button>
-                <button onclick="copyAndClose('${shareUrl}', this)" 
-                        class="flex-1 px-4 py-2 bg-gradient-to-r from-accent-primary to-accent-secondary text-white rounded-lg hover:from-accent-primary/80 hover:to-accent-secondary/80 font-medium shadow-glow-sm hover:shadow-glow-md transition-all">
-                  Copy & Close
-                </button>
-              </div>
-            </div>
-          </div>
-        `;
-        
-        document.body.appendChild(shareModal);
-        return shareModal;
-      };
-      
-      // Create and show the enterprise share modal
-      const modal = createEnterpriseShareModal();
-      
-      // Add global functions for sharing actions
-      (window as any).copyLink = async (url: string) => {
-        try {
-          await navigator.clipboard.writeText(url);
-          toast.success('🔗 Link copied to clipboard!');
-        } catch (error) {
-          console.error('Copy failed:', error);
-          toast.error('Failed to copy link');
-        }
-      };
-      
-      (window as any).shareToLinkedIn = (url: string, title: string, name: string) => {
-        const linkedInUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${url}&title=${encodeURIComponent(`${decodeURIComponent(name)} - ${decodeURIComponent(title)}`)}`;
-        window.open(linkedInUrl, '_blank', 'width=600,height=400');
-        toast.success('🔗 Opening LinkedIn...');
-      };
-      
-      (window as any).shareViaEmail = (url: string, title: string, name: string) => {
-        const subject = encodeURIComponent(`${decodeURIComponent(name)} - Resume`);
-        const body = encodeURIComponent(`Hello,
-
-I'd like to share my resume with you: ${decodeURIComponent(title)}
-
-You can view it here: ${decodeURIComponent(url)}
-
-This link will be available for 30 days.
-
-Best regards,
-${decodeURIComponent(name)}`);
-        
-        const mailtoUrl = `mailto:?subject=${subject}&body=${body}`;
-        window.open(mailtoUrl);
-        toast.success('📧 Opening email client...');
-      };
-      
-      (window as any).copyAndClose = async (url: string, button: HTMLElement) => {
-        try {
-          await navigator.clipboard.writeText(url);
-          button.textContent = '✓ Copied!';
-          setTimeout(() => {
-            modal.remove();
-            toast.success('🚀 Resume link copied and ready to share!');
-          }, 1000);
-        } catch (error) {
-          console.error('Copy failed:', error);
-          toast.error('Failed to copy link');
-        }
-      };
-      
-      // Auto-remove modal after 2 minutes
-      setTimeout(() => {
-        if (modal.parentElement) {
-          modal.remove();
-        }
-      }, 120000);
-      
+      if (navigator.share && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          title: resume.title || 'My Resume',
+          text: `Check out my resume: ${resume.title}`,
+          files: [file],
+        });
+        toast.success('Shared successfully!');
+      } else {
+        // Fallback for browsers that don't support sharing files
+        const shareUrl = `${window.location.origin}/shared/resume/${resumeId}`;
+        await navigator.clipboard.writeText(shareUrl);
+        toast.success('Sharing not supported, share link copied to clipboard!');
+      }
     } catch (error) {
       console.error('Share error:', error);
-      toast.error('Failed to create share link. Please try again.');
+      toast.error('Failed to share resume.');
     } finally {
+      toast.dismiss(loadingToast);
       setActionLoading(null);
     }
   };
@@ -985,8 +791,8 @@ Thank you for considering my application. I look forward to the opportunity to d
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 20 }}
             className={viewMode === 'grid' 
-              ? 'grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3 xs:gap-4 sm:gap-6 justify-items-center'
-              : 'space-y-3 xs:space-y-4'
+              ? 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8'
+              : 'space-y-4'
             }
           >
             {filteredResumes.length === 0 ? (
@@ -1014,15 +820,15 @@ Thank you for considering my application. I look forward to the opportunity to d
                   viewMode={viewMode}
                   actionLoading={actionLoading}
                   onPreview={() => {
-                    setSelectedDocument(resume._id!);
+                    setSelectedDocument(convertObjectIdToString(resume._id));
                     setShowPreviewModal(true);
                   }}
                   onEdit={() => {
-                    // Navigate to resume builder with existing data
-                    window.location.href = `/dashboard/resume/comprehensive?edit=${resume._id}`;
+                    const resumeId = convertObjectIdToString(resume._id);
+                    window.location.href = `/dashboard/resume/comprehensive?edit=${resumeId}`;
                   }}
-                  onDelete={() => handleDeleteDocument(resume._id!, 'resumes')}
-                  onDuplicate={() => handleDuplicateDocument(resume._id!, 'resumes')}
+                  onDelete={() => handleDeleteDocument(convertObjectIdToString(resume._id), 'resumes')}
+                  onDuplicate={() => handleDuplicateDocument(convertObjectIdToString(resume._id), 'resumes')}
                   onDownload={() => handleDownloadResume(resume)}
                   onShare={() => handleShareResume(resume)}
                   onPrint={() => handlePrintResume(resume)}
@@ -1083,7 +889,7 @@ Thank you for considering my application. I look forward to the opportunity to d
       {/* Resume Preview Modal */}
       <AnimatePresence>
         {showPreviewModal && selectedDocument && (
-          <ResumePDFPreview
+          <ResumePDFPreviewSimple
             resumeId={selectedDocument}
             isOpen={showPreviewModal}
             onClose={() => {
@@ -1092,7 +898,8 @@ Thank you for considering my application. I look forward to the opportunity to d
             }}
             onEdit={() => {
               setShowPreviewModal(false);
-              window.location.href = `/dashboard/resume/comprehensive?edit=${selectedDocument}`;
+              const resumeId = convertObjectIdToString(selectedDocument);
+              window.location.href = `/dashboard/resume/comprehensive?edit=${resumeId}`;
             }}
           />
         )}
@@ -1132,6 +939,82 @@ interface ResumePreviewThumbnailProps {
 }
 
 function ResumePreviewThumbnail({ resume }: ResumePreviewThumbnailProps) {
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    generatePDFPreview();
+  }, [resume._id]);
+
+  const generatePDFPreview = async () => {
+    try {
+      setLoading(true);
+      setError(false);
+
+      // Generate PDF blob using the standardized LaTeX template system
+      const pdfBlob = await resumeService.downloadResumeWithEngine(resume, 'pdf', {
+        engine: 'latex', // Use LaTeX engine for best quality
+        templateId: resume.template || resume.templateId || 'template01' // Use standardized template format
+      });
+
+      // Create blob URL for preview
+      const url = URL.createObjectURL(pdfBlob);
+      setPdfUrl(url);
+    } catch (error) {
+      console.error('Failed to generate PDF preview:', error);
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Cleanup blob URL on unmount
+  useEffect(() => {
+    return () => {
+      if (pdfUrl) {
+        URL.revokeObjectURL(pdfUrl);
+      }
+    };
+  }, [pdfUrl]);
+
+  if (loading) {
+    return (
+      <div className="w-full h-full bg-gray-200 rounded-lg flex items-center justify-center">
+        <div className="flex flex-col items-center space-y-3">
+          <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+          <span className="text-sm text-gray-600">Generating PDF...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    // Fallback to template-based preview if PDF generation fails
+    return <FallbackTemplatePreview resume={resume} />;
+  }
+
+  if (!pdfUrl) {
+    return <FallbackTemplatePreview resume={resume} />;
+  }
+
+  return (
+    <div className="w-full h-full bg-white rounded-lg overflow-hidden">
+      <iframe
+        src={`${pdfUrl}#toolbar=0&navpanes=0&scrollbar=0`}
+        className="w-full h-full border-0"
+        title="Resume Preview"
+      />
+    </div>
+  );
+}
+
+// Fallback component using TemplateRenderer for when PDF generation fails
+interface FallbackTemplatePreviewProps {
+  resume: ResumeData;
+}
+
+function FallbackTemplatePreview({ resume }: FallbackTemplatePreviewProps) {
   // Convert ResumeData to Resume format for TemplateRenderer
   const convertToResumeFormat = (resumeData: ResumeData): Resume => {
     return {
@@ -1221,6 +1104,21 @@ interface ResumeCardProps {
 }
 
 function ResumeCard({ resume, viewMode, actionLoading, onPreview, onEdit, onDelete, onDuplicate, onDownload, onShare, onPrint }: ResumeCardProps) {
+  const [pdfInfo, setPdfInfo] = useState<{hasSavedPDF: boolean; isOptimized?: boolean} | null>(null);
+  const resumeId = convertObjectIdToString(resume._id);
+
+  useEffect(() => {
+    // Check if resume has saved PDF
+    if (resumeId) {
+      resumeService.getSavedPDFInfo(resumeId)
+        .then(info => setPdfInfo(info))
+        .catch(error => {
+          console.log('PDF info not available:', error);
+          setPdfInfo({ hasSavedPDF: false });
+        });
+    }
+  }, [resumeId]);
+
   const formatDate = (date: string | undefined) => {
     if (!date) return 'Unknown';
     return new Date(date).toLocaleDateString('en-US', {
@@ -1263,91 +1161,88 @@ function ResumeCard({ resume, viewMode, actionLoading, onPreview, onEdit, onDele
   return (
     <motion.div
       layout
-      whileHover={{ y: -4, scale: 1.02 }}
-      className="bg-dark-secondary rounded-xl xs:rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 group border border-dark-border/50 w-full max-w-sm sm:max-w-md"
-      style={{ maxWidth: '380px' }}
+      whileHover={{ y: -6, scale: 1.03 }}
+      className="bg-dark-secondary rounded-xl overflow-hidden shadow-lg hover:shadow-2xl hover:shadow-blue-500/20 transition-all duration-300 group border border-dark-border/50 hover:border-blue-500/50 w-full"
     >
-      {/* Resume Preview - Responsive PDF Size */}
-      <div className="relative bg-white overflow-hidden aspect-[8.5/11] w-full">
+      {/* Resume Preview */}
+      <div className="relative bg-gray-500 overflow-hidden aspect-[8.5/11] w-full">
         <ResumePreviewThumbnail resume={resume} />
         
         {/* Hover Actions Overlay */}
-        <div className="absolute inset-0 bg-black/70 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center gap-4">
+        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center gap-4">
           <button
             onClick={onPreview}
-            className="p-3 bg-white/20 hover:bg-white/30 rounded-xl backdrop-blur-sm transition-all duration-200 text-white hover:scale-110"
+            className="p-4 bg-white/20 hover:bg-white/30 rounded-full backdrop-blur-sm transition-all duration-200 text-white hover:scale-110"
             title="Preview"
           >
-            <EyeIcon className="w-6 h-6" />
+            <EyeIcon className="w-7 h-7" />
           </button>
           <button
             onClick={onEdit}
-            className="p-3 bg-blue-500/80 hover:bg-blue-500 rounded-xl backdrop-blur-sm transition-all duration-200 text-white hover:scale-110"
+            className="p-4 bg-blue-500/80 hover:bg-blue-500 rounded-full backdrop-blur-sm transition-all duration-200 text-white hover:scale-110"
             title="Edit"
           >
-            <PencilIcon className="w-6 h-6" />
+            <PencilIcon className="w-7 h-7" />
           </button>
         </div>
       </div>
 
       {/* Resume Info Section */}
-      <div className="p-3 xs:p-4 sm:p-5">
-        <h3 className="text-sm xs:text-base sm:text-lg font-bold text-dark-text-primary group-hover:text-blue-400 transition-colors mb-2 truncate">
-          {resume.title}
-        </h3>
-        <p className="text-xs xs:text-sm text-dark-text-secondary mb-3 xs:mb-4">
+      <div className="p-5">
+        <div className="flex items-start justify-between mb-2">
+          <h3 className="text-lg font-bold text-dark-text-primary group-hover:text-blue-400 transition-colors truncate flex-1">
+            {resume.title}
+          </h3>
+          {pdfInfo?.hasSavedPDF && (
+            <div className="flex items-center ml-2 flex-shrink-0">
+              <div className="w-2.5 h-2.5 bg-green-400 rounded-full shadow-glow-sm" title="PDF Saved"></div>
+              {pdfInfo.isOptimized && (
+                <div className="w-2.5 h-2.5 bg-purple-400 rounded-full shadow-glow-sm ml-1.5" title="Job Optimized"></div>
+              )}
+            </div>
+          )}
+        </div>
+        <p className="text-sm text-dark-text-secondary mb-4">
           Updated {formatDate(resume.updatedAt || resume.createdAt)}
+          {pdfInfo?.hasSavedPDF && (
+            <span className="text-green-400 ml-2">• PDF Saved</span>
+          )}
         </p>
 
-        {/* Action Buttons - Mobile optimized */}
-        <div className="flex items-center justify-between pt-2 xs:pt-3 border-t border-dark-border/30">
-          <div className="flex items-center gap-1 xs:gap-2">
-            <button
-              onClick={onPreview}
-              className="p-1.5 xs:p-2 text-dark-text-muted hover:text-blue-400 hover:bg-blue-500/10 rounded-md xs:rounded-lg transition-all duration-200 touch-target"
-              title="View Resume"
-            >
-              <EyeIcon className="w-4 h-4" />
-            </button>
-            <button
-              onClick={onDuplicate}
-              disabled={actionLoading === `duplicate-${resume._id}`}
-              className="p-1.5 xs:p-2 text-dark-text-muted hover:text-yellow-400 hover:bg-yellow-500/10 rounded-md xs:rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed touch-target"
-              title="Duplicate"
-            >
-              <DocumentDuplicateIcon className="w-4 h-4" />
-            </button>
+        {/* Action Buttons */}
+        <div className="flex items-center justify-between pt-3 border-t border-dark-border/30">
+          <div className="flex items-center gap-2">
             <button
               onClick={onDownload}
               disabled={actionLoading === `download-${resume._id}`}
-              className="p-1.5 xs:p-2 text-dark-text-muted hover:text-purple-400 hover:bg-purple-500/10 rounded-md xs:rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed touch-target"
+              className="p-2 text-dark-text-muted hover:text-purple-400 hover:bg-purple-500/10 rounded-lg transition-all duration-200 disabled:opacity-50"
               title="Download PDF"
             >
-              <ArrowDownTrayIcon className="w-4 h-4" />
+              <ArrowDownTrayIcon className="w-5 h-5" />
             </button>
             <button
               onClick={onPrint}
-              className="hidden xs:flex p-1.5 xs:p-2 text-dark-text-muted hover:text-gray-400 hover:bg-gray-500/10 rounded-md xs:rounded-lg transition-all duration-200 touch-target"
+              className="p-2 text-dark-text-muted hover:text-gray-400 hover:bg-gray-500/10 rounded-lg transition-all duration-200"
               title="Print Resume"
             >
-              <PrinterIcon className="w-4 h-4" />
+              <PrinterIcon className="w-5 h-5" />
             </button>
             <button
               onClick={onShare}
-              disabled={actionLoading === `share-${resume._id}`}
-              className="p-1.5 xs:p-2 text-dark-text-muted hover:text-indigo-400 hover:bg-indigo-500/10 rounded-md xs:rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed touch-target"
+              disabled={actionLoading === `share-${resumeId}`}
+              className="p-2 text-dark-text-muted hover:text-indigo-400 hover:bg-indigo-500/10 rounded-lg transition-all duration-200 disabled:opacity-50"
               title="Share Resume"
             >
-              <ShareIcon className="w-4 h-4" />
+              <ShareIcon className="w-5 h-5" />
             </button>
           </div>
           
           <button
             onClick={onDelete}
-            className="p-1.5 xs:p-2 text-dark-text-muted hover:text-red-400 hover:bg-red-500/10 rounded-md xs:rounded-lg transition-all duration-200 touch-target"
+            className="p-2 text-dark-text-muted hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all duration-200"
             title="Delete"
           >
-            <TrashIcon className="w-4 h-4" />
+            <TrashIcon className="w-5 h-5" />
           </button>
         </div>
       </div>

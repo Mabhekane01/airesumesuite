@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import compression from 'compression';
 import rateLimit from 'express-rate-limit';
+import path from 'path';
 import dotenv from 'dotenv';
 import { EnvironmentValidator } from './utils/environmentValidator';
 import { connectDB } from './config/database';
@@ -26,6 +27,7 @@ import interviewRoutes from './routes/interviewRoutes';
 import careerCoachRoutes from './routes/careerCoachRoutes';
 import paymentRoutes from './routes/paymentRoutes';
 import notificationRoutes from './routes/notificationRoutes';
+import publicRoutes from './routes/publicRoutes';
 import { 
   requestIdMiddleware, 
   requestLogger, 
@@ -189,6 +191,20 @@ app.use(requestLogger);
 app.use(auditLogger);
 app.use(securityMonitor);
 
+// Static file serving for template images and assets with CORS headers
+app.use('/static', (req, res, next) => {
+  res.header('Cross-Origin-Resource-Policy', 'cross-origin');
+  res.header('Access-Control-Allow-Origin', '*');
+  next();
+}, express.static(path.join(__dirname, '../../frontend/public')));
+
+// Static file serving for LaTeX template previews
+app.use('/templates', (req, res, next) => {
+  res.header('Cross-Origin-Resource-Policy', 'cross-origin');
+  res.header('Access-Control-Allow-Origin', '*');
+  next();
+}, express.static(path.join(__dirname, '../../frontend/public/templates')));
+
 // Health check endpoints
 app.get('/health', (req, res) => {
   res.status(200).json({ 
@@ -224,6 +240,7 @@ app.get('/api/v1/auth/status', (req, res) => {
 });
 
 // API Routes
+app.use('/api/v1', publicRoutes); // Public routes are not behind auth
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/resumes', resumeRoutes);
 app.use('/api/v1/upload', fileUploadRoutes);

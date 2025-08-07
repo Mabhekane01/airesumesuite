@@ -15,7 +15,7 @@ const API_BASE_URL = API_BASE_URLS[0] || 'http://localhost:3001';
 // Create axios instance with default config
 const api = axios.create({
   baseURL: `${API_BASE_URL}/api/v1`,
-  timeout: 60000, // Increased to 60 seconds for AI operations
+  timeout: 120000, // Increased to 120 seconds for AI operations and job URL scraping
   headers: {
     'Content-Type': 'application/json',
   },
@@ -33,7 +33,8 @@ const PUBLIC_ENDPOINTS = [
   '/auth/reset-password',
   '/auth/google',
   '/auth/status',
-  '/coach/health'
+  '/coach/health',
+  '/resumes/latex-templates'
 ];
 
 // Request interceptor to add auth token
@@ -46,7 +47,7 @@ api.interceptors.request.use(
     }
     
     if (!config.headers) {
-      config.headers = {};
+      config.headers = {} as any;
     }
 
     // Check if this is a public endpoint
@@ -126,8 +127,13 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    // Handle 401 errors with token refresh
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    // Check if the original request was for a public endpoint.
+    const isPublicEndpoint = PUBLIC_ENDPOINTS.some(endpoint =>
+      originalRequest.url?.includes(endpoint)
+    );
+
+    // Handle 401 errors with token refresh, but NOT for public endpoints
+    if (error.response?.status === 401 && !originalRequest._retry && !isPublicEndpoint) {
       if (isRefreshing) {
         // If already refreshing, queue this request
         return new Promise((resolve, reject) => {
@@ -229,8 +235,9 @@ api.interceptors.response.use(
         
         console.warn('Token refresh failed - redirecting to login');
         
-        // Only redirect if not already on login page
-        if (!window.location.pathname.includes('/login') && window.location.pathname !== '/') {
+        // Only redirect if not already on public routes like landing page or templates page
+        const currentPath = window.location.pathname;
+        if (!currentPath.includes('/login') && currentPath !== '/' && !currentPath.includes('/templates')) {
           window.location.href = '/';
         }
         
@@ -247,19 +254,19 @@ api.interceptors.response.use(
         'FEATURE_SUBSCRIPTION_REQUIRED'
       ];
       
-      if (errorData?.code && subscriptionCodes.includes(errorData.code)) {
+      if ((errorData as any)?.code && subscriptionCodes.includes((errorData as any).code)) {
         console.warn('🔒 Subscription required error:', {
-          feature: errorData.data?.feature,
-          message: errorData.message,
-          upgradeUrl: errorData.data?.upgradeUrl
+          feature: (errorData as any).data?.feature,
+          message: (errorData as any).message,
+          upgradeUrl: (errorData as any).data?.upgradeUrl
         });
         
         // Enhance error with subscription info for frontend handling
-        const subscriptionError = new Error(errorData.message || 'Subscription required');
+        const subscriptionError = new Error((errorData as any).message || 'Subscription required');
         (subscriptionError as any).isSubscriptionError = true;
-        (subscriptionError as any).code = errorData.code;
-        (subscriptionError as any).featureName = errorData.data?.feature;
-        (subscriptionError as any).upgradeUrl = errorData.data?.upgradeUrl;
+        (subscriptionError as any).code = (errorData as any).code;
+        (subscriptionError as any).featureName = (errorData as any).data?.feature;
+        (subscriptionError as any).upgradeUrl = (errorData as any).data?.upgradeUrl;
         
         return Promise.reject(subscriptionError);
       }

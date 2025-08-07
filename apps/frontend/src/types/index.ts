@@ -159,7 +159,9 @@ export interface AdditionalSection {
 
 export interface Resume {
   id?: string;
+  _id?: string;
   template: string;
+  isLatexTemplate?: boolean;
   personalInfo: PersonalInfo;
   professionalSummary: string;
   workExperience: WorkExperience[];

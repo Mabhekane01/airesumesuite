@@ -1,14 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useResume } from '../../contexts/ResumeContext';
-import { PlusIcon, TrashIcon, AcademicCapIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, TrashIcon, AcademicCapIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
 import { Input } from '../ui/Input';
+import { DatePicker } from '../ui/DatePicker';
 import { Certification } from '../../types';
+import { validateUrl, validateDateRange } from '../../utils/formValidation';
 
 export default function CertificationsForm() {
   const { resumeData, handleDataChange } = useResume();
   const { certifications } = resumeData;
+  const [errors, setErrors] = useState<Record<string, Record<string, string>>>({});
 
   const updateCertifications = (newCertifications: Certification[]) => {
     handleDataChange('certifications', newCertifications);
@@ -18,6 +21,52 @@ export default function CertificationsForm() {
     const updatedCertifications = [...(certifications || [])];
     updatedCertifications[index] = { ...updatedCertifications[index], [field]: value };
     updateCertifications(updatedCertifications);
+    
+    // Validate the field
+    validateField(index, field, value, updatedCertifications[index]);
+  };
+
+  const validateField = (index: number, field: keyof Certification, value: string, certification: Certification) => {
+    const certErrors = { ...errors[index] || {} };
+    
+    // Clear previous error
+    delete certErrors[field];
+    
+    // Validate based on field
+    switch (field) {
+      case 'name':
+        if (!value.trim()) {
+          certErrors.name = 'Certification name is required';
+        }
+        break;
+      case 'issuer':
+        if (!value.trim()) {
+          certErrors.issuer = 'Issuing organization is required';
+        }
+        break;
+      case 'url':
+        if (value && !validateUrl(value)) {
+          certErrors.url = 'Please enter a valid URL';
+        }
+        break;
+      case 'date':
+      case 'expirationDate':
+        if (certification.date && certification.expirationDate) {
+          const dateErrors = validateDateRange(certification.date + '-01', certification.expirationDate + '-01');
+          if (dateErrors.start) certErrors.date = 'Issue date cannot be after expiration';
+          if (dateErrors.end) certErrors.expirationDate = 'Expiration date cannot be before issue date';
+        }
+        break;
+    }
+    
+    setErrors(prev => ({
+      ...prev,
+      [index]: Object.keys(certErrors).length > 0 ? certErrors : {}
+    }));
+  };
+
+  const getFieldError = (index: number, field: string): string | undefined => {
+    return errors[index]?.[field];
   };
 
   const addCertification = () => {
@@ -112,35 +161,41 @@ export default function CertificationsForm() {
 
             <div className="grid md:grid-cols-2 gap-4 mb-4">
               <Input
-                label="Certification Name *"
+                label="Certification Name"
                 value={certification.name}
                 onChange={(e) => handleCertificationChange(index, 'name', e.target.value)}
                 placeholder="e.g., AWS Certified Solutions Architect"
                 required
+                error={getFieldError(index, 'name')}
               />
               
               <Input
-                label="Issuing Organization *"
+                label="Issuing Organization"
                 value={certification.issuer}
                 onChange={(e) => handleCertificationChange(index, 'issuer', e.target.value)}
                 placeholder="e.g., Amazon Web Services"
                 required
+                error={getFieldError(index, 'issuer')}
               />
             </div>
 
             <div className="grid md:grid-cols-2 gap-4 mb-4">
-              <Input
+              <DatePicker
                 label="Issue Date"
                 value={certification.date}
-                onChange={(e) => handleCertificationChange(index, 'date', e.target.value)}
-                type="month"
+                onChange={(value) => handleCertificationChange(index, 'date', value)}
+                allowFuture={false}
+                helpText="When you received this certification"
+                error={getFieldError(index, 'date')}
               />
               
-              <Input
+              <DatePicker
                 label="Expiration Date"
                 value={certification.expirationDate || ''}
-                onChange={(e) => handleCertificationChange(index, 'expirationDate', e.target.value)}
-                type="month"
+                onChange={(value) => handleCertificationChange(index, 'expirationDate', value)}
+                allowFuture={true}
+                helpText="When this certification expires (if applicable)"
+                error={getFieldError(index, 'expirationDate')}
               />
             </div>
 
@@ -150,14 +205,17 @@ export default function CertificationsForm() {
                 value={certification.credentialId || ''}
                 onChange={(e) => handleCertificationChange(index, 'credentialId', e.target.value)}
                 placeholder="e.g., AWS-ASA-12345"
+                helpText="Unique identifier for verification (optional)"
               />
               
               <Input
                 label="Credential URL"
                 value={certification.url || ''}
                 onChange={(e) => handleCertificationChange(index, 'url', e.target.value)}
-                placeholder="Link to verify certification"
+                placeholder="https://verify.example.com/cert/12345"
                 type="url"
+                helpText="Link to verify this certification (optional)"
+                error={getFieldError(index, 'url')}
               />
             </div>
           </Card>

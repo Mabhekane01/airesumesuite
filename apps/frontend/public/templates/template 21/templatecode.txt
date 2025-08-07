@@ -1,0 +1,200 @@
+\documentclass{letter}
+\usepackage{wallpaper}
+\usepackage{geometry}
+\usepackage{xcolor}
+\usepackage[T1]{fontenc}
+\usepackage[scaled]{helvet}
+\usepackage{fontawesome5}
+\usepackage{hyperref}
+\usepackage[none]{hyphenat}
+
+\renewcommand{\familydefault}{\sfdefault}
+
+\geometry{
+  paperwidth=\dimexpr\textwidth+\marginparsep+\marginparwidth\relax,
+  paperheight=\dimexpr\textheight+\footskip\relax,
+  left=20pt,
+  right=20pt,
+  top=0pt,
+  bottom=0pt,
+  nohead,
+  nofoot,
+  nomarginpar
+}
+
+% Comment out the wallpaper line if you don't have the image file
+% \ThisCenterWallPaper{1.5}{cvbg.png}
+
+\begin{document}
+
+% ---------- Personal Information ----------
+\begin{minipage}[t]{0.40\textwidth}
+\setlength{\baselineskip}{1.5\baselineskip}
+\color{white}
+\vspace{1cm}
+
+{\large Personal info}\\
+\rule{\linewidth}{0.4pt}
+
+{{FIRST_NAME}} {{LAST_NAME}}\\
+{{#IF_PROFESSIONAL_TITLE}}{{PROFESSIONAL_TITLE}}\\{{/IF_PROFESSIONAL_TITLE}}
+{{EMAIL}}\\
+{{PHONE}}\\
+{{LOCATION}}\\
+
+{{#IF_LINKEDIN}}\faLinkedin \quad \href{ {{LINKEDIN}} }{LinkedIn}\\{{/IF_LINKEDIN}}
+{{#IF_GITHUB}}\faGithub \quad \href{ {{GITHUB}} }{GitHub}\\{{/IF_GITHUB}}
+{{#IF_PORTFOLIO}}\faCode \quad \href{ {{PORTFOLIO}} }{Portfolio}\\{{/IF_PORTFOLIO}}
+{{#IF_WEBSITE}}\faGlobe \quad \href{ {{WEBSITE}} }{Website}\\{{/IF_WEBSITE}}
+
+\rule{\linewidth}{0.4pt}
+
+{{#IF_SKILLS}}
+{\large Skills}\\
+{{#SKILLS}}
+\faCircleNotch \quad {{name}}\\
+{{/SKILLS}}
+\rule{\linewidth}{0.4pt}
+{{/IF_SKILLS}}
+
+{{#IF_LANGUAGES}}
+{\large Languages}\\
+{{#LANGUAGES}}
+\faLanguage \quad {{name}}\\
+{{/LANGUAGES}}
+\rule{\linewidth}{0.4pt}
+{{/IF_LANGUAGES}}
+
+\end{minipage}
+\hfill
+% ---------- Main Content ----------
+\begin{minipage}[t]{0.60\textwidth}
+\setlength{\baselineskip}{1.5\baselineskip}
+\vspace{0.8cm}
+
+{\huge {{FIRST_NAME}} {{LAST_NAME}}}\\
+{{#IF_PROFESSIONAL_TITLE}}{{PROFESSIONAL_TITLE}}{{/IF_PROFESSIONAL_TITLE}}\\
+\vspace{0.5cm}
+
+{{PROFESSIONAL_SUMMARY}}\\
+\vspace{0.5cm}
+
+{{#IF_WORK_EXPERIENCE}}
+{\large Work Experience}\\
+\rule{\linewidth}{0.4pt}
+
+{{#WORK_EXPERIENCE}}
+{\large \textbf{{jobTitle}}, {{company}}}\\
+{\small {{startDate}} -- {{#if isCurrentJob}}Present{{else}}{{endDate}}{{/if}}}\\
+\begin{itemize}
+  {{#responsibilities}}
+  \item {{.}}
+  {{/responsibilities}}
+  {{#achievements}}
+  \item \textit{Achievement:} {{.}}
+  {{/achievements}}
+\end{itemize}
+{{/WORK_EXPERIENCE}}
+{{/IF_WORK_EXPERIENCE}}
+
+{{#IF_EDUCATION}}
+{\large Education}\\
+\rule{\linewidth}{0.4pt}
+
+{{#EDUCATION}}
+{\large \textbf{{degree}}, {{institution}}}\\
+{\small {{startDate}} -- {{endDate}}}\\
+{{#fieldOfStudy}}Field of Study: {{fieldOfStudy}}\\{{/fieldOfStudy}}
+{{#gpa}}GPA: {{gpa}}\\{{/gpa}}
+\begin{itemize}
+  {{#honors}}
+  \item Honor: {{.}}
+  {{/honors}}
+  {{#courses}}
+  \item Course: {{.}}
+  {{/courses}}
+\end{itemize}
+{{/EDUCATION}}
+{{/IF_EDUCATION}}
+
+{{#IF_PROJECTS}}
+{\large Projects}\\
+\rule{\linewidth}{0.4pt}
+
+{{#PROJECTS}}
+{\textbf{{name}}} \\
+{{description}} \\
+Technologies: {{#technologies}}{{.}}, {{/technologies}} \\
+{{/PROJECTS}}
+{{/IF_PROJECTS}}
+
+{{#IF_CERTIFICATIONS}}
+{\large Certifications}\\
+\rule{\linewidth}{0.4pt}
+
+{{#CERTIFICATIONS}}
+\textbf{{name}} — {{issuer}}, {{date}} \\
+{{#credentialId}}ID: {{credentialId}}\\{{/credentialId}}
+{{/CERTIFICATIONS}}
+{{/IF_CERTIFICATIONS}}
+
+{{#IF_VOLUNTEER_EXPERIENCE}}
+{\large Volunteer Experience}\\
+\rule{\linewidth}{0.4pt}
+
+{{#VOLUNTEER_EXPERIENCE}}
+\textbf{{role}}, {{organization}} — {{startDate}} to {{#if isCurrentRole}}Present{{else}}{{endDate}}{{/if}} \\
+{{description}} \\
+Achievements:
+\begin{itemize}
+{{#achievements}}
+\item {{.}}
+{{/achievements}}
+\end{itemize}
+{{/VOLUNTEER_EXPERIENCE}}
+{{/IF_VOLUNTEER_EXPERIENCE}}
+
+{{#IF_AWARDS}}
+{\large Awards \& Honors}\\
+\rule{\linewidth}{0.4pt}
+
+{{#AWARDS}}
+\textbf{{title}} — {{issuer}}, {{date}} \\
+{{#description}}{{description}}{{/description}} \\
+{{/AWARDS}}
+{{/IF_AWARDS}}
+
+{{#IF_PUBLICATIONS}}
+{\large Publications}\\
+\rule{\linewidth}{0.4pt}
+
+{{#PUBLICATIONS}}
+\textbf{{title}} — {{publisher}}, {{publicationDate}} \\
+{{#description}}{{description}}{{/description}} \\
+{{/PUBLICATIONS}}
+{{/IF_PUBLICATIONS}}
+
+{{#IF_REFERENCES}}
+{\large References}\\
+\rule{\linewidth}{0.4pt}
+
+{{#REFERENCES}}
+\textbf{{name}} — {{title}} at {{company}} \\
+Email: {{email}} \\
+Phone: {{phone}} \\
+Relationship: {{relationship}} \\
+{{/REFERENCES}}
+{{/IF_REFERENCES}}
+
+{{#IF_HOBBIES}}
+{\large Interests \& Hobbies}\\
+\rule{\linewidth}{0.4pt}
+
+{{#HOBBIES}}
+- {{name}} {{#description}}: {{description}}{{/description}} \\
+{{/HOBBIES}}
+{{/IF_HOBBIES}}
+
+\end{minipage}
+
+\end{document}

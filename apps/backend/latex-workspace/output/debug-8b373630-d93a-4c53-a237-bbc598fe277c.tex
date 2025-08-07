@@ -1,0 +1,117 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{enumitem}
+
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[protrusion=true,expansion=true]{microtype}
+\usepackage{amsmath,amsfonts,amsthm}     
+\usepackage{graphicx}                    
+\usepackage[svgnames]{xcolor}           
+\usepackage[margin=0.5in]{geometry}
+\setlength{\textheight}{700pt} % Already in pt units
+\usepackage{url}
+
+\usepackage{tikz}
+
+% Define missing Hs command
+\newcommand{\Hs}{\heartsuit}
+
+%%% Heart-stab command
+% Corrected \newcommand syntax, removed redundant [0]{} and problematic % characters
+\newcommand{\heartstab}{\textbullet}
+
+%%% Squiggly arrow
+% Corrected \newcommand syntax, removed redundant [0]{} and problematic % characters
+\newcommand{\squigarr}{{\Large $\rightsquigarrow$}}
+
+\usepackage[colorlinks=true,urlcolor=purple]{hyperref}
+
+\frenchspacing              
+\pagestyle{empty}           
+
+\usepackage{titlesec} % Replaced sectsty
+
+% titlesec setup for section*
+\titleformat{\section*}
+  {\usefont{OT1}{phv}{b}{n}\normalfont} % Use font, then set normalfont for correct size
+  {} % label (empty for section*)
+  {0pt} % sep (no space between label and title)
+  {\MakeUppercase{#1}} % Code before title: MakeUppercase the title - Fixed \#1 to #1
+  [\vspace{0.5em}\rule{\linewidth}{0.3pt}] % Code after title: vertical space and then a rule
+\titlespacing*{\section*}{0pt}{12pt}{5pt} % left, before, after (approximate original spacing)
+
+\newlength{\spacebox}
+\settowidth{\spacebox}{8888888888} % Box to align text
+% Corrected \newcommand syntax, removed redundant [0]{}
+\newcommand{\sepspace}{\vspace*{0.5em}} % Vertical space macro
+
+% Redefine NameEmailPhoneSiteGithub to match provided data and format
+\newcommand{\NameEmailPhoneSiteGithub}[5]{
+        \Huge \usefont{OT1}{phv}{m}{n} \textbf{#1} % Fixed \#1 to #1
+        \large \usefont{OT1}{phv}{m}{n} \hfill #3\hspace{25pt}#2 % Phone then Email (matches template's usage order) - Fixed \#3 to #3 and \#2 to #2
+        
+        \textit{Curriculum Vitae}\hfill \textit{LinkedIn } \textcolor{blue}{linkedin.com/in/bheki-ntando-ngwenya01} \hspace{25pt}\textit{GitHub } \textcolor{blue}{github.com/Mabhekane0100000} 
+        \par \normalsize \normalfont
+}
+
+% Redefine NewPart to just use section* and let titlesec handle uppercasing
+\newcommand{\NewPart}[1]{\section*{#1}} % Fixed \#1 to #1
+
+\newcommand{\SkillsEntry}[2]{ % Same as \PersonalEntry
+		\noindent\hangindent=2em\hangafter=0 % Indentation
+		\parbox{\spacebox}{ % Box to align text
+		\textit{#1}} % Entry name (birth, address, etc.) - Fixed \#1 to #1
+		\hspace{1.5em} #2 \par} % Entry value - Fixed \#2 to #2
+
+%%% Begin Document
+%%% ------------------------------------------------------------
+
+\begin{document}
+
+\NameEmailPhoneSiteGithub{Bheki Ngwenya}{ngwenyabheki276@gmail.com}{0797394470}{https://www.linkedin.com/in/bheki-ntando-ngwenya01}{https://github.com/Mabhekane0100000}
+
+\sepspace
+
+%%% Summary
+%%% ------------------------------------------------------------
+\NewPart{Summary}
+A versatile professional with a unique, hybrid background in both network engineering and full-stack software development. Leveraging a modern tech stack including Java, Node.js, React, and Docker, I excel at designing, building, and deploying robust applications with a deep understanding of the underlying network infrastructure. This dual expertise, demonstrated at CMC Networks, allows for the creation of highly optimized and resilient systems from the ground up. I am driven to apply this comprehensive skill set to solve complex technical challenges and deliver high-performance solutions.
+
+\sepspace
+
+%%% Work Experience
+%%% ------------------------------------------------------------
+\NewPart{Experience}
+
+\noindent \textbf{Network Engineer \& Software Developer} \hfill CMC Networks \\
+\textit{Building H, The Woodlands, Office Park, 20 Woodlands Dr, Woodmead, Sandton, 2191} \hfill July 2023 -- Present
+\begin{itemize}[leftmargin=1.5em, itemsep=0.2em] % Adjust list spacing
+    \item Engineered and maintained real-time monitoring systems achieving 99.9\% uptime across critical infrastructure using Python and monitoring tools.
+    \item Developed automated reporting dashboards reducing manual report generation time by 60\% through data integration and visualization.
+    \item Collaborated with cross-functional teams to implement security policies and anomaly detection systems, strengthening network perimeter defense.
+    \item Led incident response and root cause analysis for critical system failures, documenting solutions and implementing preventive measures.
+    \item Built centralized Data Lake architecture streamlining performance metrics collection and analysis across multiple systems.
+    \item Integrated multiple service platforms (Fresh Services, PRTG, inventory systems) enabling real-time asset visibility and management.
+\end{itemize}
+
+\sepspace
+
+%%% Education
+%%% ------------------------------------------------------------
+\NewPart{Education}
+\noindent \textbf{BSc in Computer Science} \hfill North-West University, 2020
+
+\sepspace
+
+%%% Skills
+%%% ------------------------------------------------------------
+\NewPart{Skills}
+\SkillsEntry{Programming Languages}{Java, C\#, TypeScript, JavaScript, C++}
+\SkillsEntry{Web Technologies}{Node.js, React.js}
+\SkillsEntry{Databases}{MongoDB}
+\SkillsEntry{DevOps/Tools}{Docker}
+\SkillsEntry{Concepts}{System Analysis}
+
+\end{document}

@@ -1,6 +1,23 @@
 import { Resume } from '../models/Resume';
 import { getGeminiStream } from '../services/ai/gemini';
 
+// Helper function to convert MongoDB ObjectId to string
+const convertObjectIdToString = (id: any): string => {
+  if (!id) return '';
+  
+  if (typeof id === 'string') {
+    return id;
+  }
+  
+  // Handle MongoDB ObjectId Buffer format
+  if (id.buffer && id.buffer.data && Array.isArray(id.buffer.data)) {
+    const bytes = Array.from(id.buffer.data);
+    return bytes.map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+  
+  return String(id);
+};
+
 interface ResumeAnalysis {
   strengths: string[];
   weaknesses: string[];
@@ -92,7 +109,16 @@ Respond in a natural, conversational way:
 };
 
 const getAIResponse = async (message: string, resumeId: string): Promise<NodeJS.ReadableStream> => {
-  const resume = await Resume.findById(resumeId);
+  // Convert ObjectId to string if needed
+  const stringResumeId = convertObjectIdToString(resumeId);
+  
+  console.log('🔍 Career coach looking for resume:', {
+    originalResumeId: resumeId,
+    convertedResumeId: stringResumeId,
+    resumeIdType: typeof resumeId
+  });
+  
+  const resume = await Resume.findById(stringResumeId);
   if (!resume) {
     throw new Error('Resume not found');
   }

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   TrophyIcon,
@@ -7,14 +7,20 @@ import {
   BriefcaseIcon,
   StarIcon,
   ShieldCheckIcon,
-  ArrowRightIcon
+  ArrowRightIcon,
+  ArrowPathIcon
 } from '@heroicons/react/24/outline';
 import { CheckIcon as CheckIconSolid } from '@heroicons/react/24/solid';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { resumeTemplates, ResumeTemplate } from '../../data/resumeTemplates';
 import TemplateRenderer from '../../components/resume/TemplateRenderer';
+import OverleafTemplateGallery from '../../components/resume/OverleafTemplateGallery';
 import { Resume } from '../../types';
+import { resumeService } from '../../services/resumeService';
+import { toast } from 'sonner';
+import { useAuthStore } from '../../stores/authStore';
+import AuthModal from '../../components/auth/AuthModal';
 
 const categories = [
   {
@@ -62,26 +68,62 @@ export default function TemplateSelection() {
   const [selectedTemplate, setSelectedTemplate] = useState<string>('');
   const [selectedIndustry, setSelectedIndustry] = useState<string>('all');
   const [isHovering, setIsHovering] = useState<string>('');
-  const [currentStep, setCurrentStep] = useState<'category' | 'template'>('category');
+  const [templateType, setTemplateType] = useState<'html' | 'latex'>('latex'); // Default to LaTeX
+  const [currentStep, setCurrentStep] = useState<'type' | 'category' | 'template'>('type');
+  const [latexTemplates, setLatexTemplates] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+
+  // Auth store
+  const { isAuthenticated, setRedirectAfterLogin } = useAuthStore();
 
   // Get resume data if passed from previous steps
   const resumeData = location.state?.resumeData;
 
+  // Load LaTeX templates on component mount
+  useEffect(() => {
+    const loadLatexTemplates = async () => {
+      try {
+        setLoading(true);
+        const templates = await resumeService.getAvailableLatexTemplates();
+        setLatexTemplates(templates);
+        console.log('✅ Loaded LaTeX templates:', templates);
+      } catch (error) {
+        console.error('Failed to load LaTeX templates:', error);
+        toast.error('Failed to load templates');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadLatexTemplates();
+  }, []);
+
   const filteredTemplates = useMemo(() => {
-    if (!selectedCategory) return [];
-    
-    let templates = resumeTemplates.filter(template => 
-      template.category === selectedCategory
-    );
-    
-    if (selectedIndustry !== 'all') {
-      templates = templates.filter(t => 
-        t.industry.some(ind => ind.toLowerCase().includes(selectedIndustry.toLowerCase()))
+    if (templateType === 'latex') {
+      // For LaTeX templates, filter by category if selected
+      if (!selectedCategory || selectedCategory === '') return latexTemplates;
+      
+      return latexTemplates.filter(template => 
+        template.category === selectedCategory
       );
+    } else {
+      // For HTML templates (legacy)
+      if (!selectedCategory) return [];
+      
+      let templates = resumeTemplates.filter(template => 
+        template.category === selectedCategory
+      );
+      
+      if (selectedIndustry !== 'all') {
+        templates = templates.filter(t => 
+          t.industry.some(ind => ind.toLowerCase().includes(selectedIndustry.toLowerCase()))
+        );
+      }
+      
+      return templates;
     }
-    
-    return templates;
-  }, [selectedCategory, selectedIndustry]);
+  }, [selectedCategory, selectedIndustry, templateType, latexTemplates]);
 
   const allIndustries = useMemo(() => {
     const industries = new Set<string>();
@@ -584,5 +626,105 @@ export default function TemplateSelection() {
     </div>
   );
 
-  return currentStep === 'category' ? renderCategorySelection() : renderTemplateSelection();
+  // Use LaTeX templates by default
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-dark flex items-center justify-center">
+        <div className="text-center">
+          <ArrowPathIcon className="h-8 w-8 animate-spin text-accent-primary mx-auto mb-4" />
+          <p className="text-dark-text-secondary">Loading professional templates...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-dark py-6 px-4">
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="flex items-center justify-center mb-6">
+            <button
+              onClick={() => navigate(-1)}
+              className="absolute left-4 top-4 p-2 text-dark-text-secondary hover:text-accent-primary transition-colors"
+            >
+              <ChevronLeftIcon className="h-6 w-6" />
+            </button>
+          </div>
+          
+          <h1 className="text-3xl font-bold gradient-text-dark mb-4">
+            Choose Your Resume Template
+          </h1>
+          <p className="text-dark-text-secondary max-w-2xl mx-auto">
+            Select from our collection of professional LaTeX templates. Each template produces 
+            publication-quality PDFs with perfect typography and layout.
+          </p>
+        </div>
+
+        {/* Template Gallery */}
+        <OverleafTemplateGallery
+          selectedTemplateId={selectedTemplate}
+          onTemplateSelect={(templateId) => {
+            // Check if user is authenticated before proceeding
+            if (!isAuthenticated) {
+              // Set up redirect URL for after login
+              const redirectUrl = resumeData 
+                ? `/dashboard/resume/builder?templateId=${templateId}&isLatexTemplate=true`
+                : `/dashboard/resume/comprehensive?templateId=${templateId}&isLatexTemplate=true`;
+              
+              setRedirectAfterLogin(redirectUrl);
+              setShowAuthModal(true);
+              return;
+            }
+            
+            setSelectedTemplate(templateId);
+            
+            // Navigate to resume builder with selected template
+            if (resumeData) {
+              const updatedData = { 
+                ...resumeData, 
+                templateId: templateId,
+                isLatexTemplate: true 
+              };
+              navigate('/dashboard/resume/builder', { 
+                state: { 
+                  resumeData: updatedData, 
+                  templateId: templateId,
+                  isLatexTemplate: true
+                } 
+              });
+            } else {
+              navigate('/dashboard/resume/comprehensive', { 
+                state: { 
+                  templateId: templateId,
+                  isLatexTemplate: true
+                } 
+              });
+            }
+          }}
+        />
+      </div>
+
+      {/* Auth Modal */}
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => {
+          setShowAuthModal(false);
+          setRedirectAfterLogin(null); // Clear redirect if modal is closed
+        }}
+        onSuccess={() => {
+          setShowAuthModal(false);
+          
+          // Handle redirect after successful login
+          const { redirectAfterLogin } = useAuthStore.getState();
+          if (redirectAfterLogin) {
+            navigate(redirectAfterLogin);
+            setRedirectAfterLogin(null); // Clear the redirect URL
+          } else {
+            toast.success('Welcome! You can now select a template.');
+          }
+        }}
+      />
+    </div>
+  );
 }

@@ -854,8 +854,9 @@ export const googleCallback = async (req: Request, res: Response) => {
     await user.save();
 
     // Send login notification (consistent with local auth)
+    let loginNotification: INotification | null = null;
     try {
-      await notificationService.sendAuthNotification(
+      loginNotification = await notificationService.sendAuthNotification(
         user._id.toString(),
         'login_success',
         {
@@ -864,6 +865,12 @@ export const googleCallback = async (req: Request, res: Response) => {
           userAgent: req.get('User-Agent') || 'Unknown browser'
         }
       );
+      
+      if (loginNotification) {
+        console.log('✅ Google OAuth login notification created successfully:', loginNotification._id);
+      } else {
+        console.warn('⚠️ Google OAuth login notification was not created (returned null)');
+      }
     } catch (notificationError) {
       console.warn('⚠️ Failed to send Google OAuth login notification:', notificationError);
     }
@@ -872,7 +879,17 @@ export const googleCallback = async (req: Request, res: Response) => {
 
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
     
-    return res.redirect(`${frontendUrl}/auth/success?token=${accessToken}&refresh=${refreshToken}&sessionId=${sessionId}`);
+    // Check for stored redirect URL from session
+    const redirectUrl = req.session?.redirectAfterLogin;
+    let callbackUrl = `${frontendUrl}/auth/success?token=${accessToken}&refresh=${refreshToken}&sessionId=${sessionId}`;
+    
+    if (redirectUrl) {
+      callbackUrl += `&redirect=${encodeURIComponent(redirectUrl)}`;
+      // Clear the redirect URL from session
+      delete req.session.redirectAfterLogin;
+    }
+    
+    return res.redirect(callbackUrl);
   } catch (error) {
     console.error('❌ Google OAuth callback error:', error);
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';

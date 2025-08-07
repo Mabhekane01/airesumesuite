@@ -50,12 +50,6 @@ export default function DocumentActions({
       onClick: onEdit,
       color: 'text-green-400 hover:text-green-300'
     },
-    { 
-      label: 'Duplicate', 
-      icon: DocumentDuplicateIcon, 
-      onClick: onDuplicate,
-      color: 'text-yellow-400 hover:text-yellow-300'
-    },
     ...(onDownload ? [{ 
       label: 'Download PDF', 
       icon: ArrowDownTrayIcon, 

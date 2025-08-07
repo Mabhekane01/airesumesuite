@@ -1,0 +1,136 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{enumitem}
+
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[protrusion=true,expansion=true]{microtype}
+\usepackage{amsmath,amsfonts,amsthm}     
+\usepackage{graphicx}                    
+\usepackage[svgnames]{xcolor}           
+\usepackage[margin=0.5in]{geometry}
+\setlength{\textheight}{700pt}
+\usepackage{url}
+
+% The following packages were removed as they are not in the allowed list:
+% tikz, kpfonts, color, sectsty
+
+\newcommand*\Hs{\ensuremath{\color{red}\varheartsuit}}
+
+% Redefining \heartstab without TikZ. 
+% The original graphical representation with a line through the heart is not possible
+% with the allowed packages. This version uses the red heart symbol only.
+\newcommand{\heartstab}{\Hs}
+
+% Redefining \squigarr. Removed extra '%' characters.
+% \rightsquigarrow is available via amsfonts.
+\newcommand{\squigarr}{{\Large \color{blue}$\rightsquigarrow$}}
+
+\usepackage[colorlinks=true,urlcolor=purple]{hyperref}
+
+\frenchspacing              
+\pagestyle{empty}           
+
+% The \sectionfont command was removed as it depends on the 'sectsty' package,
+% which is not in the allowed list. Sections will use default styling.
+
+\newlength{\spacebox}
+\settowidth{\spacebox}{8888888888}
+\newcommand{\sepspace}{\vspace*{0.5em}}
+
+% Corrected \newcommand syntax: removed '\%' characters, changed '\#1' to '#1'.
+% Removed specific font commands (\usefont) as 'helvet' is not loaded and 
+% these fonts may not be available with default packages.
+\newcommand{\MyName}[1]{ % Name
+		\Huge \hfill #1
+		\par \normalsize \normalfont}
+		
+% Corrected \newcommand syntax: removed '\%' characters, changed '\#1' to '#1'.
+% Removed specific font commands.
+\newcommand{\MySlogan}[1]{ % Slogan (optional)
+		\large \hfill \textit{#1}
+		\par \normalsize \normalfont}
+		
+% Corrected \newcommand syntax: changed '\#1' to '#1', etc.
+% Removed specific font commands.
+\newcommand{\NameEmailPhoneSiteGithub}[5]{
+        \Huge \textbf{#1} 
+        \large \hfill #2\hspace{25pt}#3
+        
+        \textit{Anti Curriculum Vitae}\hfill \textit{website } #4 \hspace{25pt}\textit{github } #5 
+        \par \normalsize \normalfont
+}
+
+% Corrected \newcommand syntax: changed '\#1' to '#1'.
+\newcommand{\NewPart}[1]{\section*{\uppercase{#1}}}
+
+% Corrected \newcommand syntax: removed '\%' characters, changed '\#1' to '#1', '\#2' to '#2'.
+\newcommand{\SkillsEntry}[2]{ % Same as \PersonalEntry
+		\noindent\hangindent=2em\hangafter=0 % Indentation
+		\parbox{\spacebox}{ % Box to align text
+		\textit{#1}} % Entry name (birth, address, etc.)
+		\hspace{1.5em} #2 \par} % Entry value	
+
+\begin{document}
+
+\NameEmailPhoneSiteGithub{Bheki Ngwenya}{ngwenyabheki276@gmail.com}{0797394470}{\href{http://johndoe.com}{johndoe.com}}{\href{https://github.com/Mabhekane01}{github.com/Mabhekane01}}
+
+\sepspace
+
+\NewPart{Key}
+
+\begin{itemize}
+    \item[\heartstab] Heart-stab. Professional rejections and things I messed up.
+    \item[\squigarr] Squiggly arrow. What did I learn? What were the consequences?
+\end{itemize}
+
+\NewPart{Summary}
+Experienced professional with strong technical skills.
+
+\sepspace
+
+\NewPart{Education}
+
+\begin{itemize}
+    \item \textbf{BSc in Computer Science} from North-West University (2020)
+\end{itemize}
+
+\sepspace
+
+\NewPart{Work Experience}
+
+\begin{itemize}
+    \item \textbf{Network Engineer \& Software Developer} at CMC Networks, Building H, The Woodlands, Office Park, 20 Woodlands Dr, Woodmead, Sandton, 2191 (2023-07-01 -- Present)
+    \begin{itemize}
+        \item Engineered and maintained real-time monitoring systems achieving 99.9\% uptime across critical infrastructure using Python and monitoring tools.
+        \item Developed automated reporting dashboards reducing manual report generation time by 60\% through data integration and visualization.
+        \item Collaborated with cross-functional teams to implement security policies and anomaly detection systems, strengthening network perimeter defense.
+        \item Led incident response and root cause analysis for critical system failures, documenting solutions and implementing preventive measures.
+        \item Built centralized Data Lake architecture streamlining performance metrics collection and analysis across multiple systems.
+        \item Integrated multiple service platforms (Fresh Services, PRTG, inventory systems) enabling real-time asset visibility and management.
+    \end{itemize}
+    \textbf{Achievements:} Improved efficiency.
+\end{itemize}
+
+\sepspace
+
+\NewPart{Skills}
+
+\SkillsEntry{Languages}{Java, C\#, TypeScript}
+\SkillsEntry{Frontend}{Node.js, React.js}
+\SkillsEntry{Databases}{MongoDB}
+\SkillsEntry{DevOps}{Docker}
+
+\sepspace
+
+\NewPart{Achievements and Interests}
+
+\begin{itemize}
+    \item[\heartstab] Dropped out of University Club summer 2021 as the team lead. \squigarr Don't bite off more than you can chew. Don't accept something just because you can. 
+    \item[\heartstab] Didn't complete the 2021 DEFG international math competition final round because of self-esteem issues. \squigarr Don't be scared of losing at stuff. Nothing ever comes out of self pity.
+    \item[\heartstab] Never applied to University entrance scholarship \squigarr this would have been good to have, as a credential, and for money, even though the fees are not too dear here it's still easy money. 
+    \item[\heartstab] I haven't played any music in years \squigarr sometimes you need to make sacrifices to get what you want. You can't have everything you want at the same time. Though sad I think it was a good decision. 
+\end{itemize}
+
+\end{document}

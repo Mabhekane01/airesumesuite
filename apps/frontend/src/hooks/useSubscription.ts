@@ -20,7 +20,7 @@ export function useSubscription(): SubscriptionStatus {
   
   // Check if subscription has expired based on end date
   const subscriptionEndDate = user?.subscriptionEndDate || user?.subscription_end_date;
-  const isExpired = subscriptionEndDate ? new Date(subscriptionEndDate) < new Date() : true;
+  const isExpired = subscriptionEndDate ? new Date(subscriptionEndDate) < new Date() : false;
   
   // User has AI access ONLY if:
   // 1. Has enterprise tier AND

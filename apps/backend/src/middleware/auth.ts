@@ -105,4 +105,29 @@ export const requireSubscription = (tier: 'free' | 'premium' | 'enterprise') => 
   };
 };
 
+export const optionalAuthMiddleware = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  try {
+    const authHeader = req.headers.authorization;
+    
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.split(' ')[1];
+      const decoded = verifyAccessToken(token);
+      
+      const user = await User.findById(decoded.id);
+      if (user) {
+        req.user = {
+          id: (user as any)._id.toString(),
+          email: user.email,
+          tier: user.tier || 'free'
+        };
+      }
+    }
+    
+    return next();
+  } catch (error) {
+    // If token is invalid or expired, just ignore and proceed as a guest
+    return next();
+  }
+};
+
 export { authMiddleware as authenticateToken };

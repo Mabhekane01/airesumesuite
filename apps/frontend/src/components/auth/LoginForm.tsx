@@ -9,6 +9,7 @@ import { RECAPTCHA_CONFIG } from '../../services/recaptchaService';
 interface LoginFormProps {
   onToggleMode: () => void;
   onClose: () => void;
+  onSuccess?: () => void;
   recaptchaState?: {
     isReady: boolean;
     isLoading: boolean;
@@ -18,7 +19,7 @@ interface LoginFormProps {
   };
 }
 
-export default function LoginForm({ onToggleMode, onClose, recaptchaState }: LoginFormProps) {
+export default function LoginForm({ onToggleMode, onClose, onSuccess, recaptchaState }: LoginFormProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -149,6 +150,11 @@ export default function LoginForm({ onToggleMode, onClose, recaptchaState }: Log
       console.log('✅ Login successful with reCAPTCHA verification');
       toast.success('Welcome back!');
       onClose();
+      
+      // Call success callback for redirect handling
+      if (onSuccess) {
+        onSuccess();
+      }
       
     } catch (error: any) {
       console.error('❌ Login failed:', error);

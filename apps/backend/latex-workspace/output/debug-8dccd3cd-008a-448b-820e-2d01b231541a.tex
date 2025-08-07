@@ -1,0 +1,91 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{enumitem}
+
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[protrusion=true,expansion=true]{microtype}
+\usepackage{amsmath,amsfonts,amsthm}     
+\usepackage{graphicx}                    
+\usepackage[svgnames]{xcolor}           
+\usepackage[margin=0.5in]{geometry}
+\setlength{\textheight}{700pt}
+\usepackage{url}
+
+\usepackage{tikz}
+\usepackage{lmodern} % kpfonts replaced with lmodern 
+\usepackage{color}
+
+\usepackage[colorlinks=true,urlcolor=purple]{hyperref}
+
+\frenchspacing              
+\pagestyle{empty}           
+
+\usepackage{titlesec}
+\titleformat{\section*}% command
+  {\usefont{OT1}{phv}{b}{n}\raggedright}% format: font, bold, no indent
+  {}% label (none for unnumbered sections)
+  {0pt}% sep (no space between label and title)
+  {\MakeUppercase{#1}\vspace{2pt}\hrule}% Before-code: Title, small space, then horizontal rule
+\titlespacing*{\section*}{0pt}{12pt}{12pt} % No left indent, 12pt before, 12pt after
+
+\newlength{\spacebox}
+\settowidth{\spacebox}{8888888888}
+\newcommand{\sepspace}{\vspace*{0.5em}}
+
+\newcommand{\NameEmailPhoneSiteGithub}[5]{
+        \Huge \usefont{OT1}{phv}{m}{n} \textbf{#1} 
+        \large \usefont{OT1}{phv}{m}{n} \hfill #2\hspace{25pt}#3
+        
+        \textit{Curriculum Vitae}\hfill \textit{LinkedIn } #4 \hspace{25pt}\textit{GitHub } #5 
+        \par \normalsize \normalfont
+}
+
+\newcommand{\NewPart}[1]{\section*{\MakeUppercase{#1}}}
+
+\newcommand{\SkillsEntry}[2]{
+		\noindent\hangindent=2em\hangafter=0
+		\parbox{\spacebox}{
+		\textit{#1}}
+		\hspace{1.5em} #2 \par}
+
+\begin{document}
+
+\NameEmailPhoneSiteGithub{Bheki Ngwenya}{0797394470}{ngwenyabheki276@gmail.com}{\textcolor{blue}{linkedin.com/in/bheki-ntando-ngwenya01}}{\textcolor{blue}{github.com/Mabhekane0100000}}
+
+\sepspace
+
+\NewPart{Summary}
+A versatile professional with a unique, hybrid background in both network engineering and full-stack software development. Leveraging a modern tech stack including Java, Node.js, React, and Docker, I excel at designing, building, and deploying robust applications with a deep understanding of the underlying network infrastructure. This dual expertise, demonstrated at CMC Networks, allows for the creation of highly optimized and resilient systems from the ground up. I am driven to apply this comprehensive skill set to solve complex technical challenges and deliver high-performance solutions.
+
+\sepspace
+
+\NewPart{Experience}
+
+\textbf{Network Engineer \& Software Developer} at CMC Networks, Building H, The Woodlands, Office Park, 20 Woodlands Dr, Woodmead, Sandton, 2191 (2023-07-01 - Present)
+\begin{itemize}
+    \item Engineered and maintained real-time monitoring systems achieving 99.9\% uptime across critical infrastructure using Python and monitoring tools.
+    \item Developed automated reporting dashboards reducing manual report generation time by 60\% through data integration and visualization.
+    \item Collaborated with cross-functional teams to implement security policies and anomaly detection systems, strengthening network perimeter defense.
+    \item Led incident response and root cause analysis for critical system failures, documenting solutions and implementing preventive measures.
+    \item Built centralized Data Lake architecture streamlining performance metrics collection and analysis across multiple systems.
+    \item Integrated multiple service platforms (Fresh Services, PRTG, inventory systems) enabling real-time asset visibility and management.
+\end{itemize}
+
+\sepspace
+
+\NewPart{Education}
+
+\textbf{BSc in Computer Science} from North-West University (2020)
+
+\sepspace
+
+\NewPart{Skills}
+
+\SkillsEntry{Programming Languages}{Java, C\#, JavaScript, TypeScript, C++}
+\SkillsEntry{Frameworks \& Libraries}{Node.js, React.js}
+\SkillsEntry{Databases}{MongoDB}
+\SkillsEntry{Tools \& Technologies}{Docker, System Analysis}
+
+\end{document}

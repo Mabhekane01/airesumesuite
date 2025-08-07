@@ -1,0 +1,132 @@
+```latex
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{enumitem}
+
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[protrusion=true,expansion=true]{microtype}
+\usepackage{amsmath,amsfonts,amsthm}
+\usepackage{graphicx}
+\usepackage[svgnames]{xcolor}
+\usepackage[margin=0.5in]{geometry}
+\setlength{\textheight}{700px}
+\usepackage{url}
+
+\usepackage{tikz}
+\usepackage{kpfonts}
+\usepackage{color}
+\newcommand*\Hs{\ensuremath{\color{red}\varheartsuit}}
+
+%%% Heart-stab command
+\newcommand{\heartstab}{%
+\begin{tikzpicture}%
+\draw [line width=0.0mm, white] (3.5ex,0.4ex) -- (3.5ex,0.4ex);
+\node at (0,0) {\Large$\Hs$};
+\draw [line width=0.30mm, black] (-0.7ex,0.7ex) -- (1.2ex,1.2ex);%
+\draw [line width=0.50mm, black] (0.8ex,0.65ex) -- (0.55ex,1.45ex);%
+\end{tikzpicture}%
+}
+
+%%% Squiggly arrow
+\newcommand{\squigarr}{
+{\Large \color{blue}$\rightsquigarrow$}
+}
+
+\usepackage[colorlinks=true,urlcolor=purple]{hyperref}
+
+\frenchspacing
+\pagestyle{empty}
+
+
+\usepackage{sectsty}
+
+\sectionfont{%
+	\usefont{OT1}{phv}{b}{n}%		% bch-b-n: CharterBT-Bold font
+	\sectionrule{0pt}{0pt}{-5pt}{3pt}}
+
+
+\newlength{\spacebox}
+\settowidth{\spacebox}{8888888888}			% Box to align text
+\newcommand{\sepspace}{\vspace*{1em}}		% Vertical space macro
+
+\newcommand{\MyName}[1]{% Name
+		\Huge \usefont{OT1}{phv}{b}{n} \hfill #1
+		\par \normalsize \normalfont}
+
+\newcommand{\MySlogan}[1]{% Slogan (optional)
+		\large \usefont{OT1}{phv}{m}{n}\hfill \textit{#1}
+		\par \normalsize \normalfont}
+
+
+\newcommand{\NameEmailPhoneSiteGithub}[7]{
+        \Huge \usefont{OT1}{phv}{m}{n} \textbf{#1}
+        \large \usefont{OT1}{phv}{m}{n} \hfill #2\hspace{20pt}#3
+
+        \textit{#4}\hfill \textit{portfolio } \href{#5}{#5} \hspace{10pt}\textit{github } \href{#6}{#6} \hspace{10pt}\textit{linkedin } \href{#7}{#7}
+        \par \normalsize \normalfont
+}
+
+\newcommand{\NewPart}[1]{\section*{\uppercase{#1}}}
+
+\newcommand{\SkillsEntry}[2]{% Same as \PersonalEntry
+		\noindent\hangindent=2em\hangafter=0 % Indentation
+		\parbox{\spacebox}{% Box to align text
+		\textit{#1}}			   % Entry name (birth, address, etc.)
+		\hspace{1.5em} #2 \par}
+
+
+
+%%% Begin Document
+%%% ------------------------------------------------------------
+\begin{document}
+
+\NameEmailPhoneSiteGithub
+{Bheki Ngwenya}
+{0797394470}
+{ngwenyabheki276@gmail.com}
+{Software Engineer}
+{https://johndoe.com}
+{https://github.com/Mabhekane01}
+{https://www.linkedin.com/in/bheki-ntando-ngwenya01}
+
+\sepspace
+
+\NewPart{Summary}
+\noindent
+Experienced professional with strong technical skills.
+
+\sepspace
+
+\NewPart{Work Experience}
+
+\noindent\textbf{Network Engineer \& Software Developer} \hfill \textbf{2023-07-01 -- Present} \\
+\textit{CMC Networks} \hfill \textit{Johannesburg, South Africa}
+\begin{itemize}[leftmargin=*, itemsep=2pt, topsep=5pt, partopsep=0pt]
+    \item Engineered and maintained real-time monitoring systems achieving 99.9\% uptime across critical infrastructure, using Python and monitoring tools.
+    \item Developed automated reporting dashboards reducing manual report generation time by 60\% through data integration and visualization.
+    \item Collaborated with cross-functional teams to implement security policies and anomaly detection systems, strengthening network perimeter defense.
+    \item Led incident response and root cause analysis for critical system failures, documenting solutions and implementing preventive measures.
+    \item Built centralized Data Lake architecture streamlining performance metrics collection and analysis across multiple systems.
+    \item Integrated multiple service platforms (Fresh Services, PRTG, inventory systems) enabling real-time asset visibility and management.
+\end{itemize}
+
+\sepspace
+
+\NewPart{Education}
+
+\noindent\textbf{BSc in Computer Science} \hfill \textbf{2020} \\
+\textit{North-West University}
+
+\sepspace
+
+\NewPart{Skills}
+
+\SkillsEntry{Languages}{Java, C\#, TypeScript}
+\SkillsEntry{Web Technologies}{Node.js, React.js}
+\SkillsEntry{Databases}{MongoDB}
+\SkillsEntry{DevOps}{Docker}
+
+\end{document}
+```

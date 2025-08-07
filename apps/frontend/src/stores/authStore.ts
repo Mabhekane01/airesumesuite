@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { locationService, LocationData } from '../services/locationService';
-import { Notification } from '../services/notificationService';
+import { INotification } from '../types';
 import { storageUtils } from '../utils/storageUtils';
 
 export interface User {
@@ -13,7 +13,9 @@ export interface User {
   isEmailVerified: boolean;
   tier: 'free' | 'enterprise';
   subscriptionStatus?: 'active' | 'cancelled' | 'expired' | 'past_due';
+  subscription_status?: 'active' | 'cancelled' | 'expired' | 'past_due';
   subscriptionEndDate?: string;
+  subscription_end_date?: string;
   subscriptionStartDate?: string;
   subscriptionPlanType?: 'monthly' | 'yearly';
   paystackCustomerCode?: string;
@@ -28,7 +30,8 @@ interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
-  loginNotification: Notification | null;
+  loginNotification: INotification | null;
+  redirectAfterLogin: string | null;
   
   // OTP verification state
   requiresOTPVerification: boolean;
@@ -38,6 +41,7 @@ interface AuthState {
   setTokens: (accessToken: string, refreshToken: string) => void;
   setUser: (user: User) => void;
   updateUser: (updates: Partial<User>) => void;
+  setRedirectAfterLogin: (url: string | null) => void;
   login: (email: string, password: string, location?: any, recaptchaToken?: string) => Promise<void>;
   sendRegistrationOTP: (data: RegisterData) => Promise<void>;
   verifyRegistrationOTP: (email: string, otp: string) => Promise<void>;
@@ -74,6 +78,7 @@ export const useAuthStore = create<AuthState>()(
       isLoading: false,
       error: null,
       loginNotification: null,
+      redirectAfterLogin: null,
       
       // OTP verification state
       requiresOTPVerification: false,
@@ -102,6 +107,10 @@ export const useAuthStore = create<AuthState>()(
         if (user) {
           set({ user: { ...user, ...updates } });
         }
+      },
+
+      setRedirectAfterLogin: (url: string | null) => {
+        set({ redirectAfterLogin: url });
       },
 
       login: async (email: string, password: string, location?: LocationData, recaptchaToken?: string) => {
@@ -498,7 +507,15 @@ export const useAuthStore = create<AuthState>()(
       },
 
       googleLogin: () => {
-        window.location.href = `${API_BASE}/api/v1/auth/google`;
+        const { redirectAfterLogin } = get();
+        const url = new URL(`${API_BASE}/api/v1/auth/google`);
+        
+        // Add redirect URL as a parameter if it exists
+        if (redirectAfterLogin) {
+          url.searchParams.set('redirect', redirectAfterLogin);
+        }
+        
+        window.location.href = url.toString();
       },
 
       refreshUserProfile: async () => {

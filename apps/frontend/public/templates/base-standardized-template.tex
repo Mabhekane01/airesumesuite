@@ -1,0 +1,120 @@
+% Base Standardized Template
+% This is a generic template that follows the standardized placeholder system
+% Can be used as a starting point for creating standardized versions of other templates
+
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage{xcolor}
+\usepackage{titlesec}
+
+% Define colors
+\definecolor{headercolor}{RGB}{70, 130, 180}
+\definecolor{sectioncolor}{RGB}{25, 25, 112}
+
+% Section formatting
+\titleformat{\section}{\large\bfseries\color{sectioncolor}}{}{0em}{}[\titlerule]
+\titlespacing*{\section}{0pt}{14pt}{8pt}
+
+% Hyperlink setup
+\hypersetup{colorlinks=true, urlcolor=blue, linkcolor=blue}
+
+% List formatting
+\setlist{nosep, leftmargin=1.5em}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+
+\begin{document}
+
+% STANDARDIZED PERSONAL INFO SECTION
+\begin{center}
+  {\Huge\bfseries\color{headercolor} {{FIRST_NAME}} {{LAST_NAME}}}
+  \\[0.5em]
+  {{#IF_PROFESSIONAL_TITLE}}{\large {{PROFESSIONAL_TITLE}}}\\[0.25em]{{/IF_PROFESSIONAL_TITLE}}
+  {\large {{EMAIL}} | {{PHONE}}{{#IF_LOCATION}} | {{LOCATION}}{{/IF_LOCATION}}}
+  {{#IF_LINKEDIN}}{{#IF_GITHUB}}{{#IF_PORTFOLIO}}{{#IF_WEBSITE}}\\[0.25em]
+  {\large {{LINKEDIN}} | {{GITHUB}} | {{PORTFOLIO}} | {{WEBSITE}}}{{/IF_WEBSITE}}{{/IF_PORTFOLIO}}{{/IF_GITHUB}}{{/IF_LINKEDIN}}
+\end{center}
+
+\vspace{1em}
+
+% PROFESSIONAL SUMMARY - Always Present
+\section*{PROFESSIONAL SUMMARY}
+{{PROFESSIONAL_SUMMARY}}
+
+% WORK EXPERIENCE - Conditional
+{{#IF_WORK_EXPERIENCE}}
+\section*{PROFESSIONAL EXPERIENCE}
+{{WORK_EXPERIENCE}}
+{{/IF_WORK_EXPERIENCE}}
+
+% EDUCATION - Conditional
+{{#IF_EDUCATION}}
+\section*{EDUCATION}
+{{EDUCATION}}
+{{/IF_EDUCATION}}
+
+% SKILLS - Conditional
+{{#IF_SKILLS}}
+\section*{SKILLS}
+{{SKILLS}}
+{{/IF_SKILLS}}
+
+% PROJECTS - Conditional
+{{#IF_PROJECTS}}
+\section*{PROJECTS}
+{{PROJECTS}}
+{{/IF_PROJECTS}}
+
+% CERTIFICATIONS - Conditional
+{{#IF_CERTIFICATIONS}}
+\section*{CERTIFICATIONS}
+{{CERTIFICATIONS}}
+{{/IF_CERTIFICATIONS}}
+
+% LANGUAGES - Conditional
+{{#IF_LANGUAGES}}
+\section*{LANGUAGES}
+{{LANGUAGES}}
+{{/IF_LANGUAGES}}
+
+% VOLUNTEER EXPERIENCE - Conditional
+{{#IF_VOLUNTEER_EXPERIENCE}}
+\section*{VOLUNTEER EXPERIENCE}
+{{VOLUNTEER_EXPERIENCE}}
+{{/IF_VOLUNTEER_EXPERIENCE}}
+
+% AWARDS - Conditional
+{{#IF_AWARDS}}
+\section*{AWARDS \& HONORS}
+{{AWARDS}}
+{{/IF_AWARDS}}
+
+% PUBLICATIONS - Conditional
+{{#IF_PUBLICATIONS}}
+\section*{PUBLICATIONS}
+{{PUBLICATIONS}}
+{{/IF_PUBLICATIONS}}
+
+% REFERENCES - Conditional
+{{#IF_REFERENCES}}
+\section*{REFERENCES}
+{{REFERENCES}}
+{{/IF_REFERENCES}}
+
+% HOBBIES - Conditional
+{{#IF_HOBBIES}}
+\section*{INTERESTS \& HOBBIES}
+{{HOBBIES}}
+{{/IF_HOBBIES}}
+
+% ADDITIONAL SECTIONS - Conditional
+{{#IF_ADDITIONAL_SECTIONS}}
+{{ADDITIONAL_SECTIONS}}
+{{/IF_ADDITIONAL_SECTIONS}}
+
+\end{document}

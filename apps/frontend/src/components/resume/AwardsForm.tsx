@@ -4,6 +4,7 @@ import { PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Textarea } from '../ui/Textarea';
+import { DatePicker } from '../ui/DatePicker';
 import { Card } from '../ui/Card';
 import { Award } from '../../types';
 
@@ -68,34 +69,40 @@ export default function AwardsForm() {
               label="Award Title"
               value={award.title}
               onChange={(e) => updateAward(index, 'title', e.target.value)}
-              placeholder="Employee of the Year, Dean's List, etc."
+              placeholder="e.g., Employee of the Year, Dean's List"
+              required
+              helpText="The name or title of the award"
             />
             <Input
               label="Issuing Organization"
               value={award.issuer}
               onChange={(e) => updateAward(index, 'issuer', e.target.value)}
-              placeholder="Company, University, Professional Body"
+              placeholder="e.g., Company, University, Professional Body"
+              required
+              helpText="Who gave you this award"
             />
           </div>
 
           <div className="grid md:grid-cols-2 gap-4 mb-4">
-            <Input
+            <DatePicker
               label="Date Received"
-              type="month"
               value={award.date}
-              onChange={(e) => updateAward(index, 'date', e.target.value)}
+              onChange={(value) => updateAward(index, 'date', value)}
+              allowFuture={false}
+              helpText="When you received this award"
             />
+            <div></div>
           </div>
 
-          <div className="mb-4">
-            <Textarea
-              label="Description (Optional)"
-              value={award.description || ''}
-              onChange={(e) => updateAward(index, 'description', e.target.value)}
-              placeholder="Brief description of the award and why it was received..."
-              rows={2}
-            />
-          </div>
+          <Textarea
+            label="Description"
+            value={award.description || ''}
+            onChange={(e) => updateAward(index, 'description', e.target.value)}
+            placeholder="Brief description of the award and why it was received..."
+            rows={2}
+            helpText="Explain the significance of this award (optional)"
+            className="mb-4"
+          />
         </Card>
       ))}
 

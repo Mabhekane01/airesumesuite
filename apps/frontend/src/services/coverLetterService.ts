@@ -79,6 +79,34 @@ export class CoverLetterService {
     return response.data.data;
   }
 
+  async aiGenerateFromUrl(data: {
+    jobUrl: string;
+    resumeId?: string;
+    tone: 'professional' | 'casual' | 'enthusiastic' | 'conservative';
+    customInstructions?: string;
+  }): Promise<{ success: boolean; data?: any; message?: string }> {
+    try {
+      console.log('🤖 Sending AI cover letter generation request:', data);
+      const response = await api.post('/cover-letters/ai-generate-from-url', data, {
+        timeout: 120000 // 2 minutes for AI processing
+      });
+      
+      return { 
+        success: true, 
+        data: {
+          coverLetter: response.data.data.coverLetter,
+          jobAnalysis: response.data.data.jobAnalysis
+        }
+      };
+    } catch (error: any) {
+      console.error('AI generation error:', error);
+      return { 
+        success: false, 
+        message: error.response?.data?.message || error.message || 'Failed to generate AI cover letter' 
+      };
+    }
+  }
+
   async generateAIContent(data: {
     jobTitle: string;
     companyName: string;
@@ -86,6 +114,7 @@ export class CoverLetterService {
     resumeId?: string;
     jobDescription?: string;
     existingContent?: string;
+    chatMessage?: string;
   }): Promise<{ success: boolean; content?: string; message?: string }> {
     try {
       console.log('🤖 Generating AI content with data:', data);
@@ -291,6 +320,30 @@ export class CoverLetterService {
       return { 
         success: false, 
         message: error.response?.data?.message || error.message || 'Analysis failed' 
+      };
+    }
+  }
+
+
+  async handleConversation(data: {
+    message: string;
+    context?: any;
+    step?: string;
+  }): Promise<{ success: boolean; response?: string; nextStep?: string; suggestions?: string[]; message?: string }> {
+    try {
+      console.log('💬 Sending conversation request:', data);
+      const response = await api.post('/cover-letters/conversation', data);
+      return { 
+        success: true, 
+        response: response.data.response,
+        nextStep: response.data.nextStep,
+        suggestions: response.data.suggestions
+      };
+    } catch (error: any) {
+      console.error('Conversation error:', error);
+      return { 
+        success: false, 
+        message: error.response?.data?.message || error.message || 'Conversation failed' 
       };
     }
   }

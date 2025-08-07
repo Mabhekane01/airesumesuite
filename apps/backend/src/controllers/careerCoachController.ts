@@ -2,6 +2,23 @@ import { Request, Response } from 'express';
 import { careerCoachService } from '../services/careerCoachService';
 import { AuthenticatedRequest } from '../middleware/auth';
 
+// Helper function to convert MongoDB ObjectId to string
+const convertObjectIdToString = (id: any): string => {
+  if (!id) return '';
+  
+  if (typeof id === 'string') {
+    return id;
+  }
+  
+  // Handle MongoDB ObjectId Buffer format
+  if (id.buffer && id.buffer.data && Array.isArray(id.buffer.data)) {
+    const bytes = Array.from(id.buffer.data);
+    return bytes.map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+  
+  return String(id);
+};
+
 const chatWithCoach = async (req: AuthenticatedRequest, res: Response) => {
   try {
     console.log('🤖 Career coach chat request:', {
@@ -29,6 +46,14 @@ const chatWithCoach = async (req: AuthenticatedRequest, res: Response) => {
       return;
     }
 
+    // Convert ObjectId to string if needed
+    const stringResumeId = convertObjectIdToString(resumeId);
+    console.log('🔧 Resume ID conversion:', {
+      original: resumeId,
+      converted: stringResumeId,
+      originalType: typeof resumeId
+    });
+
     const userId = req.user?.id;
     if (!userId) {
       res.status(401).json({ 
@@ -39,7 +64,7 @@ const chatWithCoach = async (req: AuthenticatedRequest, res: Response) => {
     }
 
     console.log('✅ Getting AI response for career coaching...');
-    const stream = await careerCoachService.getAIResponse(message.trim(), resumeId);
+    const stream = await careerCoachService.getAIResponse(message.trim(), stringResumeId);
 
     // Set proper headers for streaming
     res.setHeader('Content-Type', 'text/plain; charset=utf-8');

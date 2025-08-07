@@ -1,0 +1,109 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{enumitem}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[protrusion=true,expansion=true]{microtype}
+\usepackage{amsmath,amsfonts,amsthm}
+\usepackage{graphicx}
+\usepackage[svgnames]{xcolor}
+\usepackage[margin=0.5in]{geometry}
+\setlength{\textheight}{700pt}
+\usepackage{url}
+\usepackage{tikz}
+\usepackage{color} % Keep as per instructions
+% Define \Hs based on the original (malformed) intention: a red heart symbol from kpfonts
+% Original was: Hs{\ensuremath{\color{red}\varheartsuit}}
+\newcommand{\Hs}{{\color{red}\varheartsuit}}
+\%%\% Heart-stab command
+% Corrected \newcommand syntax, removed extra braces, converted mm to pt
+\newcommand{\heartstab}{%
+\begin{tikzpicture}[baseline=(current bounding box.center)]%
+\draw [line width=0.0pt, white] (3.5ex,0.4ex) -- (3.5ex,0.4ex);
+\node at (0,0) {\Large{$\Hs$}};
+\draw [line width=0.85pt, black] (-0.7ex,0.7ex) -- (1.2ex,1.2ex);%
+\draw [line width=1.42pt, black] (0.8ex,0.65ex) -- (0.55ex,1.45ex);%
+\end{tikzpicture}%
+}
+\%%\% Squiggly arrow
+% Corrected \newcommand syntax, removed extra braces
+\newcommand{\squigarr}{%
+{\Large \color{blue}$\rightsquigarrow$}%
+}
+\usepackage[colorlinks=true,urlcolor=purple]{hyperref}
+\frenchspacing
+\pagestyle{empty}
+\usepackage{titlesec} % Replaced sectsty
+\titleformat{\section*}
+  {\usefont{OT1}{phv}{b}{n}\raggedright}
+  {}
+  {0em}
+  {\MakeUppercase{#1}\titlerule[3pt]\vspace{-5pt}} % Corrected #1 syntax
+\titlespacing*{\section*}{0pt}{1.5ex}{1.5ex}
+\newlength{\spacebox}
+\settowidth{\spacebox}{8888888888}
+% Corrected \newcommand syntax, removed extra braces
+\newcommand{\sepspace}{%
+    \vspace*{0.5em}%
+}
+\newcommand{\MyName}[1]{ % Corrected #1 syntax
+		\Huge \usefont{OT1}{phv}{b}{n} \hfill #1
+		\par \normalsize \normalfont}
+\newcommand{\MySlogan}[1]{ % Corrected #1 syntax
+		\large \usefont{OT1}{phv}{m}{n}\hfill \textit{#1}
+		\par \normalsize \normalfont}
+\newcommand{\NameEmailPhoneSiteGithub}[5]{ % Corrected #1-#5 syntax
+        \Huge \usefont{OT1}{phv}{m}{n} \textbf{#1}
+        \large \usefont{OT1}{phv}{m}{n} \hfill #2\hspace{25pt}#3
+        \textit{Location: Johannesburg, South Africa}\hfill #4 \hspace{25pt} #5
+        \par \normalsize \normalfont
+}
+\newcommand{\NewPart}[1]{\section*{\MakeUppercase{#1}}} % Corrected #1 syntax
+\newcommand{\SkillsEntry}[2]{ % Corrected #1, #2 syntax
+		\noindent\hangindent=2em\hangafter=0
+		\parbox{\spacebox}{
+		\textit{#1}}
+		\hspace{1.5em} #2 \par}
+\newcommand{\ExperienceEntry}[4]{% % Corrected #1-#4 syntax. The % after { prevents unintended space.
+    \noindent\textbf{#1} \hfill \textbf{#2} \\ % Corrected comment syntax
+    \textit{#3}% Dates % Corrected comment syntax
+    \begin{itemize}[leftmargin=1.5em, itemsep=0pt, parsep=0pt, partopsep=0pt, topsep=0pt]%
+        #4% Responsibilities as list items
+    \end{itemize}%
+    \sepspace%
+}
+\%%\% Begin Document
+\%%\% ------------------------------------------------------------
+% The previous `\newcommand{\Hs}{\heartsuit}` after this comment was removed
+% to avoid redefinition and ensure the intended \varheartsuit symbol is used.
+\begin{document}
+\NameEmailPhoneSiteGithub{Bheki Ngwenya}{ngwenyabheki276@gmail.com}{0797394470}{\href{https://www.linkedin.com/in/bheki-ntando-ngwenya01}{linkedin.com/in/bheki-ntando-ngwenya01}}{\href{https://github.com/Mabhekane0100000}{github.com/Mabhekane0100000}}
+\sepspace
+\noindent A versatile professional with a unique, hybrid background in both network engineering and full-stack software development. Leveraging a modern tech stack including Java, Node.js, React, and Docker, I excel at designing, building, and deploying robust applications with a deep understanding of the underlying network infrastructure. This dual expertise, demonstrated at CMC Networks, allows for the creation of highly optimized and resilient systems from the ground up. I am driven to apply this comprehensive skill set to solve complex technical challenges and deliver high-performance solutions.
+\sepspace
+\%%\% Work experience
+\%%\% ------------------------------------------------------------
+\NewPart{Work Experience}
+\ExperienceEntry{Network Engineer \& Software Developer}{CMC Networks, Building H, The Woodlands, Office Park, 20 Woodlands Dr, Woodmead, Sandton, 2191}{2023-07-01 - Present}{%
+    \item Engineered and maintained real-time monitoring systems achieving 99.9\% uptime across critical infrastructure using Python and monitoring tools.
+    \item Developed automated reporting dashboards reducing manual report generation time by 60\% through data integration and visualization.
+    \item Collaborated with cross-functional teams to implement security policies and anomaly detection systems, strengthening network perimeter defense.
+    \item Led incident response and root cause analysis for critical system failures, documenting solutions and implementing preventive measures.
+    \item Built centralized Data Lake architecture streamlining performance metrics collection and analysis across multiple systems.
+    \item Integrated multiple service platforms (Fresh Services, PRTG, inventory systems) enabling real-time asset visibility and management.
+}
+\sepspace
+\%%\% Education
+\%%\% ------------------------------------------------------------
+\NewPart{Education}
+\SkillsEntry{BSc in Computer Science}{North-West University (2020)}
+\sepspace
+\%%\% Skills
+\%%\% ------------------------------------------------------------
+\NewPart{Skills}
+\SkillsEntry{Programming Languages}{Java, C\#, TypeScript, JavaScript, C++}
+\SkillsEntry{Web Technologies}{Node.js, React.js}
+\SkillsEntry{Databases}{MongoDB}
+\SkillsEntry{Tools \& Platforms}{Docker, System Analysis}
+\end{document}}

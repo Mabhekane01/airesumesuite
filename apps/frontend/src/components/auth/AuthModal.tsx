@@ -4,15 +4,18 @@ import { XMarkIcon } from '@heroicons/react/24/outline';
 import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
 import { useEnterpriseRecaptcha } from '../../hooks/useEnterpriseRecaptcha';
+import { useNotifications } from '../../contexts/NotificationContext';
 
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialMode?: 'login' | 'register';
+  onSuccess?: () => void;
 }
 
-export default function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalProps) {
+export default function AuthModal({ isOpen, onClose, initialMode = 'login', onSuccess }: AuthModalProps) {
   const [mode, setMode] = useState<'login' | 'register'>(initialMode);
+  const { refreshNotifications } = useNotifications();
 
   // Update mode when initialMode changes or modal opens
   useEffect(() => {
@@ -23,6 +26,19 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }: Au
   
   // Initialize reCAPTCHA at modal level to persist across form switches
   const recaptchaState = useEnterpriseRecaptcha();
+
+  // Enhanced success handler that refreshes notifications
+  const handleSuccess = () => {
+    // Refresh notifications after successful login/register
+    setTimeout(() => {
+      refreshNotifications();
+    }, 1000);
+    
+    // Call the original success callback if provided
+    if (onSuccess) {
+      onSuccess();
+    }
+  };
 
   const toggleMode = () => {
     setMode(prev => prev === 'login' ? 'register' : 'login');
@@ -72,6 +88,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }: Au
                     key="login"
                     onToggleMode={toggleMode}
                     onClose={onClose}
+                    onSuccess={handleSuccess}
                     recaptchaState={recaptchaState}
                   />
                 ) : (
@@ -79,6 +96,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }: Au
                     key="register"
                     onToggleMode={toggleMode}
                     onClose={onClose}
+                    onSuccess={handleSuccess}
                     recaptchaState={recaptchaState}
                   />
                 )}

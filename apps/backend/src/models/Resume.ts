@@ -15,9 +15,13 @@ export interface IEducation {
   institution: string;
   degree: string;
   fieldOfStudy: string;
-  graduationDate: Date;
+  startDate?: Date;
+  endDate?: Date;
+  graduationDate?: Date; // Keep for backward compatibility
+  location?: string;
   gpa?: string;
   honors?: string[];
+  courses?: string[];
 }
 
 export interface ISkill {
@@ -86,7 +90,14 @@ export interface IResume extends Document {
   workExperience: IWorkExperience[];
   education: IEducation[];
   skills: ISkill[];
-  certifications?: string[];
+  certifications?: {
+    name: string;
+    issuer: string;
+    date: Date;
+    expirationDate?: Date;
+    credentialId?: string;
+    url?: string;
+  }[];
   languages?: {
     name: string;
     proficiency: 'native' | 'fluent' | 'conversational' | 'basic';
@@ -116,6 +127,34 @@ export interface IResume extends Document {
     optimizedFor?: string; // job title or company
     atsScore?: number;
     improvements?: string[];
+    optimizedLatexCode?: string;
+    lastJobOptimization?: {
+      jobUrl: string;
+      jobTitle: string;
+      companyName: string;
+      optimizedAt: Date;
+    };
+  };
+  // PDF Storage for generated resumes
+  generatedFiles?: {
+    pdf?: {
+      data: Buffer;
+      filename: string;
+      generatedAt: Date;
+      templateId: string;
+      isOptimized: boolean;
+      jobOptimized?: {
+        jobUrl: string;
+        jobTitle: string;
+        companyName: string;
+      };
+    };
+    docx?: {
+      data: Buffer;
+      filename: string;
+      generatedAt: Date;
+    };
+    lastGenerated?: Date;
   };
   createdAt: Date;
   updatedAt: Date;
@@ -136,9 +175,13 @@ const EducationSchema = new Schema<IEducation>({
   institution: { type: String, required: true },
   degree: { type: String, required: true },
   fieldOfStudy: { type: String, required: true },
-  graduationDate: { type: Date, required: true },
+  startDate: { type: Date },
+  endDate: { type: Date },
+  graduationDate: { type: Date }, // Keep for backward compatibility
+  location: { type: String },
   gpa: { type: String },
-  honors: [{ type: String }]
+  honors: [{ type: String }],
+  courses: [{ type: String }]
 });
 
 const SkillSchema = new Schema<ISkill>({
@@ -229,7 +272,14 @@ const ResumeSchema = new Schema<IResume>({
   workExperience: [WorkExperienceSchema],
   education: [EducationSchema],
   skills: [SkillSchema],
-  certifications: [{ type: String }],
+  certifications: [{
+    name: { type: String, required: true },
+    issuer: { type: String, required: true },
+    date: { type: Date, required: true },
+    expirationDate: { type: Date },
+    credentialId: { type: String },
+    url: { type: String }
+  }],
   languages: [{
     name: { type: String, required: true },
     proficiency: {
@@ -269,7 +319,35 @@ const ResumeSchema = new Schema<IResume>({
     lastOptimized: { type: Date },
     optimizedFor: { type: String },
     atsScore: { type: Number, min: 0, max: 100 },
-    improvements: [{ type: String }]
+    improvements: [{ type: String }],
+    optimizedLatexCode: { type: String },
+    lastJobOptimization: {
+      jobUrl: { type: String },
+      jobTitle: { type: String },
+      companyName: { type: String },
+      optimizedAt: { type: Date }
+    }
+  },
+  // PDF Storage schema
+  generatedFiles: {
+    pdf: {
+      data: { type: Buffer },
+      filename: { type: String },
+      generatedAt: { type: Date },
+      templateId: { type: String },
+      isOptimized: { type: Boolean, default: false },
+      jobOptimized: {
+        jobUrl: { type: String },
+        jobTitle: { type: String },
+        companyName: { type: String }
+      }
+    },
+    docx: {
+      data: { type: Buffer },
+      filename: { type: String },
+      generatedAt: { type: Date }
+    },
+    lastGenerated: { type: Date }
   }
 }, {
   timestamps: true

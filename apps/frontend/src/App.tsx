@@ -7,6 +7,7 @@ import { SearchProvider } from './contexts/SearchContext'
 import Layout from './components/layout/Layout'
 import DashboardLayout from './components/dashboard/DashboardLayout'
 import LandingPageSimple from './pages/LandingPageSimple'
+import PublicTemplatesPage from './pages/PublicTemplatesPage'
 import GoogleAuthCallback from './pages/auth/GoogleAuthCallback'
 import GoogleAuthError from './pages/auth/GoogleAuthError'
 // Removed old verification pages - now using OTP-based verification
@@ -37,9 +38,17 @@ function App() {
               <Routes>
                 <Route 
                   path="/" 
-                  element={isAuthenticated ? <Navigate to="/dashboard" replace /> : 
+                  element={isAuthenticated ? <Navigate to="/templates" replace /> : 
                     <Layout>
                       <LandingPageSimple />
+                    </Layout>
+                  } 
+                />
+                <Route 
+                  path="/templates" 
+                  element={
+                    <Layout>
+                      <PublicTemplatesPage />
                     </Layout>
                   } 
                 />

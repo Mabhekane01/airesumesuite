@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import { Button } from '../ui/Button';
 import { Modal } from '../ui/Modal';
-import { Textarea } from '../ui/Textarea';
 import { resumeService } from '../../services/resumeService';
 import { useResume } from '../../contexts/ResumeContext';
-import SubscriptionGate from '../subscription/SubscriptionGate';
+import { api } from '../../services/api';
 import { useSubscription } from '../../hooks/useSubscription';
 import { 
   SparklesIcon, 
@@ -24,7 +23,7 @@ interface JobOptimizationModalProps {
   onOptimize?: (optimizedData: any) => void;
 }
 
-type OptimizationMethod = 'url' | 'description';
+type OptimizationMethod = 'url';
 type OptimizationType = 'job-specific' | 'comprehensive' | 'ats' | 'content';
 
 export default function JobOptimizationModal({ 
@@ -33,14 +32,19 @@ export default function JobOptimizationModal({
   resumeData,
   onOptimize 
 }: JobOptimizationModalProps) {
-  const { resumeData: contextResumeData, updateResumeData } = useResume();
+  const { 
+    resumeData: contextResumeData, 
+    updateResumeData,
+    setOptimizedLatexCode,
+    clearOptimizedContent,
+    setCachedPdf
+  } = useResume();
   const activeResumeData = resumeData || contextResumeData;
-  const { isEnterprise } = useSubscription();
+  const { hasActiveSubscription } = useSubscription();
   
   const [method, setMethod] = useState<OptimizationMethod>('url');
   const [optimizationType, setOptimizationType] = useState<OptimizationType>('job-specific');
   const [jobUrl, setJobUrl] = useState('');
-  const [jobDescription, setJobDescription] = useState('');
   const [jobTitle, setJobTitle] = useState('');
   const [companyName, setCompanyName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -61,7 +65,6 @@ export default function JobOptimizationModal({
       setJobAnalysis(analysis);
       setJobTitle(analysis.jobDetails.title || '');
       setCompanyName(analysis.jobDetails.company || '');
-      setJobDescription(analysis.jobDetails.description || '');
       setStep('analysis');
       toast.success('Job posting analyzed successfully!');
     } catch (error) {
@@ -74,27 +77,119 @@ export default function JobOptimizationModal({
 
   const handleOptimize = async () => {
     setIsLoading(true);
+    
+    // Inform user about the expected wait time
+    toast.info('Starting job optimization...', {
+      description: 'AI analysis and LaTeX compilation may take 3-5 minutes. Please keep this tab open.',
+      duration: 8000
+    });
+    
     try {
       let result;
       
-      if (method === 'url' && jobUrl) {
-        // Use job URL optimization
-        result = await resumeService.optimizeResumeWithJobUrl(activeResumeData, jobUrl);
-      } else {
-        // Use job description optimization
-        result = await resumeService.optimizeResumeForJob(activeResumeData, {
-          jobDescription,
-          jobTitle,
-          companyName,
-          optimizationType
-        });
+      if (jobUrl) {
+        // Get template code for LaTeX optimization like EnterpriseResumeEnhancer does
+        let templateCodeToUse = null;
+        let templateIdToUse = null;
+        
+        const templateId = activeResumeData.template || activeResumeData.templateId;
+        if (templateId) {
+          try {
+            console.log('🎯 Fetching template code for job optimization...');
+            const response = await api.get("/resumes/latex-templates-with-code");
+            const templates = response.data.data || response.data;
+            const matchedTemplate = templates.find((t: any) => t.id === templateId);
+            
+            if (matchedTemplate && matchedTemplate.code) {
+              templateCodeToUse = matchedTemplate.code;
+              templateIdToUse = templateId;
+              console.log('✅ Template code found for optimization');
+            } else {
+              console.log('⚠️ No template code found, proceeding with standard optimization');
+            }
+          } catch (error) {
+            console.warn('Failed to fetch template code:', error);
+          }
+        }
+        
+        // For unsaved resumes, the backend returns PDF directly if successful, JSON if PDF fails
+        // So we try PDF first, and if that fails, get analytics data
+        try {
+          console.log('📄 Getting job optimization PDF directly...');
+          const pdfBlob = await resumeService.optimizeResumeWithJobUrlPDF(activeResumeData, jobUrl, {
+            templateCode: templateCodeToUse,
+            templateId: templateIdToUse
+          });
+          
+          // PDF generation succeeded, now get analytics data separately
+          result = await resumeService.optimizeResumeWithJobUrl(activeResumeData, jobUrl, {
+            templateCode: templateCodeToUse,
+            templateId: templateIdToUse
+          });
+          
+          result.pdfBlob = pdfBlob;
+          console.log('✅ PDF blob attached to result, size:', pdfBlob.size);
+        } catch (pdfError) {
+          console.warn('PDF generation failed, getting analytics data only:', pdfError);
+          // Get analytics data without PDF
+          result = await resumeService.optimizeResumeWithJobUrl(activeResumeData, jobUrl, {
+            templateCode: templateCodeToUse,
+            templateId: templateIdToUse
+          });
+        }
       }
 
       setOptimizationResult(result);
       setStep('results');
       
-      // Handle both improvedResume and enhancedResume for backwards compatibility
-      const optimizedResumeData = result.improvedResume || result.enhancedResume;
+      // Handle multiple resume property names for backwards compatibility
+      const optimizedResumeData = result.optimizedResume || result.improvedResume || result.enhancedResume;
+      
+      // Clear previous optimization state when applying new optimization
+      clearOptimizedContent();
+      
+      // Handle PDF blob directly like enhancement service
+      if (result.pdfBlob) {
+        console.log('📄 Job-optimized PDF generated directly as blob');
+        
+        const pdfBlob = result.pdfBlob;
+        console.log('📦 PDF blob received:', pdfBlob.size, 'bytes, type:', pdfBlob.type);
+        
+        // Generate a hash for the job-optimized PDF
+        const jobOptimizedHash = `job-optimized-${Date.now()}-${method === 'url' ? jobUrl : 'manual'}`;
+        
+        // Create blob URL for immediate use
+        const blobUrl = URL.createObjectURL(pdfBlob);
+        
+        // Update the PDF cache with blob URL and blob data (exactly like other services)
+        setCachedPdf(blobUrl, jobOptimizedHash, pdfBlob);
+        
+        toast.success('Job-optimized PDF generated!', {
+          description: 'Your resume has been optimized and compiled for this specific job.'
+        });
+      } else {
+        // No PDF generated - show analytics only
+        toast.success('Job optimization completed!', {
+          description: 'Your resume has been analyzed and optimized for this job.'
+        });
+      }
+      
+      // If the result includes optimized LaTeX code, save it for future PDF generation
+      if (result.optimizedLatexCode) {
+        console.log('📄 Saving optimized LaTeX code for job-specific PDF generation');
+        setOptimizedLatexCode(
+          result.optimizedLatexCode, 
+          activeResumeData.template || 'overleaf-modern',
+          {
+            jobUrl: method === 'url' ? jobUrl : undefined,
+            jobTitle: jobTitle || 'Job Application',
+            companyName: companyName || 'Company'
+          }
+        );
+        
+        // Add optimized LaTeX code to resume data so PDF generation can use it
+        optimizedResumeData.optimizedLatexCode = result.optimizedLatexCode;
+      }
       
       if (onOptimize) {
         onOptimize(optimizedResumeData);
@@ -102,9 +197,16 @@ export default function JobOptimizationModal({
         updateResumeData(optimizedResumeData);
       }
       
-      toast.success('Resume optimized successfully!', {
-        description: 'Changes are now reflected in your resume preview'
-      });
+      // Show different success messages based on whether PDF was generated
+      if (result.optimizedPdfUrl) {
+        toast.success('Resume optimized with PDF generated!', {
+          description: 'Job-specific optimization complete with LaTeX PDF compilation.'
+        });
+      } else {
+        toast.success('Resume optimized successfully!', {
+          description: 'Job-specific optimization applied. Use template preview for PDF generation.'
+        });
+      }
     } catch (error) {
       console.error('Failed to optimize resume:', error);
       toast.error('Failed to optimize resume. Please try again.');
@@ -116,7 +218,6 @@ export default function JobOptimizationModal({
   const resetModal = () => {
     setStep('input');
     setJobUrl('');
-    setJobDescription('');
     setJobTitle('');
     setCompanyName('');
     setJobAnalysis(null);
@@ -127,120 +228,52 @@ export default function JobOptimizationModal({
     <div className="space-y-6">
       <div>
         <h3 className="text-lg font-semibold text-dark-text-primary mb-4">Choose Optimization Method</h3>
-        <div className="grid grid-cols-2 gap-4">
-          <button
-            onClick={() => setMethod('url')}
-            className={`p-4 border rounded-lg text-left transition-all ${
-              method === 'url'
-                ? 'border-accent-primary bg-accent-primary/10 text-accent-primary'
-                : 'border-dark-border text-dark-text-secondary hover:border-accent-primary/50'
-            }`}
-          >
-            <div className="flex items-center mb-2">
-              <GlobeAltIcon className="w-5 h-5 mr-2" />
-              <span className="font-medium">Job URL</span>
-            </div>
-            <p className="text-sm">Paste a job posting URL and let AI analyze it</p>
-          </button>
-          
-          <button
-            onClick={() => setMethod('description')}
-            className={`p-4 border rounded-lg text-left transition-all ${
-              method === 'description'
-                ? 'border-accent-primary bg-accent-primary/10 text-accent-primary'
-                : 'border-dark-border text-dark-text-secondary hover:border-accent-primary/50'
-            }`}
-          >
-            <div className="flex items-center mb-2">
-              <DocumentTextIcon className="w-5 h-5 mr-2" />
-              <span className="font-medium">Job Description</span>
-            </div>
-            <p className="text-sm">Manually paste the job description</p>
-          </button>
+        <div className="p-4 border border-accent-primary bg-accent-primary/10 rounded-lg">
+          <div className="flex items-center mb-2">
+            <GlobeAltIcon className="w-5 h-5 mr-2 text-accent-primary" />
+            <span className="font-medium text-accent-primary">Job URL Only</span>
+          </div>
+          <p className="text-sm text-dark-text-secondary">Job description input has been removed. Only URL-based optimization is supported.</p>
         </div>
       </div>
 
-      {method === 'url' ? (
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-dark-text-primary mb-2">
-              Job Posting URL
-            </label>
-            <div className="flex space-x-2">
-              <input
-                type="url"
-                value={jobUrl}
-                onChange={(e) => setJobUrl(e.target.value)}
-                placeholder="https://company.com/jobs/position"
-                className="flex-1 input-field-dark"
-              />
-              <Button
-                onClick={analyzeJobUrl}
-                disabled={isAnalyzing || !jobUrl.trim()}
-                variant="outline"
-                className="btn-secondary-dark"
-              >
-                {isAnalyzing ? (
-                  <>
-                    <ArrowPathIcon className="w-4 h-4 mr-2 animate-spin" />
-                    Analyzing...
-                  </>
-                ) : (
-                  <>
-                    <GlobeAltIcon className="w-4 h-4 mr-2" />
-                    Analyze
-                  </>
-                )}
-              </Button>
-            </div>
-            <p className="text-xs text-dark-text-muted mt-1">
-              Enter a direct link to the job posting for automatic analysis
-            </p>
-          </div>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-dark-text-primary mb-2">
-                Job Title
-              </label>
-              <input
-                type="text"
-                value={jobTitle}
-                onChange={(e) => setJobTitle(e.target.value)}
-                placeholder="Senior Software Engineer"
-                className="input-field-dark"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-dark-text-primary mb-2">
-                Company Name
-              </label>
-              <input
-                type="text"
-                value={companyName}
-                onChange={(e) => setCompanyName(e.target.value)}
-                placeholder="Tech Company Inc."
-                className="input-field-dark"
-              />
-            </div>
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-dark-text-primary mb-2">
-              Job Description
-            </label>
-            <Textarea
-              value={jobDescription}
-              onChange={(e) => setJobDescription(e.target.value)}
-              rows={8}
-              placeholder="Paste the complete job description here..."
-              className="input-field-dark"
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-dark-text-primary mb-2">
+            Job Posting URL
+          </label>
+          <div className="flex space-x-2">
+            <input
+              type="url"
+              value={jobUrl}
+              onChange={(e) => setJobUrl(e.target.value)}
+              placeholder="https://company.com/jobs/position"
+              className="flex-1 input-field-dark"
             />
+            <Button
+              onClick={analyzeJobUrl}
+              disabled={isAnalyzing || !jobUrl.trim()}
+              variant="outline"
+              className="btn-secondary-dark"
+            >
+              {isAnalyzing ? (
+                <>
+                  <ArrowPathIcon className="w-4 h-4 mr-2 animate-spin" />
+                  Analyzing...
+                </>
+              ) : (
+                <>
+                  <GlobeAltIcon className="w-4 h-4 mr-2" />
+                  Analyze
+                </>
+              )}
+            </Button>
           </div>
+          <p className="text-xs text-dark-text-muted mt-1">
+            Enter a direct link to the job posting for automatic analysis
+          </p>
         </div>
-      )}
+      </div>
 
       <div>
         <label className="block text-sm font-medium text-dark-text-primary mb-3">
@@ -275,13 +308,13 @@ export default function JobOptimizationModal({
         </Button>
         <Button
           onClick={handleOptimize}
-          disabled={isLoading || (method === 'url' ? !jobUrl.trim() : !jobDescription.trim())}
+          disabled={isLoading || !jobUrl.trim()}
           className="btn-primary-dark"
         >
           {isLoading ? (
             <>
               <ArrowPathIcon className="w-4 h-4 mr-2 animate-spin" />
-              Optimizing...
+              Optimizing (3-5 min)...
             </>
           ) : (
             <>
@@ -337,7 +370,7 @@ export default function JobOptimizationModal({
           {isLoading ? (
             <>
               <ArrowPathIcon className="w-4 h-4 mr-2 animate-spin" />
-              Optimizing...
+              Optimizing (3-5 min)...
             </>
           ) : (
             <>
@@ -440,16 +473,9 @@ export default function JobOptimizationModal({
       title="AI Job Optimization"
       size="lg"
     >
-      <SubscriptionGate 
-        feature="AI Job Optimization" 
-        description="Optimize your resume for specific job postings using AI. Get tailored keyword suggestions, ATS optimization, and content improvements."
-        requiresEnterprise={true}
-        showUpgrade={true}
-      >
-        {step === 'input' && renderInputStep()}
-        {step === 'analysis' && renderAnalysisStep()}
-        {step === 'results' && renderResultsStep()}
-      </SubscriptionGate>
+      {step === 'input' && renderInputStep()}
+      {step === 'analysis' && renderAnalysisStep()}
+      {step === 'results' && renderResultsStep()}
     </Modal>
   );
 }

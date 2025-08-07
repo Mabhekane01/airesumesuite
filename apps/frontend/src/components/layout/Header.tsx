@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
-  UserCircleIcon, 
   ChevronDownIcon,
   ArrowRightOnRectangleIcon,
-  UserIcon,
   Cog6ToothIcon,
   DocumentTextIcon,
   PencilIcon,
@@ -200,26 +198,13 @@ export default function Header() {
                         <Menu.Item>
                           {({ active }) => (
                             <Link
-                              to="/profile"
-                              className={`flex items-center space-x-2 w-full px-3 py-2 text-sm rounded-md transition-all duration-200 text-dark-text-primary ${
-                                active ? 'bg-accent-primary/10 text-accent-primary' : ''
-                              }`}
-                            >
-                              <UserIcon className="h-4 w-4" />
-                              <span>Profile</span>
-                            </Link>
-                          )}
-                        </Menu.Item>
-                        <Menu.Item>
-                          {({ active }) => (
-                            <Link
-                              to="/settings"
+                              to="/dashboard/account"
                               className={`flex items-center space-x-2 w-full px-3 py-2 text-sm rounded-md transition-all duration-200 text-dark-text-primary ${
                                 active ? 'bg-accent-primary/10 text-accent-primary' : ''
                               }`}
                             >
                               <Cog6ToothIcon className="h-4 w-4" />
-                              <span>Settings</span>
+                              <span>Account Manager</span>
                             </Link>
                           )}
                         </Menu.Item>

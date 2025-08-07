@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenAI } from '@google/genai';
 import { OpenAI } from 'openai';
 
 // Optional Anthropic SDK - gracefully handle missing dependency
@@ -56,7 +56,7 @@ export interface JobMatchingResult {
 }
 
 export class EnterpriseAIService {
-  private gemini: GoogleGenerativeAI | null = null;
+  private gemini: GoogleGenAI | null = null;
   private claude: InstanceType<typeof Anthropic> | null = null;
   private openai: OpenAI | null = null;
   private providers: AIProvider[] = [];
@@ -69,7 +69,9 @@ export class EnterpriseAIService {
     // Initialize Gemini
     if (process.env.GEMINI_API_KEY) {
       try {
-        this.gemini = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+        this.gemini = new GoogleGenAI({
+          apiKey: process.env.GEMINI_API_KEY,
+        });
         this.providers.push({ name: 'gemini', isAvailable: true, priority: 1 });
       } catch (error) {
         console.warn('Failed to initialize Gemini:', error);
@@ -165,24 +167,18 @@ export class EnterpriseAIService {
       throw new Error('Invalid URL format. Please provide a valid job posting URL.');
     }
 
-    const prompt = `
-Please analyze the job posting at this URL: ${jobUrl}
+    const prompt = `Extract job info from: ${jobUrl}
 
-Extract the following information:
-1. Job title
-2. Company name
-3. Job description
-4. Key requirements
-5. Key responsibilities
-
-Respond with this JSON structure:
+Return ONLY this JSON format (no markdown, no text before/after):
 {
-  "title": "string",
-  "company": "string", 
-  "description": "string",
-  "requirements": ["string"],
-  "responsibilities": ["string"]
-}`;
+  "title": "job title",
+  "company": "company name", 
+  "description": "brief job description (max 300 chars)",
+  "requirements": ["req1", "req2", "req3"],
+  "responsibilities": ["resp1", "resp2", "resp3"]
+}
+
+Keep description under 300 characters. Limit arrays to max 5 items each. Ensure valid JSON syntax.`;
 
     return this.executeWithFallback(async (provider) => {
       const result = await this.callAIProvider(provider, prompt, 'job-analysis');
@@ -254,7 +250,12 @@ Write a 3-4 sentence professional summary that is:
 - Highlights key skills and experience
 - Professional and engaging
 
-Return only the enhanced summary text, no JSON or formatting.`;
+You must return a JSON array with exactly 1 professional summary.
+
+RETURN ONLY THIS FORMAT (no explanations, no markdown, no other text):
+["Professional summary here"]
+
+Generate exactly 1 enhanced professional summary.`;
 
       const enhancedSummary = await this.callAIProvider(provider, prompt, 'summary-generation');
       
@@ -268,17 +269,17 @@ Return only the enhanced summary text, no JSON or formatting.`;
 
   private simplifyResumeForAI(resumeData: any): any {
     const personalInfo = resumeData.personalInfo || {};
-    const workExp = resumeData.workExperience || [];
+    const workExp = resumeData.workExperience || resumeData.experience || [];
     const skills = resumeData.skills || [];
     
     return {
       name: `${personalInfo.firstName || ''} ${personalInfo.lastName || ''}`.trim() || 'Professional',
       summary: resumeData.professionalSummary || 'Professional seeking opportunities',
       experience: workExp.length > 0 
-        ? workExp.slice(0, 2).map(exp => `${exp.jobTitle} at ${exp.company}`).join(', ')
+        ? workExp.slice(0, 3).map(exp => `${exp.jobTitle} at ${exp.company || exp.companyName} (${exp.startDate || 'Previous'} - ${exp.endDate || (exp.isCurrentJob ? 'Present' : 'N/A')})`).join(', ')
         : 'Various professional experience',
       skills: Array.isArray(skills) 
-        ? skills.slice(0, 5).join(', ')
+        ? skills.slice(0, 8).map(skill => typeof skill === 'string' ? skill : skill.name).join(', ')
         : typeof skills === 'string' ? skills : 'Professional skills'
     };
   }
@@ -299,8 +300,8 @@ Current Summary:
 
 Full Resume Context:
 Name: ${resumeData.personalInfo?.firstName || ''} ${resumeData.personalInfo?.lastName || ''}
-Experience: ${(resumeData.workExperience || resumeData.experience || []).map(exp => `${exp.jobTitle || exp.title} at ${exp.company} - ${(exp.achievements || [exp.description]).join(', ')}`).join('; ')}
-Skills: ${(resumeData.skills || []).join(', ')}
+Experience: ${(resumeData.workExperience || resumeData.experience || []).map(exp => `${exp.jobTitle} at ${exp.company || exp.companyName} - ${(exp.achievements || exp.responsibilities || []).join(', ')}`).join('; ')}
+Skills: ${(resumeData.skills || []).map(skill => typeof skill === 'string' ? skill : skill.name).join(', ')}
 Education: ${(resumeData.education || []).map(edu => `${edu.degree} from ${edu.institution}`).join(', ')}
 
 ${jobContext ? `Job Context: ${jobContext}` : ''}
@@ -312,15 +313,20 @@ Task: Take the existing summary and make it more impactful by:
 4. Ensuring it's 3-4 powerful sentences
 5. Maintaining the person's professional voice but elevating it
 
-Return only the improved summary as plain text.`;
+You must return a JSON array with exactly 3 enhanced professional summaries.
+
+RETURN ONLY THIS FORMAT (no explanations, no markdown, no other text):
+["Enhanced summary 1", "Enhanced summary 2", "Enhanced summary 3"]
+
+Generate exactly 3 enhanced versions of this summary. Each should be a complete professional summary (3-4 sentences) that improves upon the original.`;
       } else {
         // Generate new summary from scratch
         prompt = `Create a compelling professional summary for this candidate based on their resume data.
 
 Resume Data:
 Name: ${resumeData.personalInfo?.firstName || ''} ${resumeData.personalInfo?.lastName || ''}
-Experience: ${(resumeData.workExperience || resumeData.experience || []).map(exp => `${exp.jobTitle || exp.title} at ${exp.company} - ${(exp.achievements || [exp.description]).join(', ')}`).join('; ')}
-Skills: ${(resumeData.skills || []).join(', ')}
+Experience: ${(resumeData.workExperience || resumeData.experience || []).map(exp => `${exp.jobTitle} at ${exp.company || exp.companyName} - ${(exp.achievements || exp.responsibilities || []).join(', ')}`).join('; ')}
+Skills: ${(resumeData.skills || []).map(skill => typeof skill === 'string' ? skill : skill.name).join(', ')}
 Education: ${(resumeData.education || []).map(edu => `${edu.degree} from ${edu.institution}`).join(', ')}
 
 ${jobContext ? `Job Context: ${jobContext}` : ''}
@@ -332,7 +338,12 @@ Write a professional summary that:
 4. Is 3-4 impactful sentences
 5. Uses strong action words and professional language
 
-Return only the summary as plain text.`;
+You must return a JSON array with exactly 3 professional summaries.
+
+RETURN ONLY THIS FORMAT (no explanations, no markdown, no other text):
+["Professional summary 1", "Professional summary 2", "Professional summary 3"]
+
+Generate exactly 3 professional summary variations. Each should be a complete professional summary (3-4 sentences) that captures their unique value proposition.`;
       }
 
       const result = await this.callAIProvider(provider, prompt, 'summary-generation');
@@ -400,45 +411,169 @@ Respond with this JSON structure:
     try {
       console.log(`🔄 Calling Gemini for ${type}...`);
       
-      // Add timeout wrapper - increased to 30s for complex operations
+      // Add timeout wrapper - increased to 60s for complex operations
       const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('AI request timeout')), 30000);
+        setTimeout(() => reject(new Error('AI request timeout')), 60000);
       });
 
-      // Use Gemini 2.5 Flash - the latest and most powerful model
-      let model = this.gemini.getGenerativeModel({ model: 'gemini-2.5-flash' });
+      // Use Gemini 2.5 Flash with high token limits for resume operations
+      const config: any = {
+        model: 'gemini-2.5-flash',
+        contents: prompt,
+      };
       
-      const aiPromise = model.generateContent(prompt);
+      // Resume and job analysis operations need very high token limits
+      const resumeOperations = ['job-analysis', 'job-matching', 'ats-analysis', 'summary-generation', 'resume-optimization'];
+      if (resumeOperations.includes(type)) {
+        // For job-analysis specifically, use more conservative settings to prevent truncation
+        if (type === 'job-analysis') {
+          config.generationConfig = {
+            maxOutputTokens: 2048, // Much smaller limit to ensure complete JSON responses
+            temperature: 0.1, // Lower temperature for more consistent output
+            topK: 10,  // More focused to ensure JSON format
+            topP: 0.6, // More conservative to avoid creative formatting
+            candidateCount: 1, // Ensure single response
+          };
+          console.log(`🔧 Using job-analysis optimized config with maxOutputTokens: 2048`);
+        } else {
+          config.generationConfig = {
+            maxOutputTokens: 50000, // Very high limit for other operations
+            temperature: 0.2,
+            topK: 40,
+            topP: 0.9,
+          };
+          console.log(`🔧 Using enhanced config for ${type} with maxOutputTokens: 50000`);
+        }
+      }
+      
+      const aiPromise = this.gemini.models.generateContent(config);
+      
       const result = await Promise.race([aiPromise, timeoutPromise]) as any;
       
-      const response = await result.response;
-      const text = response.text();
-
-      console.log(`📝 Gemini response received (${text.length} chars)`);
+      // Try different methods to get the full response text - prioritize candidates array
+      let text = '';
+      try {
+        if (result.candidates && result.candidates[0]) {
+          // Method 3: From candidates array
+          const candidate = result.candidates[0];
+          if (candidate.content && candidate.content.parts) {
+            console.log(`🔧 Found ${candidate.content.parts.length} parts in response`);
+            const parts = candidate.content.parts.map((part, index) => {
+              console.log(`🔧 Part ${index}: ${part.text ? part.text.length : 0} chars`);
+              return part.text || '';
+            });
+            text = parts.join('');
+            console.log(`🔧 Total extracted text from candidates array: ${text.length} chars`);
+            
+            // Check for truncation indicators
+            if (candidate.finishReason === 'MAX_TOKENS' || candidate.finishReason === 'LENGTH') {
+              console.warn(`⚠️ Response truncated due to ${candidate.finishReason}, retrying with smaller token limit`);
+              
+              // Retry with even smaller token limit for job-analysis
+              if (type === 'job-analysis') {
+                console.log('🔄 Retrying job-analysis with reduced token limit...');
+                const retryConfig = {
+                  model: 'gemini-2.5-flash',
+                  contents: prompt,
+                  generationConfig: {
+                    maxOutputTokens: 1024, // Very small limit to ensure completion
+                    temperature: 0.05, // Even more deterministic
+                    topK: 5,
+                    topP: 0.5,
+                    candidateCount: 1,
+                  }
+                };
+                
+                const retryResult = await this.gemini.models.generateContent(retryConfig);
+                if (retryResult.candidates && retryResult.candidates[0]) {
+                  const retryCandidate = retryResult.candidates[0];
+                  if (retryCandidate.content && retryCandidate.content.parts) {
+                    const retryText = retryCandidate.content.parts.map(part => part.text || '').join('');
+                    console.log(`🔄 Retry successful, got ${retryText.length} chars`);
+                    return this.parseAIResponse(retryText, type);
+                  }
+                }
+              }
+              
+              throw new Error(`AI response was truncated (${candidate.finishReason}). Unable to get complete response.`);
+            }
+            
+            // Check if the response looks truncated by examining the end
+            if (text && !text.trim().endsWith('}') && !text.trim().endsWith(']') && !text.trim().endsWith('"')) {
+              console.warn('⚠️ Response appears truncated - doesn\'t end with proper JSON closure');
+              // Try to complete basic JSON structure
+              const trimmed = text.trim();
+              if (trimmed.startsWith('{') && !trimmed.endsWith('}')) {
+                console.log('🔧 Attempting to close truncated JSON object');
+                text = trimmed + '}';
+              } else if (trimmed.startsWith('[') && !trimmed.endsWith(']')) {
+                console.log('🔧 Attempting to close truncated JSON array');
+                text = trimmed + ']';
+              }
+            }
+          }
+        } else if (result.response && typeof result.response.text === 'function') {
+          // Method 1: Try response.text() as function
+          text = await result.response.text();
+        } else if (result.response && result.response.text) {
+          // Method 1b: Try response.text as property
+          text = result.response.text;
+        } else if (result.text) {
+          // Method 2: Direct text property
+          text = result.text;
+        }
+        
+        console.log(`📝 Gemini response received (${text.length} chars)`);
+        console.log(`🔍 Response object keys:`, Object.keys(result));
+        console.log(`🔍 Response structure sample:`, JSON.stringify(result, null, 2).substring(0, 500));
+        
+      } catch (textError) {
+        console.error(`❌ Error extracting text from response:`, textError);
+        throw new Error(`Failed to extract text from Gemini response: ${textError.message}`);
+      }
+      
+      if (!text) {
+        throw new Error('Empty response text from Gemini API');
+      }
+      
       return this.parseAIResponse(text, type);
     } catch (error: any) {
       console.error(`❌ Gemini error for ${type}:`, error.message);
       
       if (error.message === 'AI request timeout') {
+        console.warn(`⚠️ gemini failed for ${type}: AI service timeout - please try again`);
+        console.warn(`⚠️ AI FALLBACK: ${type} failed, using manual assessment`);
+        console.warn(`⚠️ NOTIFICATION: AI ${type} had issues, user will be informed`);
         throw new Error('AI service timeout - please try again');
+      }
+
+      // Handle 429 Quota Exceeded errors
+      if (error.message?.includes('429') || error.message?.includes('quota') || error.message?.includes('RESOURCE_EXHAUSTED')) {
+        console.warn('⚠️ Gemini API quota exceeded - consider upgrading your plan');
+        const quotaError = new Error('AI service quota exceeded. Please check your Gemini API billing and quota limits at https://aistudio.google.com/');
+        (quotaError as any).code = 'AI_QUOTA_EXCEEDED';
+        (quotaError as any).status = 429;
+        throw quotaError;
       }
       
       // Handle 503 Service Unavailable - retry with fallback models
       if (error.message?.includes('503') || error.message?.includes('overloaded')) {
         try {
-          console.log('🔄 Gemini 2.5 Flash overloaded, trying Gemini 1.5 Flash...');
-          const fallbackModel = this.gemini.getGenerativeModel({ model: 'gemini-1.5-flash' });
-          const fallbackResult = await fallbackModel.generateContent(prompt);
-          const fallbackResponse = await fallbackResult.response;
-          const fallbackText = fallbackResponse.text();
+          console.log('🔄 Gemini 2.5 Pro overloaded, trying Gemini 2.5 Flash...');
+          const fallbackResult = await this.gemini.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: prompt,
+          });
+          const fallbackText = fallbackResult.text;
           return this.parseAIResponse(fallbackText, type);
         } catch (fallbackError) {
           try {
-            console.log('🔄 Gemini 1.5 Flash failed, trying Gemini Pro...');
-            const modelPro = this.gemini.getGenerativeModel({ model: 'gemini-1.5-pro' });
-            const resultPro = await modelPro.generateContent(prompt);
-            const responsePro = await resultPro.response;
-            const textPro = responsePro.text();
+            console.log('🔄 Gemini 2.5 Flash failed, trying Gemini 2.5 Flash as final fallback...');
+            const resultPro = await this.gemini.models.generateContent({
+              model: 'gemini-2.5-flash',
+              contents: prompt,
+            });
+            const textPro = resultPro.text;
             return this.parseAIResponse(textPro, type);
           } catch (finalError) {
             throw new Error('All Gemini models are currently overloaded - please try again in a few minutes');
@@ -481,105 +616,121 @@ Respond with this JSON structure:
   }
 
   private parseAIResponse(text: string, type: string): any {
+    console.log(`🔧 [${type}] Raw AI response (${text.length} chars):`, text.substring(0, 200));
+    
     try {
-      // Remove markdown code fences and extra formatting
+      // COMPREHENSIVE TEXT CLEANING - handles ALL problematic patterns
       let cleanedText = text.trim();
-      if (cleanedText.startsWith('```json')) {
-        cleanedText = cleanedText.replace(/^```json\s*/, '').replace(/\s*```$/, '');
-      } else if (cleanedText.startsWith('```')) {
-        cleanedText = cleanedText.replace(/^```\s*/, '').replace(/\s*```$/, '');
-      }
       
-      // Try to find and parse JSON
-      const jsonMatch = cleanedText.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
-      if (jsonMatch) {
-        return JSON.parse(jsonMatch[0]);
-      }
+      // Remove all markdown variations
+      cleanedText = cleanedText
+        .replace(/```json\n?/gi, '')
+        .replace(/```javascript\n?/gi, '')
+        .replace(/```\n?/g, '')
+        .replace(/`{3,}/g, '')
+        .replace(/^`+|`+$/g, '');
       
-      // Try parsing the entire cleaned text as JSON
+      // Remove ONLY specific problematic prefixes, NOT valid JSON arrays
+      cleanedText = cleanedText
+        .replace(/^\[Candidate[^\]]*\]\s*/gi, '') // [Candidate...] but not JSON arrays
+        .replace(/^\[Your Job[^\]]*\]\s*/gi, '') // [Your Job...]
+        .replace(/^\[Your Profe[^\]]*\]\s*/gi, '') // [Your Profe...]
+        .replace(/^\[Job Title[^\]]*\]\s*/gi, '') // [Job Title...]
+        .replace(/^\[Professional[^\]]*\]\s*/gi, '') // [Professional...]
+        .replace(/^\[Summary[^\]]*\]\s*/gi, '') // [Summary...]
+        .replace(/^Here's.*?:\s*/gi, '') // "Here's the..."
+        .replace(/^The.*?:\s*/gi, '') // "The JSON response..."
+        .replace(/^Response.*?:\s*/gi, '') // "Response:"
+        .replace(/^Based on.*?:\s*/gi, '') // "Based on..."
+        .replace(/^\*\*.*?\*\*\s*/gi, '') // **Bold text**
+        .replace(/^\d+\.\s*/gm, '') // Numbered list items
+        .replace(/^[-•]\s*/gm, '') // Bullet points
+        .trim();
+      
+      // DON'T remove valid JSON arrays that start with ["
+      
+      console.log(`🧹 [${type}] After cleaning (${cleanedText.length} chars):`, cleanedText.substring(0, 200));
+      
+      // PRIORITY: Try parsing cleaned text directly first (for perfect JSON responses)
       try {
-        return JSON.parse(cleanedText);
+        const directParsed = JSON.parse(cleanedText);
+        console.log(`✅ [${type}] Direct parse succeeded!`);
+        return directParsed;
       } catch (e) {
-        // Continue to special handling
+        console.log(`❌ [${type}] Direct parse failed:`, e.message);
       }
       
-      // Special handling for summary generation - if no JSON found, create array from text
-      if (type === 'summary-generation') {
-        console.log(`📝 Processing summary text for ${type}`);
-        // Split by numbered list or line breaks to create multiple summaries
-        const summaries = cleanedText
-          .split(/\n\d+\.\s*|\n-\s*|\n\n+/)
-          .map(s => s.trim())
-          .filter(s => s.length > 20); // Filter out very short lines
+      // ENHANCED JSON EXTRACTION - multiple strategies
+      let extractedJson = null;
+      
+      // Strategy 1: Look for complete JSON object/array with proper nesting support
+      let jsonPattern = /(\{(?:[^{}]|{(?:[^{}]|{[^{}]*})*})*\}|\[(?:[^\[\]]|\[(?:[^\[\]]|\[[^\[\]]*\])*\])*\])/;
+      let match = cleanedText.match(jsonPattern);
+      
+      if (match) {
+        extractedJson = match[0];
+        console.log(`✂️ [${type}] Strategy 1 - Found JSON pattern`);
+      } else {
+        // Strategy 2: Find content between first { and last }
+        const firstBrace = cleanedText.indexOf('{');
+        const lastBrace = cleanedText.lastIndexOf('}');
+        const firstBracket = cleanedText.indexOf('[');
+        const lastBracket = cleanedText.lastIndexOf(']');
         
-        if (summaries.length > 0) {
-          console.log(`✅ Created ${summaries.length} summaries from text`);
-          return summaries.slice(0, 3); // Return up to 3 summaries
+        if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+          extractedJson = cleanedText.substring(firstBrace, lastBrace + 1);
+          console.log(`✂️ [${type}] Strategy 2 - Extracted between braces`);
+        } else if (firstBracket !== -1 && lastBracket !== -1 && lastBracket > firstBracket) {
+          extractedJson = cleanedText.substring(firstBracket, lastBracket + 1);
+          console.log(`✂️ [${type}] Strategy 2 - Extracted between brackets`);
         }
+      }
+      
+      // If we found potential JSON, clean it further
+      if (extractedJson) {
+        extractedJson = extractedJson
+          .replace(/,\s*}/g, '}')  // Remove trailing commas in objects
+          .replace(/,\s*]/g, ']')  // Remove trailing commas in arrays
+          .replace(/\n/g, ' ')     // Replace newlines with spaces
+          .replace(/\s+/g, ' ')    // Normalize whitespace
+          .replace(/"\/"/g, '"/"') // Fix quote escaping issues
+          // Fix missing commas in arrays - common issue from logs
+          .replace(/"\s*\n\s*"/g, '", "')  // Fix line-broken string arrays
+          .replace(/"\s+"/g, '", "')       // Fix space-separated string arrays
+          // Fix missing commas in object properties
+          .replace(/"\s*\n\s*"[^:]/g, (match) => match.replace(/"\s*\n\s*"/, '", "'))
+          .trim();
         
-        // If no structured format, return the whole text as a single summary
-        console.log(`📄 Using full text as single summary`);
-        return [cleanedText];
-      }
-
-      // For resume optimization, if no JSON found, try to work with the text
-      if (type === 'resume-optimization') {
-        console.log(`⚠️ No JSON found for resume optimization, creating structured response`);
-        // Return the original data with enhanced summary if we got text
-        return {
-          enhancedSummary: cleanedText,
-          improvements: ['AI-enhanced content', 'Improved professional language'],
-          success: true
-        };
-      }
-
-      // Special handling for job analysis - create fallback structure
-      if (type === 'job-analysis') {
-        return {
-          title: 'Job Title (extracted from text)',
-          company: 'Company Name (extracted from text)', 
-          description: cleanedText.substring(0, 500),
-          requirements: cleanedText.split('\n').filter(line => 
-            line.toLowerCase().includes('require') || 
-            line.toLowerCase().includes('must') ||
-            line.toLowerCase().includes('need')
-          ).slice(0, 5),
-          responsibilities: []
-        };
-      }
-
-      // Special handling for job matching - create fallback structure
-      if (type === 'job-matching') {
-        return {
-          matchScore: 75,
-          keywordAlignment: ['General skills'],
-          missingKeywords: ['Review job requirements'],
-          recommendations: ['Update resume to match job requirements better']
-        };
+        console.log(`🔧 [${type}] Final JSON candidate:`, extractedJson.substring(0, 200));
+        
+        try {
+          const parsed = JSON.parse(extractedJson);
+          console.log(`✅ [${type}] JSON parsed successfully!`);
+          return parsed;
+        } catch (parseError) {
+          console.warn(`❌ [${type}] JSON parse failed:`, parseError.message);
+        }
       }
       
-      throw new Error('No valid JSON found in response');
-    } catch (error) {
-      // For summary generation, provide fallback even on parse error
-      if (type === 'summary-generation') {
-        console.warn(`⚠️ Parse error for ${type}, using fallback:`, error);
-        return [text.replace(/```json\n?/g, '').replace(/\n?```/g, '').trim()];
-      }
-
-      // For resume optimization, provide a basic fallback
-      if (type === 'resume-optimization') {
-        console.warn(`⚠️ Parse error for resume optimization, using fallback`);
-        return {
-          enhancedSummary: 'Professional with proven experience and expertise in their field.',
-          improvements: ['Basic AI enhancement applied'],
-          success: false
-        };
+      // Strategy 3: Try parsing the entire cleaned text
+      try {
+        const parsed = JSON.parse(cleanedText);
+        console.log(`✅ [${type}] Direct parse succeeded!`);
+        return parsed;
+      } catch (e) {
+        console.warn(`❌ [${type}] Direct parse failed:`, e.message);
       }
       
-      console.error(`❌ Failed to parse AI response for ${type}:`, error.message);
-      throw new Error(`Invalid AI response for ${type}: ${error.message}`);
+      // If all JSON parsing fails, throw error - NO FALLBACKS for production
+      throw new Error(`Failed to parse JSON response for ${type}. Raw response: ${text.substring(0, 200)}...`);
+    } catch (error: any) {
+      console.error(`❌ [${type}] CRITICAL: JSON parsing failed - this must be fixed for production!`);
+      console.error(`Raw response (${text.length} chars):`, text);
+      throw new Error(`AI service returned invalid JSON for ${type}: ${error.message}`);
     }
   }
+  
+  // NO FALLBACK HANDLING - Production system must get proper JSON responses
 
   private getOptimizationFocus(type: string): string {
     switch (type) {

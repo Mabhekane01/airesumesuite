@@ -40,18 +40,24 @@ class AIOptimizationService {
     jobDescription: string,
     resumeContent: string
   ): Promise<ResumeOptimizationSuggestion[]> {
-    try {
-      const prompt = `
+    const maxRetries = 2;
+    let lastError: any;
+    
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        console.log(`🔍 Attempt ${attempt}/${maxRetries}: Optimizing resume for job...`);
+        
+        const prompt = `
 As an expert ATS and recruitment specialist, analyze this resume against the job description and provide specific optimization suggestions.
 
 USER PROFILE:
 ${JSON.stringify({
-        headline: (userProfile as any).headline,
-        bio: (userProfile as any).bio,
-        technicalSkills: (userProfile as any).technicalSkills,
-        preferredRoles: (userProfile as any).preferredRoles,
-        aiOptimizationPreferences: (userProfile as any).aiOptimizationPreferences
-      }, null, 2)}
+          headline: (userProfile as any).headline,
+          bio: (userProfile as any).bio,
+          technicalSkills: (userProfile as any).technicalSkills,
+          preferredRoles: (userProfile as any).preferredRoles,
+          aiOptimizationPreferences: (userProfile as any).aiOptimizationPreferences
+        }, null, 2)}
 
 JOB DESCRIPTION:
 ${jobDescription}
@@ -79,51 +85,113 @@ Focus on:
 3. Quantifiable achievements
 4. Industry-specific terminology
 5. Format and structure improvements
+
+Respond with ONLY the JSON object, no markdown or additional text.
 `;
 
-      const result = await geminiService.model?.generateContent(prompt);
-      if (!result) {
-        throw new Error('AI service not available');
-      }
-      const response = await result.response;
-      const text = response.text();
+        // Add timeout wrapper
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('AI request timeout')), 45000);
+        });
 
-      const parsed = JSON.parse(text);
-      return parsed.suggestions;
-    } catch (error) {
-      console.error('AI optimization error:', error);
-      return this.getFallbackOptimizationSuggestions(jobDescription);
+        const aiPromise = geminiService.client?.models.generateContent({
+          model: 'gemini-2.5-flash',
+          contents: prompt,
+          config: {
+            temperature: 0.3,
+            topK: 20,
+            topP: 0.6,
+            maxOutputTokens: 2048,
+            candidateCount: 1,
+          },
+        });
+
+        if (!aiPromise) {
+          throw new Error('AI service not available');
+        }
+
+        const result = await Promise.race([aiPromise, timeoutPromise]) as any;
+        const text = result?.text || '';
+
+        // Enhanced JSON parsing
+        try {
+          let cleanedText = text.trim();
+          if (cleanedText.startsWith('```json')) {
+            cleanedText = cleanedText.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+          } else if (cleanedText.startsWith('```')) {
+            cleanedText = cleanedText.replace(/^```\s*/, '').replace(/\s*```$/, '');
+          }
+
+          // Extract JSON object
+          const jsonMatch = cleanedText.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            cleanedText = jsonMatch[0];
+          }
+
+          const parsed = JSON.parse(cleanedText);
+          
+          // Validate and return suggestions
+          if (parsed.suggestions && Array.isArray(parsed.suggestions)) {
+            console.log(`✅ Resume optimization succeeded on attempt ${attempt}`);
+            return parsed.suggestions;
+          } else {
+            throw new Error('Invalid response structure - missing suggestions array');
+          }
+        } catch (parseError) {
+          throw new Error(`JSON parsing failed: ${parseError.message}`);
+        }
+      } catch (error: any) {
+        lastError = error;
+        console.error(`❌ Resume optimization attempt ${attempt} failed:`, error.message);
+        
+        // If this is the last attempt, don't wait
+        if (attempt < maxRetries) {
+          const delay = attempt * 2000; // Exponential backoff
+          console.log(`⏳ Waiting ${delay/1000}s before retry...`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+        }
+      }
     }
+    
+    // All attempts failed, use fallback
+    console.warn(`⚠️ Resume optimization failed after ${maxRetries} attempts, using fallback:`, lastError?.message);
+    return this.getFallbackOptimizationSuggestions(jobDescription);
   }
 
   async analyzeJobMatch(
     userProfile: IUserProfile,
     jobApplication: IJobApplication
   ): Promise<JobMatchAnalysis> {
-    try {
-      const prompt = `
+    const maxRetries = 2;
+    let lastError: any;
+    
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        console.log(`🔍 Attempt ${attempt}/${maxRetries}: Analyzing job match...`);
+        
+        const prompt = `
 Analyze how well this candidate matches the job requirements and provide a comprehensive match analysis.
 
 CANDIDATE PROFILE:
 ${JSON.stringify({
-        headline: (userProfile as any).headline,
-        bio: (userProfile as any).bio,
-        yearsOfExperience: userProfile.yearsOfExperience,
-        technicalSkills: userProfile.technicalSkills,
-        softSkills: (userProfile as any).softSkills,
-        preferredRoles: userProfile.preferredRoles,
-        currentLocation: (userProfile as any).currentLocation,
-        expectedSalary: (userProfile as any).expectedSalary
-      }, null, 2)}
+          headline: (userProfile as any).headline,
+          bio: (userProfile as any).bio,
+          yearsOfExperience: userProfile.yearsOfExperience,
+          technicalSkills: userProfile.technicalSkills,
+          softSkills: (userProfile as any).softSkills,
+          preferredRoles: userProfile.preferredRoles,
+          currentLocation: (userProfile as any).currentLocation,
+          expectedSalary: (userProfile as any).expectedSalary
+        }, null, 2)}
 
 JOB DETAILS:
 ${JSON.stringify({
-        jobTitle: jobApplication.jobTitle,
-        companyName: jobApplication.companyName,
-        jobDescription: jobApplication.jobDescription,
-        jobLocation: jobApplication.jobLocation,
-        compensation: jobApplication.compensation
-      }, null, 2)}
+          jobTitle: jobApplication.jobTitle,
+          companyName: jobApplication.companyName,
+          jobDescription: jobApplication.jobDescription,
+          jobLocation: jobApplication.jobLocation,
+          compensation: jobApplication.compensation
+        }, null, 2)}
 
 Provide analysis in JSON format:
 {
@@ -140,32 +208,90 @@ Provide analysis in JSON format:
 }
 
 Calculate scores out of 100 and provide actionable insights.
+Respond with ONLY the JSON object, no markdown or additional text.
 `;
 
-      const result = await geminiService.model?.generateContent(prompt);
-      if (!result) {
-        throw new Error('AI service not available');
-      }
-      const response = await result.response;
-      const text = response.text();
+        // Add timeout wrapper
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('AI request timeout')), 45000);
+        });
 
-      return JSON.parse(text);
-    } catch (error) {
-      console.error('🚨 CRITICAL: Job match analysis AI service failed - this should not happen in production!', error);
-      console.error('📋 Job Application Details:', {
-        jobTitle: jobApplication.jobTitle,
-        companyName: jobApplication.companyName,
-        hasJobDescription: !!jobApplication.jobDescription,
-        jobDescriptionLength: jobApplication.jobDescription?.length
-      });
-      
-      // ⚠️ ENTERPRISE SECURITY: Do NOT return fallback values that cause static scores
-      // This prevents the infamous 78% static score bug
-      console.error('🔥 BLOCKING FALLBACK: Refusing to return static scores that mask AI service failures');
-      
-      // This indicates a serious problem with the AI service
-      throw new Error(`🚨 AI job match analysis service failed: ${error.message}. ENTERPRISE POLICY: Cannot provide inaccurate fallback scores. Fix AI service immediately.`);
+        const aiPromise = geminiService.client?.models.generateContent({
+          model: 'gemini-2.5-flash',
+          contents: prompt,
+          config: {
+            temperature: 0.3,
+            topK: 20,
+            topP: 0.6,
+            maxOutputTokens: 1024,
+            candidateCount: 1,
+          },
+        });
+
+        if (!aiPromise) {
+          throw new Error('AI service not available');
+        }
+
+        const result = await Promise.race([aiPromise, timeoutPromise]) as any;
+        const text = result?.text || '';
+
+        // Enhanced JSON parsing
+        try {
+          let cleanedText = text.trim();
+          if (cleanedText.startsWith('```json')) {
+            cleanedText = cleanedText.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+          } else if (cleanedText.startsWith('```')) {
+            cleanedText = cleanedText.replace(/^```\s*/, '').replace(/\s*```$/, '');
+          }
+
+          // Extract JSON object
+          const jsonMatch = cleanedText.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            cleanedText = jsonMatch[0];
+          }
+
+          const parsed = JSON.parse(cleanedText);
+          
+          // Validate required fields
+          if (typeof parsed.overallMatch === 'number' && 
+              Array.isArray(parsed.missingSkills) &&
+              Array.isArray(parsed.strongPoints)) {
+            console.log(`✅ Job match analysis succeeded on attempt ${attempt}`);
+            return parsed;
+          } else {
+            throw new Error('Invalid response structure');
+          }
+        } catch (parseError) {
+          throw new Error(`JSON parsing failed: ${parseError.message}`);
+        }
+      } catch (error: any) {
+        lastError = error;
+        console.error(`❌ Attempt ${attempt} failed:`, error.message);
+        
+        // If this is the last attempt, don't wait
+        if (attempt < maxRetries) {
+          const delay = attempt * 2000; // Exponential backoff
+          console.log(`⏳ Waiting ${delay/1000}s before retry...`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+        }
+      }
     }
+    
+    // All attempts failed
+    console.error('🚨 CRITICAL: Job match analysis AI service failed after all retries!');
+    console.error('📋 Job Application Details:', {
+      jobTitle: jobApplication.jobTitle,
+      companyName: jobApplication.companyName,
+      hasJobDescription: !!jobApplication.jobDescription,
+      jobDescriptionLength: jobApplication.jobDescription?.length
+    });
+    
+    // ⚠️ ENTERPRISE SECURITY: Do NOT return fallback values that cause static scores
+    // This prevents the infamous 78% static score bug
+    console.error('🔥 BLOCKING FALLBACK: Refusing to return static scores that mask AI service failures');
+    
+    // This indicates a serious problem with the AI service
+    throw new Error(`🚨 AI job match analysis service failed after ${maxRetries} attempts: ${lastError?.message}. ENTERPRISE POLICY: Cannot provide inaccurate fallback scores. Fix AI service immediately.`);
   }
 
   async generateCareerInsights(
@@ -205,12 +331,14 @@ Generate insights for each preferred role in JSON format:
 Base recommendations on current market trends, salary data, and skill demand.
 `;
 
-      const result = await geminiService.model?.generateContent(prompt);
+      const result = await geminiService.client?.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: prompt,
+      });
       if (!result) {
         throw new Error('AI service not available');
       }
-      const response = await result.response;
-      const text = response.text();
+      const text = result?.text || '';
 
       const parsed = JSON.parse(text);
       return parsed.insights;
@@ -259,12 +387,14 @@ Requirements:
 Generate a compelling cover letter that stands out while being ATS-friendly.
 `;
 
-      const result = await geminiService.model?.generateContent(prompt);
+      const result = await geminiService.client?.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: prompt,
+      });
       if (!result) {
         throw new Error('AI service not available');
       }
-      const response = await result.response;
-      return response.text().trim() || this.getFallbackCoverLetter(userProfile, jobApplication);
+      return result?.text?.trim() || this.getFallbackCoverLetter(userProfile, jobApplication);
     } catch (error) {
       console.error('Cover letter optimization error:', error);
       return this.getFallbackCoverLetter(userProfile, jobApplication);
@@ -307,12 +437,14 @@ Provide response in JSON format:
 Generate 8-12 relevant questions and 5 detailed answer guides.
 `;
 
-      const result = await geminiService.model?.generateContent(prompt);
+      const result = await geminiService.client?.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: prompt,
+      });
       if (!result) {
         throw new Error('AI service not available');
       }
-      const response = await result.response;
-      const text = response.text();
+      const text = result?.text || '';
 
       return JSON.parse(text);
     } catch (error) {

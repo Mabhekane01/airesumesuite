@@ -94,30 +94,102 @@ export class CoverLetterController {
 
       const { jobUrl } = req.body;
 
-      // Validate job URL
-      const isValidUrl = await jobScrapingService.validateJobUrl(jobUrl);
-      if (!isValidUrl) {
-        res.status(400).json({
-          success: false,
-          message: 'Invalid or unsupported job URL'
-        });
-        return;
-      }
-
-      const coverLetter = await coverLetterService.generateCoverLetterFromJob({
-        ...req.body,
-        userId
+      // Use new AI-powered job analysis service
+      const result = await coverLetterService.aiGenerateCoverLetterFromUrl({
+        userId,
+        jobUrl,
+        resumeId: req.body.resumeId,
+        tone: req.body.tone || 'professional',
+        customInstructions: req.body.customInstructions
       });
 
       res.status(201).json({
         success: true,
-        data: coverLetter
+        data: {
+          coverLetter: result.coverLetter,
+          jobAnalysis: result.jobAnalysis
+        }
       });
     } catch (error) {
       console.error('Error in generateFromJobUrl:', error);
       res.status(500).json({ 
         success: false, 
-        message: error instanceof Error ? error.message : 'Failed to generate cover letter from job URL' 
+        message: error instanceof Error ? error.message : 'Failed to generate cover letter from job URL'
+      });
+    }
+  }
+
+  async aiGenerateFromJobUrl(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        res.status(400).json({ errors: errors.array() });
+        return;
+      }
+
+      const userId = req.user?.id;
+      if (!userId) {
+        res.status(401).json({ message: 'Unauthorized' });
+        return;
+      }
+
+      const { jobUrl, resumeId, tone, customInstructions } = req.body;
+
+      console.log('🚀 AI cover letter generation request:', {
+        userId,
+        jobUrl,
+        resumeId: resumeId || 'none',
+        tone: tone || 'professional'
+      });
+
+      const result = await coverLetterService.aiGenerateCoverLetterFromUrl({
+        userId,
+        jobUrl,
+        resumeId,
+        tone: tone || 'professional',
+        customInstructions
+      });
+
+      // Send success notification
+      try {
+        await notificationService.createNotification({
+          userId,
+          category: 'cover_letter',
+          type: 'success',
+          title: 'AI Cover Letter Generated!',
+          message: `Your AI-powered cover letter for ${result.jobAnalysis.jobTitle} at ${result.jobAnalysis.companyName} is ready. Analysis confidence: ${result.jobAnalysis.confidence}%`,
+          priority: 'medium',
+          action: {
+            label: 'View Cover Letter',
+            url: `/dashboard/cover-letter`,
+            type: 'internal'
+          },
+          metadata: {
+            source: 'ai-cover-letter-generation',
+            additionalData: { 
+              jobTitle: result.jobAnalysis.jobTitle,
+              companyName: result.jobAnalysis.companyName,
+              confidence: result.jobAnalysis.confidence,
+              skillsMatched: result.jobAnalysis.skills.length
+            }
+          }
+        });
+      } catch (notificationError) {
+        console.warn('⚠️ Failed to send AI cover letter notification:', notificationError);
+      }
+
+      res.status(201).json({
+        success: true,
+        data: {
+          coverLetter: result.coverLetter,
+          jobAnalysis: result.jobAnalysis
+        }
+      });
+    } catch (error) {
+      console.error('❌ Error in AI cover letter generation:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: error instanceof Error ? error.message : 'Failed to generate AI-powered cover letter'
       });
     }
   }
@@ -526,7 +598,7 @@ Focus on:
         const { geminiService } = await import('../services/ai/gemini');
         
         // Check if Gemini service is properly configured
-        if (!geminiService.model) {
+        if (!geminiService.client) {
           throw new Error('Gemini API not configured - missing GEMINI_API_KEY');
         }
 
@@ -898,10 +970,16 @@ Return only the improved cover letter content (no JSON, no explanations).`;
         // Get resume data if provided
         if (resumeId) {
           const { Resume } = await import('../models/Resume');
-          const resume = await Resume.findById(resumeId);
-          if (resume) {
-            personalInfo = resume.personalInfo || personalInfo;
-            resumeData = resume.toObject();
+          // Ensure resumeId is a valid string
+          const validResumeId = typeof resumeId === 'string' ? resumeId : (resumeId?._id || resumeId?.toString());
+          if (validResumeId && validResumeId.match(/^[0-9a-fA-F]{24}$/)) {
+            const resume = await Resume.findById(validResumeId);
+            if (resume) {
+              personalInfo = resume.personalInfo || personalInfo;
+              resumeData = resume.toObject();
+            }
+          } else {
+            console.warn('⚠️ Invalid resumeId format:', resumeId);
           }
         }
 

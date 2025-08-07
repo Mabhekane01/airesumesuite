@@ -5,6 +5,7 @@ import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
 import { Input } from '../ui/Input';
 import { Textarea } from '../ui/Textarea';
+import { DatePicker } from '../ui/DatePicker';
 import { Project } from '../../types';
 
 export default function ProjectsForm() {
@@ -96,18 +97,20 @@ export default function ProjectsForm() {
             </div>
 
             <div className="grid md:grid-cols-2 gap-4 mb-4">
-              <Input
+              <DatePicker
                 label="Start Date"
                 value={project.startDate || ''}
-                onChange={(e) => handleProjectChange(index, 'startDate', e.target.value)}
-                type="month"
+                onChange={(value) => handleProjectChange(index, 'startDate', value)}
+                allowFuture={false}
+                helpText="When you started working on this project"
               />
               
-              <Input
+              <DatePicker
                 label="End Date"
                 value={project.endDate || ''}
-                onChange={(e) => handleProjectChange(index, 'endDate', e.target.value)}
-                type="month"
+                onChange={(value) => handleProjectChange(index, 'endDate', value)}
+                allowFuture={true}
+                helpText="When you completed this project (optional)"
               />
             </div>
 

@@ -22,9 +22,17 @@ export default function ResumePreviewPage() {
         return;
       }
 
+      // Ensure ID is a string and not an object
+      const resumeId = String(id);
+      if (resumeId === '[object Object]' || resumeId === 'undefined' || resumeId === 'null') {
+        setError('Invalid resume ID');
+        setLoading(false);
+        return;
+      }
+
       try {
-        console.log('📄 Fetching resume with ID:', id);
-        const resumeData: ResumeData = await resumeService.getResumeById(id);
+        console.log('📄 Fetching resume with ID:', resumeId);
+        const resumeData: ResumeData = await resumeService.getResumeById(resumeId);
         console.log('📄 Resume data received:', resumeData);
         
         // Transform ResumeData to Resume format
@@ -129,6 +137,8 @@ export default function ResumePreviewPage() {
           <ResumeProvider initialData={resume}>
             <EnhancedResumePreview 
               resume={resume}
+              templateId={resume.template}
+              isLatexTemplate={resume.isLatexTemplate}
               onAIImprovement={() => {
                 // Handle AI improvement
                 console.log('AI improvement requested');
@@ -140,6 +150,10 @@ export default function ResumePreviewPage() {
               onJobOptimization={() => {
                 // Handle job optimization
                 console.log('Job optimization requested');
+              }}
+              onResumeUpdate={(updatedResume) => {
+                // Update local resume state when AI features are applied
+                setResume(updatedResume);
               }}
             />
           </ResumeProvider>

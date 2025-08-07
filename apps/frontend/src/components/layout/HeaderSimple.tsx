@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import { 
-  UserCircleIcon, 
   ChevronDownIcon,
   ArrowRightOnRectangleIcon,
-  UserIcon,
   Cog6ToothIcon,
   DocumentTextIcon,
   PencilIcon,
@@ -19,20 +17,64 @@ import { useNotifications } from '../../contexts/NotificationContext';
 import AuthModalSimple from '../auth/AuthModalSimple';
 import NotificationDropdown from './NotificationDropdown';
 
-export default function HeaderSimple() {
+// Memoized Navigation Component to prevent re-renders on location change
+const MemoizedNavigation = React.memo(() => {
   const location = useLocation();
+  const navigation = [
+    { name: 'Dashboard', href: '/dashboard', icon: ChartBarIcon, current: location.pathname === '/dashboard' },
+    { name: 'Resume Builder', href: '/dashboard/resume/templates', icon: DocumentTextIcon, current: location.pathname.startsWith('/dashboard/resume') },
+    { name: 'Cover Letters', href: '/dashboard/cover-letter', icon: PencilIcon, current: location.pathname.startsWith('/dashboard/cover-letter') },
+    { name: 'Job Applications', href: '/dashboard/applications', icon: BriefcaseIcon, current: location.pathname.startsWith('/dashboard/applications') },
+  ];
+
+  return (
+    <>
+      {navigation.map((item, index) => {
+        const Icon = item.icon;
+        return (
+          <Link
+            key={item.name}
+            to={item.href}
+            className={`flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 rounded-md sm:rounded-lg text-xs sm:text-sm font-medium transition-all duration-300 ${
+              item.current
+                ? 'bg-accent-primary/20 text-accent-primary border border-accent-primary/30'
+                : 'text-dark-text-secondary hover:text-accent-primary hover:bg-accent-primary/10'
+            } ${index > 1 ? 'hidden md:flex' : ''}`}
+          >
+            <Icon className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">{item.name}</span>
+            <span className="sm:hidden">{item.name.split(' ')[0]}</span>
+          </Link>
+        );
+      })}
+    </>
+  );
+});
+
+const PublicNavigation = React.memo(() => {
+  const location = useLocation();
+  return (
+    <Link
+      to="/templates"
+      className={`flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 rounded-md sm:rounded-lg text-xs sm:text-sm font-medium transition-all duration-300 ${
+        location.pathname === '/templates'
+          ? 'bg-accent-primary/20 text-accent-primary border border-accent-primary/30'
+          : 'text-dark-text-secondary hover:text-accent-primary hover:bg-accent-primary/10'
+      }`}
+    >
+      <DocumentTextIcon className="h-3 w-3 sm:h-4 sm:w-4" />
+      <span>Templates</span>
+    </Link>
+  );
+});
+
+
+export default function HeaderSimple() {
   const { user, isAuthenticated, logout } = useAuthStore();
   const { notifications, unreadCount, markAsRead, markAllAsRead, clearAll } = useNotifications();
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
   const [notificationDropdownOpen, setNotificationDropdownOpen] = useState(false);
-
-  const navigation = [
-    { name: 'Dashboard', href: '/dashboard', icon: ChartBarIcon, current: location.pathname === '/dashboard' },
-    { name: 'Resume Builder', href: '/resume-builder', icon: DocumentTextIcon, current: location.pathname.startsWith('/resume-builder') },
-    { name: 'Cover Letters', href: '/cover-letter', icon: PencilIcon, current: location.pathname.startsWith('/cover-letter') },
-    { name: 'Job Tracker', href: '/job-tracker', icon: BriefcaseIcon, current: location.pathname.startsWith('/job-tracker') },
-  ];
 
   const handleAuthClick = (mode: 'login' | 'register') => {
     console.log('🔍 HeaderSimple: handleAuthClick called with mode:', mode);
@@ -62,28 +104,9 @@ export default function HeaderSimple() {
             </div>
 
             {/* Navigation */}
-            {isAuthenticated && (
-              <nav className="hidden sm:flex space-x-1 md:space-x-2">
-                {navigation.map((item, index) => {
-                  const Icon = item.icon;
-                  return (
-                    <Link
-                      key={item.name}
-                      to={item.href}
-                      className={`flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 rounded-md sm:rounded-lg text-xs sm:text-sm font-medium transition-all duration-300 ${
-                        item.current
-                          ? 'bg-accent-primary/20 text-accent-primary border border-accent-primary/30'
-                          : 'text-dark-text-secondary hover:text-accent-primary hover:bg-accent-primary/10'
-                      } ${index > 1 ? 'hidden md:flex' : ''}`}
-                    >
-                      <Icon className="h-3 w-3 sm:h-4 sm:w-4" />
-                      <span className="hidden sm:inline">{item.name}</span>
-                      <span className="sm:hidden">{item.name.split(' ')[0]}</span>
-                    </Link>
-                  );
-                })}
-              </nav>
-            )}
+            <nav className="hidden sm:flex space-x-1 md:space-x-2">
+              {isAuthenticated ? <MemoizedNavigation /> : <PublicNavigation />}
+            </nav>
 
             {/* Auth Section */}
             <div className="flex items-center space-x-2 sm:space-x-3 md:space-x-4">
@@ -166,26 +189,13 @@ export default function HeaderSimple() {
                         <Menu.Item>
                           {({ active }) => (
                             <Link
-                              to="/profile"
-                              className={`flex items-center space-x-2 w-full px-3 py-2 text-sm rounded-md transition-all duration-200 text-dark-text-primary ${
-                                active ? 'bg-accent-primary/10 text-accent-primary' : ''
-                              }`}
-                            >
-                              <UserIcon className="h-4 w-4" />
-                              <span>Profile</span>
-                            </Link>
-                          )}
-                        </Menu.Item>
-                        <Menu.Item>
-                          {({ active }) => (
-                            <Link
-                              to="/settings"
+                              to="/dashboard/account"
                               className={`flex items-center space-x-2 w-full px-3 py-2 text-sm rounded-md transition-all duration-200 text-dark-text-primary ${
                                 active ? 'bg-accent-primary/10 text-accent-primary' : ''
                               }`}
                             >
                               <Cog6ToothIcon className="h-4 w-4" />
-                              <span>Settings</span>
+                              <span>Account Manager</span>
                             </Link>
                           )}
                         </Menu.Item>

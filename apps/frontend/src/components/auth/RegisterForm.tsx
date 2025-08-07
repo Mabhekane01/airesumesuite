@@ -10,6 +10,7 @@ import { RECAPTCHA_CONFIG } from '../../services/recaptchaService';
 interface RegisterFormProps {
   onToggleMode: () => void;
   onClose: () => void;
+  onSuccess?: () => void;
   recaptchaState?: {
     isReady: boolean;
     isLoading: boolean;
@@ -19,7 +20,7 @@ interface RegisterFormProps {
   };
 }
 
-export default function RegisterForm({ onToggleMode, onClose, recaptchaState }: RegisterFormProps) {
+export default function RegisterForm({ onToggleMode, onClose, onSuccess, recaptchaState }: RegisterFormProps) {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -173,7 +174,7 @@ export default function RegisterForm({ onToggleMode, onClose, recaptchaState }: 
   };
 
   const handleOTPSuccess = () => {
-    toast.success('Registration complete! Please log in with your credentials.');
+    toast.success('Registration complete! You are now logged in.');
     
     // Clear local OTP state
     setShowOTPVerification(false);
@@ -182,8 +183,13 @@ export default function RegisterForm({ onToggleMode, onClose, recaptchaState }: 
     // Clear auth store OTP state
     clearOTPState();
     
-    // Switch to login mode
-    onToggleMode();
+    // Close modal
+    onClose();
+    
+    // Call success callback for redirect handling
+    if (onSuccess) {
+      onSuccess();
+    }
   };
 
   // Show OTP verification form if needed

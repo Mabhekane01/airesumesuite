@@ -350,8 +350,12 @@ export class TemplateRenderer {
           <div>
             <h3 class="section-title">CERTIFICATIONS</h3>
         `;
-        resumeData.certifications.forEach((cert: string) => {
-          html += `<div class="certification-item">• ${cert}</div>`;
+        resumeData.certifications.forEach((cert: any) => {
+          const certName = typeof cert === 'string' ? cert : cert.name;
+          const certIssuer = typeof cert === 'object' ? cert.issuer : '';
+          const certDate = typeof cert === 'object' ? cert.date : '';
+          const displayText = certIssuer ? `${certName} (${certIssuer}${certDate ? ', ' + certDate : ''})` : certName;
+          html += `<div class="certification-item">• ${displayText}</div>`;
         });
         html += '</div>';
       }
@@ -397,7 +401,7 @@ export class TemplateRenderer {
         html += `
           <div class="work-item">
             <div class="work-title">${job.jobTitle}</div>
-            <div class="work-company">${job.company} • ${job.location}</div>
+            <div class="work-company">${job.company || job.companyName} • ${job.location}</div>
             <div class="work-date">${job.startDate} - ${endDate}</div>
             <div class="work-description">
         `;
@@ -590,7 +594,7 @@ export class TemplateRenderer {
       resumeData.workExperience.forEach((job: any) => {
         const endDate = job.isCurrentJob ? 'Present' : job.endDate;
         lines.push(`${job.jobTitle}`);
-        lines.push(`${job.company} | ${job.location}`);
+        lines.push(`${job.company || job.companyName} | ${job.location}`);
         lines.push(`${job.startDate} - ${endDate}`);
         
         if (job.responsibilities && job.responsibilities.length > 0) {
@@ -655,8 +659,12 @@ export class TemplateRenderer {
     if (resumeData.certifications && resumeData.certifications.length > 0) {
       lines.push('CERTIFICATIONS');
       lines.push(''.padEnd(30, '-'));
-      resumeData.certifications.forEach((cert: string) => {
-        lines.push(`• ${cert}`);
+      resumeData.certifications.forEach((cert: any) => {
+        const certName = typeof cert === 'string' ? cert : cert.name;
+        const certIssuer = typeof cert === 'object' ? cert.issuer : '';
+        const certDate = typeof cert === 'object' ? cert.date : '';
+        const displayText = certIssuer ? `${certName} (${certIssuer}${certDate ? ', ' + certDate : ''})` : certName;
+        lines.push(`• ${displayText}`);
       });
       lines.push('');
     }

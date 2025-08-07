@@ -1,0 +1,114 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{enumitem}
+
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[protrusion=true,expansion=true]{microtype}
+\usepackage{amsmath,amsfonts,amsthm}     
+\usepackage{graphicx}                    
+\usepackage[svgnames]{xcolor}           
+\usepackage[margin=0.5in]{geometry}
+\setlength{\textheight}{700pt}
+\usepackage{url}
+
+\usepackage{tikz}
+\usepackage{kpfonts} 
+\usepackage{color} % Keep as per instructions, although xcolor is loaded.
+
+\newcommand*Hs{\ensuremath{\color{red}\varheartsuit}} % Fix: Removed backslash before asterisk
+
+\newcommand{\heartstab}{% % Fix: Removed '\%' which would print a literal '%'
+\begin{tikzpicture}[baseline=(current bounding box.center)]%
+\draw [line width=0.0pt, white] (3.5ex,0.4ex) -- (3.5ex,0.4ex); % Fix: Converted mm to pt
+\node at (0,0) {\Large{$\Hs$}};
+\draw [line width=0.85pt, black] (-0.7ex,0.7ex) -- (1.2ex,1.2ex);% % Fix: Converted mm to pt
+\draw [line width=1.42pt, black] (0.8ex,0.65ex) -- (0.55ex,1.45ex);% % Fix: Converted mm to pt
+\end{tikzpicture}%
+}
+
+\newcommand{\squigarr}{% % Fix: Removed '\%' which would print a literal '%'
+{\Large \color{blue}$\rightsquigarrow$}%
+}
+
+\usepackage[colorlinks=true,urlcolor=purple]{hyperref}
+
+\frenchspacing              
+\pagestyle{empty}           
+
+\usepackage{sectsty}
+
+\sectionfont{% % Fix: Removed '\%' which would print a literal '%'
+	\usefont{OT1}{phv}{b}{n}%		
+	\sectionrule{0pt}{0pt}{-5pt}{3pt}%
+}
+
+\newlength{\spacebox}
+\settowidth{\spacebox}{8888888888}			
+\newcommand{\sepspace}{\vspace*{0.5em}}		
+
+\newcommand{\MyName}[1]{ % Fix: Removed '% Name' from inside definition, added '%' to suppress space
+		\Huge \usefont{OT1}{phv}{b}{n} \hfill #1% % Fix: Changed '\#1' to '#1', added '%' to suppress space
+		\par \normalsize \normalfont%
+}
+		
+\newcommand{\MySlogan}[1]{ % Fix: Removed '% Slogan (optional)' from inside definition, added '%' to suppress space
+		\large \usefont{OT1}{phv}{m}{n}\hfill \textit{#1}% % Fix: Changed '\#1' to '#1', added '%' to suppress space
+		\par \normalsize \normalfont%
+}
+		
+\newcommand{\NameEmailPhoneSiteGithub}[5]{% % Added '%' to suppress space
+        \Huge \usefont{OT1}{phv}{m}{n} \textbf{#1} % Fix: Changed '\#1' to '#1'
+        \large \usefont{OT1}{phv}{m}{n} \hfill #2\hspace{25pt}#3% % Fix: Changed '\#2', '\#3' to '#2', '#3', added '%' to suppress space
+        
+        \textit{Anti Curriculum Vitae}\hfill \textit{website } #4 \hspace{25pt}\textit{github } #5 % Fix: Changed '\#4', '\#5' to '#4', '#5'
+        \par \normalsize \normalfont%
+}
+
+\newcommand{\NewPart}[1]{\section*{\uppercase{#1}}} % Fix: Changed '\#1' to '#1'
+
+\newcommand{\SkillsEntry}[2]{% % Added '%' to suppress space
+		\noindent\hangindent=2em\hangafter=0 %
+		\parbox{\spacebox}{        %
+		\textit{#1}}% % Fix: Changed '\#1' to '#1', added '%' to suppress space
+		\hspace{1.5em} #2 \par% % Fix: Changed '\#2' to '#2', added '%' to suppress space
+}    
+
+\begin{document}
+
+\NameEmailPhoneSiteGithub{Bheki Ngwenya}{0797394470}{ngwenyabheki276@gmail.com}{\href{https://www.linkedin.com/in/bheki-ntando-ngwenya01}{linkedin.com/in/bheki-ntando-ngwenya01}}{\href{https://github.com/Mabhekane01}{github.com/Mabhekane01}}
+
+\sepspace
+
+\NewPart{Education}
+
+\textbf{BSc in Computer Science} \hfill North-West University
+\par \hfill 2020
+
+\sepspace
+
+\NewPart{Work Experience}
+
+\textbf{Network Engineer \& Software Developer} \hfill CMC Networks
+Building H, The Woodlands, Office Park, 20 Woodlands Dr, Woodmead, Sandton, 2191 \hfill 2023-07-01 - Present
+\begin{itemize}[leftmargin=*,labelsep=0.5em]
+    \item Engineered and maintained real-time monitoring systems achieving 99.9\% uptime across critical infrastructure using Python and monitoring tools.
+    \item Developed automated reporting dashboards reducing manual report generation time by 60\% through data integration and visualization.
+    \item Collaborated with cross-functional teams to implement security policies and anomaly detection systems, strengthening network perimeter defense.
+    \item Led incident response and root cause analysis for critical system failures, documenting solutions and implementing preventive measures.
+    \item Built centralized Data Lake architecture streamlining performance metrics collection and analysis across multiple systems.
+    \item Integrated multiple service platforms (Fresh Services, PRTG, inventory systems) enabling real-time asset visibility and management.
+    \item \textit{Achievement:} Improved efficiency.
+\end{itemize}
+
+\sepspace
+
+\NewPart{Skills}
+
+\SkillsEntry{Programming Languages}{Java, C\#, TypeScript}
+\SkillsEntry{Frameworks/Libraries}{Node.js, React.js}
+\SkillsEntry{Databases}{MongoDB}
+\SkillsEntry{Tools}{Docker}
+
+\end{document}

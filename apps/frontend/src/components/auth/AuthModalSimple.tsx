@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import LoginFormSimple from './LoginFormSimple';
 import RegisterForm from './RegisterForm';
+import { useNotifications } from '../../contexts/NotificationContext';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -11,6 +12,7 @@ interface AuthModalProps {
 
 export default function AuthModalSimple({ isOpen, onClose, initialMode = 'login' }: AuthModalProps) {
   const [mode, setMode] = useState<'login' | 'register'>(initialMode);
+  const { refreshNotifications } = useNotifications();
 
   // Update mode when initialMode changes or modal opens
   useEffect(() => {
@@ -23,6 +25,17 @@ export default function AuthModalSimple({ isOpen, onClose, initialMode = 'login'
 
   const toggleMode = () => {
     setMode(prev => prev === 'login' ? 'register' : 'login');
+  };
+
+  // Enhanced success handler that refreshes notifications
+  const handleSuccess = () => {
+    // Refresh notifications after successful login/register
+    setTimeout(() => {
+      refreshNotifications();
+    }, 1000);
+    
+    // Close modal
+    onClose();
   };
 
   if (!isOpen) return null;
@@ -51,11 +64,13 @@ export default function AuthModalSimple({ isOpen, onClose, initialMode = 'login'
             <LoginFormSimple
               onToggleMode={toggleMode}
               onClose={onClose}
+              onSuccess={handleSuccess}
             />
           ) : (
             <RegisterForm
               onToggleMode={toggleMode}
               onClose={onClose}
+              onSuccess={handleSuccess}
             />
           )}
         </div>

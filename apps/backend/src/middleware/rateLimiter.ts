@@ -63,7 +63,7 @@ export const passwordResetLimiter = rateLimit({
 // AI/Expensive operations rate limiter
 export const aiLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
-  max: 50, // Limit each IP to 50 AI requests per hour
+  max: 200, // Limit each IP to 200 AI requests per hour
   message: {
     success: false,
     message: 'AI service rate limit exceeded, please try again later.'
@@ -144,6 +144,36 @@ export const createUserLimiter = (windowMs: number = 15 * 60 * 1000, max: number
       res.status(429).json({
         success: false,
         message: 'User rate limit exceeded, please try again later.',
+        retryAfter: req.rateLimit ? Math.round(req.rateLimit.resetTime / 1000) : undefined
+      });
+    }
+  });
+};
+
+// AI limiter with tier-based limits
+export const createAITieredLimiter = () => {
+  return rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    max: (req: Request) => {
+      const authReq = req as AuthenticatedRequest;
+      // For now, give enterprise users higher limits
+      // TODO: Implement proper tier detection from user model
+      return 500; // Higher limit for all authenticated users
+    },
+    keyGenerator: (req: Request) => {
+      const authReq = req as AuthenticatedRequest;
+      return authReq.user?.id || req.ip || 'unknown';
+    },
+    message: {
+      success: false,
+      message: 'AI service rate limit exceeded for your account.'
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+    handler: (req: Request, res: Response) => {
+      res.status(429).json({
+        success: false,
+        message: 'AI service rate limit exceeded, please try again later.',
         retryAfter: req.rateLimit ? Math.round(req.rateLimit.resetTime / 1000) : undefined
       });
     }

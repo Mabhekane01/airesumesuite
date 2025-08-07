@@ -83,10 +83,11 @@ export default function LandingPageSimple() {
       toast.error(errorMessage);
       
       // Clean up URL parameters
-      const newUrl = new URL(window.location.href);
-      newUrl.searchParams.delete('auth');
-      newUrl.searchParams.delete('message');
-      window.history.replaceState({}, '', newUrl.toString());
+      const url = window.location.href;
+      const urlObj = new URL(url);
+      urlObj.searchParams.delete('auth');
+      urlObj.searchParams.delete('message');
+      window.history.replaceState({}, '', urlObj.toString());
     }
   }, [searchParams]);
 
@@ -170,15 +171,24 @@ export default function LandingPageSimple() {
                     Create Free Account ✨
                     <ArrowRightIcon className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" />
                   </button>
-                  <button
-                    onClick={() => {
-                      setAuthMode('login');
-                      setAuthModalOpen(true);
-                    }}
-                    className="btn-secondary-dark px-8 py-4 text-lg transform hover:scale-105"
-                  >
-                    Sign In
-                  </button>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <Link
+                      to="/templates"
+                      className="btn-secondary-dark px-6 py-3 text-base flex items-center group transform hover:scale-105"
+                    >
+                      <DocumentTextIcon className="h-5 w-5 mr-2" />
+                      View Templates
+                    </Link>
+                    <button
+                      onClick={() => {
+                        setAuthMode('login');
+                        setAuthModalOpen(true);
+                      }}
+                      className="btn-secondary-dark px-6 py-3 text-base transform hover:scale-105"
+                    >
+                      Sign In
+                    </button>
+                  </div>
                 </>
               )}
             </div>

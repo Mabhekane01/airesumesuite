@@ -84,9 +84,11 @@ class LocationService {
             resolve({
               city: null,
               country: null,
+              region: null,
+              timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
               coordinates: { latitude, longitude },
               accuracy
-            });
+            } as LocationData);
           }
         },
         (error) => {
@@ -104,9 +106,14 @@ class LocationService {
   private async getIPLocation(): Promise<LocationData> {
     try {
       // Try ipapi.co first (no API key required)
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      
       const response = await fetch('https://ipapi.co/json/', {
-        timeout: 5000
+        signal: controller.signal
       });
+      
+      clearTimeout(timeoutId);
       
       if (response.ok) {
         const data = await response.json();

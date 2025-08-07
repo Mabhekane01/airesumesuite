@@ -11,7 +11,8 @@ export const storageUtils = {
       'auth-storage',
       'authToken',
       'refreshToken',
-      'user-data'
+      'user-data',
+      'token'
     ];
 
     keysToRemove.forEach(key => {
@@ -110,18 +111,79 @@ export const storageUtils = {
       });
     }
 
-    // Also clear any remaining user-specific keys by scanning localStorage
+    // Also clear form persistence data and any remaining user-specific keys by scanning localStorage
     try {
       const keysToRemove = [];
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
-        if (key && baseKeys.some(baseKey => key.startsWith(`${baseKey}-`))) {
+        if (key && (
+          baseKeys.some(baseKey => key.startsWith(`${baseKey}-`)) ||
+          key.startsWith('form_draft_') ||
+          key.startsWith('form_timestamp_') ||
+          key.startsWith('selectedPlanType') ||
+          key === 'lastResumeHash'
+        )) {
           keysToRemove.push(key);
         }
       }
       keysToRemove.forEach(key => localStorage.removeItem(key));
+      console.log(`🧹 Cleared ${keysToRemove.length} form persistence and user-specific keys during logout`);
     } catch (error) {
       console.warn('Failed to scan and clear user-specific keys:', error);
+    }
+  },
+
+  /**
+   * Clear blob URLs from memory (call before clearing localStorage)
+   */
+  clearBlobUrls: () => {
+    try {
+      // Get resume AI data from localStorage before clearing
+      const resumeAIData = storageUtils.safeGetJson('resume-ai-data', {});
+      
+      // Revoke cached PDF blob URL if it exists
+      if (resumeAIData.cachedPdfUrl && resumeAIData.cachedPdfUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(resumeAIData.cachedPdfUrl);
+        console.log('✅ Revoked PDF blob URL during logout');
+      }
+      
+      // Also check user-specific storage if available
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('resume-ai-data-')) {
+          const userData = storageUtils.safeGetJson(key, {});
+          if (userData.cachedPdfUrl && userData.cachedPdfUrl.startsWith('blob:')) {
+            URL.revokeObjectURL(userData.cachedPdfUrl);
+            console.log(`✅ Revoked PDF blob URL for user: ${key}`);
+          }
+        }
+      }
+    } catch (error) {
+      console.warn('Failed to clear blob URLs:', error);
+    }
+  },
+
+  /**
+   * Clear sessionStorage data
+   */
+  clearSessionStorage: () => {
+    try {
+      // Clear known session keys
+      const sessionKeysToRemove = [
+        'resume-session-data'
+      ];
+
+      sessionKeysToRemove.forEach(key => {
+        try {
+          sessionStorage.removeItem(key);
+        } catch (error) {
+          console.warn(`Failed to remove ${key} from sessionStorage:`, error);
+        }
+      });
+
+      console.log('🧹 SessionStorage cleared');
+    } catch (error) {
+      console.warn('Failed to clear sessionStorage:', error);
     }
   },
 
@@ -129,8 +191,12 @@ export const storageUtils = {
    * Clear all user-related storage (auth + user data)
    */
   clearAllUserStorage: (userId?: string) => {
+    // Clear blob URLs BEFORE clearing localStorage
+    storageUtils.clearBlobUrls();
+    
     storageUtils.clearAuthStorage();
     storageUtils.clearUserData(userId);
+    storageUtils.clearSessionStorage();
     console.log('All user storage cleared');
   },
 

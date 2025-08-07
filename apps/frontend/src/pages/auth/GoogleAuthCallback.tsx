@@ -1,11 +1,13 @@
 import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
+import { useNotifications } from '../../contexts/NotificationContext';
 
 export default function GoogleAuthCallback() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { setTokens, refreshUserProfile } = useAuthStore();
+  const { setTokens, refreshUserProfile, redirectAfterLogin, setRedirectAfterLogin } = useAuthStore();
+  const { refreshNotifications } = useNotifications();
 
   useEffect(() => {
     const handleCallback = async () => {
@@ -14,6 +16,7 @@ export default function GoogleAuthCallback() {
         const refreshToken = searchParams.get('refresh');
         const sessionId = searchParams.get('sessionId');
         const error = searchParams.get('message');
+        const redirectUrl = searchParams.get('redirect');
 
         if (error) {
           console.error('Google Auth error:', error);
@@ -33,10 +36,24 @@ export default function GoogleAuthCallback() {
         // Refresh user profile to get user data
         await refreshUserProfile();
 
+        // Add a small delay before refreshing notifications to ensure backend notification is created
+        setTimeout(() => {
+          refreshNotifications();
+        }, 1000);
+
         console.log('✅ Google OAuth login successful');
         
-        // Redirect to dashboard
-        navigate('/dashboard', { replace: true });
+        // Check for redirect URL from store or callback parameter
+        const finalRedirectUrl = redirectUrl || redirectAfterLogin;
+        
+        if (finalRedirectUrl) {
+          console.log('🔄 Redirecting to:', finalRedirectUrl);
+          setRedirectAfterLogin(null); // Clear the redirect URL
+          navigate(finalRedirectUrl, { replace: true });
+        } else {
+          // Default redirect to templates page (more comprehensive than dashboard)
+          navigate('/templates', { replace: true });
+        }
         
       } catch (error) {
         console.error('Google OAuth callback error:', error);
@@ -45,7 +62,7 @@ export default function GoogleAuthCallback() {
     };
 
     handleCallback();
-  }, [searchParams, navigate, setTokens, refreshUserProfile]);
+  }, [searchParams, navigate, setTokens, refreshUserProfile, redirectAfterLogin, setRedirectAfterLogin, refreshNotifications]);
 
   return (
     <div className="min-h-screen bg-gradient-dark flex items-center justify-center p-4 relative overflow-hidden">

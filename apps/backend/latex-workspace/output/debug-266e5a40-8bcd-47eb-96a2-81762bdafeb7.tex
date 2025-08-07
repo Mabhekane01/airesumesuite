@@ -1,0 +1,148 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage{amssymb}
+\usepackage{enumitem}
+\usepackage{lmodern}
+\usepackage[T1){fontenc}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% LaTeX Template: Curriculum Vitae
+%
+% Source: http://www.howtotex.com/
+% Feel free to distribute this template, but please keep the
+% referal to HowToTeX.com.
+% Date: July 2011
+% 
+% Author of Anti-CV: Stephen Fay
+% Fork on github https://github.com/dcxSt/anti-cv
+% 
+							
+\usepackage[english){babel}
+\usepackage[utf8){inputenc} % Changed from utf8x to utf8
+\usepackage[protrusion=true){microtype} % Changed from expansion=true to protrusion=true
+\usepackage{amsmath,amsfonts,amsthm}     % Math packages
+\usepackage{graphicx}                    % Enable pdflatex
+\usepackage[svgnames){xcolor}            % Colors by their 'svgnames'
+\usepackage[margin=0.5in){geometry}
+	\textheight=25cm                    % Changed from 700px to a LaTeX unit (25cm approx 700pt)
+\usepackage{url}
+
+% Removed tikz, kpfonts, color packages as they were used for custom symbols which are disallowed.
+% Removed custom symbol commands (\\heartsuit, \\textbullet, \\rightarrow) based on rules 13, 14, 15.
+
+\usepackage[colorlinks=true,urlcolor=purple){hyperref}
+
+\frenchspacing              % Better looking spacings after periods
+\pagestyle{empty}           % No pagenumbers/headers/footers
+
+%%% Custom sectioning (sectsty package)
+%%% ------------------------------------------------------------
+\usepackage{sectsty}
+
+\sectionfont{%			            % Change font of \section command
+	\usefont{OT1}{phv}{b}{n}%		% bch-b-n: CharterBT-Bold font
+	\sectionrule{0pt}{0pt}{-5pt}{3pt}}
+
+%%% Macros
+%%% ------------------------------------------------------------
+\newlength{\spacebox}
+\settowidth{\spacebox}{8888888888}			% Box to align text
+\newcommand{\sepspace}{\vspace*{0.5em}}		% Vertical space macro
+
+% MyName and MySlogan macros from template were not used, as NameEmailPhoneSiteGithub is used.
+        
+\newcommand{\NameEmailPhoneSiteGithub}[5){
+        \Huge \usefont{OT1}{phv}{m}{n} \textbf{#1} 
+        \large \usefont{OT1}{phv}{m}{n} \hfill #2\hspace{25pt}#3
+        
+        \textit{Anti Curriculum Vitae}\hfill \textit{website } #4 \hspace{25pt}\textit{github } #5 
+        \par \normalsize \normalfont
+}
+
+\newcommand{\NewPart}[1){\section*{\uppercase{#1}}}
+
+\newcommand{\SkillsEntry}[2){      % Same as \PersonalEntry
+		\noindent\hangindent=2em\hangafter=0 % Indentation
+		\parbox{\spacebox}{        % Box to align text
+		\textit{#1}}			   % Entry name (birth, address, etc.)
+		\hspace{1.5em} #2 \par}    % Entry value	
+		
+
+
+%%% Begin Document
+%%% ------------------------------------------------------------
+
+\begin{document}
+
+
+% Removed optional picture settings as they were commented out or conditional.
+
+\NameEmailPhoneSiteGithub{Bheki Ngwenya}{+27 79 739 4470}{ngwenyabheki276@gmail.com}{\href{https://www.linkedin.com/in/bheki-ntando-ngwenya01}{linkedin.com/in/bheki-ntando-ngwenya01}}{\href{https://github.com/Mabhekane01}{github.com/Mabhekane01}}
+
+\sepspace
+
+%%% Key
+%%% ------------------------------------------------------------
+\NewPart{Key}{}
+\begin{itemize}
+    \item[\textbullet] Heart-stab. Professional rejections and things I messed up. % Replaced \\textbullet with \textbullet
+    \item[$\rightarrow$] Squigly arrow. What did I learn? What were the consequences? % Replaced \\rightarrow with $\rightarrow$
+\end{itemize}
+
+\NewPart{Education}{}
+
+% User education data: BSc from North-West University, GPA 65
+\begin{itemize}
+    % Removed template's anti-CV education examples.
+    \item \textbf{BSc} - North-West University. GPA: 65\%
+\end{itemize}
+
+\sepspace
+
+%%% Work experience
+%%% ------------------------------------------------------------
+\NewPart{Work Experience}{} % Corrected "Experiance" to "Experience"
+
+% User work experience data for Network Engineer & Software Developer at CMC Networks
+\begin{itemize}
+    % Removed template's anti-CV work experience examples.
+    \item \textbf{Network Engineer & Software Developer} \quad CMC Networks, Building H, The Woodlands, Office Park, 20 Woodlands Dr, Woodmead, Sandton, 2191 \quad Jul 2023 - Present
+    \begin{itemize}[label={--}] % Using standard bullet for sub-items with enumitem
+        \item Engineered and maintained real-time monitoring systems achieving 99.9\% uptime across critical infrastructure using Python and monitoring tools.
+        \item Developed automated reporting dashboards reducing manual report generation time by 60\% through data integration and visualization.
+        \item Collaborated with cross-functional teams to implement security policies and anomaly detection systems, strengthening network perimeter defense.
+        \item Led incident response and root cause analysis for critical system failures, documenting solutions and implementing preventive measures.
+        \item Built centralized Data Lake architecture streamlining performance metrics collection and analysis across multiple systems.
+        \item Integrated multiple service platforms (Fresh Services, PRTG, inventory systems) enabling real-time asset visibility and management.
+    \end{itemize}
+\end{itemize}
+
+\sepspace
+
+%%% Skills
+%%% ------------------------------------------------------------
+\NewPart{Skills}{}
+
+% User skills data: java, c#, nodejs, react, mongodb, git, docker, typescript (all technical)
+\SkillsEntry{Technical}{Java, C\#, Node.js, React, MongoDB, Git, Docker, TypeScript} % Combined all technical skills
+
+%%% Projects (repurposed from Achievements and Interests)
+%%% -----------------------------------------------------------
+\NewPart{Projects}{} % Changed section title from "Achievements and Interests" to "Projects"
+
+% User project data for SocialStream
+\begin{itemize}
+    % Removed template's anti-CV achievements examples.
+    \item \textbf{SocialStream - Integrated Social Media Platform}: Advanced social media app with streaming integrations, real-time communication, and microservices architecture.
+    \begin{itemize}[label={--}] % Using standard bullet for sub-items with enumitem
+        \item Architected React Native mobile application using Turborepo monorepo structure with layered design patterns.
+        \item Implemented microservices backend with Node.js, Python, and Erlang servers, utilizing API Gateway for service orchestration.
+        \item Integrated Facebook Graph API, Netflix, and Spotify APIs for seamless content sharing and social interactions.
+        \item Built real-time messaging and video/voice calling features with WebRTC and Socket.io for enhanced user engagement.
+        \item Designed scalable data architecture with PostgreSQL and MongoDB, Redis caching, and RabbitMQ message brokering.
+        \item Developed content recommendation algorithms and rating systems for movies, series, and music discovery.
+    \end{itemize}
+    \item \textit{Technologies}: React, MongoDB, TypeScript
+\end{itemize}
+    
+
+\end{document}

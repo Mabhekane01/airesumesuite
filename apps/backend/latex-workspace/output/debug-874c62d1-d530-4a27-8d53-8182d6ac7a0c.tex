@@ -1,0 +1,100 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{enumitem}
+
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[protrusion=true,expansion=true]{microtype}
+\usepackage{amsmath,amsfonts,amsthm}     
+\usepackage{graphicx}                    
+\usepackage[svgnames]{xcolor}           
+\usepackage[margin=0.5in]{geometry}
+\setlength{\textheight}{700pt}
+\usepackage{url}
+
+% \usepackage{tikz} % Commented out to prevent errors
+% \usepackage{kpfonts} % Commented out to prevent errors 
+\usepackage{color}
+
+\usepackage[colorlinks=true,urlcolor=purple]{hyperref}
+
+\frenchspacing              
+\pagestyle{empty}           
+
+\usepackage{titlesec}
+
+% FIX: Corrected \titleformat syntax. Removed erroneous '%' characters and trailing '\' that were causing compilation issues.
+\titleformat{\section*}
+  {\usefont{OT1}{phv}{b}{n}}
+  {}
+  {0pt}
+  {}
+  [\titlerule[3pt]]
+\titlespacing*{\section*}{0pt}{1.5em}{0.5em}
+
+\newlength{\spacebox}
+\settowidth{\spacebox}{8888888888}			
+% FIX: Corrected \newcommand syntax for \sepspace. It should take no arguments and define the vertical space.
+\newcommand{\sepspace}{\vspace*{0.5em}}		
+
+\newcommand{\NameEmailPhoneSiteGithub}[5]{
+        \Huge \usefont{OT1}{phv}{m}{n} \textbf{#1} % FIX: Removed backslash before #1
+        \large \usefont{OT1}{phv}{m}{n} \hfill #2\hspace{25pt}#3 % FIX: Removed backslashes before #2 and #3
+        
+        \textit{Curriculum Vitae}\hfill \textit{LinkedIn } #4 \hspace{25pt}\textit{GitHub } #5 % FIX: Removed backslashes before #4 and #5
+        \par \normalsize \normalfont
+}
+
+% FIX: Removed backslash before #1
+\newcommand{\NewPart}[1]{\section*{\MakeUppercase{#1}}}
+
+\newcommand{\SkillsEntry}[2]{      
+		\noindent\hangindent=2em\hangafter=0 
+		\parbox{\spacebox}{        
+		\textit{#1}}			   % FIX: Removed backslash before #1
+		\hspace{1.5em} #2 \par}    % FIX: Removed backslash before #2
+
+\begin{document}
+
+\NameEmailPhoneSiteGithub{Bheki Ngwenya}{ngwenyabheki276@gmail.com}{0797394470}{\textcolor{blue}{linkedin.com/in/bheki-ntando-ngwenya01}}{\textcolor{blue}{github.com/Mabhekane0100000}}
+
+\sepspace
+
+\NewPart{Summary}
+\noindent A versatile professional with a unique, hybrid background in both network engineering and full-stack software development. Leveraging a modern tech stack including Java, Node.js, React, and Docker, I excel at designing, building, and deploying robust applications with a deep understanding of the underlying network infrastructure. This dual expertise, demonstrated at CMC Networks, allows for the creation of highly optimized and resilient systems from the ground up. I am driven to apply this comprehensive skill set to solve complex technical challenges and deliver high-performance solutions.
+
+\sepspace
+
+\NewPart{Education}
+
+\begin{itemize}
+    \item \textbf{North-West University} -- BSc in Computer Science (2020)
+\end{itemize}
+
+\sepspace
+
+\NewPart{Experience}
+
+\noindent \textbf{Network Engineer \& Software Developer} \hfill \textbf{CMC Networks} \\ % FIX: Changed '\ ' to '\\' for a proper line break
+\textit{Building H, The Woodlands, Office Park, 20 Woodlands Dr, Woodmead, Sandton, 2191} \hfill \textit{July 2023 -- Present}
+\begin{itemize}[leftmargin=*,noitemsep,topsep=0pt]
+    \item Engineered and maintained real-time monitoring systems achieving 99.9\% uptime across critical infrastructure using Python and monitoring tools.
+    \item Developed automated reporting dashboards reducing manual report generation time by 60\% through data integration and visualization.
+    \item Collaborated with cross-functional teams to implement security policies and anomaly detection systems, strengthening network perimeter defense.
+    \item Led incident response and root cause analysis for critical system failures, documenting solutions and implementing preventive measures.
+    \item Built centralized Data Lake architecture streamlining performance metrics collection and analysis across multiple systems.
+    \item Integrated multiple service platforms (Fresh Services, PRTG, inventory systems) enabling real-time asset visibility and management.
+\end{itemize}
+
+\sepspace
+
+\NewPart{Skills}
+
+% FIX: Escaped '#' in 'C#' to 'C\#' for correct rendering.
+\SkillsEntry{Programming Languages}{Java, C\#, JavaScript, TypeScript, C++} 
+\SkillsEntry{Frameworks/Libraries}{Node.js, React.js}
+\SkillsEntry{Databases}{MongoDB}
+\SkillsEntry{Tools/Platforms}{Docker, System Analysis}
+
+\end{document}

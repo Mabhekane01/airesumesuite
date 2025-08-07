@@ -1,4 +1,4 @@
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+const { GoogleGenAI } = require('@google/genai');
 const { Readable } = require('stream');
 
 // Test Gemini API configuration
@@ -12,8 +12,8 @@ async function testGeminiStream() {
     return;
   }
 
-  const genAI = new GoogleGenerativeAI(API_KEY);
-  const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+  const genAI = new GoogleGenAI({});
+  // Note: This test file may need updating for new SDK patterns
   
   try {
     const prompt = `

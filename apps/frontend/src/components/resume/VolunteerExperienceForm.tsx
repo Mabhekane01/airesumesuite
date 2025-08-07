@@ -1,16 +1,19 @@
 import React, { useState } from 'react';
 import { useResume } from '../../contexts/ResumeContext';
-import { PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, TrashIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Textarea } from '../ui/Textarea';
+import { BulletPointEditor } from '../ui/BulletPointEditor';
+import { DatePicker } from '../ui/DatePicker';
 import { Card } from '../ui/Card';
 import { VolunteerExperience } from '../../types';
+import { validateDateRange } from '../../utils/formValidation';
 
 export default function VolunteerExperienceForm() {
   const { resumeData, handleDataChange } = useResume();
   const { volunteerExperience } = resumeData;
-  const [achievements, setAchievements] = useState<{ [key: string]: string }>({});
+  const [errors, setErrors] = useState<Record<string, Record<string, string>>>({});
 
   const addVolunteerExperience = () => {
     const newExperience: VolunteerExperience = {
@@ -32,6 +35,11 @@ export default function VolunteerExperienceForm() {
       i === index ? { ...exp, [field]: value } : exp
     );
     handleDataChange('volunteer-experience', updated);
+    
+    // Validate dates if they change
+    if (field === 'startDate' || field === 'endDate') {
+      validateDates(index, updated[index]);
+    }
   };
 
   const removeVolunteerExperience = (index: number) => {
@@ -39,25 +47,23 @@ export default function VolunteerExperienceForm() {
     handleDataChange('volunteer-experience', updated);
   };
 
-  const addAchievement = (expIndex: number) => {
-    const achievementText = achievements[expIndex]?.trim();
-    if (achievementText) {
-      const updated = (volunteerExperience || []).map((exp, i) => 
-        i === expIndex ? { ...exp, achievements: [...exp.achievements, achievementText] } : exp
-      );
-      handleDataChange('volunteer-experience', updated);
-      setAchievements({ ...achievements, [expIndex]: '' });
+  const validateDates = (index: number, experience: VolunteerExperience) => {
+    const expErrors = { ...errors[index] || {} };
+    
+    if (experience.startDate && experience.endDate) {
+      const dateErrors = validateDateRange(experience.startDate + '-01', experience.endDate + '-01');
+      if (dateErrors.start) expErrors.startDate = 'Start date cannot be after end date';
+      if (dateErrors.end) expErrors.endDate = 'End date cannot be before start date';
     }
+    
+    setErrors(prev => ({
+      ...prev,
+      [index]: Object.keys(expErrors).length > 0 ? expErrors : {}
+    }));
   };
 
-  const removeAchievement = (expIndex: number, achievementIndex: number) => {
-    const updated = (volunteerExperience || []).map((exp, i) => 
-      i === expIndex ? { 
-        ...exp, 
-        achievements: exp.achievements.filter((_, j) => j !== achievementIndex) 
-      } : exp
-    );
-    handleDataChange('volunteer-experience', updated);
+  const getFieldError = (index: number, field: string): string | undefined => {
+    return errors[index]?.[field];
   };
 
   return (
@@ -94,102 +100,84 @@ export default function VolunteerExperienceForm() {
               label="Organization"
               value={experience.organization}
               onChange={(e) => updateVolunteerExperience(index, 'organization', e.target.value)}
-              placeholder="Red Cross, Local Food Bank, etc."
+              placeholder="e.g., Red Cross, Local Food Bank"
+              required
             />
             <Input
               label="Role"
               value={experience.role}
               onChange={(e) => updateVolunteerExperience(index, 'role', e.target.value)}
-              placeholder="Volunteer Coordinator, Event Organizer"
+              placeholder="e.g., Volunteer Coordinator, Event Organizer"
+              required
             />
           </div>
 
-          <div className="grid md:grid-cols-3 gap-4 mb-4">
-            <Input
-              label="Location"
-              value={experience.location}
-              onChange={(e) => updateVolunteerExperience(index, 'location', e.target.value)}
-              placeholder="City, State"
-            />
-            <Input
+          <Input
+            label="Location"
+            value={experience.location}
+            onChange={(e) => updateVolunteerExperience(index, 'location', e.target.value)}
+            placeholder="City, State"
+            required
+            className="mb-4"
+          />
+
+          <div className="grid md:grid-cols-2 gap-4 mb-4">
+            <DatePicker
               label="Start Date"
-              type="month"
               value={experience.startDate}
-              onChange={(e) => updateVolunteerExperience(index, 'startDate', e.target.value)}
+              onChange={(value) => updateVolunteerExperience(index, 'startDate', value)}
+              allowFuture={false}
+              helpText="When you started volunteering"
+              error={getFieldError(index, 'startDate')}
             />
-            <div className="space-y-2">
-              <Input
-                label="End Date"
-                type="month"
-                value={experience.endDate || ''}
-                onChange={(e) => updateVolunteerExperience(index, 'endDate', e.target.value)}
-                disabled={experience.isCurrentRole}
-              />
-              <label className="flex items-center text-sm text-dark-text-secondary">
-                <input
-                  type="checkbox"
-                  checked={experience.isCurrentRole}
-                  onChange={(e) => {
-                    updateVolunteerExperience(index, 'isCurrentRole', e.target.checked);
-                    if (e.target.checked) {
-                      updateVolunteerExperience(index, 'endDate', '');
-                    }
-                  }}
-                  className="mr-2 accent-color-dark"
-                />
-                Current Role
-              </label>
-            </div>
-          </div>
-
-          <div className="mb-4">
-            <Textarea
-              label="Description"
-              value={experience.description}
-              onChange={(e) => updateVolunteerExperience(index, 'description', e.target.value)}
-              placeholder="Describe your volunteer work and responsibilities..."
-              rows={3}
+            <DatePicker
+              label="End Date"
+              value={experience.endDate || ''}
+              onChange={(value) => updateVolunteerExperience(index, 'endDate', value)}
+              disabled={experience.isCurrentRole}
+              allowFuture={false}
+              helpText={experience.isCurrentRole ? "Not required for current role" : "When you stopped volunteering"}
+              error={getFieldError(index, 'endDate')}
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-dark-text-primary mb-2">
-              Key Achievements
+          <div className="flex items-center mb-4">
+            <input
+              type="checkbox"
+              id={`currentRole-${experience.id}`}
+              checked={experience.isCurrentRole}
+              onChange={(e) => {
+                updateVolunteerExperience(index, 'isCurrentRole', e.target.checked);
+                if (e.target.checked) {
+                  updateVolunteerExperience(index, 'endDate', '');
+                }
+              }}
+              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-dark-border bg-dark-secondary rounded"
+            />
+            <label htmlFor={`currentRole-${experience.id}`} className="ml-2 block text-sm text-dark-text-primary">
+              I currently volunteer here
             </label>
-            <div className="space-y-2">
-              {experience.achievements.map((achievement, achievementIndex) => (
-                <div key={achievementIndex} className="flex items-center space-x-2">
-                  <div className="flex-1 px-3 py-2 bg-dark-secondary/20 rounded-md text-sm text-dark-text-primary border border-dark-border">
-                    {achievement}
-                  </div>
-                  <Button
-                    onClick={() => removeAchievement(index, achievementIndex)}
-                    variant="outline"
-                    size="sm"
-                    className="accent-danger hover:bg-dark-primary/20"
-                  >
-                    <TrashIcon className="w-4 h-4" />
-                  </Button>
-                </div>
-              ))}
-              <div className="flex space-x-2">
-                <Input
-                  value={achievements[experience.id || index] || ''}
-                  onChange={(e) => setAchievements({ ...achievements, [experience.id || index]: e.target.value })}
-                  placeholder="Add an achievement..."
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      addAchievement(index);
-                    }
-                  }}
-                />
-                <Button onClick={() => addAchievement(index)} size="sm" className="btn-primary-dark">
-                  Add
-                </Button>
-              </div>
-            </div>
           </div>
+
+          <Textarea
+            label="Description"
+            value={experience.description}
+            onChange={(e) => updateVolunteerExperience(index, 'description', e.target.value)}
+            placeholder="Describe your volunteer work and responsibilities..."
+            rows={3}
+            helpText="Briefly describe your volunteer role and main activities"
+            className="mb-4"
+          />
+
+          <BulletPointEditor
+            label="Key Achievements & Impact"
+            value={experience.achievements || []}
+            onChange={(value) => updateVolunteerExperience(index, 'achievements', value)}
+            placeholder="Describe a specific achievement or impact you made..."
+            minItems={0}
+            maxItems={5}
+            helpText="Highlight the positive impact of your volunteer work (optional)"
+          />
         </Card>
       ))}
 

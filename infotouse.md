@@ -1,52 +1,12 @@
-src/tests/setup.ts(65,26): error TS2304: Cannot find name 'jest'.
-src/utils/environmentValidator.ts(79,21): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
-src/utils/environmentValidator.ts(86,9): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
-src/utils/environmentValidator.ts(87,44): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
-src/utils/environmentValidator.ts(92,41): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
-src/utils/environmentValidator.ts(92,61): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
-src/utils/environmentValidator.ts(99,9): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
-src/utils/environmentValidator.ts(99,35): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
-src/utils/environmentValidator.ts(103,9): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
-src/utils/environmentValidator.ts(103,43): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
-src/utils/environmentValidator.ts(108,9): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
-src/utils/environmentValidator.ts(108,37): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
-src/utils/environmentValidator.ts(113,9): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
-src/utils/environmentValidator.ts(113,48): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
-src/utils/environmentValidator.ts(118,9): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
-src/utils/environmentValidator.ts(118,47): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
-src/utils/environmentValidator.ts(123,9): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
-src/utils/environmentValidator.ts(123,45): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
-src/utils/environmentValidator.ts(138,7): error TS2584: Cannot find name 'console'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'.
-src/utils/environmentValidator.ts(139,42): error TS2584: Cannot find name 'console'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'.
-src/utils/environmentValidator.ts(140,7): error TS2584: Cannot find name 'console'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'.
-src/utils/environmentValidator.ts(144,7): error TS2584: Cannot find name 'console'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'.
-src/utils/environmentValidator.ts(145,38): error TS2584: Cannot find name 'console'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'.
-src/utils/environmentValidator.ts(146,7): error TS2584: Cannot find name 'console'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'.
-src/utils/environmentValidator.ts(147,7): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
-src/utils/environmentValidator.ts(150,5): error TS2584: Cannot find name 'console'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'.
-src/utils/errorUtils.ts(8,3): error TS2584: Cannot find name 'console'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'.
-src/utils/errorUtils.ts(23,9): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
-src/utils/jwt.ts(4,29): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
-src/utils/jwt.ts(5,30): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
-src/utils/jwt.ts(6,29): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
-src/utils/jwt.ts(7,30): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
-src/utils/locationErrorHandler.ts(322,5): error TS2584: Cannot find name 'console'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'.
-src/utils/logger.ts(13,27): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
-src/utils/logger.ts(28,11): error TS2584: Cannot find name 'console'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'.
-src/utils/logger.ts(31,11): error TS2584: Cannot find name 'console'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'.
-src/utils/logger.ts(34,11): error TS2584: Cannot find name 'console'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'.
-src/utils/logger.ts(37,11): error TS2584: Cannot find name 'console'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'.
-src/utils/logger.ts(40,11): error TS2584: Cannot find name 'console'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'.
-src/utils/logger.ts(44,7): error TS2584: Cannot find name 'console'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'.
-src/utils/resetMatchScores.ts(10,5): error TS2584: Cannot find name 'console'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'.
-src/utils/resetMatchScores.ts(17,5): error TS2584: Cannot find name 'console'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'.
-src/utils/resetMatchScores.ts(31,5): error TS2584: Cannot find name 'console'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'.
-src/utils/resetMatchScores.ts(40,5): error TS2584: Cannot find name 'console'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'.
-src/utils/resetMatchScores.ts(51,5): error TS2584: Cannot find name 'console'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'.
-src/utils/resetMatchScores.ts(58,5): error TS2584: Cannot find name 'console'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'.
-src/utils/resetMatchScores.ts(73,7): error TS2584: Cannot find name 'console'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'.
-src/utils/resetMatchScores.ts(89,5): error TS2584: Cannot find name 'console'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'.
+August 7, 2025
 
-​
+Dear Hiring Manager,
 
-​
+I am writing to express my strong interest in the Software Developer position at Golden Arrow Bus Services (Pty) Ltd. Based on your job posting, I believe my background and skills make me an excellent candidate for this role.
+
+Your requirements for C#, React, Angular align perfectly with my experience. I am particularly drawn to this opportunity because of Golden Arrow Bus Services (Pty) Ltd is a leading public transport company operating in the Western Cape. We are committed to providing safe, reliable, and efficient bus services to our passengers..
+
+I would welcome the opportunity to discuss how my qualifications can contribute to Golden Arrow Bus Services (Pty) Ltd's continued success. Thank you for your consideration, and I look forward to hearing from you.
+
+Sincerely,
+Your Name

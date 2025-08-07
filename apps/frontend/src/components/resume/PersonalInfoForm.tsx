@@ -8,7 +8,7 @@ export function PersonalInfoForm() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    handleDataChange('personal-info', { ...personalInfo, [name]: value });
+    handleDataChange('personal-info', { ...(personalInfo || {}), [name]: value });
   };
 
   return (
@@ -27,6 +27,7 @@ export function PersonalInfoForm() {
           value={personalInfo?.firstName || ''}
           onChange={handleChange}
           required
+          placeholder="Enter your first name"
         />
         <Input
           label="Last Name"
@@ -34,6 +35,7 @@ export function PersonalInfoForm() {
           value={personalInfo?.lastName || ''}
           onChange={handleChange}
           required
+          placeholder="Enter your last name"
         />
       </div>
 
@@ -45,6 +47,8 @@ export function PersonalInfoForm() {
           value={personalInfo?.email || ''}
           onChange={handleChange}
           required
+          placeholder="your.email@example.com"
+          helpText="Professional email address for employers to contact you"
         />
         <Input
           label="Phone Number"
@@ -52,6 +56,8 @@ export function PersonalInfoForm() {
           value={personalInfo?.phone || ''}
           onChange={handleChange}
           required
+          placeholder="+1 (555) 123-4567"
+          helpText="Include country code if applying internationally"
         />
       </div>
 
@@ -63,13 +69,15 @@ export function PersonalInfoForm() {
           value={personalInfo?.location || ''}
           onChange={handleChange}
           required
+          helpText="Where you're based or willing to work"
         />
         <Input
-          label="Professional Title (Optional)"
+          label="Professional Title"
           placeholder="Software Engineer, Marketing Manager, etc."
           name="professionalTitle"
           value={personalInfo?.professionalTitle || ''}
           onChange={handleChange}
+          helpText="Your current job title or desired position (optional)"
         />
       </div>
 

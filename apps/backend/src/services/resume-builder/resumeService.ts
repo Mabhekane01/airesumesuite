@@ -8,6 +8,9 @@ import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import path from 'path';
 import fs from 'fs/promises';
 import { resumeTemplates, getTemplateById } from '../../data/resumeTemplates';
+import { latexService, LaTeXTemplateData } from './latexService';
+import { overleafTemplateManager } from './overleafTemplateManager';
+import { processCompleteResumeData, processPartialResumeData } from '../../utils/resumeDataProcessor';
 
 export interface CreateResumeData {
   userId: string;
@@ -40,16 +43,39 @@ export interface OptimizeResumeData {
 
 export class ResumeService {
   /**
-   * Enterprise-grade PDF generation using server-side rendering
-   * Generates high-quality PDFs with proper fonts and styling
+   * Get all resumes for a user
    */
-  async generateResumeFile(resumeData: any, format: 'pdf' | 'docx' | 'txt'): Promise<Buffer> {
-    console.log('🏭 Enterprise PDF Generation starting...', { format, hasData: !!resumeData });
+  async getAllResumes(userId: string): Promise<IResume[]> {
+    try {
+      const resumes = await Resume.find({ userId: new mongoose.Types.ObjectId(userId) })
+        .sort({ createdAt: -1 });
+      return resumes;
+    } catch (error) {
+      console.error('Error getting all resumes:', error);
+      throw new Error('Failed to get resumes');
+    }
+  }
+
+  /**
+   * Enterprise-grade PDF generation using server-side rendering
+   * Now supports both LaTeX (Overleaf-style) and HTML-based generation
+   */
+  async generateResumeFile(resumeData: any, format: 'pdf' | 'docx' | 'txt', options?: { 
+    engine?: 'latex' | 'html';
+    templateId?: string;
+    optimizedLatexCode?: string;
+  }): Promise<Buffer> {
+    console.log('🏭 Enterprise PDF Generation starting...', { 
+      format, 
+      hasData: !!resumeData,
+      engine: options?.engine || 'auto',
+      templateId: options?.templateId
+    });
     
     if (format === 'pdf') {
-      return await this.generatePDFFile(resumeData);
+      return await this.generatePDFFile(resumeData, options);
     } else if (format === 'docx') {
-      return await this.generateDOCXFile(resumeData);
+      return await this.generateDOCXFile(resumeData, options);
     } else if (format === 'txt') {
       return await this.generateTXTFile(resumeData);
     } else {
@@ -58,10 +84,74 @@ export class ResumeService {
   }
 
   /**
-   * High-quality PDF generation using Puppeteer
-   * Enterprise-ready with proper error handling and optimization
+   * High-quality PDF generation using LaTeX or Puppeteer
+   * LaTeX engine provides Overleaf-level precision, HTML fallback for compatibility
    */
-  private async generatePDFFile(resumeData: any): Promise<Buffer> {
+  private async generatePDFFile(resumeData: any, options?: { 
+    engine?: 'latex' | 'html';
+    templateId?: string;
+    optimizedLatexCode?: string;
+  }): Promise<Buffer> {
+    const engine = options?.engine || this.selectOptimalEngine(resumeData, options?.templateId);
+    
+    console.log(`📄 Using ${engine.toUpperCase()} engine for PDF generation`);
+    
+    if (engine === 'latex') {
+      return await this.generateLatexPDF(resumeData, options?.templateId, options?.optimizedLatexCode);
+    } else {
+      return await this.generateHtmlPDF(resumeData);
+    }
+  }
+
+  /**
+   * Generate PDF using LaTeX engine (Overleaf-style precision)
+   */
+  private async generateLatexPDF(resumeData: any, templateId?: string, optimizedLatexCode?: string): Promise<Buffer> {
+    try {
+      console.log('🔧 Starting LaTeX PDF generation...', {
+        hasOptimizedLatex: !!optimizedLatexCode,
+        templateId
+      });
+      
+      // If we have optimized LaTeX code, use it directly via the generateLatexResumePDF method
+      if (optimizedLatexCode) {
+        console.log('🎯 Using optimized LaTeX code for PDF generation');
+        return await this.generateLatexResumePDF(resumeData, {
+          templateId: templateId || 'template1',
+          outputFormat: 'pdf',
+          cleanup: true,
+          optimizedLatexCode
+        });
+      }
+      
+      // Convert resume data to LaTeX format
+      const latexData = this.convertToLatexData(resumeData);
+      
+      // Determine template ID (Overleaf template or fallback)
+      const finalTemplateId = templateId || this.selectLatexTemplate(resumeData);
+      
+      // Compile using LaTeX service
+      const pdfBuffer = await latexService.compileResume(latexData, {
+        templateId: finalTemplateId,
+        outputFormat: 'pdf',
+        cleanup: true
+      });
+      
+      console.log('✅ LaTeX PDF generated successfully:', pdfBuffer.length, 'bytes');
+      return pdfBuffer;
+      
+    } catch (error) {
+      console.error('❌ LaTeX PDF generation failed, falling back to HTML:', error);
+      
+      // Fallback to HTML generation if LaTeX fails
+      return await this.generateHtmlPDF(resumeData);
+    }
+  }
+
+  /**
+   * Generate PDF using HTML/Puppeteer (legacy method)
+   */
+  private async generateHtmlPDF(resumeData: any): Promise<Buffer> {
     let browser;
     
     try {
@@ -440,11 +530,24 @@ export class ResumeService {
   /**
    * Generate DOCX file (placeholder - can be enhanced with docx library)
    */
-  private async generateDOCXFile(resumeData: any): Promise<Buffer> {
-    // For now, return a simple text buffer
-    // In production, you'd use a library like 'docx' to create proper Word documents
-    const textContent = this.generateTextContent(resumeData);
-    return Buffer.from(textContent, 'utf-8');
+  private async generateDOCXFile(resumeData: any, options?: { 
+    optimizedLatexCode?: string;
+    templateId?: string;
+  }): Promise<Buffer> {
+    console.log('📄 Generating DOCX with dynamic content', {
+      hasOptimizedLatex: !!options?.optimizedLatexCode,
+      templateId: options?.templateId
+    });
+    
+    // If we have optimized LaTeX content, convert it to structured text
+    if (options?.optimizedLatexCode) {
+      const structuredContent = this.convertLatexToStructuredText(options.optimizedLatexCode, resumeData);
+      return Buffer.from(structuredContent, 'utf-8');
+    }
+    
+    // Otherwise use dynamic resume data (not hardcoded)
+    const dynamicContent = this.generateDynamicTextContent(resumeData);
+    return Buffer.from(dynamicContent, 'utf-8');
   }
 
   /**
@@ -506,88 +609,9 @@ export class ResumeService {
     try {
       console.log('🔧 ResumeService.createResume called with full data:', data);
 
-      // Validate userId format
-      if (!data.userId || typeof data.userId !== 'string') {
-        throw new Error('Invalid userId provided');
-      }
-
-      // Validate ObjectId format
-      let userObjectId;
-      try {
-        userObjectId = new mongoose.Types.ObjectId(data.userId);
-      } catch (error) {
-        console.error('❌ Invalid ObjectId format for userId:', data.userId);
-        throw new Error(`Invalid userId format: ${data.userId}. Must be a valid ObjectId.`);
-      }
-
-      // Sanitize education data to match schema
-      const sanitizedEducation = Array.isArray(data.education) ? data.education.map((edu: any) => ({
-        institution: edu.institution || '',
-        degree: edu.degree || '',
-        fieldOfStudy: edu.fieldOfStudy || '',
-        graduationDate: edu.endDate || edu.graduationDate || new Date(),
-        gpa: edu.gpa || undefined,
-        honors: Array.isArray(edu.honors) ? edu.honors : []
-      })) : [];
-
-      // Sanitize skills data to match schema
-      const sanitizedSkills = Array.isArray(data.skills) ? data.skills.map((skill: any) => ({
-        name: skill.name || '',
-        category: skill.category || 'technical',
-        proficiencyLevel: skill.proficiencyLevel || undefined
-      })) : [];
-
-      // Sanitize work experience data
-      const sanitizedWorkExperience = Array.isArray(data.workExperience) ? data.workExperience.map((work: any) => ({
-        jobTitle: work.jobTitle || work.position || '',
-        company: work.company || '',
-        location: work.location || '',
-        startDate: work.startDate ? new Date(work.startDate) : new Date(),
-        endDate: work.endDate && !work.isCurrentJob ? new Date(work.endDate) : undefined,
-        isCurrentJob: work.isCurrentJob || false,
-        responsibilities: Array.isArray(work.responsibilities) ? work.responsibilities : [],
-        achievements: Array.isArray(work.achievements) ? work.achievements : []
-      })) : [];
-
-      // Validate required personal info fields
-      if (!data.personalInfo?.firstName?.trim()) {
-        throw new Error('First name is required');
-      }
-      if (!data.personalInfo?.lastName?.trim()) {
-        throw new Error('Last name is required');
-      }
-      if (!data.personalInfo?.email?.trim()) {
-        throw new Error('Email is required');
-      }
-      if (!data.personalInfo?.phone?.trim()) {
-        throw new Error('Phone number is required');
-      }
-
-      // Ensure required fields have defaults
-      const resumeData = {
-        userId: userObjectId,
-        title: data.title || 'Untitled Resume',
-        personalInfo: {
-          firstName: data.personalInfo.firstName.trim(),
-          lastName: data.personalInfo.lastName.trim(),
-          email: data.personalInfo.email.trim(),
-          phone: data.personalInfo.phone.trim(),
-          location: data.personalInfo?.location?.trim() || '',
-          linkedinUrl: data.personalInfo?.linkedinUrl || undefined,
-          portfolioUrl: data.personalInfo?.portfolioUrl || undefined,
-          githubUrl: data.personalInfo?.githubUrl || undefined,
-          websiteUrl: (data.personalInfo as any)?.websiteUrl || undefined,
-          professionalTitle: (data.personalInfo as any)?.professionalTitle || undefined
-        },
-        professionalSummary: (data.professionalSummary && data.professionalSummary.trim()) || 'Professional seeking new opportunities.',
-        workExperience: sanitizedWorkExperience,
-        education: sanitizedEducation,
-        skills: sanitizedSkills,
-        certifications: Array.isArray(data.certifications) ? data.certifications : [],
-        languages: Array.isArray(data.languages) ? data.languages : [],
-        projects: Array.isArray(data.projects) ? data.projects : [],
-        templateId: data.templateId || 'modern-1'
-      };
+      // The resumeDataProcessor handles all validation and sanitization,
+      // including the userId conversion.
+      const resumeData = processCompleteResumeData(data);
 
       console.log('💾 Creating resume with processed data:', resumeData);
 
@@ -665,7 +689,17 @@ export class ResumeService {
       const resume = await Resume.findOne({ 
         _id: new mongoose.Types.ObjectId(id),
         userId: new mongoose.Types.ObjectId(userId)
-      });
+      }); // Include all fields including generatedFiles
+      
+      if (resume?.generatedFiles?.pdf?.data) {
+        console.log('✅ Found saved PDF in database:', {
+          filename: resume.generatedFiles.pdf.filename,
+          size: resume.generatedFiles.pdf.data.length,
+          generatedAt: resume.generatedFiles.pdf.generatedAt
+        });
+      } else {
+        console.log('ℹ️ No saved PDF found for resume:', id);
+      }
       
       return resume;
     } catch (error) {
@@ -676,24 +710,69 @@ export class ResumeService {
 
   async updateResume(id: string, userId: string, updateData: Partial<CreateResumeData>): Promise<IResume | null> {
     try {
+      // Validate userId and id format
+      if (!userId || typeof userId !== 'string') {
+        throw new Error('Invalid userId provided');
+      }
+      
+      if (!id || typeof id !== 'string') {
+        throw new Error('Invalid resume ID provided');
+      }
+
+      // Validate ObjectId formats
+      let userObjectId;
+      let resumeObjectId;
+      try {
+        userObjectId = new mongoose.Types.ObjectId(userId);
+        resumeObjectId = new mongoose.Types.ObjectId(id);
+      } catch (error) {
+        console.error('❌ Invalid ObjectId format:', { userId, id });
+        throw new Error('Invalid ID format. Must be valid ObjectIds.');
+      }
+
+      // Process partial resume data using the utility function
+      const processedUpdateData = processPartialResumeData(updateData);
+      
+      console.log('🔧 ResumeService.updateResume: Processing update data:', {
+        resumeId: id,
+        userId,
+        fieldsToUpdate: Object.keys(processedUpdateData)
+      });
+
       const resume = await Resume.findOneAndUpdate(
         { 
-          _id: new mongoose.Types.ObjectId(id),
-          userId: new mongoose.Types.ObjectId(userId)
+          _id: resumeObjectId,
+          userId: userObjectId
         },
-        updateData,
+        processedUpdateData,
         { new: true }
       );
 
       if (resume) {
         // Clear user's resumes cache
-        await this.clearUserResumesCache(userId);
+        try {
+          await this.clearUserResumesCache(userId);
+          console.log('✅ Resume updated and cache cleared successfully');
+        } catch (cacheError) {
+          console.warn('⚠️ Failed to clear cache, but resume was updated:', cacheError);
+        }
+      } else {
+        console.warn('⚠️ Resume not found or user not authorized:', { id, userId });
       }
 
       return resume;
     } catch (error) {
-      console.error('Error updating resume:', error);
-      throw new Error('Failed to update resume');
+      console.error('❌ Error updating resume in service:', error);
+      if (error instanceof mongoose.Error.ValidationError) {
+        console.error('📋 Mongoose validation errors:', Object.keys(error.errors));
+        Object.entries(error.errors).forEach(([field, err]) => {
+          console.error(`📋 Field ${field}:`, (err as any).message);
+        });
+      }
+      if (error instanceof mongoose.Error.CastError) {
+        console.error('📋 Mongoose cast error:', error.message, 'Path:', (error as any).path, 'Value:', (error as any).value);
+      }
+      throw new Error(`Failed to update resume: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
@@ -883,6 +962,674 @@ export class ResumeService {
     } catch (error) {
       console.error('Error clearing cache:', error);
       // Don't throw error for cache operations
+    }
+  }
+
+  /**
+   * Select optimal PDF generation engine based on template and data
+   */
+  private selectOptimalEngine(resumeData: any, templateId?: string): 'latex' | 'html' {
+    // Check if it's an Overleaf template
+    if (templateId && overleafTemplateManager.getTemplate(templateId)) {
+      return 'latex';
+    }
+    
+    // Check if LaTeX is available
+    // In production, you'd cache this check
+    return 'latex'; // Default to LaTeX for better quality
+  }
+
+  /**
+   * Convert resume data to LaTeX-compatible format
+   */
+  private convertToLatexData(resumeData: any): LaTeXTemplateData {
+    return {
+      personalInfo: {
+        firstName: resumeData.personalInfo?.firstName || '',
+        lastName: resumeData.personalInfo?.lastName || '',
+        email: resumeData.personalInfo?.email || '',
+        phone: resumeData.personalInfo?.phone || '',
+        location: resumeData.personalInfo?.location || '',
+        linkedinUrl: resumeData.personalInfo?.linkedinUrl,
+        portfolioUrl: resumeData.personalInfo?.portfolioUrl,
+        githubUrl: resumeData.personalInfo?.githubUrl,
+        professionalTitle: resumeData.personalInfo?.professionalTitle,
+        websiteUrl: resumeData.personalInfo?.websiteUrl
+      },
+      professionalSummary: resumeData.professionalSummary || '',
+      workExperience: resumeData.workExperience || [],
+      education: resumeData.education || [],
+      skills: resumeData.skills || [],
+      certifications: resumeData.certifications || [],
+      languages: resumeData.languages?.map((lang: any) => ({ 
+        name: lang.name || lang, 
+        proficiency: lang.proficiency || 'Fluent' 
+      })) || [],
+      projects: resumeData.projects || [],
+      // CRITICAL FIX: Include missing fields
+      publications: resumeData.publications || [],
+      references: resumeData.references || [],
+      additionalSections: resumeData.additionalSections || [],
+      volunteerExperience: resumeData.volunteerExperience || [],
+      awards: resumeData.awards || [],
+      hobbies: resumeData.hobbies || []
+    };
+  }
+
+  /**
+   * Select appropriate LaTeX template based on resume data or preferences
+   */
+  private selectLatexTemplate(resumeData: any): string {
+    // Check if resume has a preferred template
+    if (resumeData.templateId) {
+      const overleafTemplate = overleafTemplateManager.getTemplate(resumeData.templateId);
+      if (overleafTemplate) {
+        return resumeData.templateId;
+      }
+    }
+    
+    // Select based on resume content/style
+    const availableTemplates = overleafTemplateManager.getAvailableTemplates();
+    
+    if (availableTemplates.length > 0) {
+      // For now, return first available template
+      // Later we can add logic to select based on profession, style, etc.
+      return availableTemplates[0].id;
+    }
+    
+    // Fallback to basic template
+    return 'basic';
+  }
+
+  /**
+   * Get available LaTeX templates (from public/templates directory)
+   */
+  async getAvailableLatexTemplates() {
+    try {
+      // Get templates from public directory via AI generator
+      const publicTemplates = await latexService.getAvailableTemplates();
+      
+      // Also get any manually installed Overleaf templates
+      const overleafTemplates = overleafTemplateManager.getAvailableTemplates().map(template => ({
+        id: template.id,
+        name: template.name,
+        description: template.description,
+        category: template.category,
+        screenshotUrl: template.preview.screenshotUrl,
+        preview: template.preview
+      }));
+      
+      // Combine both sources
+      return [...publicTemplates, ...overleafTemplates];
+    } catch (error) {
+      console.error('Failed to get LaTeX templates:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Install new Overleaf template (for when you provide LaTeX source)
+   */
+  async installOverleafTemplate(templateData: {
+    id: string;
+    name: string;
+    description: string;
+    category: 'modern' | 'professional' | 'creative' | 'academic' | 'minimalist';
+    latexSource: string;
+    styleFiles?: { [filename: string]: string };
+  }) {
+    return await overleafTemplateManager.installOverleafTemplate(templateData);
+  }
+
+  /**
+   * Generate preview for template (for template gallery)
+   */
+  async generateTemplatePreview(templateId: string) {
+    const sampleData = overleafTemplateManager.createSampleData();
+    return await overleafTemplateManager.generateTemplatePreview(templateId, sampleData);
+  }
+
+  async generateLatexResumePDF(resumeData: any, options: { 
+    templateId: string; 
+    outputFormat: string; 
+    cleanup?: boolean;
+    optimizedLatexCode?: string;
+  }): Promise<Buffer> {
+    console.log(`🔧 Generating LaTeX PDF for template: ${options.templateId}`, {
+      hasOptimizedLatex: !!options.optimizedLatexCode
+    });
+    
+    try {
+      // If we have optimized LaTeX code, use it directly
+      if (options.optimizedLatexCode) {
+        console.log('🎯 Using optimized LaTeX code for PDF generation');
+        
+        // Use LaTeX service to compile the pre-generated LaTeX directly  
+        const pdfBuffer = await latexService.compileLatexToPDF(
+          options.optimizedLatexCode,
+          options.templateId,
+          options.outputFormat as "pdf" | "png" | "jpeg"
+        );
+        
+        console.log('✅ PDF generated from optimized LaTeX code');
+        return pdfBuffer;
+      }
+      
+      // Fallback to standard template-based generation  
+      console.log('📝 Converting resume data to LaTeX format...');
+      const latexTemplateData = this.convertToLatexTemplateData(resumeData);
+      console.log('✅ Resume data conversion successful');
+      
+      // Use LaTeX service to compile PDF
+      console.log('🏗️ Starting LaTeX compilation...');
+      const pdfBuffer = await latexService.compileResume(latexTemplateData, {
+        templateId: options.templateId,
+        outputFormat: 'pdf',
+        cleanup: options.cleanup !== false
+      });
+      console.log('✅ LaTeX compilation successful');
+      
+      return pdfBuffer;
+    } catch (error) {
+      console.error('❌ LaTeX PDF generation failed:', error);
+      console.error('Template ID:', options.templateId);
+      console.error('Resume data keys:', Object.keys(resumeData));
+      throw error;
+    }
+  }
+
+  private convertToLatexTemplateData(resumeData: any): any {
+    // Convert resume data to LaTeX template format
+    return {
+      personalInfo: resumeData.personalInfo || {},
+      professionalSummary: resumeData.professionalSummary || '',
+      workExperience: (resumeData.workExperience || resumeData.experience || []).map((exp: any) => ({
+        jobTitle: exp.jobTitle,
+        companyName: exp.company || exp.companyName,
+        location: exp.location,
+        startDate: exp.startDate,
+        endDate: exp.endDate,
+        isCurrentJob: exp.isCurrentJob,
+        achievements: exp.achievements || [],
+        responsibilities: exp.responsibilities || []
+      })),
+      education: (resumeData.education || []).map((edu: any) => ({
+        degree: edu.degree,
+        institution: edu.institution,
+        fieldOfStudy: edu.fieldOfStudy,
+        location: edu.location,
+        startDate: edu.startDate,
+        endDate: edu.endDate,
+        graduationDate: edu.graduationDate || edu.endDate,
+        gpa: edu.gpa,
+        honors: edu.honors || []
+      })),
+      skills: (resumeData.skills || []).map((skill: any) => ({
+        name: skill.name,
+        category: skill.category,
+        proficiencyLevel: skill.proficiencyLevel
+      })),
+      projects: (resumeData.projects || []).map((project: any) => ({
+        name: project.name,
+        description: project.description,
+        technologies: project.technologies || [],
+        url: project.url,
+        startDate: project.startDate,
+        endDate: project.endDate
+      })),
+      certifications: (resumeData.certifications || []).map((cert: any) => 
+        typeof cert === 'string' ? { name: cert, issuer: '', date: '' } : {
+          name: cert.name || cert.title,
+          issuer: cert.issuer || '',
+          date: cert.date || '',
+          expirationDate: cert.expirationDate,
+          credentialId: cert.credentialId,
+          url: cert.url
+        }
+      ),
+      languages: (resumeData.languages || []).map((lang: any) => ({
+        name: lang.name,
+        proficiency: lang.proficiency
+      })),
+      volunteerExperience: (resumeData.volunteerExperience || []).map((vol: any) => ({
+        organization: vol.organization,
+        role: vol.role,
+        location: vol.location,
+        startDate: vol.startDate,
+        endDate: vol.endDate,
+        isCurrentRole: vol.isCurrentRole,
+        description: vol.description,
+        achievements: vol.achievements || []
+      })),
+      awards: (resumeData.awards || []).map((award: any) => ({
+        title: award.title,
+        issuer: award.issuer,
+        date: award.date,
+        description: award.description
+      })),
+      publications: (resumeData.publications || []).map((pub: any) => ({
+        title: pub.title,
+        publisher: pub.publisher,
+        publicationDate: pub.publicationDate,
+        url: pub.url,
+        description: pub.description
+      })),
+      references: (resumeData.references || []).map((ref: any) => ({
+        name: ref.name,
+        title: ref.title,
+        company: ref.company,
+        email: ref.email,
+        phone: ref.phone,
+        relationship: ref.relationship
+      })),
+      hobbies: (resumeData.hobbies || []).map((hobby: any) => ({
+        name: hobby.name,
+        description: hobby.description,
+        category: hobby.category
+      })),
+      additionalSections: (resumeData.additionalSections || []).map((section: any) => ({
+        title: section.title,
+        content: section.content
+      }))
+    };
+  }
+
+  private convertToLatexTemplateData(resumeData: any): any {
+    // Convert frontend resume format to LaTeX template format
+    return {
+      personalInfo: {
+        firstName: resumeData.personalInfo?.firstName || '',
+        lastName: resumeData.personalInfo?.lastName || '',
+        email: resumeData.personalInfo?.email || '',
+        phone: resumeData.personalInfo?.phone || '',
+        location: resumeData.personalInfo?.location || '',
+        linkedinUrl: resumeData.personalInfo?.linkedinUrl || '',
+        portfolioUrl: resumeData.personalInfo?.portfolioUrl || '',
+        githubUrl: resumeData.personalInfo?.githubUrl || ''
+      },
+      professionalSummary: resumeData.professionalSummary || '',
+      workExperience: (resumeData.workExperience || []).map((exp: any) => ({
+        jobTitle: exp.jobTitle || '',
+        companyName: exp.company || exp.companyName || '',
+        location: exp.location || '',
+        startDate: exp.startDate || '',
+        endDate: exp.endDate || (exp.isCurrentJob ? 'Present' : ''),
+        achievements: exp.achievements || [],
+        responsibilities: exp.responsibilities || []
+      })),
+      education: (resumeData.education || []).map((edu: any) => ({
+        degree: edu.degree || '',
+        institution: edu.institution || '',
+        location: edu.location || '',
+        graduationDate: edu.graduationDate || '',
+        gpa: edu.gpa || ''
+      })),
+      skills: (resumeData.skills || []).map((skill: any) => ({
+        name: skill.name || '',
+        category: skill.category || 'Technical Skills'
+      })),
+      certifications: resumeData.certifications || [],
+      projects: (resumeData.projects || []).map((project: any) => ({
+        name: project.name || '',
+        description: project.description || '',
+        technologies: project.technologies || [],
+        url: project.url || ''
+      })),
+      languages: (resumeData.languages || []).map((lang: any) => ({
+        name: lang.name || '',
+        proficiency: lang.proficiency || 'Intermediate'
+      }))
+    };
+  }
+
+  /**
+   * Convert LaTeX optimized content to structured text format
+   */
+  private convertLatexToStructuredText(latexCode: string, resumeData: any): string {
+    console.log('🔄 Converting optimized LaTeX to structured text format');
+    
+    const personalInfo = resumeData.personalInfo || {};
+    const fullName = `${personalInfo.firstName || ''} ${personalInfo.lastName || ''}`.trim();
+    
+    const lines: string[] = [];
+    
+    // Header with job-optimized indicator
+    lines.push('='.repeat(50));
+    lines.push(`${fullName.toUpperCase()}`);
+    lines.push('JOB-OPTIMIZED RESUME');
+    lines.push('Generated with AI LaTeX Optimization');
+    lines.push('='.repeat(50));
+    lines.push('');
+    
+    // Extract sections from LaTeX (basic parsing)
+    if (latexCode.includes('\\section') || latexCode.includes('\\textbf')) {
+      lines.push('NOTICE: This resume has been optimized with AI-powered LaTeX formatting.');
+      lines.push('The content has been tailored for specific job requirements.');
+      lines.push('');
+    }
+    
+    // Add dynamic content from resume data
+    this.addDynamicSections(lines, resumeData);
+    
+    return lines.join('\n');
+  }
+
+  /**
+   * Generate dynamic text content (not hardcoded)
+   */
+  private generateDynamicTextContent(resumeData: any): string {
+    const personalInfo = resumeData.personalInfo || {};
+    const fullName = `${personalInfo.firstName || ''} ${personalInfo.lastName || ''}`.trim();
+    
+    const lines: string[] = [];
+    
+    // Header
+    lines.push('='.repeat(40));
+    lines.push(`${fullName.toUpperCase()}`);
+    lines.push('PROFESSIONAL RESUME');
+    lines.push('='.repeat(40));
+    lines.push('');
+    
+    this.addDynamicSections(lines, resumeData);
+    
+    return lines.join('\n');
+  }
+
+  /**
+   * Add dynamic sections to the document
+   */
+  private addDynamicSections(lines: string[], resumeData: any): void {
+    const personalInfo = resumeData.personalInfo || {};
+    
+    // Contact Information
+    if (personalInfo.email || personalInfo.phone) {
+      lines.push('CONTACT INFORMATION');
+      lines.push('-'.repeat(20));
+      if (personalInfo.email) lines.push(`Email: ${personalInfo.email}`);
+      if (personalInfo.phone) lines.push(`Phone: ${personalInfo.phone}`);
+      if (personalInfo.location) lines.push(`Location: ${personalInfo.location}`);
+      if (personalInfo.linkedinUrl) lines.push(`LinkedIn: ${personalInfo.linkedinUrl}`);
+      if (personalInfo.portfolioUrl) lines.push(`Portfolio: ${personalInfo.portfolioUrl}`);
+      if (personalInfo.githubUrl) lines.push(`GitHub: ${personalInfo.githubUrl}`);
+      lines.push('');
+    }
+
+    // Professional Summary
+    if (resumeData.professionalSummary) {
+      lines.push('PROFESSIONAL SUMMARY');
+      lines.push('-'.repeat(21));
+      lines.push(resumeData.professionalSummary);
+      lines.push('');
+    }
+
+    // Work Experience
+    if (resumeData.workExperience && resumeData.workExperience.length > 0) {
+      lines.push('WORK EXPERIENCE');
+      lines.push('-'.repeat(15));
+      resumeData.workExperience.forEach((exp: any, index: number) => {
+        lines.push(`${index + 1}. ${exp.jobTitle || exp.title} at ${exp.companyName || exp.company}`);
+        lines.push(`   ${exp.location} | ${exp.startDate} - ${exp.endDate || 'Present'}`);
+        if (exp.achievements && exp.achievements.length > 0) {
+          lines.push('   Key Achievements:');
+          exp.achievements.forEach((achievement: string) => {
+            lines.push(`   • ${achievement}`);
+          });
+        }
+        lines.push('');
+      });
+    }
+
+    // Education
+    if (resumeData.education && resumeData.education.length > 0) {
+      lines.push('EDUCATION');
+      lines.push('-'.repeat(9));
+      resumeData.education.forEach((edu: any, index: number) => {
+        lines.push(`${index + 1}. ${edu.degree} in ${edu.fieldOfStudy || 'N/A'}`);
+        lines.push(`   ${edu.institution}`);
+        lines.push(`   Graduated: ${edu.graduationDate}`);
+        if (edu.gpa) lines.push(`   GPA: ${edu.gpa}`);
+        lines.push('');
+      });
+    }
+
+    // Skills
+    if (resumeData.skills && resumeData.skills.length > 0) {
+      lines.push('SKILLS');
+      lines.push('-'.repeat(6));
+      
+      const skillsByCategory: { [key: string]: string[] } = {};
+      resumeData.skills.forEach((skill: any) => {
+        const skillName = typeof skill === 'string' ? skill : skill.name;
+        const category = skill.category || 'General';
+        if (!skillsByCategory[category]) skillsByCategory[category] = [];
+        skillsByCategory[category].push(skillName);
+      });
+      
+      Object.entries(skillsByCategory).forEach(([category, skills]) => {
+        lines.push(`${category}: ${skills.join(', ')}`);
+      });
+      lines.push('');
+    }
+  }
+
+  /**
+   * Save generated PDF to database
+   */
+  async savePDFToDatabase(
+    resumeId: string, 
+    userId: string, 
+    pdfBuffer: Buffer, 
+    options: {
+      templateId: string;
+      isOptimized: boolean;
+      jobOptimized?: {
+        jobUrl: string;
+        jobTitle: string;
+        companyName: string;
+      };
+    }
+  ): Promise<void> {
+    try {
+      console.log('💾 Saving PDF to database:', {
+        resumeId,
+        pdfSize: pdfBuffer.length,
+        isOptimized: options.isOptimized,
+        hasJobData: !!options.jobOptimized
+      });
+
+      console.log('🔍 savePDFToDatabase called with:', {
+        resumeId: resumeId,
+        resumeIdType: typeof resumeId,
+        userId: userId,
+        userIdType: typeof userId,
+        bufferSize: pdfBuffer.length
+      });
+
+      // Validate ObjectId format
+      if (!mongoose.Types.ObjectId.isValid(resumeId)) {
+        throw new Error(`Invalid resumeId format: ${resumeId}`);
+      }
+      if (!mongoose.Types.ObjectId.isValid(userId)) {
+        throw new Error(`Invalid userId format: ${userId}`);
+      }
+
+      const resume = await Resume.findOne(
+        { _id: new mongoose.Types.ObjectId(resumeId), userId: new mongoose.Types.ObjectId(userId) },
+        { 'personalInfo.firstName': 1, 'personalInfo.lastName': 1 }
+      );
+
+      console.log('🔍 Resume found:', !!resume, resume?.personalInfo);
+
+      if (!resume || !resume.personalInfo) {
+        throw new Error('Resume or personal info not found');
+      }
+
+      const filename = `${resume.personalInfo.firstName}_${resume.personalInfo.lastName}_Resume_${Date.now()}.pdf`;
+
+      const updateResult = await Resume.updateOne(
+        { _id: new mongoose.Types.ObjectId(resumeId), userId: new mongoose.Types.ObjectId(userId) },
+        {
+          $set: {
+            'generatedFiles.pdf': {
+              data: pdfBuffer,
+              filename,
+              generatedAt: new Date(),
+              templateId: options.templateId,
+              isOptimized: options.isOptimized,
+              jobOptimized: options.jobOptimized
+            },
+            'generatedFiles.lastGenerated': new Date()
+          }
+        }
+      );
+
+      console.log('🔍 Update result:', updateResult);
+
+      if (updateResult.matchedCount === 0) {
+        throw new Error('Resume not found or user not authorized');
+      }
+
+      if (updateResult.modifiedCount === 0) {
+        console.warn('⚠️ No documents were modified, but update succeeded');
+      }
+
+      console.log('✅ PDF saved to database successfully');
+    } catch (error) {
+      console.error('❌ Failed to save PDF to database:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Retrieve saved PDF from database
+   */
+  async getSavedPDF(resumeId: string, userId: string): Promise<{
+    pdfBuffer: Buffer;
+    filename: string;
+    generatedAt: Date;
+    isOptimized: boolean;
+  } | null> {
+    try {
+      const resume = await Resume.findOne(
+        { _id: new mongoose.Types.ObjectId(resumeId), userId: new mongoose.Types.ObjectId(userId) },
+        { 'generatedFiles.pdf': 1 }
+      );
+
+      if (!resume?.generatedFiles?.pdf) {
+        return null;
+      }
+
+      const pdfData = resume.generatedFiles.pdf;
+      return {
+        pdfBuffer: pdfData.data,
+        filename: pdfData.filename,
+        generatedAt: pdfData.generatedAt,
+        isOptimized: pdfData.isOptimized
+      };
+    } catch (error) {
+      console.error('❌ Failed to retrieve PDF from database:', error);
+      return null;
+    }
+  }
+
+  async getSavedPDFInfo(resumeId: string, userId: string): Promise<any> {
+    try {
+      const resume = await Resume.findOne(
+        { _id: new mongoose.Types.ObjectId(resumeId), userId: new mongoose.Types.ObjectId(userId) },
+        { 'generatedFiles.pdf': 1 }
+      );
+
+      if (!resume?.generatedFiles?.pdf) {
+        return null;
+      }
+
+      const { data, ...pdfInfo } = resume.generatedFiles.pdf;
+      return pdfInfo;
+    } catch (error) {
+      console.error('❌ Failed to retrieve PDF info from database:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Save optimized LaTeX code to database
+   */
+  async saveOptimizedLatexCode(
+    resumeId: string,
+    userId: string,
+    latexCode: string,
+    jobData: {
+      jobUrl: string;
+      jobTitle: string;
+      companyName: string;
+    }
+  ): Promise<void> {
+    try {
+      await Resume.updateOne(
+        { _id: new mongoose.Types.ObjectId(resumeId), userId: new mongoose.Types.ObjectId(userId) },
+        {
+          $set: {
+            'aiGenerated.optimizedLatexCode': latexCode,
+            'aiGenerated.lastJobOptimization': {
+              jobUrl: jobData.jobUrl,
+              jobTitle: jobData.jobTitle,
+              companyName: jobData.companyName,
+              optimizedAt: new Date()
+            },
+            'aiGenerated.lastOptimized': new Date()
+          }
+        }
+      );
+      console.log('✅ Optimized LaTeX code saved to database');
+    } catch (error) {
+      console.error('❌ Failed to save optimized LaTeX code:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Generate and save PDF with resume data
+   */
+  async generateAndSavePDF(
+    resumeId: string,
+    userId: string,
+    resumeData: any,
+    options: {
+      templateId: string;
+      optimizedLatexCode?: string;
+      jobOptimized?: {
+        jobUrl: string;
+        jobTitle: string;
+        companyName: string;
+      };
+    }
+  ): Promise<Buffer> {
+    try {
+      console.log('🎯 Generating and saving PDF with resume data');
+
+      // Generate PDF using existing logic
+      const pdfBuffer = await this.generateLatexPDF(
+        resumeData,
+        options.templateId,
+        options.optimizedLatexCode
+      );
+
+      // Save PDF to database
+      await this.savePDFToDatabase(resumeId, userId, pdfBuffer, {
+        templateId: options.templateId,
+        isOptimized: !!options.optimizedLatexCode,
+        jobOptimized: options.jobOptimized
+      });
+
+      // Save optimized LaTeX code if provided
+      if (options.optimizedLatexCode && options.jobOptimized) {
+        await this.saveOptimizedLatexCode(resumeId, userId, options.optimizedLatexCode, options.jobOptimized);
+      }
+
+      return pdfBuffer;
+    } catch (error) {
+      console.error('❌ Failed to generate and save PDF:', error);
+      throw error;
     }
   }
 }

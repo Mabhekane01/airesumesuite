@@ -501,8 +501,10 @@ export class NotificationService {
 
     const template = templates[type];
     
-    // Use force create for critical auth notifications
-    if (type === 'registration_complete' || type === 'security_alert') {
+    // Use force create for critical auth notifications including login_success
+    // Login notifications should always be created to provide user feedback
+    if (type === 'login_success' || type === 'registration_complete' || type === 'security_alert') {
+      console.log('🔔 Using forceCreateNotification for auth type:', type);
       return this.forceCreateNotification({
         userId,
         category: 'authentication',

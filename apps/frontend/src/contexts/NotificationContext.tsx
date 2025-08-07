@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback, Rea
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { notificationService } from '../services/notificationService';
 import { INotification } from '../types';
+import { useAuthStore } from '../stores/authStore';
 
 interface NotificationContextType {
   notifications: INotification[];
@@ -29,6 +30,7 @@ interface NotificationProviderProps {
 
 export const NotificationProvider: React.FC<NotificationProviderProps> = ({ children }) => {
   const queryClient = useQueryClient();
+  const { isAuthenticated } = useAuthStore();
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['notifications'],
@@ -42,6 +44,8 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
         throw error;
       }
     },
+    // Only enable the query if the user is authenticated
+    enabled: isAuthenticated,
     refetchInterval: 30000, // Poll every 30 seconds
     retry: 3,
     staleTime: 10000, // Consider data stale after 10 seconds
@@ -84,8 +88,10 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
   };
 
   const refreshNotifications = useCallback(() => {
-    refetch();
-  }, [refetch]);
+    if (isAuthenticated) {
+      refetch();
+    }
+  }, [refetch, isAuthenticated]);
 
   const value: NotificationContextType = {
     notifications,
