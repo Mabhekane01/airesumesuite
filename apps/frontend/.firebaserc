@@ -1,5 +1,8 @@
 {
   "projects": {
-    "default": "airesumesuite"
-  }
+    "default": "airesumesuite-18a3c",
+    "ai-job-suite": "airesumesuite-18a3c"
+  },
+  "targets": {},
+  "etags": {}
 }
