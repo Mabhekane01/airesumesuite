@@ -33,6 +33,8 @@ export default function TemplateRenderer({ resume, template, isPreview = false }
       style={{ 
         width: '100%', 
         height: '100%',
+        margin: 0,
+        padding: 0,
         ...fixedStyles
       }}
     >
@@ -42,7 +44,7 @@ export default function TemplateRenderer({ resume, template, isPreview = false }
           <div 
             style={{ 
               width: '35%', 
-              padding: '16px',
+              padding: isPreview ? '0px' : '16px',
               backgroundColor: template.colors.secondary + '15',
               display: 'flex',
               flexDirection: 'column',

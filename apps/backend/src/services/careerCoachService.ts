@@ -12,7 +12,7 @@ const convertObjectIdToString = (id: any): string => {
   // Handle MongoDB ObjectId Buffer format
   if (id.buffer && id.buffer.data && Array.isArray(id.buffer.data)) {
     const bytes = Array.from(id.buffer.data);
-    return bytes.map(b => b.toString(16).padStart(2, '0')).join('');
+    return bytes.map(b => (b as number).toString(16).padStart(2, '0')).join('');
   }
   
   return String(id);

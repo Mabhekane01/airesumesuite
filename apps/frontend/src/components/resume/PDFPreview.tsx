@@ -164,7 +164,7 @@ const PDFFromBlob = ({ blobUrl, pdfBlob, title, isFullscreenMode, onFullscreen, 
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center w-full h-full min-h-[600px] bg-white">
+      <div className="flex items-center justify-center w-full h-full min-h-96 bg-white">
         <div className="text-center">
           <ArrowPathIcon className="h-8 w-8 animate-spin text-blue-500 mx-auto mb-4" />
           <p className="text-gray-600">Converting PDF for display...</p>
@@ -175,7 +175,7 @@ const PDFFromBlob = ({ blobUrl, pdfBlob, title, isFullscreenMode, onFullscreen, 
 
   if (error) {
     return (
-      <div className="flex items-center justify-center w-full h-full min-h-[600px] bg-white">
+      <div className="flex items-center justify-center w-full h-full min-h-96 bg-white">
         <div className="text-center">
           <DocumentTextIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
           <p className="text-gray-600">PDF preview temporarily unavailable</p>
@@ -206,9 +206,14 @@ const PDFFromBlob = ({ blobUrl, pdfBlob, title, isFullscreenMode, onFullscreen, 
     <div className="relative w-full h-full group">
       {/* PDF Display - Make PDF fill the container better */}
       <iframe
-        src={dataUrl}
+        src={`${dataUrl}#toolbar=0&navpanes=0&scrollbar=0&zoom=FitH&view=FitH`}
         className="w-full h-full border-none"
         title={title || 'PDF Preview'}
+        style={{
+          transform: 'scale(1.15)',
+          transformOrigin: 'top center',
+          overflow: 'hidden'
+        }}
         onLoad={() => {
           console.log(`✅ Iframe loaded successfully with data URL`);
         }}
@@ -807,7 +812,7 @@ export default function PDFPreview({
 
     if (loading) {
       return (
-        <div className="flex items-center justify-center h-full min-h-[600px] min-h-[400px] bg-dark-tertiary rounded-lg">
+        <div className="flex items-center justify-center h-full min-h-96 bg-dark-tertiary rounded-lg">
           <div className="text-center">
             <ArrowPathIcon className="h-8 w-8 animate-spin text-accent-primary mx-auto mb-4" />
             <p className="text-dark-text-secondary">Generating LaTeX PDF preview...</p>
@@ -819,7 +824,7 @@ export default function PDFPreview({
 
     if (error) {
       return (
-        <div className="flex items-center justify-center h-full min-h-[600px] min-h-[400px] bg-dark-tertiary rounded-lg border border-accent-danger/30">
+        <div className="flex items-center justify-center h-full min-h-96 bg-dark-tertiary rounded-lg border border-accent-danger/30">
           <div className="text-center">
             <DocumentTextIcon className="h-12 w-12 text-accent-danger mx-auto mb-4" />
             <p className="text-accent-danger mb-2">Failed to load PDF preview</p>
@@ -840,7 +845,7 @@ export default function PDFPreview({
 
     if (!actualPdfUrl) {
       return (
-        <div className="flex items-center justify-center h-full min-h-[600px] min-h-[400px] bg-dark-tertiary rounded-lg">
+        <div className="flex items-center justify-center h-full min-h-96 bg-dark-tertiary rounded-lg">
           <div className="text-center">
             <DocumentTextIcon className="h-12 w-12 text-dark-text-muted mx-auto mb-4" />
             <p className="text-dark-text-secondary">No PDF available</p>
@@ -852,7 +857,7 @@ export default function PDFPreview({
     // If iframe fails to load blob URL, use direct blob display
     if (iframeError && pdfBlob) {
       return (
-        <div className={`relative ${isFullscreenMode ? 'h-screen' : 'h-full min-h-[600px] '} bg-gray-100 overflow-hidden`}>
+        <div className={`relative ${isFullscreenMode ? 'h-screen' : 'h-full min-h-96'} bg-gray-100 overflow-hidden`}>
           <PDFFromBlob 
             blobUrl={actualPdfUrl}
             pdfBlob={pdfBlob}
@@ -901,7 +906,7 @@ export default function PDFPreview({
     // Show fallback only for non-blob URLs that have errors
     if (shouldUseSpecialRender && !isBlob) {
       return (
-        <div className={`relative ${isFullscreenMode ? 'h-screen' : 'h-full min-h-[600px] '} bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center`}>
+        <div className={`relative ${isFullscreenMode ? 'h-screen' : 'h-full min-h-96'} bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center`}>
           <div className="text-center p-8">
             <DocumentTextIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-gray-800 mb-2">PDF Error</h3>
@@ -917,7 +922,7 @@ export default function PDFPreview({
       
       // Use iframe with data URL instead of blob URL
       return (
-        <div className={`relative ${isFullscreenMode ? 'h-screen' : 'h-full min-h-[600px] '} bg-gray-100 overflow-hidden`}>
+        <div className={`relative ${isFullscreenMode ? 'h-screen' : 'h-full min-h-96'} bg-gray-100 overflow-hidden`}>
           <PDFFromBlob 
             blobUrl={actualPdfUrl} 
             pdfBlob={pdfBlob}
@@ -935,7 +940,7 @@ export default function PDFPreview({
         {/* PDF Viewer - Try different methods based on viewerMethod state */}
         {viewerMethod === 'embed' ? (
           <embed
-            src={actualPdfUrl}
+            src={`${actualPdfUrl}#toolbar=0&navpanes=0&scrollbar=0&zoom=FitH&view=FitH`}
             type="application/pdf"
             className="w-full h-full border-none"
             title={title || 'PDF Preview'}
@@ -943,13 +948,13 @@ export default function PDFPreview({
             onError={handleViewerError}
             style={{
               imageRendering: 'crisp-edges',
-              imageRendering: '-webkit-optimize-contrast',
-              imageRendering: 'pixelated'
+              transform: 'scale(1.1)',
+              transformOrigin: 'top center'
             }}
           />
         ) : (
           <object
-            data={actualPdfUrl}
+            data={`${actualPdfUrl}#toolbar=0&navpanes=0&scrollbar=0&zoom=FitH&view=FitH`}
             type="application/pdf"
             className="w-full h-full border-none"
             title={title || 'PDF Preview'}
@@ -957,8 +962,8 @@ export default function PDFPreview({
             onError={handleViewerError}
             style={{
               imageRendering: 'crisp-edges',
-              imageRendering: '-webkit-optimize-contrast',
-              imageRendering: 'pixelated'
+              transform: 'scale(1.1)',
+              transformOrigin: 'top center'
             }}
           >
             {/* Empty fallback - we handle fallback with our own UI */}

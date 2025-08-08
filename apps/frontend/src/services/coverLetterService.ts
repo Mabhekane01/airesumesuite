@@ -34,6 +34,7 @@ export interface CreateCoverLetterRequest {
   tone: 'professional' | 'casual' | 'enthusiastic' | 'conservative';
   templateId?: string;
   resumeId?: string;
+  content?: string; // Allow passing pre-generated content
 }
 
 export interface GenerateFromJobRequest {

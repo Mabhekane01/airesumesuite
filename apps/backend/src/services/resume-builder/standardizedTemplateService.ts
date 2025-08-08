@@ -1782,6 +1782,32 @@ ${this.escapeLatex(section.content)}\\\\[0.3em]`;
   }
 
   /**
+   * Generate PDF from standardized data using LaTeX service
+   */
+  async generatePDF(
+    resumeData: StandardizedResumeData,
+    templateId: string = 'modern-1'
+  ): Promise<Buffer> {
+    console.log(`🎯 Generating PDF with standardized template: ${templateId}`);
+    try {
+      // Generate LaTeX code using the standardized template service
+      const latexCode = await this.generateLatex(templateId, resumeData, {
+        enhanceWithAI: false
+      });
+
+      // Import and use the LaTeX service to compile to PDF
+      const { latexService } = await import('./latexService');
+      const pdfBuffer = await latexService.compileLatexToPDF(latexCode, templateId, 'pdf');
+
+      console.log(`✅ PDF generated successfully (${pdfBuffer.length} bytes)`);
+      return pdfBuffer;
+    } catch (error) {
+      console.error(`❌ PDF generation failed:`, error);
+      throw new Error(`Failed to generate PDF. Please check your data and try again.`);
+    }
+  }
+
+  /**
    * Get available LaTeX templates
    */
   async getAvailableTemplates(): Promise<

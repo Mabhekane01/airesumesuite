@@ -357,7 +357,7 @@ export default function CoverLetterGenerator() {
       let coverLetter;
 
       if (method === 'job-url' && data.jobUrl) {
-        // Generate content only (don't save to account yet)
+        // Generate content without saving to database
         const result = await coverLetterService.aiGenerateFromUrl({
           jobUrl: data.jobUrl,
           resumeId: data.resumeId,
@@ -366,16 +366,9 @@ export default function CoverLetterGenerator() {
         });
 
         if (result.success) {
-          const { jobAnalysis } = result.data;
-          coverLetter = result.data.coverLetter;
+          const { jobAnalysis, coverLetterContent } = result.data;
           
-          // Update form with analyzed data
-          setValue('jobTitle', jobAnalysis.jobTitle);
-          setValue('companyName', jobAnalysis.companyName);
-          setValue('jobDescription', jobAnalysis.jobDescription);
-          setValue('title', `Cover Letter - ${jobAnalysis.jobTitle} at ${jobAnalysis.companyName}`);
-          
-          // Update scraped data for display
+          // Store job analysis for later saving
           setScrapedJobData({
             title: jobAnalysis.jobTitle,
             company: jobAnalysis.companyName,
@@ -384,30 +377,39 @@ export default function CoverLetterGenerator() {
             requirements: jobAnalysis.requirements,
             responsibilities: jobAnalysis.responsibilities,
             skills: jobAnalysis.skills,
-            confidence: jobAnalysis.confidence
+            confidence: jobAnalysis.confidence,
+            fullJobAnalysis: jobAnalysis // Store complete analysis for saving
           });
           
-          // Set generated content for display
-          setGeneratedContent(coverLetter.content);
+          // Update form with analyzed data
+          setValue('jobTitle', jobAnalysis.jobTitle);
+          setValue('companyName', jobAnalysis.companyName);
+          setValue('jobDescription', jobAnalysis.jobDescription);
+          setValue('title', `Cover Letter - ${jobAnalysis.jobTitle} at ${jobAnalysis.companyName}`);
           
-          toast.success(`✨ Cover Letter Generated! (${jobAnalysis.confidence}% confidence)`);
+          // Set generated content for display (not saved yet)
+          setGeneratedContent(coverLetterContent);
+          
+          toast.success(`✨ Cover Letter Generated! (${jobAnalysis.confidence}% confidence) - Click "Save to Account" to store it`);
         } else {
           throw new Error(result.message || 'AI generation failed');
         }
       } else if (method === 'manual') {
-        // Generate content only  
-        coverLetter = await createCoverLetter({
-          title: data.title,
+        // For manual method, generate content using AI but don't save
+        const result = await coverLetterService.generateAIContent({
           jobTitle: data.jobTitle,
           companyName: data.companyName,
-          jobUrl: data.jobUrl || undefined,
-          jobDescription: data.jobDescription || undefined,
           tone: data.tone,
-          resumeId: data.resumeId || undefined,
+          resumeId: data.resumeId,
+          jobDescription: data.jobDescription || '',
         });
         
-        setGeneratedContent(coverLetter.content);
-        toast.success('✨ Cover letter generated!');
+        if (result.success) {
+          setGeneratedContent(result.content);
+          toast.success('✨ Cover letter generated! Click "Save to Account" to store it');
+        } else {
+          throw new Error(result.message || 'Generation failed');
+        }
       } else if (method === 'ai-chat') {
         // For AI chat, the generation happens through the chat interface
         toast.info('Please use the chat interface below to generate your cover letter.');
@@ -955,13 +957,45 @@ export default function CoverLetterGenerator() {
               {generatedContent && (
                 <Button
                   type="button"
-                  onClick={() => {
-                    toast.success('Cover letter already saved to your account!');
-                    navigate('/dashboard/documents');
+                  onClick={async () => {
+                    if (!generatedContent) {
+                      toast.error('No content to save');
+                      return;
+                    }
+                    
+                    try {
+                      setIsGeneratingAI(true);
+                      const formData = form.getValues();
+                      
+                      const result = await coverLetterService.createCoverLetter({
+                        title: formData.title,
+                        jobTitle: formData.jobTitle,
+                        companyName: formData.companyName,
+                        jobUrl: formData.jobUrl || undefined,
+                        jobDescription: formData.jobDescription || undefined,
+                        tone: formData.tone,
+                        resumeId: formData.resumeId || undefined,
+                        content: generatedContent // Save the generated content
+                      });
+                      
+                      if (result.success) {
+                        toast.success('✅ Cover letter saved to your account!');
+                        setTimeout(() => navigate('/dashboard/documents'), 1500);
+                      } else {
+                        throw new Error(result.message || 'Failed to save');
+                      }
+                    } catch (error: any) {
+                      console.error('Save error:', error);
+                      toast.error(error.message || 'Failed to save cover letter');
+                    } finally {
+                      setIsGeneratingAI(false);
+                    }
                   }}
+                  isLoading={isGeneratingAI}
+                  disabled={isGeneratingAI}
                   className="px-6 bg-green-600 hover:bg-green-700"
                 >
-                  💾 View in Dashboard
+                  💾 Save to Account
                 </Button>
               )}
             </div>

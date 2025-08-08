@@ -106,7 +106,7 @@ export class CoverLetterController {
       res.status(201).json({
         success: true,
         data: {
-          coverLetter: result.coverLetter,
+          coverLetterContent: result.coverLetterContent,
           jobAnalysis: result.jobAnalysis
         }
       });
@@ -181,7 +181,7 @@ export class CoverLetterController {
       res.status(201).json({
         success: true,
         data: {
-          coverLetter: result.coverLetter,
+          coverLetterContent: result.coverLetterContent,
           jobAnalysis: result.jobAnalysis
         }
       });
@@ -940,6 +940,91 @@ Return only the improved cover letter content (no JSON, no explanations).`;
     }
   }
 
+  async generateCoverLetterPreview(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      console.log('🔄 Cover letter preview request received:', req.body);
+      const { jobUrl, resumeId, tone, customInstructions } = req.body;
+      const userId = req.user?.id;
+
+      if (!userId) {
+        res.status(401).json({ message: 'Unauthorized' });
+        return;
+      }
+
+      if (!jobUrl) {
+        res.status(400).json({
+          success: false,
+          message: 'Job URL is required'
+        });
+        return;
+      }
+
+      const result = await coverLetterService.generateCoverLetterPreview({
+        jobUrl,
+        resumeId,
+        tone: tone || 'professional',
+        customInstructions,
+        userId
+      });
+
+      res.status(200).json({
+        success: true,
+        data: {
+          jobAnalysis: result.jobAnalysis,
+          coverLetterContent: result.coverLetterContent
+        }
+      });
+
+    } catch (error) {
+      console.error('❌ Error in generateCoverLetterPreview:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to generate cover letter preview'
+      });
+    }
+  }
+
+  async saveCoverLetterToAccount(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      console.log('💾 Save cover letter request received:', req.body);
+      const { content, jobAnalysis, resumeId, tone } = req.body;
+      const userId = req.user?.id;
+
+      if (!userId) {
+        res.status(401).json({ message: 'Unauthorized' });
+        return;
+      }
+
+      if (!content || !jobAnalysis) {
+        res.status(400).json({
+          success: false,
+          message: 'Content and job analysis are required'
+        });
+        return;
+      }
+
+      const savedCoverLetter = await coverLetterService.saveCoverLetterToAccount({
+        content,
+        jobAnalysis,
+        resumeId,
+        tone: tone || 'professional',
+        userId
+      });
+
+      res.status(201).json({
+        success: true,
+        data: savedCoverLetter
+      });
+
+    } catch (error) {
+      console.error('❌ Error in saveCoverLetterToAccount:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to save cover letter to account'
+      });
+    }
+  }
+
   async generateAIContent(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       console.log('🤖 AI Content generation request received:', req.body);
@@ -964,7 +1049,6 @@ Return only the improved cover letter content (no JSON, no explanations).`;
         console.log('🔧 Attempting to load Gemini service...');
         const { geminiService } = await import('../services/ai/gemini');
         
-        let personalInfo = { firstName: 'User', lastName: '', email: '', location: '' };
         let resumeData = null;
 
         // Get resume data if provided
@@ -975,7 +1059,6 @@ Return only the improved cover letter content (no JSON, no explanations).`;
           if (validResumeId && validResumeId.match(/^[0-9a-fA-F]{24}$/)) {
             const resume = await Resume.findById(validResumeId);
             if (resume) {
-              personalInfo = resume.personalInfo || personalInfo;
               resumeData = resume.toObject();
             }
           } else {
@@ -985,7 +1068,6 @@ Return only the improved cover letter content (no JSON, no explanations).`;
 
         console.log('🎯 Generating content for:', { jobTitle, companyName, tone });
         const content = await geminiService.generateCoverLetter({
-          personalInfo,
           jobDescription: jobDescription || '',
           jobTitle,
           companyName,
@@ -1302,6 +1384,68 @@ ${selectedTone.signature},
     }
     
     return suggestions;
+  }
+
+  async getPublicCoverLetter(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      
+      const coverLetter = await coverLetterService.getPublicCoverLetter(id);
+      
+      if (!coverLetter) {
+        res.status(404).json({
+          success: false,
+          message: 'Cover letter not found or not public'
+        });
+        return;
+      }
+
+      res.status(200).json({
+        success: true,
+        data: coverLetter
+      });
+    } catch (error) {
+      console.error('Error in getPublicCoverLetter:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to fetch public cover letter'
+      });
+    }
+  }
+
+  async toggleCoverLetterVisibility(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const { isPublic } = req.body;
+      const userId = req.user?.id;
+
+      if (!userId) {
+        res.status(401).json({ message: 'Unauthorized' });
+        return;
+      }
+
+      const coverLetter = await coverLetterService.toggleCoverLetterVisibility(id, userId, isPublic);
+      
+      if (!coverLetter) {
+        res.status(404).json({
+          success: false,
+          message: 'Cover letter not found'
+        });
+        return;
+      }
+
+      res.status(200).json({
+        success: true,
+        data: coverLetter,
+        message: `Cover letter ${isPublic ? 'made public' : 'made private'} successfully`
+      });
+    } catch (error) {
+      console.error('Error in toggleCoverLetterVisibility:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to update cover letter visibility'
+      });
+    }
   }
 }
 

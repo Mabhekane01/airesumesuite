@@ -3,7 +3,7 @@ services:
   - type: web
     name: ai-job-suite-backend
     env: docker
-    dockerfilePath: ./apps/backend/Dockerfile
+    dockerfilePath: ./Dockerfile.render.backend
     dockerContext: .
     plan: starter
     region: oregon
@@ -111,6 +111,16 @@ services:
         value: https://e5cfaa159c3404393d2aa5ff5ab2d7ad@o4509756801351680.ingest.de.sentry.io/4509756804038736
       - key: GA_TRACKING_ID
         value: G-Y4CHQRKG7R
+        
+      # LaTeX PDF Generation
+      - key: LATEX_ENGINE
+        value: pdflatex
+      - key: PDF_ENGINE
+        value: latex
+      - key: ENABLE_LATEX_PDF
+        value: true
+      - key: LATEX_TIMEOUT
+        value: 300000
         
       # Feature Flags
       - key: ENABLE_AI_FEATURES

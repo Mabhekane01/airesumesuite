@@ -552,8 +552,12 @@ export const login = async (req: Request, res: Response) => {
     console.log('🔐 Login attempt:', { email, hasLocation: !!location, hasRecaptcha: !!recaptchaToken });
 
     // Enterprise reCAPTCHA verification for login
+    const recaptchaStatus = recaptchaService.getStatus();
+    console.log('🔍 reCAPTCHA Service Status:', recaptchaStatus);
+    
     if (recaptchaService.isConfigured()) {
       if (!recaptchaToken) {
+        console.warn('⚠️ Login attempted without reCAPTCHA token');
         return res.status(400).json({ 
           message: 'Security verification required',
           errors: ['Please complete the security verification to continue']

@@ -2,8 +2,20 @@
 # Use Puppeteer base image that includes Chrome
 FROM ghcr.io/puppeteer/puppeteer:latest AS base
 
-# Switch to root to install pnpm globally
+# Switch to root to install packages
 USER root
+
+# Install LaTeX packages for PDF generation
+RUN apt-get update && apt-get install -y \
+    texlive-latex-base \
+    texlive-latex-extra \
+    texlive-fonts-recommended \
+    texlive-fonts-extra \
+    texlive-xetex \
+    texlive-luatex \
+    lmodern \
+    fontconfig \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install pnpm globally (Puppeteer image uses npm by default)
 RUN npm install -g pnpm
@@ -45,8 +57,20 @@ FROM ghcr.io/puppeteer/puppeteer:latest AS production
 # Set working directory
 WORKDIR /app
 
-# Switch to root for pnpm installation in production stage
+# Switch to root for package installation in production stage
 USER root
+
+# Install LaTeX packages for PDF generation (same as base stage)
+RUN apt-get update && apt-get install -y \
+    texlive-latex-base \
+    texlive-latex-extra \
+    texlive-fonts-recommended \
+    texlive-fonts-extra \
+    texlive-xetex \
+    texlive-luatex \
+    lmodern \
+    fontconfig \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install pnpm globally 
 RUN npm install -g pnpm

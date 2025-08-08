@@ -2,6 +2,7 @@ import { CoverLetter, ICoverLetter } from '../../models/CoverLetter';
 import { Resume, IResume } from '../../models/Resume';
 import { geminiService } from '../ai/gemini';
 import { aiJobAnalyzer, JobAnalysisResult } from '../ai/aiJobAnalyzer';
+import { jobScrapingService } from '../job-scraper/jobScrapingService';
 import { redisClient } from '../../config/redis';
 import mongoose from 'mongoose';
 import puppeteer from 'puppeteer';
@@ -17,6 +18,7 @@ export interface CreateCoverLetterData {
   jobDescription?: string;
   tone: 'professional' | 'casual' | 'enthusiastic' | 'conservative';
   templateId?: string;
+  content?: string;
 }
 
 export interface GenerateCoverLetterFromJobData {
@@ -41,8 +43,13 @@ export interface UpdateCoverLetterData extends Partial<CreateCoverLetterData> {
 export class CoverLetterService {
   async createCoverLetter(data: CreateCoverLetterData): Promise<ICoverLetter> {
     try {
-      let content = '';
+      // Use provided content if available, otherwise generate it
+      let content = data.content || '';
       let jobDescription = data.jobDescription;
+      
+      if (content) {
+        console.log('💾 Using provided content for cover letter');
+      } else {
 
       // If job URL is provided, scrape the job posting
       if (data.jobUrl) {
@@ -66,13 +73,6 @@ export class CoverLetterService {
       // Always attempt AI generation for personalized content
       try {
         content = await geminiService.generateCoverLetter({
-          personalInfo: resumeData?.personalInfo || {
-            firstName: 'Your',
-            lastName: 'Name',
-            email: 'your.email@example.com',
-            phone: 'Your Phone',
-            location: 'Your Location'
-          },
           jobDescription: jobDescription || `We are seeking a qualified ${data.jobTitle} to join our team at ${data.companyName}. The ideal candidate will bring relevant experience and skills to contribute to our organization's success.`,
           jobTitle: data.jobTitle,
           companyName: data.companyName,
@@ -87,6 +87,7 @@ export class CoverLetterService {
         
         // Enhanced fallback that still uses candidate data
         content = await this.generateEnhancedCoverLetter(data, resumeData);
+      }
       }
 
       const coverLetter = new CoverLetter({
@@ -180,12 +181,32 @@ export class CoverLetterService {
 
   async updateCoverLetter(id: string, userId: string, updateData: UpdateCoverLetterData): Promise<ICoverLetter | null> {
     try {
+      // Clean the update data to handle empty resumeId
+      const cleanUpdateData = { ...updateData };
+      
+      // If resumeId is an empty string or invalid, remove it from update
+      if (cleanUpdateData.resumeId !== undefined) {
+        if (!cleanUpdateData.resumeId || cleanUpdateData.resumeId.trim() === '') {
+          delete cleanUpdateData.resumeId;
+        } else if (!mongoose.Types.ObjectId.isValid(cleanUpdateData.resumeId)) {
+          console.warn('Invalid resumeId provided, removing from update:', cleanUpdateData.resumeId);
+          delete cleanUpdateData.resumeId;
+        }
+      }
+
+      // IMPORTANT: Preserve content formatting exactly as provided
+      // Do not trim or modify the content field as it may contain intentional whitespace and formatting
+      if (cleanUpdateData.content !== undefined) {
+        // Ensure we preserve the exact content without any modifications
+        console.log('📝 Preserving exact content formatting for cover letter:', id);
+      }
+
       const coverLetter = await CoverLetter.findOneAndUpdate(
         { 
           _id: new mongoose.Types.ObjectId(id),
           userId: new mongoose.Types.ObjectId(userId)
         },
-        updateData,
+        cleanUpdateData,
         { new: true }
       );
 
@@ -272,6 +293,43 @@ Return only the enhanced cover letter content.`;
     }
   }
 
+  async getPublicCoverLetter(id: string): Promise<ICoverLetter | null> {
+    try {
+      const coverLetter = await CoverLetter.findOne({ 
+        _id: new mongoose.Types.ObjectId(id),
+        isPublic: true
+      }).populate('userId', 'firstName lastName email');
+      
+      return coverLetter;
+    } catch (error) {
+      console.error('Error fetching public cover letter:', error);
+      throw new Error('Failed to fetch public cover letter');
+    }
+  }
+
+  async toggleCoverLetterVisibility(id: string, userId: string, isPublic: boolean): Promise<ICoverLetter | null> {
+    try {
+      const coverLetter = await CoverLetter.findOneAndUpdate(
+        { 
+          _id: new mongoose.Types.ObjectId(id),
+          userId: new mongoose.Types.ObjectId(userId)
+        },
+        { isPublic },
+        { new: true }
+      );
+
+      if (coverLetter) {
+        // Clear user's cover letters cache
+        await this.clearUserCoverLettersCache(userId);
+      }
+
+      return coverLetter;
+    } catch (error) {
+      console.error('Error updating cover letter visibility:', error);
+      throw new Error('Failed to update cover letter visibility');
+    }
+  }
+
   async regenerateCoverLetter(id: string, userId: string, newTone?: 'professional' | 'casual' | 'enthusiastic' | 'conservative'): Promise<ICoverLetter | null> {
     try {
       const coverLetter = await this.getCoverLetterById(id, userId);
@@ -289,13 +347,6 @@ Return only the enhanced cover letter content.`;
 
       // Regenerate content with advanced features
       const newContent = await geminiService.generateCoverLetter({
-        personalInfo: resumeData?.personalInfo || {
-          firstName: 'Your',
-          lastName: 'Name',
-          email: 'your.email@example.com',
-          phone: 'Your Phone',
-          location: 'Your Location'
-        },
         jobDescription: coverLetter.jobDescription || '',
         jobTitle: coverLetter.jobTitle,
         companyName: coverLetter.companyName,
@@ -671,10 +722,10 @@ ${options.targetKeywords ? `- Target keywords: ${options.targetKeywords.join(', 
         printBackground: true,
         preferCSSPageSize: false,
         margin: {
-          top: '1in',
-          bottom: '1in',
-          left: '1in',
-          right: '1in'
+          top: '0.5in',
+          bottom: '0.5in',
+          left: '0.75in',
+          right: '0.75in'
         },
         displayHeaderFooter: false
       });
@@ -700,19 +751,25 @@ ${options.targetKeywords ? `- Target keywords: ${options.targetKeywords.join(', 
    * Generate professional HTML content for cover letter PDF conversion
    */
   private generateCoverLetterHTML(coverLetterData: any): string {
-    const formatDate = (date: string | undefined) => {
-      if (!date) return new Date().toLocaleDateString('en-US', {
-        month: 'long',
-        day: 'numeric',
-        year: 'numeric',
-      });
-      return new Date(date).toLocaleDateString('en-US', {
-        month: 'long',
-        day: 'numeric',
-        year: 'numeric',
-      });
-    };
+    // Preserve the exact structure and formatting of the content
+    const content = coverLetterData.content || 'Content not available.';
     
+    // Convert content to HTML while preserving line breaks and structure
+    const htmlContent = content
+      .split('\n\n')  // Split by double line breaks (paragraphs)
+      .map((paragraph: string) => {
+        if (paragraph.trim() === '') return '';
+        // Preserve single line breaks within paragraphs
+        const formattedParagraph = paragraph
+          .split('\n')
+          .map((line: string) => line.trim())
+          .filter((line: string) => line.length > 0)
+          .join('<br>');
+        return `<p>${formattedParagraph}</p>`;
+      })
+      .filter((p: string) => p.length > 0)
+      .join('\n');
+
     return `
       <!DOCTYPE html>
       <html lang="en">
@@ -732,13 +789,13 @@ ${options.targetKeywords ? `- Target keywords: ${options.targetKeywords.join(', 
             line-height: 1.6;
             color: #000;
             background: white;
-            font-size: 12px;
+            font-size: 12pt;
             padding: 0;
             margin: 0;
           }
           
           @page {
-            margin: 1in;
+            margin: 0.5in 0.75in;
             size: A4;
           }
           
@@ -748,103 +805,41 @@ ${options.targetKeywords ? `- Target keywords: ${options.targetKeywords.join(', 
           }
           
           .cover-letter-container {
-            max-width: 8.5in;
-            margin: 0 auto;
+            width: 100%;
+            max-width: none;
+            margin: 0;
             background: white;
-            min-height: 11in;
             padding: 0;
           }
           
-          .date-section {
-            text-align: right;
-            margin-bottom: 40px;
-            font-size: 11px;
-          }
-          
-          .employer-section {
-            margin-bottom: 40px;
-            font-size: 11px;
-          }
-          
-          .employer-name {
-            font-weight: bold;
-            margin-bottom: 5px;
-          }
-          
-          .salutation {
-            margin-bottom: 20px;
-            font-size: 11px;
-          }
-          
           .content-section {
-            margin-bottom: 20px;
-            text-align: justify;
             line-height: 1.8;
-            font-size: 11px;
+            font-size: 12pt;
+            white-space: pre-wrap; /* Preserve whitespace and line breaks */
+            padding-top: 0;
+            margin-top: 0;
           }
           
-          .closing-section {
-            margin-top: 40px;
-            font-size: 11px;
+          .content-section p {
+            margin-bottom: 1em;
+            margin-top: 0;
+            text-align: justify;
           }
           
-          .signature-space {
-            margin-bottom: 60px;
+          .content-section p:first-child {
+            margin-top: 0;
+            padding-top: 0;
           }
           
-          .signature-name {
-            font-weight: bold;
-          }
-          
-          .subject-line {
-            font-weight: bold;
-            margin-bottom: 20px;
-            font-size: 11px;
+          .content-section p:last-child {
+            margin-bottom: 0;
           }
         </style>
       </head>
       <body>
         <div class="cover-letter-container">
-          <!-- Date -->
-          <div class="date-section">
-            ${formatDate(coverLetterData.createdAt)}
-          </div>
-          
-          <!-- Employer Information -->
-          <div class="employer-section">
-            <div class="employer-name">${coverLetterData.companyName}</div>
-            <div>Hiring Manager</div>
-            <div>Human Resources Department</div>
-            <div>[Company Address]</div>
-          </div>
-          
-          <!-- Subject Line -->
-          <div class="subject-line">
-            Re: Application for ${coverLetterData.jobTitle} Position
-          </div>
-          
-          <!-- Salutation -->
-          <div class="salutation">
-            Dear Hiring Manager,
-          </div>
-          
-          <!-- Content -->
           <div class="content-section">
-            ${coverLetterData.content ? 
-              coverLetterData.content.split('\n').map((paragraph: string) => 
-                paragraph.trim() ? `<p style="margin-bottom: 15px;">${paragraph}</p>` : ''
-              ).join('') 
-              : 
-              `<p style="margin-bottom: 15px;">I am writing to express my strong interest in the ${coverLetterData.jobTitle} position at ${coverLetterData.companyName}. With my background and experience, I am confident that I would be a valuable addition to your team.</p>
-               <p style="margin-bottom: 15px;">My qualifications align well with the requirements outlined in your job posting, and I am excited about the opportunity to contribute to your organization's continued success.</p>
-               <p style="margin-bottom: 15px;">Thank you for considering my application. I look forward to the opportunity to discuss how my skills and experience can contribute to ${coverLetterData.companyName}. I am available for an interview at your convenience.</p>`
-            }
-          </div>
-          
-          <!-- Closing -->
-          <div class="closing-section">
-            <div class="signature-space">Sincerely,</div>
-            <div class="signature-name">[Your Name]</div>
+            ${htmlContent || '<p>Content not available.</p>'}
           </div>
         </div>
       </body>
@@ -853,13 +848,120 @@ ${options.targetKeywords ? `- Target keywords: ${options.targetKeywords.join(', 
   }
 
   /**
-   * Generate DOCX file for cover letter (placeholder)
+   * Generate DOCX file for cover letter using proper Word document structure
    */
   private async generateCoverLetterDOCX(coverLetterData: any): Promise<Buffer> {
-    // For now, return a simple text buffer
-    // In production, you'd use a library like 'docx' to create proper Word documents
-    const textContent = this.generateCoverLetterTextContent(coverLetterData);
-    return Buffer.from(textContent, 'utf-8');
+    try {
+      console.log('📄 Generating simplified DOCX file...');
+      
+      // Import the docx library
+      const { Document, Paragraph, TextRun, Packer } = require('docx');
+
+      // Create document with just the content
+      const doc = new Document({
+        sections: [{
+          properties: {
+            page: {
+              margin: {
+                top: 720,    // 0.5 inch
+                right: 720,  // 0.5 inch
+                bottom: 720, // 0.5 inch
+                left: 720,   // 0.5 inch
+              },
+            },
+          },
+          children: [
+            // Only include content paragraphs
+            ...this.createContentParagraphs(coverLetterData),
+          ],
+        }],
+      });
+
+      // Convert to buffer
+      const buffer = await Packer.toBuffer(doc);
+      console.log('✅ DOCX file generated successfully');
+      return buffer;
+      
+    } catch (error) {
+      console.error('❌ Error generating DOCX:', error);
+      // Fallback to plain text if DOCX generation fails
+      console.log('🔄 Falling back to simplified plain text format...');
+      const textContent = coverLetterData.content || 'Content not available.';
+      return Buffer.from(textContent, 'utf-8');
+    }
+  }
+
+  /**
+   * Helper method to create content paragraphs from cover letter text
+   */
+  private createContentParagraphs(coverLetterData: any): any[] {
+    const { Paragraph, TextRun } = require('docx');
+    
+    const content = coverLetterData.content || 'Content not available.';
+
+    // Preserve exact structure: split by double line breaks first (paragraphs)
+    const paragraphs: any[] = [];
+    const sections = content.split('\n\n');
+    
+    sections.forEach((section: string) => {
+      if (section.trim() === '') {
+        // Add empty paragraph for spacing
+        paragraphs.push(new Paragraph({
+          children: [new TextRun({ text: '', size: 24 })],
+          spacing: { after: 240 }
+        }));
+        return;
+      }
+      
+      // Split by single line breaks within the section
+      const lines = section.split('\n');
+      
+      if (lines.length === 1) {
+        // Single line paragraph
+        paragraphs.push(new Paragraph({
+          children: [
+            new TextRun({
+              text: lines[0].trim(),
+              size: 24, // 12pt
+            }),
+          ],
+          spacing: { after: 240 },
+        }));
+      } else {
+        // Multiple lines - create paragraph with line breaks
+        const textRuns: any[] = [];
+        lines.forEach((line: string, index: number) => {
+          if (line.trim()) {
+            textRuns.push(new TextRun({
+              text: line.trim(),
+              size: 24,
+            }));
+            // Add line break if not the last line
+            if (index < lines.length - 1) {
+              textRuns.push(new TextRun({
+                text: '',
+                break: 1, // Line break
+                size: 24,
+              }));
+            }
+          }
+        });
+        
+        if (textRuns.length > 0) {
+          paragraphs.push(new Paragraph({
+            children: textRuns,
+            spacing: { after: 240 },
+          }));
+        }
+      }
+    });
+
+    return paragraphs.length > 0 ? paragraphs : [
+      new Paragraph({
+        children: [new TextRun({ text: 'Content not available.', size: 24 })],
+        spacing: { after: 240 }
+      })
+    ];
   }
 
   /**
@@ -874,42 +976,18 @@ ${options.targetKeywords ? `- Target keywords: ${options.targetKeywords.join(', 
    * Generate plain text content for cover letter
    */
   private generateCoverLetterTextContent(coverLetterData: any): string {
-    const formatDate = (date: string | undefined) => {
-      if (!date) return new Date().toLocaleDateString();
-      return new Date(date).toLocaleDateString('en-US', {
-        month: 'long',
-        day: 'numeric',
-        year: 'numeric',
-      });
-    };
+    // Return the content exactly as it was typed, preserving all formatting
+    const content = coverLetterData.content || 'Content not available.';
     
-    let content = `${formatDate(coverLetterData.createdAt)}\n\n`;
-    content += `${coverLetterData.companyName}\n`;
-    content += `Hiring Manager\n`;
-    content += `Human Resources Department\n`;
-    content += `[Company Address]\n\n`;
-    content += `Re: Application for ${coverLetterData.jobTitle} Position\n\n`;
-    content += `Dear Hiring Manager,\n\n`;
-    
-    if (coverLetterData.content) {
-      content += `${coverLetterData.content}\n\n`;
-    } else {
-      content += `I am writing to express my strong interest in the ${coverLetterData.jobTitle} position at ${coverLetterData.companyName}. With my background and experience, I am confident that I would be a valuable addition to your team.\n\n`;
-      content += `My qualifications align well with the requirements outlined in your job posting, and I am excited about the opportunity to contribute to your organization's continued success.\n\n`;
-      content += `Thank you for considering my application. I look forward to the opportunity to discuss how my skills and experience can contribute to ${coverLetterData.companyName}. I am available for an interview at your convenience.\n\n`;
-    }
-    
-    content += `Sincerely,\n\n\n`;
-    content += `[Your Name]\n`;
-    
-    return content;
+    // Ensure consistent line endings and preserve the exact structure
+    return content.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
   }
 
   /**
    * New AI-powered method that analyzes job URL and generates cover letter in one step
    */
   async aiGenerateCoverLetterFromUrl(data: AIGenerateCoverLetterData): Promise<{
-    coverLetter: ICoverLetter;
+    coverLetterContent: string;
     jobAnalysis: JobAnalysisResult;
   }> {
     try {
@@ -943,16 +1021,86 @@ ${options.targetKeywords ? `- Target keywords: ${options.targetKeywords.join(', 
         customInstructions: data.customInstructions
       });
 
-      // Step 4: Save the cover letter
+      console.log('🎉 AI cover letter generation completed successfully');
+      
+      // Return content and analysis without saving to DB
+      return {
+        coverLetterContent,
+        jobAnalysis
+      };
+    } catch (error) {
+      console.error('❌ Error in AI cover letter generation:', error);
+      throw new Error(`Failed to generate AI-powered cover letter: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Generate cover letter preview without saving to database
+   */
+  async generateCoverLetterPreview(data: {
+    jobUrl: string;
+    resumeId?: string;
+    tone: 'professional' | 'casual' | 'enthusiastic' | 'conservative';
+    customInstructions?: string;
+    userId: string;
+  }): Promise<{ jobAnalysis: JobAnalysisResult; coverLetterContent: string }> {
+    try {
+      // Step 1: Get job analysis (cached)
+      console.log('🔍 Analyzing job from URL for preview...');
+      const jobAnalysis = await aiJobAnalyzer.analyzeJobFromUrl(data.jobUrl);
+      
+      // Step 2: Get resume data if provided
+      let resumeData: IResume | null = null;
+      if (data.resumeId && mongoose.Types.ObjectId.isValid(data.resumeId)) {
+        resumeData = await Resume.findOne({
+          _id: new mongoose.Types.ObjectId(data.resumeId),
+          userId: new mongoose.Types.ObjectId(data.userId)
+        });
+      }
+
+      // Step 3: Generate cover letter content (don't save to DB)
+      console.log('✍️ Generating cover letter preview...');
+      const coverLetterContent = await this.aiGenerateEnhancedCoverLetter({
+        jobAnalysis,
+        resumeData,
+        tone: data.tone,
+        customInstructions: data.customInstructions
+      });
+
+      console.log('🎉 Cover letter preview generated successfully');
+      
+      return {
+        jobAnalysis,
+        coverLetterContent
+      };
+    } catch (error) {
+      console.error('❌ Error generating cover letter preview:', error);
+      throw new Error(`Failed to generate cover letter preview: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Save generated cover letter content to database
+   */
+  async saveCoverLetterToAccount(data: {
+    content: string;
+    jobAnalysis: JobAnalysisResult;
+    resumeId?: string;
+    tone: 'professional' | 'casual' | 'enthusiastic' | 'conservative';
+    userId: string;
+  }): Promise<ICoverLetter> {
+    try {
+      console.log('💾 Saving cover letter to user account...');
+      
       const coverLetter = new CoverLetter({
         userId: new mongoose.Types.ObjectId(data.userId),
         resumeId: (data.resumeId && mongoose.Types.ObjectId.isValid(data.resumeId)) ? new mongoose.Types.ObjectId(data.resumeId) : undefined,
-        title: `Cover Letter - ${jobAnalysis.jobTitle} at ${jobAnalysis.companyName}`,
-        content: coverLetterContent,
-        jobTitle: jobAnalysis.jobTitle,
-        companyName: jobAnalysis.companyName,
-        jobUrl: data.jobUrl,
-        jobDescription: jobAnalysis.jobDescription,
+        title: `Cover Letter - ${data.jobAnalysis.jobTitle} at ${data.jobAnalysis.companyName}`,
+        content: data.content, // Save the full generated content
+        jobTitle: data.jobAnalysis.jobTitle,
+        companyName: data.jobAnalysis.companyName,
+        jobUrl: data.jobAnalysis.applicationInstructions || '', // Store original job URL if available
+        jobDescription: data.jobAnalysis.jobDescription,
         tone: data.tone,
         templateId: 'ai-generated'
       });
@@ -962,15 +1110,12 @@ ${options.targetKeywords ? `- Target keywords: ${options.targetKeywords.join(', 
       // Clear cache
       await this.clearUserCoverLettersCache(data.userId);
 
-      console.log('🎉 AI cover letter generation completed successfully');
+      console.log('✅ Cover letter saved to account successfully');
       
-      return {
-        coverLetter: savedCoverLetter,
-        jobAnalysis
-      };
+      return savedCoverLetter;
     } catch (error) {
-      console.error('❌ Error in AI cover letter generation:', error);
-      throw new Error(`Failed to generate AI-powered cover letter: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error('❌ Error saving cover letter:', error);
+      throw new Error(`Failed to save cover letter: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 

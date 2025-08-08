@@ -33,6 +33,9 @@ router.put('/:id', requireSubscription('premium'), (req: AuthenticatedRequest, r
 // PUT /api/v1/cover-letters/:id/intelligent-update - Intelligently update cover letter with AI enhancement
 router.put('/:id/intelligent-update', requireEnterpriseSubscription, subscriptionRateLimit('ai-cover-letter'), trackFeatureUsage('ai-cover-letter-update'), (req: AuthenticatedRequest, res: Response) => coverLetterController.intelligentUpdateCoverLetter(req, res));
 
+// PUT /api/v1/cover-letters/:id/visibility - Toggle cover letter public visibility
+router.put('/:id/visibility', (req: AuthenticatedRequest, res: Response) => coverLetterController.toggleCoverLetterVisibility(req, res));
+
 // DELETE /api/v1/cover-letters/:id - Delete cover letter
 router.delete('/:id', (req: AuthenticatedRequest, res: Response) => coverLetterController.deleteCoverLetter(req, res));
 

@@ -1,0 +1,69 @@
+# Optimized Dockerfile for Render.com hosting with LaTeX support
+# Single-stage build to minimize complexity and build time on Render
+
+FROM ghcr.io/puppeteer/puppeteer:latest
+
+# Set working directory
+WORKDIR /app
+
+# Switch to root for installations
+USER root
+
+# Install LaTeX packages and build dependencies in a single layer
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    # LaTeX packages for PDF generation
+    texlive-latex-base \
+    texlive-latex-extra \
+    texlive-fonts-recommended \
+    texlive-fonts-extra \
+    texlive-xetex \
+    texlive-luatex \
+    lmodern \
+    fontconfig \
+    # Build tools
+    python3 \
+    make \
+    g++ \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Install pnpm globally
+RUN npm install -g pnpm
+
+# Switch back to pptruser for security
+USER pptruser
+
+# Copy package files with correct ownership
+COPY --chown=pptruser:pptruser package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
+COPY --chown=pptruser:pptruser apps/backend/package.json ./apps/backend/
+
+# Set Puppeteer environment variables to skip Chrome download
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+ENV PUPPETEER_SKIP_DOWNLOAD=true
+
+# Install dependencies with frozen lockfile
+RUN PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true PUPPETEER_SKIP_DOWNLOAD=true pnpm install --frozen-lockfile
+
+# Copy source code
+COPY --chown=pptruser:pptruser apps/backend ./apps/backend
+
+# Build the application
+WORKDIR /app/apps/backend
+RUN pnpm run build:prod
+
+# Create uploads directory with correct permissions
+RUN mkdir -p ./uploads && chown -R pptruser:pptruser ./uploads
+
+# Set environment variables for production
+ENV NODE_ENV=production
+ENV PORT=3001
+
+# Expose port
+EXPOSE 3001
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:3001/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
+
+# Start the application
+CMD ["node", "dist/index.js"]

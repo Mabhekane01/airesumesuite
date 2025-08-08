@@ -27,6 +27,15 @@ class RecaptchaService {
     this.minimumScore = parseFloat(process.env.RECAPTCHA_MIN_SCORE || '0.5');
     this.enterpriseMode = process.env.RECAPTCHA_ENTERPRISE === 'true';
     
+    // Debug logging to verify key loading
+    console.log('🔧 reCAPTCHA Service initialized:', {
+      hasSecretKey: !!this.secretKey,
+      secretKeyPrefix: this.secretKey ? this.secretKey.substring(0, 10) + '...' : 'NONE',
+      minimumScore: this.minimumScore,
+      enterpriseMode: this.enterpriseMode,
+      nodeEnv: process.env.NODE_ENV
+    });
+    
     // Enterprise action-specific scoring
     this.actionScores = new Map([
       ['signup', 0.7],           // High security for registration
@@ -57,6 +66,14 @@ class RecaptchaService {
     userIP?: string
   ): Promise<RecaptchaVerificationResult> {
     try {
+      console.log('🔍 reCAPTCHA verification starting:', {
+        hasToken: !!token,
+        tokenLength: token?.length || 0,
+        expectedAction,
+        hasSecretKey: !!this.secretKey,
+        userIP
+      });
+
       // Skip verification if no secret key is configured
       if (!this.secretKey) {
         console.warn('⚠️ reCAPTCHA secret key not configured. Skipping verification.');
@@ -88,6 +105,14 @@ class RecaptchaService {
       );
 
       const data = response.data;
+
+      console.log('🔍 reCAPTCHA Google API response:', {
+        success: data.success,
+        score: data.score,
+        action: data.action,
+        errorCodes: data['error-codes'],
+        hostname: data.hostname
+      });
 
       if (!data.success) {
         console.error('❌ reCAPTCHA verification failed:', data['error-codes']);

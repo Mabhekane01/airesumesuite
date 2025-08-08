@@ -192,21 +192,12 @@ export class GeminiService {
     }
 
     try {
-      const model = this.client.getGenerativeModel({ model: options.model || "gemini-2.5-flash" });
-      
-      const result = await model.generateContent({
-        contents: [{ role: 'user', parts: [{ text: options.contents }] }],
-        generationConfig: {
-          temperature: options.config?.temperature || 0.7,
-          topK: options.config?.topK || 40,
-          topP: options.config?.topP || 0.9,
-          maxOutputTokens: options.config?.maxOutputTokens || 8192,
-          candidateCount: options.config?.candidateCount || 1,
-        }
+      const result = await this.client.models.generateContent({
+        model: options.model || "gemini-2.5-flash",
+        contents: options.contents
       });
 
-      const response = result.response;
-      const text = response.text();
+      const text = result.text;
       
       return { text };
     } catch (error) {
@@ -266,7 +257,6 @@ Respond only with the optimized JSON data, no additional text.
   }
 
   async generateCoverLetter(options: {
-    personalInfo: any;
     jobDescription: string;
     jobTitle: string;
     companyName: string;
@@ -280,12 +270,11 @@ Respond only with the optimized JSON data, no additional text.
     }
     
     const { 
-      personalInfo, 
       jobDescription, 
       jobTitle, 
       companyName, 
       tone, 
-      resumeData, 
+      resumeData,
       customInstructions,
       keywordOptimization = true 
     } = options;
@@ -295,6 +284,7 @@ Respond only with the optimized JSON data, no additional text.
     const skills = resumeData?.skills || [];
     const education = resumeData?.education || [];
     const achievements = workExperience.flatMap((exp: any) => exp.achievements || []);
+    const applicantName = resumeData?.personalInfo?.firstName ? `${resumeData.personalInfo.firstName} ${resumeData.personalInfo.lastName}` : '[Your Name]';
     
     // Analyze job description for key requirements
     const jobKeywords = this.extractJobKeywords(jobDescription);
@@ -312,10 +302,8 @@ Respond only with the optimized JSON data, no additional text.
 You are an award-winning professional cover letter writer with 15+ years of experience helping candidates secure interviews at top companies. Create an exceptional, highly personalized cover letter that will make this candidate stand out.
 
 🎯 CANDIDATE PROFILE:
-Name: ${personalInfo.firstName} ${personalInfo.lastName}
-Email: ${personalInfo.email}
-Location: ${personalInfo.location}
-Professional Title: ${personalInfo.professionalTitle || 'Professional'}
+Name: ${applicantName}
+Professional Title: ${resumeData?.personalInfo?.professionalTitle || 'Professional'}
 
 📋 PROFESSIONAL BACKGROUND:
 ${resumeData?.professionalSummary ? `Summary: ${resumeData.professionalSummary}` : ''}
@@ -352,23 +340,32 @@ ${customInstructions}
 
 📝 COVER LETTER REQUIREMENTS:
 
-1. OPENING HOOK (2-3 sentences):
+1.  **FULL STRUCTURE**: Generate a complete cover letter. This includes:
+    *   **Your Contact Information**: (Name, Phone, Email - use placeholders if not available in resume data).
+    *   **Date**.
+    *   **Hiring Manager's Information**: (Title, Company Name, Company Address - use placeholders).
+    *   **Salutation**: (e.g., "Dear Hiring Manager,").
+    *   **Body Paragraphs**: (Introduction, value proposition, company alignment).
+    *   **Closing**: (e.g., "Sincerely,").
+    *   **Your Typed Name**.
+
+2. OPENING HOOK (2-3 sentences):
    - Start with a compelling statement that immediately shows value
    - Reference specific company knowledge or recent company news/achievements
    - Clearly state the position and express genuine enthusiasm
 
-2. VALUE PROPOSITION PARAGRAPH (3-4 sentences):
+3. VALUE PROPOSITION PARAGRAPH (3-4 sentences):
    - Highlight 2-3 most relevant accomplishments with specific metrics
    - Draw direct connections between experience and job requirements
    - Use power words and action verbs
    - Incorporate relevant keywords naturally
 
-3. COMPANY ALIGNMENT PARAGRAPH (2-3 sentences):
+4. COMPANY ALIGNMENT PARAGRAPH (2-3 sentences):
    - Show research about the company's mission, values, or recent developments
    - Explain why you're specifically interested in THIS company
    - Connect your career goals with the company's direction
 
-4. CLOSING CALL-TO-ACTION (2 sentences):
+5. CLOSING CALL-TO-ACTION (2 sentences):
    - Express confidence in your ability to contribute
    - Include a specific next step or availability for interview
 
@@ -405,7 +402,7 @@ Generate the complete cover letter now. Return ONLY the cover letter content wit
       let coverLetter = response.text;
       
       // Post-process for consistency and formatting
-      coverLetter = this.postProcessCoverLetter(coverLetter, personalInfo, tone);
+      coverLetter = this.postProcessCoverLetter(coverLetter, resumeData?.personalInfo, tone);
       
       return coverLetter;
     } catch (error) {

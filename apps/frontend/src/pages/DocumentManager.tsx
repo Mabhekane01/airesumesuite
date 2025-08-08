@@ -83,10 +83,17 @@ export default function DocumentManager() {
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [showCoverLetterEditor, setShowCoverLetterEditor] = useState(false);
   const [editingCoverLetter, setEditingCoverLetter] = useState<CoverLetterData | null>(null);
+  const [coverLetterEditorTab, setCoverLetterEditorTab] = useState<'edit' | 'preview' | 'ai-enhance'>('edit');
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   useEffect(() => {
     loadDocuments();
+    
+    // Cleanup function to prevent memory leaks
+    return () => {
+      // Clear any pending action loading states
+      setActionLoading(null);
+    };
   }, []);
 
   const loadDocuments = async () => {
@@ -434,36 +441,8 @@ export default function DocumentManager() {
       };
       
       printDiv.innerHTML = `
-        <div style="font-family: Arial, sans-serif; font-size: 12px; line-height: 1.6; color: #333;">
-          <div style="text-align: right; margin-bottom: 40px;">
-            ${formatDate(coverLetter.createdAt)}
-          </div>
-          
-          <div style="margin-bottom: 40px;">
-            <div style="font-weight: bold; margin-bottom: 5px;">${coverLetter.companyName}</div>
-            <div>Hiring Manager</div>
-            <div>123 Company Street</div>
-            <div>City, State 12345</div>
-          </div>
-
-          <div style="margin-bottom: 30px;">
-            <strong>Re: Application for ${coverLetter.jobTitle} Position</strong>
-          </div>
-
-          <div style="margin-bottom: 20px;">
-            Dear Hiring Manager,
-          </div>
-
-          <div style="margin-bottom: 20px; text-align: justify; line-height: 1.8;">
-            ${coverLetter.content || `I am writing to express my strong interest in the ${coverLetter.jobTitle} position at ${coverLetter.companyName}. With my background and experience, I am confident that I would be a valuable addition to your team.
-
-Thank you for considering my application. I look forward to the opportunity to discuss how my skills and experience can contribute to ${coverLetter.companyName}'s continued success.`}
-          </div>
-
-          <div style="margin-top: 40px;">
-            <div style="margin-bottom: 60px;">Sincerely,</div>
-            <div style="font-weight: bold;">Your Name</div>
-          </div>
+        <div style="font-family: 'Times New Roman', serif; font-size: 12pt; line-height: 1.6; color: #000; white-space: pre-wrap;">
+          ${coverLetter.content || `AI-generated cover letter content will appear here.`}
         </div>
       `;
       
@@ -486,23 +465,106 @@ Thank you for considering my application. I look forward to the opportunity to d
 
   const handleShareCoverLetter = async (coverLetter: CoverLetterData) => {
     try {
-      const shareUrl = `${window.location.origin}/shared/cover-letter/${coverLetter._id}`;
+      toast.info('Generating PDF for sharing...');
       
-      if (navigator.share) {
+      // Generate PDF file for sharing using enterprise download endpoint
+      const response = await api.post('/cover-letters/download-with-data/pdf', {
+        coverLetterData: {
+          title: coverLetter.title,
+          content: coverLetter.content,
+          jobTitle: coverLetter.jobTitle,
+          companyName: coverLetter.companyName,
+          tone: coverLetter.tone,
+          createdAt: coverLetter.createdAt
+        }
+      }, {
+        responseType: 'blob'
+      });
+
+      if (!response.data) {
+        throw new Error('Failed to generate PDF');
+      }
+
+      // Create a File object from the PDF blob
+      const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
+      const fileName = `${coverLetter.title}_Cover_Letter.pdf`.replace(/\s+/g, '_');
+      const file = new File([pdfBlob], fileName, { type: 'application/pdf' });
+
+      // Check if file sharing is supported
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          title: `${coverLetter.title} - Cover Letter`,
+          text: `My cover letter for ${coverLetter.jobTitle} at ${coverLetter.companyName}`,
+          files: [file],
+        });
+        toast.success('Cover letter PDF shared successfully!');
+      } else if (navigator.share) {
+        // Fallback to URL sharing if file sharing not supported
+        const shareUrl = `${window.location.origin}/api/v1/shared/cover-letter/${coverLetter._id}`;
         await navigator.share({
           title: `${coverLetter.title} - Cover Letter`,
           text: `Check out my cover letter for ${coverLetter.jobTitle} at ${coverLetter.companyName}`,
           url: shareUrl,
         });
-        toast.success('Cover letter shared successfully!');
+        toast.success('Cover letter link shared successfully!');
       } else {
-        await navigator.clipboard.writeText(shareUrl);
-        toast.success('Cover letter link copied to clipboard!');
+        // For older browsers, download the file and copy link
+        const url = window.URL.createObjectURL(pdfBlob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        
+        toast.success('PDF downloaded! You can now share the downloaded file.');
+      }
+    } catch (error: any) {
+      console.error('Share error:', error);
+      if (error.name !== 'AbortError') {
+        toast.error('Failed to share cover letter. Please try downloading instead.');
+      }
+    }
+  };
+
+  // Helper function for clipboard operations
+  const copyToClipboard = (text: string) => {
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+          toast.success('Link copied to clipboard!');
+        }).catch(() => {
+          fallbackCopyTextToClipboard(text);
+        });
+      } else {
+        fallbackCopyTextToClipboard(text);
       }
     } catch (error) {
-      console.error('Share error:', error);
-      toast.error('Failed to share cover letter. Please try again.');
-    }  
+      console.error('Clipboard error:', error);
+      fallbackCopyTextToClipboard(text);
+    }
+  };
+
+  // Fallback copy method
+  const fallbackCopyTextToClipboard = (text: string) => {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.top = '0';
+    textArea.style.left = '0';
+    textArea.style.position = 'fixed';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
+      document.execCommand('copy');
+      toast.success('Link copied to clipboard!');
+    } catch (err) {
+      toast.error('Could not copy link. Please copy manually: ' + text.substring(0, 50) + '...');
+    }
+    
+    document.body.removeChild(textArea);
   };
 
   const handleDuplicateDocument = async (id: string, type: DocumentType) => {
@@ -679,6 +741,7 @@ Thank you for considering my application. I look forward to the opportunity to d
           <button
             onClick={() => {
               setEditingCoverLetter(null);
+              setCoverLetterEditorTab('edit');
               setShowCoverLetterEditor(true);
             }}
             className="btn-secondary-dark px-4 py-2 rounded-lg flex items-center space-x-2"
@@ -791,7 +854,7 @@ Thank you for considering my application. I look forward to the opportunity to d
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 20 }}
             className={viewMode === 'grid' 
-              ? 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8'
+              ? 'grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-6'
               : 'space-y-4'
             }
           >
@@ -843,8 +906,8 @@ Thank you for considering my application. I look forward to the opportunity to d
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             className={viewMode === 'grid' 
-              ? 'grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3 xs:gap-4 sm:gap-6 justify-items-center'
-              : 'space-y-3 xs:space-y-4'
+              ? 'grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-6 justify-items-center'
+              : 'space-y-4'
             }
           >
             {filteredCoverLetters.length === 0 ? (
@@ -859,6 +922,7 @@ Thank you for considering my application. I look forward to the opportunity to d
                 <button
                   onClick={() => {
                     setEditingCoverLetter(null);
+                    setCoverLetterEditorTab('edit');
                     setShowCoverLetterEditor(true);
                   }}
                   className="btn-primary-dark px-6 py-2 rounded-lg inline-flex items-center space-x-2"
@@ -873,12 +937,19 @@ Thank you for considering my application. I look forward to the opportunity to d
                   key={coverLetter._id}
                   coverLetter={coverLetter}
                   viewMode={viewMode}
+                  onView={() => {
+                    setEditingCoverLetter(coverLetter);
+                    setCoverLetterEditorTab('preview');
+                    setShowCoverLetterEditor(true);
+                  }}
                   onEdit={() => {
                     setEditingCoverLetter(coverLetter);
+                    setCoverLetterEditorTab('edit');
                     setShowCoverLetterEditor(true);
                   }}
                   onDelete={() => handleDeleteDocument(coverLetter._id!, 'cover-letters')}
-                  onDuplicate={() => handleDuplicateDocument(coverLetter._id!, 'cover-letters')}
+                  onShare={() => handleShareCoverLetter(coverLetter)}
+                  onDownload={() => handleDownloadCoverLetter(coverLetter)}
                 />
               ))
             )}
@@ -911,9 +982,11 @@ Thank you for considering my application. I look forward to the opportunity to d
           <CoverLetterEditor
             coverLetter={editingCoverLetter}
             isOpen={showCoverLetterEditor}
+            initialTab={coverLetterEditorTab}
             onClose={() => {
               setShowCoverLetterEditor(false);
               setEditingCoverLetter(null);
+              setCoverLetterEditorTab('edit');
             }}
             onSave={(savedCoverLetter) => {
               if (editingCoverLetter) {
@@ -923,8 +996,9 @@ Thank you for considering my application. I look forward to the opportunity to d
               } else {
                 setCoverLetters(prev => [...prev, savedCoverLetter]);
               }
-              setShowCoverLetterEditor(false);
-              setEditingCoverLetter(null);
+              // Update the editing cover letter with the saved data to reflect changes
+              setEditingCoverLetter(savedCoverLetter);
+              // Keep the editor open - don't close it after saving
             }}
           />
         )}
@@ -980,7 +1054,7 @@ function ResumePreviewThumbnail({ resume }: ResumePreviewThumbnailProps) {
 
   if (loading) {
     return (
-      <div className="w-full h-full bg-gray-200 rounded-lg flex items-center justify-center">
+      <div className="w-full h-full bg-gray-200 flex items-center justify-center" style={{ margin: 0, padding: 0 }}>
         <div className="flex flex-col items-center space-y-3">
           <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
           <span className="text-sm text-gray-600">Generating PDF...</span>
@@ -999,10 +1073,22 @@ function ResumePreviewThumbnail({ resume }: ResumePreviewThumbnailProps) {
   }
 
   return (
-    <div className="w-full h-full bg-white rounded-lg overflow-hidden">
+    <div className="w-full h-full bg-white overflow-hidden" style={{ margin: 0, padding: 0 }}>
       <iframe
-        src={`${pdfUrl}#toolbar=0&navpanes=0&scrollbar=0`}
+        src={`${pdfUrl}#toolbar=0&navpanes=0&scrollbar=0&zoom=FitH`}
         className="w-full h-full border-0"
+        style={{ 
+          margin: 0, 
+          padding: 0, 
+          display: 'block',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          transform: 'scale(1.2)',
+          transformOrigin: 'top center'
+        }}
         title="Resume Preview"
       />
     </div>
@@ -1081,11 +1167,13 @@ function FallbackTemplatePreview({ resume }: FallbackTemplatePreviewProps) {
   const resumeForTemplate = convertToResumeFormat(resume);
 
   return (
-    <TemplateRenderer 
-      resume={resumeForTemplate} 
-      template={template} 
-      isPreview={true} 
-    />
+    <div className="w-full h-full" style={{ margin: 0, padding: 0 }}>
+      <TemplateRenderer 
+        resume={resumeForTemplate} 
+        template={template} 
+        isPreview={true} 
+      />
+    </div>
   );
 }
 
@@ -1132,7 +1220,7 @@ function ResumeCard({ resume, viewMode, actionLoading, onPreview, onEdit, onDele
     return (
       <motion.div
         layout
-        className="card-dark rounded-lg p-3 xs:p-4 shadow-dark-lg hover:shadow-glow-md transition-all duration-300"
+        className="card-dark rounded-lg shadow-dark-lg hover:shadow-glow-md transition-all duration-300"
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3 xs:space-x-4 flex-1 min-w-0">
@@ -1161,11 +1249,11 @@ function ResumeCard({ resume, viewMode, actionLoading, onPreview, onEdit, onDele
   return (
     <motion.div
       layout
-      whileHover={{ y: -6, scale: 1.03 }}
-      className="bg-dark-secondary rounded-xl overflow-hidden shadow-lg hover:shadow-2xl hover:shadow-blue-500/20 transition-all duration-300 group border border-dark-border/50 hover:border-blue-500/50 w-full"
+      whileHover={{ y: -6, scale: 1.02 }}
+      className="bg-dark-secondary rounded-xl overflow-hidden shadow-lg hover:shadow-2xl hover:shadow-blue-500/20 transition-all duration-300 group border border-dark-border/50 hover:border-blue-500/50 w-full max-w-sm mx-auto"
     >
       {/* Resume Preview */}
-      <div className="relative bg-gray-500 overflow-hidden aspect-[8.5/11] w-full">
+      <div className="relative overflow-hidden w-full h-96 rounded-t-xl" style={{ margin: 0, padding: 0 }}>
         <ResumePreviewThumbnail resume={resume} />
         
         {/* Hover Actions Overlay */}
@@ -1267,56 +1355,21 @@ function CoverLetterPreviewThumbnail({ coverLetter }: CoverLetterPreviewThumbnai
 
   return (
     <div className="w-full h-full transform scale-100 origin-top-left overflow-hidden">
-      <div className="bg-white p-4 text-xs leading-tight h-full">
-        {/* Header with date and personal info */}
-        <div className="text-right mb-3 text-gray-600">
-          {formatDate(coverLetter.createdAt)}
-        </div>
-        
-        {/* Company Address */}
-        <div className="mb-4 text-gray-800">
-          <div className="font-semibold">{coverLetter.companyName}</div>
-          <div className="text-gray-600">Hiring Manager</div>
-          <div className="text-gray-600">123 Company Street</div>
-          <div className="text-gray-600">City, State 12345</div>
-        </div>
-
-        {/* Salutation */}
-        <div className="mb-3 text-gray-800">
-          <div>Dear Hiring Manager,</div>
-        </div>
-
-        {/* Content Preview - Show actual content truncated */}
-        <div className="space-y-2 text-gray-700 text-justify">
-          <div className="mb-2">
-            I am writing to express my strong interest in the <span className="font-medium">{coverLetter.jobTitle}</span> position at <span className="font-medium">{coverLetter.companyName}</span>.
-          </div>
-          
-          {/* Show truncated content */}
-          {coverLetter.content && (
-            <div className="space-y-1">
-              {coverLetter.content.substring(0, 200).split('\n').slice(0, 3).map((line, idx) => (
-                <div key={idx} className="leading-tight">
-                  {line.substring(0, 60)}{line.length > 60 ? '...' : ''}
-                </div>
-              ))}
+      <div className="bg-white text-xs leading-tight h-full">
+        {/* AI-Generated Content Preview - Full Content Display */}
+        <div className="text-gray-800 text-justify h-full overflow-hidden leading-relaxed text-xs p-2" style={{ margin: 0 }}>
+          {coverLetter.content ? (
+            <div className="whitespace-pre-wrap overflow-hidden" style={{ margin: 0, padding: 0 }}>
+              {coverLetter.content.length > 800 ? coverLetter.content.substring(0, 800) + '...' : coverLetter.content}
+            </div>
+          ) : (
+            <div className="text-gray-400 italic text-center flex items-center justify-center h-full">
+              <div>
+                <div className="text-lg">📄</div>
+                <div>AI Cover Letter</div>
+              </div>
             </div>
           )}
-          
-          {/* Default content if no content */}
-          {!coverLetter.content && (
-            <div className="space-y-1">
-              <div>With my background in professional services and proven track record of success...</div>
-              <div>I am excited about the opportunity to contribute to your team and would welcome...</div>
-              <div>Thank you for considering my application. I look forward to hearing from you...</div>
-            </div>
-          )}
-        </div>
-
-        {/* Closing */}
-        <div className="mt-4 text-gray-800">
-          <div className="mb-2">Sincerely,</div>
-          <div className="font-medium">Your Name</div>
         </div>
       </div>
     </div>
@@ -1327,12 +1380,14 @@ function CoverLetterPreviewThumbnail({ coverLetter }: CoverLetterPreviewThumbnai
 interface CoverLetterCardProps {
   coverLetter: CoverLetterData;
   viewMode: ViewMode;
+  onView: () => void;
   onEdit: () => void;
   onDelete: () => void;
-  onDuplicate: () => void;
+  onShare: () => void;
+  onDownload: () => void;
 }
 
-function CoverLetterCard({ coverLetter, viewMode, onEdit, onDelete, onDuplicate }: CoverLetterCardProps) {
+function CoverLetterCard({ coverLetter, viewMode, onView, onEdit, onDelete, onShare, onDownload }: CoverLetterCardProps) {
   const formatDate = (date: string | undefined) => {
     if (!date) return 'Unknown';
     return new Date(date).toLocaleDateString('en-US', {
@@ -1380,16 +1435,23 @@ function CoverLetterCard({ coverLetter, viewMode, onEdit, onDelete, onDuplicate 
     <motion.div
       layout
       whileHover={{ y: -2 }}
-      className="card-dark rounded-lg xs:rounded-xl p-3 xs:p-4 sm:p-6 shadow-dark-lg hover:shadow-glow-md transition-all duration-300 group max-w-sm mx-auto"
+      className="card-dark rounded-lg xs:rounded-xl shadow-dark-lg hover:shadow-glow-md transition-all duration-300 group max-w-sm mx-auto"
     >
       {/* Cover Letter Preview - Responsive PDF Size */}
-      <div className="relative mb-3 xs:mb-4 flex justify-center">
-        <div className="bg-white rounded-lg overflow-hidden shadow-2xl border border-gray-300 w-full aspect-[8.5/11] max-w-[280px] xs:max-w-[320px] sm:max-w-[340px]">
+      <div className="relative mb-3 flex justify-center">
+        <div className="bg-white rounded-t-lg overflow-hidden shadow-2xl border border-gray-300 w-full h-96 max-w-[400px]">
           <CoverLetterPreviewThumbnail coverLetter={coverLetter} />
         </div>
         
         {/* Hover Actions */}
-        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center">
+        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center space-x-3">
+          <button
+            onClick={onView}
+            className="p-3 bg-white/10 hover:bg-white/20 rounded-lg backdrop-blur-sm transition-all duration-200"
+            title="View Full Cover Letter"
+          >
+            <EyeIcon className="w-6 h-6 text-white" />
+          </button>
           <button
             onClick={onEdit}
             className="p-3 bg-white/10 hover:bg-white/20 rounded-lg backdrop-blur-sm transition-all duration-200"
@@ -1401,51 +1463,46 @@ function CoverLetterCard({ coverLetter, viewMode, onEdit, onDelete, onDuplicate 
       </div>
 
       {/* Cover Letter Info */}
-      <div className="space-y-1 xs:space-y-2">
-        <h3 className="text-sm xs:text-base sm:text-lg font-semibold text-dark-text-primary group-hover:text-accent-primary transition-colors truncate">
-          {coverLetter.title}
-        </h3>
-        <p className="text-xs xs:text-sm text-dark-text-secondary truncate">
-          {coverLetter.jobTitle} at {coverLetter.companyName}
-        </p>
-        <p className="text-xs text-dark-text-muted">
-          Updated {formatDate(coverLetter.updatedAt || coverLetter.createdAt)}
-        </p>
-      </div>
+      <div className="p-4">
+        <div className="space-y-1">
+          <h3 className="text-sm xs:text-base sm:text-lg font-semibold text-dark-text-primary group-hover:text-accent-primary transition-colors truncate">
+            {coverLetter.title}
+          </h3>
+          <p className="text-xs xs:text-sm text-dark-text-secondary truncate">
+            {coverLetter.jobTitle} at {coverLetter.companyName}
+          </p>
+          <p className="text-xs text-dark-text-muted">
+            Updated {formatDate(coverLetter.updatedAt || coverLetter.createdAt)}
+          </p>
+        </div>
 
-      {/* Actions */}
-      <div className="mt-3 xs:mt-4 pt-3 xs:pt-4 border-t border-dark-border flex items-center justify-between">
-        <div className="flex items-center space-x-1 xs:space-x-2">
+        {/* Actions */}
+        <div className="mt-2 xs:mt-3 pt-2 xs:pt-3 border-t border-dark-border flex items-center justify-between">
+          <div className="flex items-center space-x-1 xs:space-x-2">
+            <button
+              onClick={onDownload}
+              className="p-1.5 xs:p-2 text-dark-text-muted hover:text-accent-primary hover:bg-accent-primary/10 rounded-md transition-colors touch-target"
+              title="Download PDF"
+            >
+              <ArrowDownTrayIcon className="w-4 h-4" />
+            </button>
+            <button
+              onClick={onShare}
+              className="p-1.5 xs:p-2 text-dark-text-muted hover:text-accent-primary hover:bg-accent-primary/10 rounded-md transition-colors touch-target"
+              title="Share Cover Letter"
+            >
+              <ShareIcon className="w-4 h-4" />
+            </button>
+          </div>
+          
           <button
-            onClick={onDuplicate}
-            className="p-1.5 xs:p-2 text-dark-text-muted hover:text-accent-primary hover:bg-accent-primary/10 rounded-md transition-colors touch-target"
-            title="Duplicate"
+            onClick={onDelete}
+            className="p-1.5 xs:p-2 text-dark-text-muted hover:text-red-400 hover:bg-red-500/10 rounded-md transition-colors touch-target"
+            title="Delete"
           >
-            <DocumentDuplicateIcon className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => handleDownloadCoverLetter(coverLetter)}
-            className="p-1.5 xs:p-2 text-dark-text-muted hover:text-accent-primary hover:bg-accent-primary/10 rounded-md transition-colors touch-target"
-            title="Download PDF"
-          >
-            <ArrowDownTrayIcon className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => handleShareCoverLetter(coverLetter)}
-            className="p-1.5 xs:p-2 text-dark-text-muted hover:text-accent-primary hover:bg-accent-primary/10 rounded-md transition-colors touch-target"
-            title="Share Cover Letter"
-          >
-            <ShareIcon className="w-4 h-4" />
+            <TrashIcon className="w-4 h-4" />
           </button>
         </div>
-        
-        <button
-          onClick={onDelete}
-          className="p-1.5 xs:p-2 text-dark-text-muted hover:text-red-400 hover:bg-red-500/10 rounded-md transition-colors touch-target"
-          title="Delete"
-        >
-          <TrashIcon className="w-4 h-4" />
-        </button>
       </div>
     </motion.div>
   );
