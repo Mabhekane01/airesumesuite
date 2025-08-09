@@ -1,36 +1,38 @@
-# Production Dockerfile for Render.com - Backend Only
+# Use your custom base image with LaTeX and node environment
 FROM ghcr.io/mabhekane01/ai-job-suite-latex-base:latest
 
-# Switch to root for setup
+# Run setup as root
 USER root
 
-# Set working directory
 WORKDIR /app
 
-# Copy the entire backend directory to container
-COPY --chown=pptruser:pptruser apps/backend/ ./
+# Copy backend source code and package files
+COPY --chown=pptruser:pptruser apps/backend/package.json ./ 
+COPY --chown=pptruser:pptruser apps/backend/tsconfig.json ./
+COPY --chown=pptruser:pptruser pnpm-lock.yaml ./
+COPY --chown=pptruser:pptruser apps/backend/src ./src
 
-# Set environment variables to skip Puppeteer downloads
+# Prevent Puppeteer from downloading Chromium (handled in base image)
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 ENV PUPPETEER_SKIP_DOWNLOAD=true
 
-# Install production dependencies
+# Install production dependencies only
 RUN pnpm install --prod --frozen-lockfile
 
-# Build the TypeScript source
+# Build backend TS code
 RUN pnpm run build
 
-# Create LaTeX workspace directories
+# Create LaTeX workspace directories with a placeholder template
 RUN mkdir -p ./latex-workspace/templates/ ./latex-workspace/output/ && \
     echo "% LaTeX template placeholder" > ./latex-workspace/templates/basic.tex
 
-# Set final permissions
+# Fix permissions
 RUN chown -R pptruser:pptruser /app
 
 # Switch to non-root user
 USER pptruser
 
-# Environment configuration for production  
+# Set production environment variables inside container
 ENV LATEX_ENGINE=pdflatex
 ENV PDF_ENGINE=latex
 ENV ENABLE_LATEX_PDF=true
@@ -40,12 +42,12 @@ ENV RENDER_SERVICE=true
 ENV DISABLE_OPENCOLLECTIVE=true
 ENV DISABLE_UPDATE_NOTIFIER=true
 
-# Expose application port (PORT set via render.yaml)
+# Expose port (ensure it matches your PORT env)
 EXPOSE 3001
 
-# Health check for Render
+# Healthcheck endpoint for Render to monitor container health
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=2 \
-    CMD node -e "require('http').get('http://localhost:3001/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })" || exit 1
+  CMD node -e "require('http').get('http://localhost:3001/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })" || exit 1
 
-# Start the application
+# Start backend app (make sure pnpm start script runs node dist/index.js)
 CMD ["pnpm", "start"]
