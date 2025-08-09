@@ -4,9 +4,6 @@ services:
     name: ai-job-suite-backend
     env: docker
     dockerfilePath: ./Dockerfile.render.optimized
-    # Alternative: Use pre-built image directly without Dockerfile
-    # image:
-    #   url: ghcr.io/your-username/ai-job-suite:latest
     dockerContext: .
     plan: starter
     region: oregon

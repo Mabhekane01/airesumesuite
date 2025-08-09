@@ -1,24 +1,30 @@
-# Optimized Dockerfile for Render.com using pre-built LaTeX base image
-# This image should deploy in under 2 minutes since LaTeX is pre-installed
-
+# Optimized Dockerfile for Render.com - Backend only
 FROM ghcr.io/mabhekane01/ai-job-suite-latex-base:latest
 
-# Switch to root for any additional setup
+# Switch to root for setup
 USER root
 
-# Copy application code (if not already in base image)
-COPY --chown=pptruser:pptruser apps/backend/dist ./dist
-COPY --chown=pptruser:pptruser apps/backend/package.json ./package.json
+# Set working directory
+WORKDIR /app
 
-# Copy LaTeX templates (if not already in base image)  
-COPY --chown=pptruser:pptruser apps/frontend/public/templates ./latex-workspace/templates
+# Copy backend package files first for better caching
+COPY --chown=pptruser:pptruser apps/backend/package.json ./
+COPY --chown=pptruser:pptruser apps/backend/tsconfig.json ./
+COPY --chown=pptruser:pptruser pnpm-lock.yaml ./
 
-# Install only production dependencies if needed
-# (This step should be minimal if dependencies are in base image)
-RUN if [ ! -d "node_modules" ]; then \
-      PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true PUPPETEER_SKIP_DOWNLOAD=true \
-      pnpm install --prod --frozen-lockfile; \
-    fi
+# Install production dependencies with Puppeteer skip flags
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+ENV PUPPETEER_SKIP_DOWNLOAD=true
+RUN pnpm install --prod --frozen-lockfile
+
+# Copy backend source code
+COPY --chown=pptruser:pptruser apps/backend/src ./src
+
+# Build the backend
+RUN pnpm run build
+
+# Copy LaTeX templates if they exist
+COPY --chown=pptruser:pptruser apps/frontend/public/templates ./latex-workspace/templates 2>/dev/null || echo "No templates found, skipping"
 
 # Ensure proper permissions
 RUN chown -R pptruser:pptruser /app
@@ -51,5 +57,5 @@ EXPOSE 3001
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=2 \
     CMD node -e "require('http').get('http://localhost:3001/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })" || exit 1
 
-# Start application
-CMD ["node", "dist/index.js"]
+# Start application (using pnpm start which runs node dist/index.js)
+CMD ["pnpm", "start"]
