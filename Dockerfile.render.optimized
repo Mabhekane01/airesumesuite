@@ -23,8 +23,9 @@ COPY --chown=pptruser:pptruser apps/backend/src ./src
 # Build the backend
 RUN pnpm run build
 
-# Copy LaTeX templates if they exist
-COPY --chown=pptruser:pptruser apps/frontend/public/templates ./latex-workspace/templates 2>/dev/null || echo "No templates found, skipping"
+# Create LaTeX workspace with basic template structure
+RUN mkdir -p ./latex-workspace/templates/ ./latex-workspace/output/ && \
+    echo "% Basic LaTeX template placeholder" > ./latex-workspace/templates/basic.tex
 
 # Ensure proper permissions
 RUN chown -R pptruser:pptruser /app
