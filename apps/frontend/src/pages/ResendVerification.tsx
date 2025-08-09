@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { EnvelopeIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
 
-const API_BASE = 'http://localhost:3001';
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
 
 export default function ResendVerification() {
   const location = useLocation();

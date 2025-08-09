@@ -1,153 +1,65 @@
-==> Exited with status 1
-==> Common ways to troubleshoot your deploy: https://render.com/docs/troubleshooting-deploys
-==> Running 'pnpm start'
+Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at http://localhost:3001/templates/template%2021/30280.jpeg. (Reason: CORS header ‘Access-Control-Allow-Origin’ missing). Status code: 500.
 
-> @ai-job-suite/backend@1.0.0 start /opt/render/project/src/apps/backend
-> node dist/index.js
-> /opt/render/project/src/node_modules/.pnpm/passport-oauth2@1.8.0/node_modules/passport-oauth2/lib/strategy.js:87
-> if (!options.clientID) { throw new TypeError('OAuth2Strategy requires a clientID option'); }
+Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at http://localhost:3001/templates/template01/23504.jpeg. (Reason: CORS header ‘Access-Control-Allow-Origin’ missing). Status code: 500.
 
-                           ^
+Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at http://localhost:3001/templates/template02/38598.jpeg. (Reason: CORS header ‘Access-Control-Allow-Origin’ missing). Status code: 500.
 
-TypeError: OAuth2Strategy requires a clientID option
-at Strategy.OAuth2Strategy (/opt/render/project/src/node_modules/.pnpm/passport-oauth2@1.8.0/node_modules/passport-oauth2/lib/strategy.js:87:34)
-at new Strategy (/opt/render/project/src/node_modules/.pnpm/passport-google-oauth20@2.0.0/node_modules/passport-google-oauth20/lib/strategy.js:52:18)
-at Object.<anonymous> (/opt/render/project/src/apps/backend/dist/config/passport.js:43:24)
-at Module.\_compile (node:internal/modules/cjs/loader:1738:14)
-at Object..js (node:internal/modules/cjs/loader:1871:10)
-at Module.load (node:internal/modules/cjs/loader:1470:32)
-at Module.\_load (node:internal/modules/cjs/loader:1290:12)
-at TracingChannel.traceSync (node:diagnostics_channel:322:14)
-at wrapModuleLoad (node:internal/modules/cjs/loader:238:24)
-at Module.require (node:internal/modules/cjs/loader:1493:12)
-Node.js v24.5.0
+Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at http://localhost:3001/templates/template03/38460.jpeg. (Reason: CORS header ‘Access-Control-Allow-Origin’ missing). Status code: 500.
 
-💡 Recommendation for your case:
-Go with Option 1 — refactor so Google OAuth env vars are only accessed when the server starts, not during build. This will make the container portable and avoid hardcoding secrets into the image.
+Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at http://localhost:3001/templates/template04/38461.jpeg. (Reason: CORS header ‘Access-Control-Allow-Origin’ missing). Status code: 500.
 
-If you want, I can rewrite your Dockerfile.render.optimized and render.yaml so Puppeteer skip flags, Google OAuth creds, and other secrets are correctly loaded before build and runtime without exposing them inside the built image. That way you avoid this crash entirely.
-You said:
-want the optimal option please
-ChatGPT said:
+Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at http://localhost:3001/templates/template05/38461.jpeg. (Reason: CORS header ‘Access-Control-Allow-Origin’ missing). Status code: 500.
 
-Got it ✅ — the optimal option here is Option 1 (load Google OAuth env vars only at runtime),
-because:
+Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at http://localhost:3001/templates/template11/37256.jpeg. (Reason: CORS header ‘Access-Control-Allow-Origin’ missing). Status code: 500.
 
-    It keeps secrets out of your built image.
+Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at http://localhost:3001/templates/template07/37860.jpeg. (Reason: CORS header ‘Access-Control-Allow-Origin’ missing). Status code: 500.
 
-    It works on Render, Docker, and locally without special build args.
+Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at http://localhost:3001/templates/template06/38139.jpeg. (Reason: CORS header ‘Access-Control-Allow-Origin’ missing). Status code: 500.
 
-    It avoids hardcoding sensitive data in Dockerfile.
+Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at http://localhost:3001/templates/template09/37829.jpeg. (Reason: CORS header ‘Access-Control-Allow-Origin’ missing). Status code: 500.
 
-    It fixes the OAuth2Strategy requires a clientID crash.
+Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at http://localhost:3001/templates/template08/37806.jpeg. (Reason: CORS header ‘Access-Control-Allow-Origin’ missing). Status code: 500.
 
-Here’s the fix
-1️⃣ Change how your passport.js loads env vars
+Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at http://localhost:3001/templates/template10/37363.jpeg. (Reason: CORS header ‘Access-Control-Allow-Origin’ missing). Status code: 500.
 
-Right now, you’re probably importing and configuring Passport immediately when the module is loaded during build:
+Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at http://localhost:3001/templates/template24/22303.jpeg. (Reason: CORS header ‘Access-Control-Allow-Origin’ missing). Status code: 500.
 
-// ❌ Problem: This runs as soon as file is imported
-const GoogleStrategy = require("passport-google-oauth20").Strategy;
+Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at http://localhost:3001/templates/template12/33592.jpeg. (Reason: CORS header ‘Access-Control-Allow-Origin’ missing). Status code: 500.
 
-passport.use(
-new GoogleStrategy(
-{
-clientID: process.env.GOOGLE_CLIENT_ID, // undefined during build
-clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-callbackURL: process.env.GOOGLE_CALLBACK_URL,
-},
-verifyCallback
-)
-);
+Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at http://localhost:3001/templates/template22/19515.jpeg. (Reason: CORS header ‘Access-Control-Allow-Origin’ missing). Status code: 500.
 
-We change it so env vars are only read after the app starts:
+Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at http://localhost:3001/templates/template20/28859.jpeg. (Reason: CORS header ‘Access-Control-Allow-Origin’ missing). Status code: 500.
 
-// ✅ Lazy-load Google strategy only at runtime
-const passport = require("passport");
+Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at http://localhost:3001/templates/template13/25250.jpeg. (Reason: CORS header ‘Access-Control-Allow-Origin’ missing). Status code: 500.
 
-function configurePassport() {
-const GoogleStrategy = require("passport-google-oauth20").Strategy;
+Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at http://localhost:3001/templates/template23/29210.jpeg. (Reason: CORS header ‘Access-Control-Allow-Origin’ missing). Status code: 500.
 
-passport.use(
-new GoogleStrategy(
-{
-clientID: process.env.GOOGLE_CLIENT_ID,
-clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-callbackURL: process.env.GOOGLE_CALLBACK_URL,
-},
-verifyCallback
-)
-);
-}
+Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at http://localhost:3001/templates/template14/21732.jpeg. (Reason: CORS header ‘Access-Control-Allow-Origin’ missing). Status code: 500.
 
-module.exports = { configurePassport };
+Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at http://localhost:3001/templates/template25/21066.jpeg. (Reason: CORS header ‘Access-Control-Allow-Origin’ missing). Status code: 500.
 
-2️⃣ Load Passport inside server.js (or index.js) after env vars exist
+Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at http://localhost:3001/templates/template15/16158.jpeg. (Reason: CORS header ‘Access-Control-Allow-Origin’ missing). Status code: 500.
 
-require("dotenv").config();
-const express = require("express");
-const passport = require("passport");
-const { configurePassport } = require("./config/passport");
+Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at http://localhost:3001/templates/template26/8420.jpeg. (Reason: CORS header ‘Access-Control-Allow-Origin’ missing). Status code: 500.
 
-const app = express();
+Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at http://localhost:3001/templates/template27/29516.jpeg. (Reason: CORS header ‘Access-Control-Allow-Origin’ missing). Status code: 500.
 
-// Run passport config here — runtime, not build
-configurePassport();
+Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at http://localhost:3001/templates/template16/15432.jpeg. (Reason: CORS header ‘Access-Control-Allow-Origin’ missing). Status code: 500.
 
-app.use(passport.initialize());
+Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at http://localhost:3001/templates/template28/29800.jpeg. (Reason: CORS header ‘Access-Control-Allow-Origin’ missing). Status code: 500.
 
-// Routes...
+Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at http://localhost:3001/templates/template17/23905.jpeg. (Reason: CORS header ‘Access-Control-Allow-Origin’ missing). Status code: 500.
 
-3️⃣ No Dockerfile change needed for env vars
+Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at http://localhost:3001/templates/template29/21608.jpeg. (Reason: CORS header ‘Access-Control-Allow-Origin’ missing). Status code: 500.
 
-Your Dockerfile.render.optimized can stay the same except we make sure it doesn’t force env vars at build:
+Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at http://localhost:3001/templates/template30/25874.jpeg. (Reason: CORS header ‘Access-Control-Allow-Origin’ missing). Status code: 500.
 
-# Use custom base image
+Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at http://localhost:3001/templates/template18/10168.jpeg. (Reason: CORS header ‘Access-Control-Allow-Origin’ missing). Status code: 500.
 
-FROM ghcr.io/mabhekane01/ai-job-suite-latex-base:latest
+Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at http://localhost:3001/templates/template31/36989.jpeg. (Reason: CORS header ‘Access-Control-Allow-Origin’ missing). Status code: 500.
 
-USER root
-WORKDIR /app
+Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at http://localhost:3001/templates/template19/27762.jpeg. (Reason: CORS header ‘Access-Control-Allow-Origin’ missing). Status code: 500.
 
-COPY --chown=pptruser:pptruser apps/backend/package.json ./
-COPY --chown=pptruser:pptruser apps/backend/tsconfig.json ./
-COPY --chown=pptruser:pptruser pnpm-lock.yaml ./
-COPY --chown=pptruser:pptruser apps/backend/src ./src
+Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at http://localhost:3001/templates/template32/36997.jpeg. (Reason: CORS header ‘Access-Control-Allow-Origin’ missing). Status code: 500.
 
-# Puppeteer skip
-
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
-ENV PUPPETEER_SKIP_DOWNLOAD=true
-
-RUN pnpm install --prod --frozen-lockfile
-RUN pnpm run build
-
-RUN mkdir -p ./latex-workspace/templates/ ./latex-workspace/output/ && \
- echo "% LaTeX template placeholder" > ./latex-workspace/templates/basic.tex
-
-RUN chown -R pptruser:pptruser /app
-USER pptruser
-
-# Non-sensitive defaults
-
-ENV NODE_OPTIONS="--max-old-space-size=2048"
-ENV RENDER_SERVICE=true
-ENV DISABLE_OPENCOLLECTIVE=true
-ENV DISABLE_UPDATE_NOTIFIER=true
-
-EXPOSE 3001
-
-HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=2 \
- CMD node -e "require('http').get('http://localhost:3001/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })" || exit 1
-
-CMD ["pnpm", "start"]
-
-4️⃣ Why this is optimal
-
-    🚫 No secrets in Docker image.
-
-    🚀 Works everywhere without ARG or build.env hacks.
-
-    🛡 Future-proof for staging/production with different env values.
-
-    🐛 Solves your crash, since GOOGLE_CLIENT_ID is loaded after Render injects env vars.
+Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at http://localhost:3001/templates/template33/36859.jpeg. (Reason: CORS header ‘Access-Control-Allow-Origin’ missing). Status code: 500.

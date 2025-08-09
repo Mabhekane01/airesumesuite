@@ -123,8 +123,8 @@ export default function OverleafTemplateGallery({
 
   const getImageUrl = (url: string | undefined) => {
     if (!url) return '';
-    // VITE_API_URL should be the public base URL of the backend (e.g., http://localhost:3001)
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+    // Use the same base URL as other API calls
+    const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
     // Combine the base URL with the relative path from the backend.
     // Ensures no double slashes.
     return `${apiUrl.replace(/\/$/, '')}/${url.replace(/^\//, '')}`;
