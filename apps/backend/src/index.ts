@@ -9,7 +9,7 @@ import dotenv from 'dotenv';
 import { EnvironmentValidator } from './utils/environmentValidator';
 import { connectDB } from './config/database';
 import { connectRedis } from './config/redis';
-import './config/passport';
+import { configurePassport } from './config/passport';
 import passport from 'passport';
 import resumeRoutes from './routes/resumeRoutes';
 import fileUploadRoutes from './routes/fileUploadRoutes';
@@ -181,6 +181,9 @@ app.use(compression());
 app.use(morgan('combined'));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Configure passport strategies (after env vars are loaded)
+configurePassport();
 
 // Passport middleware
 app.use(passport.initialize());
