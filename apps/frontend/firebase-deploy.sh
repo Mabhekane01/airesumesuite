@@ -5,7 +5,7 @@ echo "Building frontend for production with environment variables..."
 export VITE_NODE_ENV=production
 export VITE_APP_NAME="AI Job Suite"
 export VITE_APP_VERSION=1.0.0
-export VITE_API_BASE_URL=https://airesumesuite.onrender.com/api/v1
+export VITE_API_BASE_URL=https://airesumesuite.onrender.com
 export VITE_APP_URL=https://airesumesuite.web.app
 export VITE_GOOGLE_CLIENT_ID=202022666226-ahhpa9jc4e8cka53h0bv52pqs2tpqohn.apps.googleusercontent.com
 export VITE_RECAPTCHA_SITE_KEY=6LfkOJQrAAAAAGfteUzaGCwQihtZoz1O221RSXs1
