@@ -5,11 +5,10 @@ services:
     env: docker
     dockerfilePath: ./Dockerfile.render.optimized
     dockerContext: .
+    rootDirectory: apps/backend
     plan: starter
     region: oregon
     branch: main
-    buildCommand: ""
-    startCommand: ""
     envVars:
       - key: NODE_ENV
         value: production
