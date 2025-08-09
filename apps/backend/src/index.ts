@@ -169,10 +169,22 @@ app.use((req, res, next) => {
   next();
 });
 
-// Rate limiting
+// Rate limiting - More reasonable limits for production
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100 // limit each IP to 100 requests per windowMs
+  max: 1000, // limit each IP to 1000 requests per 15 minutes (~1.1 requests/second)
+  message: {
+    success: false,
+    message: 'Too many requests from this IP, please try again later.'
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  // Skip rate limiting for static assets and health checks
+  skip: (req) => {
+    return req.path === '/health' || 
+           req.path.startsWith('/templates') || 
+           req.path.startsWith('/static');
+  }
 });
 app.use(limiter);
 

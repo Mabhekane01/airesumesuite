@@ -21,10 +21,10 @@ export const generalLimiter = rateLimit({
   }
 });
 
-// Strict rate limiter for authentication endpoints
+// Authentication rate limiter - More reasonable for normal usage
 export const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // Limit each IP to 10 auth requests per windowMs
+  max: 50, // Limit each IP to 50 auth requests per 15 minutes (allows normal login/register flow)
   message: {
     success: false,
     message: 'Too many authentication attempts, please try again later.'
@@ -60,10 +60,10 @@ export const passwordResetLimiter = rateLimit({
   }
 });
 
-// AI/Expensive operations rate limiter
+// AI/Expensive operations rate limiter - More generous for paid users
 export const aiLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
-  max: 200, // Limit each IP to 200 AI requests per hour
+  max: 500, // Limit each IP to 500 AI requests per hour (allows heavy usage)
   message: {
     success: false,
     message: 'AI service rate limit exceeded, please try again later.'
