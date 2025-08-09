@@ -264,6 +264,12 @@ Respond only with the optimized JSON data, no additional text.
     resumeData?: any;
     customInstructions?: string;
     keywordOptimization?: boolean;
+    personalInfo?: {
+      firstName: string;
+      lastName: string;
+      email: string;
+      location: string;
+    };
   }): Promise<string> {
     if (!this.client) {
       throw new Error('Gemini API not configured. Please set GEMINI_API_KEY environment variable.');
@@ -276,7 +282,8 @@ Respond only with the optimized JSON data, no additional text.
       tone, 
       resumeData,
       customInstructions,
-      keywordOptimization = true 
+      keywordOptimization = true,
+      personalInfo
     } = options;
     
     // Extract key information from resume for intelligent matching
@@ -284,7 +291,7 @@ Respond only with the optimized JSON data, no additional text.
     const skills = resumeData?.skills || [];
     const education = resumeData?.education || [];
     const achievements = workExperience.flatMap((exp: any) => exp.achievements || []);
-    const applicantName = resumeData?.personalInfo?.firstName ? `${resumeData.personalInfo.firstName} ${resumeData.personalInfo.lastName}` : '[Your Name]';
+    const applicantName = personalInfo?.firstName ? `${personalInfo.firstName} ${personalInfo.lastName}` : resumeData?.personalInfo?.firstName ? `${resumeData.personalInfo.firstName} ${resumeData.personalInfo.lastName}` : '[Your Name]';
     
     // Analyze job description for key requirements
     const jobKeywords = this.extractJobKeywords(jobDescription);

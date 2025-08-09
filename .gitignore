@@ -297,6 +297,11 @@ Icon?
 # AI JOB SUITE SPECIFIC
 # ==========================================
 
+# Development and build info files
+infotouse.md
+infotouse.txt
+build-info.md
+
 # User uploads (CRITICAL - contains PII)
 uploads/
 user-uploads/
