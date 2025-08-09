@@ -1,4 +1,4 @@
-# Optimized Dockerfile for Render.com - Backend only
+# Production Dockerfile for Render.com - Backend Only
 FROM ghcr.io/mabhekane01/ai-job-suite-latex-base:latest
 
 # Switch to root for setup
@@ -7,56 +7,45 @@ USER root
 # Set working directory
 WORKDIR /app
 
-# Copy backend package files first for better caching
-COPY --chown=pptruser:pptruser apps/backend/package.json ./
-COPY --chown=pptruser:pptruser apps/backend/tsconfig.json ./
-COPY --chown=pptruser:pptruser pnpm-lock.yaml ./
+# Copy the entire backend directory to container
+COPY --chown=pptruser:pptruser apps/backend/ ./
 
-# Install production dependencies with Puppeteer skip flags
+# Set environment variables to skip Puppeteer downloads
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 ENV PUPPETEER_SKIP_DOWNLOAD=true
+
+# Install production dependencies
 RUN pnpm install --prod --frozen-lockfile
 
-# Copy backend source code
-COPY --chown=pptruser:pptruser apps/backend/src ./src
-
-# Build the backend
+# Build the TypeScript source
 RUN pnpm run build
 
-# Create LaTeX workspace with basic template structure
+# Create LaTeX workspace directories
 RUN mkdir -p ./latex-workspace/templates/ ./latex-workspace/output/ && \
-    echo "% Basic LaTeX template placeholder" > ./latex-workspace/templates/basic.tex
+    echo "% LaTeX template placeholder" > ./latex-workspace/templates/basic.tex
 
-# Ensure proper permissions
+# Set final permissions
 RUN chown -R pptruser:pptruser /app
 
-# Switch back to pptruser
+# Switch to non-root user
 USER pptruser
 
-# Environment variables for Render
-ENV NODE_ENV=production
-ENV PORT=3001
-
-# LaTeX configuration
+# Environment configuration for production  
 ENV LATEX_ENGINE=pdflatex
-ENV PDF_ENGINE=latex  
+ENV PDF_ENGINE=latex
 ENV ENABLE_LATEX_PDF=true
 ENV LATEX_TIMEOUT=300000
-
-# Performance tuning
 ENV NODE_OPTIONS="--max-old-space-size=2048"
-
-# Render-specific optimizations
 ENV RENDER_SERVICE=true
 ENV DISABLE_OPENCOLLECTIVE=true
 ENV DISABLE_UPDATE_NOTIFIER=true
 
-# Expose port
+# Expose application port (PORT set via render.yaml)
 EXPOSE 3001
 
-# Health check optimized for Render
+# Health check for Render
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=2 \
     CMD node -e "require('http').get('http://localhost:3001/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })" || exit 1
 
-# Start application (using pnpm start which runs node dist/index.js)
+# Start the application
 CMD ["pnpm", "start"]
