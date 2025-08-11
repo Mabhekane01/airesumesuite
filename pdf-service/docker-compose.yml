@@ -1,0 +1,92 @@
+# ============================================
+# Docker Compose for PDF Service
+# ============================================
+version: '3.8'
+
+services:
+  pdf-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    image: pdf-service:latest
+    container_name: pdf-service
+    
+    # Environment variables
+    env_file:
+      - .env
+    
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+    
+    # Ports
+    ports:
+      - "${SERVER_PORT:-8080}:8080"
+    
+    # Volumes for persistence
+    volumes:
+      - ./logs:/app/logs
+      - ./temp:/app/temp
+      - pdf-service-data:/app/data
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 3G
+        reservations:
+          cpus: '1.0'
+          memory: 1G
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    
+    # Restart policy
+    restart: unless-stopped
+    
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "5"
+    
+    # Security
+    security_opt:
+      - no-new-privileges:true
+    
+    # Network
+    networks:
+      - pdf-network
+
+  # Optional: Nginx reverse proxy for production
+  nginx:
+    image: nginx:alpine
+    container_name: pdf-service-nginx
+    profiles:
+      - proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - pdf-service
+    networks:
+      - pdf-network
+    restart: unless-stopped
+
+volumes:
+  pdf-service-data:
+    driver: local
+
+networks:
+  pdf-network:
+    driver: bridge

@@ -1,0 +1,104 @@
+{
+  "properties": [
+    {
+      "name": "pdf.features.ocr.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Enable OCR functionality",
+      "defaultValue": false
+    },
+    {
+      "name": "pdf.features.digital-signature.enabled",
+      "type": "java.lang.Boolean", 
+      "description": "Enable digital signature functionality",
+      "defaultValue": true
+    },
+    {
+      "name": "pdf.features.watermark.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Enable watermarking functionality", 
+      "defaultValue": true
+    },
+    {
+      "name": "pdf.features.security.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Enable PDF security/encryption functionality",
+      "defaultValue": true
+    },
+    {
+      "name": "pdf.features.optimization.enabled", 
+      "type": "java.lang.Boolean",
+      "description": "Enable PDF optimization functionality",
+      "defaultValue": true
+    },
+    {
+      "name": "pdf.processing.memory.max",
+      "type": "java.lang.String",
+      "description": "Maximum memory allocated for PDF processing",
+      "defaultValue": "512MB"
+    },
+    {
+      "name": "pdf.processing.temp.dir",
+      "type": "java.lang.String", 
+      "description": "Directory for temporary PDF processing files",
+      "defaultValue": "./temp/pdf"
+    },
+    {
+      "name": "pdf.processing.max.pages",
+      "type": "java.lang.Integer",
+      "description": "Maximum number of pages allowed in a PDF",
+      "defaultValue": 1000
+    },
+    {
+      "name": "pdf.processing.timeout.seconds",
+      "type": "java.lang.Integer",
+      "description": "Processing timeout in seconds",
+      "defaultValue": 300
+    },
+    {
+      "name": "pdf.temp.cleanup.interval",
+      "type": "java.lang.Long",
+      "description": "Interval for cleaning up temporary files (milliseconds)",
+      "defaultValue": 3600000
+    },
+    {
+      "name": "pdf.temp.cleanup.age",
+      "type": "java.lang.Long", 
+      "description": "Age threshold for cleaning up temporary files (milliseconds)",
+      "defaultValue": 1800000
+    },
+    {
+      "name": "rate.limit.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Enable rate limiting",
+      "defaultValue": true
+    },
+    {
+      "name": "rate.limit.requests.per.minute", 
+      "type": "java.lang.Integer",
+      "description": "Maximum requests per minute per client",
+      "defaultValue": 60
+    },
+    {
+      "name": "rate.limit.requests.per.hour",
+      "type": "java.lang.Integer",
+      "description": "Maximum requests per hour per client", 
+      "defaultValue": 1000
+    },
+    {
+      "name": "ocr.service.url",
+      "type": "java.lang.String",
+      "description": "External OCR service URL"
+    },
+    {
+      "name": "ocr.service.api-key",
+      "type": "java.lang.String",
+      "description": "External OCR service API key"
+    },
+    {
+      "name": "ocr.service.timeout",
+      "type": "java.lang.Integer", 
+      "description": "OCR service timeout in milliseconds",
+      "defaultValue": 30000
+    }
+  ]
+}

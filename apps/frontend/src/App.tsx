@@ -8,6 +8,7 @@ import Layout from './components/layout/Layout'
 import DashboardLayout from './components/dashboard/DashboardLayout'
 import LandingPageSimple from './pages/LandingPageSimple'
 import PublicTemplatesPage from './pages/PublicTemplatesPage'
+import PDFEditorPage from './pages/PDFEditorPage'
 import GoogleAuthCallback from './pages/auth/GoogleAuthCallback'
 import GoogleAuthError from './pages/auth/GoogleAuthError'
 // Removed old verification pages - now using OTP-based verification
@@ -49,6 +50,14 @@ function App() {
                   element={
                     <Layout>
                       <PublicTemplatesPage />
+                    </Layout>
+                  } 
+                />
+                <Route 
+                  path="/pdf-editor" 
+                  element={
+                    <Layout>
+                      <PDFEditorPage />
                     </Layout>
                   } 
                 />

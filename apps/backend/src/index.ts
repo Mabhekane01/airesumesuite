@@ -27,6 +27,7 @@ import interviewRoutes from './routes/interviewRoutes';
 import careerCoachRoutes from './routes/careerCoachRoutes';
 import paymentRoutes from './routes/paymentRoutes';
 import notificationRoutes from './routes/notificationRoutes';
+import pdfEditorRoutes from './routes/pdfEditorRoutes';
 import publicRoutes from './routes/publicRoutes';
 import { 
   requestIdMiddleware, 
@@ -272,6 +273,7 @@ app.use('/api/v1/interviews', interviewRoutes);
 app.use('/api/v1/coach', careerCoachRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/v1/notifications', notificationRoutes);
+app.use('/api/v1/pdf-editor', pdfEditorRoutes);
 
 // 404 handler for unmatched API routes
 app.use('/api/v1', notFoundHandler);

@@ -53,18 +53,31 @@ const MemoizedNavigation = React.memo(() => {
 
 const PublicNavigation = React.memo(() => {
   const location = useLocation();
+  const publicNavigation = [
+    { name: 'Templates', href: '/templates', icon: DocumentTextIcon, current: location.pathname === '/templates' },
+    { name: 'PDF Editor', href: '/pdf-editor', icon: PencilIcon, current: location.pathname === '/pdf-editor' },
+  ];
+
   return (
-    <Link
-      to="/templates"
-      className={`flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 rounded-md sm:rounded-lg text-xs sm:text-sm font-medium transition-all duration-300 ${
-        location.pathname === '/templates'
-          ? 'bg-accent-primary/20 text-accent-primary border border-accent-primary/30'
-          : 'text-dark-text-secondary hover:text-accent-primary hover:bg-accent-primary/10'
-      }`}
-    >
-      <DocumentTextIcon className="h-3 w-3 sm:h-4 sm:w-4" />
-      <span>Templates</span>
-    </Link>
+    <>
+      {publicNavigation.map((item) => {
+        const Icon = item.icon;
+        return (
+          <Link
+            key={item.name}
+            to={item.href}
+            className={`flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 rounded-md sm:rounded-lg text-xs sm:text-sm font-medium transition-all duration-300 ${
+              item.current
+                ? 'bg-accent-primary/20 text-accent-primary border border-accent-primary/30'
+                : 'text-dark-text-secondary hover:text-accent-primary hover:bg-accent-primary/10'
+            }`}
+          >
+            <Icon className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span>{item.name}</span>
+          </Link>
+        );
+      })}
+    </>
   );
 });
 
