@@ -1,5 +1,5 @@
 # Use your custom base image with LaTeX and node environment
-FROM your-username/ai-job-suite-latex-base:latest
+FROM ghcr.io/mabhekane01/airesumesuite-latex-base:latest
 
 # Run setup as root
 USER root

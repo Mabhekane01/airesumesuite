@@ -24,8 +24,6 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  BASE_IMAGE_NAME: ${{ github.repository }}-latex-base
-  PROD_IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   build-base-image:
@@ -43,6 +41,12 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
+    - name: Set lowercase repository name
+      id: repo
+      run: |
+        echo "repository_lower=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+        echo "base_image_name=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')-latex-base" >> $GITHUB_OUTPUT
+
     - name: Log in to Container Registry
       uses: docker/login-action@v3
       with:
@@ -54,7 +58,7 @@ jobs:
       id: meta-base
       uses: docker/metadata-action@v5
       with:
-        images: ${{ env.REGISTRY }}/${{ env.BASE_IMAGE_NAME }}
+        images: ${{ env.REGISTRY }}/${{ steps.repo.outputs.base_image_name }}
         tags: |
           type=ref,event=branch
           type=ref,event=pr
@@ -68,7 +72,7 @@ jobs:
         if [[ "${{ github.event.inputs.force_base_rebuild }}" == "true" ]]; then
           echo "needs_rebuild=true" >> $GITHUB_OUTPUT
           echo "Forcing base image rebuild"
-        elif ! docker manifest inspect ${{ env.REGISTRY }}/${{ env.BASE_IMAGE_NAME }}:latest >/dev/null 2>&1; then
+        elif ! docker manifest inspect ${{ env.REGISTRY }}/${{ steps.repo.outputs.base_image_name }}:latest >/dev/null 2>&1; then
           echo "needs_rebuild=true" >> $GITHUB_OUTPUT  
           echo "Base image doesn't exist, needs rebuild"
         else
@@ -111,6 +115,12 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
+    - name: Set lowercase repository name
+      id: repo
+      run: |
+        echo "repository_lower=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+        echo "base_image_name=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')-latex-base" >> $GITHUB_OUTPUT
+
     - name: Log in to Container Registry
       uses: docker/login-action@v3
       with:
@@ -122,7 +132,7 @@ jobs:
       id: meta-prod
       uses: docker/metadata-action@v5
       with:
-        images: ${{ env.REGISTRY }}/${{ env.PROD_IMAGE_NAME }}
+        images: ${{ env.REGISTRY }}/${{ steps.repo.outputs.repository_lower }}
         tags: |
           type=ref,event=branch
           type=ref,event=pr
@@ -133,7 +143,7 @@ jobs:
 
     - name: Update Dockerfile with correct base image
       run: |
-        sed -i 's|your-username/ai-job-suite-latex-base:latest|${{ env.REGISTRY }}/${{ env.BASE_IMAGE_NAME }}:latest|g' Dockerfile.production
+        sed -i 's|ghcr.io/mabhekane01/airesumesuite-latex-base:latest|${{ env.REGISTRY }}/${{ steps.repo.outputs.base_image_name }}:latest|g' Dockerfile.production
 
     - name: Build and push production image
       uses: docker/build-push-action@v5
@@ -155,8 +165,13 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     
     steps:
+    - name: Set lowercase repository name
+      id: repo
+      run: |
+        echo "repository_lower=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+        
     - name: Notify deployment ready
       run: |
         echo "🚀 Production image built and pushed successfully!"
-        echo "Image: ${{ env.REGISTRY }}/${{ env.PROD_IMAGE_NAME }}:latest"
+        echo "Image: ${{ env.REGISTRY }}/${{ steps.repo.outputs.repository_lower }}:latest"
         echo "You can now update your Render service to use this image."
