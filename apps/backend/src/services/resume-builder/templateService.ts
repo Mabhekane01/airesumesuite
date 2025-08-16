@@ -10,101 +10,112 @@ export interface ResumeData {
   personalInfo: {
     firstName: string;
     lastName: string;
-    email?: string;
-    phone?: string;
-    location?: string;
+    email: string;
+    phone: string;
+    location: string;
     linkedinUrl?: string;
     portfolioUrl?: string;
     githubUrl?: string;
     websiteUrl?: string;
     professionalTitle?: string;
   };
-  professionalSummary?: string;
-  workExperience?: Array<{
-    jobTitle?: string;
-    company?: string;
-    location?: string;
-    startDate?: string;
+  professionalSummary: string;
+  workExperience: Array<{
+    id?: string;
+    jobTitle: string;
+    company: string;
+    location: string;
+    startDate: string;
     endDate?: string;
-    isCurrentJob?: boolean;
-    responsibilities?: string[];
-    achievements?: string[];
+    isCurrentJob: boolean;
+    responsibilities: string[];
+    achievements: string[];
   }>;
-  education?: Array<{
-    degree?: string;
-    institution?: string;
-    fieldOfStudy?: string;
-    location?: string;
-    graduationDate?: string;
+  education: Array<{
+    id?: string;
+    institution: string;
+    degree: string;
+    fieldOfStudy: string;
+    graduationDate: string;
     startDate?: string;
     endDate?: string;
+    location?: string;
     gpa?: string;
     coursework?: string[];
   }>;
-  skills?: Array<{
-    name?: string;
-    category?: string;
-    proficiencyLevel?: string;
+  skills: Array<{
+    id?: string;
+    name: string;
+    category: 'technical' | 'soft' | 'language' | 'certification';
+    proficiencyLevel?: 'beginner' | 'intermediate' | 'advanced' | 'expert';
   }>;
   projects?: Array<{
-    name?: string;
-    description?: string[]; // first element used as keyHighlight
-    technologies?: string[];
+    id?: string;
+    name: string;
+    description: string[];
+    technologies: string[];
     url?: string;
     startDate?: string;
     endDate?: string;
   }>;
   certifications?: Array<{
-    name?: string;
-    issuer?: string;
-    date?: string;
+    id?: string;
+    name: string;
+    issuer: string;
+    date: string;
     expirationDate?: string;
     credentialId?: string;
     url?: string;
   }>;
   languages?: Array<{
-    name?: string;
-    proficiency?: string;
+    id?: string;
+    name: string;
+    proficiency: 'native' | 'fluent' | 'conversational' | 'basic';
   }>;
   volunteerExperience?: Array<{
-    organization?: string;
-    role?: string;
-    location?: string;
-    startDate?: string;
+    id?: string;
+    organization: string;
+    role: string;
+    location: string;
+    startDate: string;
     endDate?: string;
-    isCurrentRole?: boolean;
-    description?: string;
-    achievements?: string[];
+    isCurrentRole: boolean;
+    description: string;
+    achievements: string[];
   }>;
   awards?: Array<{
-    title?: string;
-    issuer?: string;
-    date?: string;
+    id?: string;
+    title: string;
+    issuer: string;
+    date: string;
     description?: string;
   }>;
   publications?: Array<{
-    title?: string;
-    publisher?: string;
-    publicationDate?: string;
+    id?: string;
+    title: string;
+    publisher: string;
+    publicationDate: string;
     url?: string;
     description?: string;
   }>;
   references?: Array<{
-    name?: string;
-    title?: string;
-    company?: string;
-    email?: string;
-    phone?: string;
-    relationship?: string;
+    id?: string;
+    name: string;
+    title: string;
+    company: string;
+    email: string;
+    phone: string;
+    relationship: string;
   }>;
   hobbies?: Array<{
-    name?: string;
+    id?: string;
+    name: string;
     description?: string;
-    category?: string;
+    category: 'creative' | 'sports' | 'technology' | 'volunteer' | 'other';
   }>;
   additionalSections?: Array<{
-    title?: string;
-    content?: string;
+    title: string;
+    content: string;
   }>;
 }
 
@@ -219,8 +230,8 @@ export class TemplateService {
           // Check if it's a future graduation
           let isFutureGraduation = false;
           try {
-            if (graduationDate instanceof Date) {
-              isFutureGraduation = graduationDate > new Date();
+            if ((graduationDate as unknown) instanceof Date) {
+              isFutureGraduation = (graduationDate as unknown as Date) > new Date();
             } else if (typeof graduationDate === 'string' && graduationDate.includes('/')) {
               const [month, year] = graduationDate.split('/');
               const gradDate = new Date(parseInt(year), parseInt(month) - 1, 1);
@@ -232,8 +243,8 @@ export class TemplateService {
 
           if (isFutureGraduation) {
             // Future graduation - show "Graduating [date]"
-            const dateStr = graduationDate instanceof Date 
-              ? `${(graduationDate.getMonth() + 1).toString().padStart(2, '0')}/${graduationDate.getFullYear()}`
+            const dateStr = (graduationDate as unknown) instanceof Date 
+              ? `${((graduationDate as unknown as Date).getMonth() + 1).toString().padStart(2, '0')}/${(graduationDate as unknown as Date).getFullYear()}`
               : graduationDate;
             graduationDisplay = `Graduating ${dateStr}`;
           } else {

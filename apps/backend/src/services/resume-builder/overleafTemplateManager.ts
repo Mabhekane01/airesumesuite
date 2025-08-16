@@ -349,18 +349,19 @@ export class OverleafTemplateManager {
         {
           degree: 'Bachelor of Science in Computer Science',
           institution: 'University of Technology',
+          fieldOfStudy: 'Computer Science',
           location: 'Boston, MA',
           graduationDate: 'May 2018',
           gpa: '3.8/4.0'
         }
       ],
       skills: [
-        { name: 'JavaScript', category: 'Programming Languages' },
-        { name: 'Python', category: 'Programming Languages' },
-        { name: 'React', category: 'Frontend' },
-        { name: 'Node.js', category: 'Backend' },
-        { name: 'AWS', category: 'Cloud Platforms' },
-        { name: 'Docker', category: 'DevOps' }
+        { name: 'JavaScript', category: 'technical' },
+        { name: 'Python', category: 'technical' },
+        { name: 'React', category: 'technical' },
+        { name: 'Node.js', category: 'technical' },
+        { name: 'AWS', category: 'technical' },
+        { name: 'Docker', category: 'technical' }
       ],
       certifications: [
         { name: 'AWS Certified Solutions Architect', issuer: 'Amazon Web Services', date: '2023' },
@@ -369,7 +370,7 @@ export class OverleafTemplateManager {
       projects: [
         {
           name: 'E-commerce Platform',
-          description: 'Full-stack web application with payment processing and inventory management',
+          description: ['Full-stack web application with payment processing and inventory management'],
           technologies: ['React', 'Node.js', 'PostgreSQL', 'Stripe API'],
           url: 'https://github.com/johndoe/ecommerce'
         }

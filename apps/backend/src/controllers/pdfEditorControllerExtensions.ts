@@ -247,7 +247,7 @@ export class PdfEditorControllerExtensions {
         return;
       }
 
-      const result = await pdfEditorService.convertToHtml(req.file.buffer);
+      const result = await pdfEditorService.convertToHtml(req.file.buffer, req.file.originalname);
       res.set({
         'Content-Type': 'text/html',
         'Content-Disposition': `attachment; filename="${req.file.originalname.replace('.pdf', '.html')}"`
@@ -258,6 +258,337 @@ export class PdfEditorControllerExtensions {
       res.status(500).json({
         success: false,
         message: 'Failed to convert PDF to HTML',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  }
+
+  /**
+   * Split PDF into individual pages
+   */
+  static async splitPdf(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      if (!req.file) {
+        res.status(400).json({ success: false, message: 'No PDF file uploaded' });
+        return;
+      }
+
+      const result = await pdfEditorService.splitPdf(req.file.buffer);
+      res.json({ success: true, data: result });
+    } catch (error) {
+      console.error('PDF split failed:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to split PDF',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  }
+
+  /**
+   * Rotate a specific page
+   */
+  static async rotatePage(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      if (!req.file) {
+        res.status(400).json({ success: false, message: 'No PDF file uploaded' });
+        return;
+      }
+
+      const { pageNumber, rotation } = req.body;
+      const result = await pdfEditorService.rotatePage(req.file.buffer, parseInt(pageNumber), parseInt(rotation));
+      
+      res.set({
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `attachment; filename="rotated_${req.file.originalname}"`
+      });
+      res.send(result);
+    } catch (error) {
+      console.error('Page rotation failed:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to rotate page',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  }
+
+  /**
+   * Reorder PDF pages
+   */
+  static async reorderPages(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      if (!req.file) {
+        res.status(400).json({ success: false, message: 'No PDF file uploaded' });
+        return;
+      }
+
+      const { pageOrder } = req.body;
+      const result = await pdfEditorService.reorderPages(req.file.buffer, pageOrder);
+      
+      res.set({
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `attachment; filename="reordered_${req.file.originalname}"`
+      });
+      res.send(result);
+    } catch (error) {
+      console.error('Page reordering failed:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to reorder pages',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  }
+
+  /**
+   * Convert PDF to images
+   */
+  static async convertToImages(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      if (!req.file) {
+        res.status(400).json({ success: false, message: 'No PDF file uploaded' });
+        return;
+      }
+
+      const { format = 'png', quality = 150 } = req.body;
+      const result = await pdfEditorService.convertToImages(req.file.buffer, format);
+      res.json({ success: true, data: result });
+    } catch (error) {
+      console.error('PDF to images conversion failed:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to convert PDF to images',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  }
+
+  /**
+   * Extract text content from PDF
+   */
+  static async extractTextContent(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      if (!req.file) {
+        res.status(400).json({ success: false, message: 'No PDF file uploaded' });
+        return;
+      }
+
+      const result = await pdfEditorService.extractTextContent(req.file.buffer);
+      res.json({ success: true, data: result });
+    } catch (error) {
+      console.error('Text extraction failed:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to extract text content',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  }
+
+  /**
+   * Add image to PDF
+   */
+  static async addImage(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      if (!req.files || !Array.isArray(req.files) || req.files.length < 2) {
+        res.status(400).json({ success: false, message: 'PDF file and image file are required' });
+        return;
+      }
+
+      const pdfFile = req.files.find((f: any) => f.mimetype === 'application/pdf');
+      const imageFile = req.files.find((f: any) => f.mimetype?.startsWith('image/'));
+      
+      if (!pdfFile || !imageFile) {
+        res.status(400).json({ success: false, message: 'Both PDF and image files are required' });
+        return;
+      }
+
+      const { x, y, width, height, pageNumber } = req.body;
+      const result = await pdfEditorService.addImage(
+        pdfFile.buffer,
+        imageFile.buffer,
+        {
+          x: parseFloat(x),
+          y: parseFloat(y),
+          width: parseFloat(width),
+          height: parseFloat(height),
+          pageNumber: parseInt(pageNumber)
+        }
+      );
+      
+      res.set({
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `attachment; filename="image_added_${pdfFile.originalname}"`
+      });
+      res.send(result);
+    } catch (error) {
+      console.error('Adding image failed:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to add image to PDF',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  }
+
+  /**
+   * Add annotation to PDF
+   */
+  static async addAnnotation(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      if (!req.file) {
+        res.status(400).json({ success: false, message: 'No PDF file uploaded' });
+        return;
+      }
+
+      const { type, text, x, y, width, height, pageNumber } = req.body;
+      const result = await pdfEditorService.addAnnotation(
+        req.file.buffer,
+        {
+          type,
+          content: text,
+          x: parseFloat(x),
+          y: parseFloat(y),
+          width: parseFloat(width),
+          height: parseFloat(height),
+          pageNumber: parseInt(pageNumber)
+        }
+      );
+      
+      res.set({
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `attachment; filename="annotated_${req.file.originalname}"`
+      });
+      res.send(result);
+    } catch (error) {
+      console.error('Adding annotation failed:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to add annotation to PDF',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  }
+
+  /**
+   * Add form field to PDF
+   */
+  static async addFormField(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      if (!req.file) {
+        res.status(400).json({ success: false, message: 'No PDF file uploaded' });
+        return;
+      }
+
+      const { type, name, x, y, width, height, pageNumber } = req.body;
+      const result = await pdfEditorService.addFormField(
+        req.file.buffer,
+        {
+          fieldType: type,
+          name,
+          x: parseFloat(x),
+          y: parseFloat(y),
+          width: parseFloat(width),
+          height: parseFloat(height),
+          pageNumber: parseInt(pageNumber)
+        }
+      );
+      
+      res.set({
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `attachment; filename="form_field_added_${req.file.originalname}"`
+      });
+      res.send(result);
+    } catch (error) {
+      console.error('Adding form field failed:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to add form field to PDF',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  }
+
+  /**
+   * Find and replace text in PDF
+   */
+  static async findReplaceText(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      if (!req.file) {
+        res.status(400).json({ success: false, message: 'No PDF file uploaded' });
+        return;
+      }
+
+      const { searchText, replaceText } = req.body;
+      const result = await pdfEditorService.replaceText(req.file.buffer, req.file.originalname, { [searchText]: replaceText });
+      
+      res.set({
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `attachment; filename="text_replaced_${req.file.originalname}"`
+      });
+      res.send(result);
+    } catch (error) {
+      console.error('Text replacement failed:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to replace text in PDF',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  }
+
+  /**
+   * Remove pages from PDF
+   */
+  static async removePages(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      if (!req.file) {
+        res.status(400).json({ success: false, message: 'No PDF file uploaded' });
+        return;
+      }
+
+      const { pageNumbers } = req.body;
+      const result = await pdfEditorService.removePages(req.file.buffer, pageNumbers);
+      
+      res.set({
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `attachment; filename="pages_removed_${req.file.originalname}"`
+      });
+      res.send(result);
+    } catch (error) {
+      console.error('Page removal failed:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to remove pages from PDF',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  }
+
+  /**
+   * Compress PDF file
+   */
+  static async compressPdf(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      if (!req.file) {
+        res.status(400).json({ success: false, message: 'No PDF file uploaded' });
+        return;
+      }
+
+      const { quality = 'medium' } = req.body;
+      const result = await pdfEditorService.compressPdf(req.file.buffer, quality);
+      
+      res.set({
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `attachment; filename="compressed_${req.file.originalname}"`
+      });
+      res.send(result);
+    } catch (error) {
+      console.error('PDF compression failed:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to compress PDF',
         error: error instanceof Error ? error.message : 'Unknown error'
       });
     }

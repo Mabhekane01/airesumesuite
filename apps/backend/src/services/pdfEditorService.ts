@@ -162,11 +162,13 @@ class PdfEditorService {
       const formData = new FormData();
       formData.append('file', fileBuffer, filename);
 
+      // Add replacements to formData instead of separate data field
+      formData.append('replacements', JSON.stringify(replacements));
+      
       const response = await axios.post(`${this.baseUrl}/replace-text`, formData, {
         headers: {
           ...formData.getHeaders(),
         },
-        data: replacements,
         responseType: 'arraybuffer',
       });
 
@@ -215,11 +217,13 @@ class PdfEditorService {
       const formData = new FormData();
       formData.append('file', fileBuffer, filename);
 
+      // Add pagesToDelete to formData instead of separate data field
+      formData.append('pagesToDelete', JSON.stringify(pagesToDelete));
+      
       const response = await axios.post(`${this.baseUrl}/delete-pages`, formData, {
         headers: {
           ...formData.getHeaders(),
         },
-        data: pagesToDelete,
         responseType: 'arraybuffer',
       });
 
@@ -230,27 +234,6 @@ class PdfEditorService {
     }
   }
 
-  /**
-   * Split PDF into multiple files
-   */
-  async splitPdf(fileBuffer: Buffer, filename: string, splitPoints: number[]): Promise<any> {
-    try {
-      const formData = new FormData();
-      formData.append('file', fileBuffer, filename);
-
-      const response = await axios.post(`${this.baseUrl}/split`, formData, {
-        headers: {
-          ...formData.getHeaders(),
-        },
-        data: splitPoints,
-      });
-
-      return response.data;
-    } catch (error) {
-      console.error('PDF split failed:', error);
-      throw new Error('Failed to split PDF');
-    }
-  }
 
   /**
    * Merge multiple PDFs
@@ -277,28 +260,6 @@ class PdfEditorService {
     }
   }
 
-  /**
-   * Rotate pages in PDF
-   */
-  async rotatePages(fileBuffer: Buffer, filename: string, rotations: Record<number, number>): Promise<Buffer> {
-    try {
-      const formData = new FormData();
-      formData.append('file', fileBuffer, filename);
-
-      const response = await axios.post(`${this.baseUrl}/rotate-pages`, formData, {
-        headers: {
-          ...formData.getHeaders(),
-        },
-        data: rotations,
-        responseType: 'arraybuffer',
-      });
-
-      return Buffer.from(response.data);
-    } catch (error) {
-      console.error('Page rotation failed:', error);
-      throw new Error('Failed to rotate pages');
-    }
-  }
 
   /**
    * Add visual signature to PDF
@@ -714,19 +675,6 @@ class PdfEditorService {
     return response.data;
   }
 
-  /**
-   * Convert PDF to HTML
-   */
-  async convertToHtml(pdfBuffer: Buffer): Promise<string> {
-    const formData = new FormData();
-    formData.append('file', Readable.from(pdfBuffer), 'document.pdf');
-
-    const response = await axios.post(`${this.baseUrl}/convert-to-html`, formData, {
-      headers: formData.getHeaders()
-    });
-    
-    return response.data.html;
-  }
 
   /**
    * Convert PDF to images
@@ -758,73 +706,25 @@ class PdfEditorService {
     return response.data.text;
   }
 
-  /**
-   * Split PDF
-   */
-  async splitPdf(pdfBuffer: Buffer, splitBy: string, ranges?: any): Promise<any> {
+  // Additional methods needed by controller extensions
+  async splitPdf(pdfBuffer: Buffer): Promise<any> {
     const formData = new FormData();
     formData.append('file', Readable.from(pdfBuffer), 'document.pdf');
     
-    // Split by pages (simplified)
-    const splitPoints = ranges || [1]; // Default split
-    
     const response = await axios.post(`${this.baseUrl}/split`, formData, {
-      headers: {
-        ...formData.getHeaders(),
-        'Content-Type': 'application/json'
-      },
-      data: splitPoints
+      headers: formData.getHeaders()
     });
     
     return response.data;
   }
 
-  /**
-   * Rotate page
-   */
   async rotatePage(pdfBuffer: Buffer, pageNumber: number, rotation: number): Promise<Buffer> {
     const formData = new FormData();
     formData.append('file', Readable.from(pdfBuffer), 'document.pdf');
+    formData.append('pageNumber', pageNumber.toString());
+    formData.append('rotation', rotation.toString());
     
-    const rotations = { [pageNumber]: rotation };
-    
-    const response = await axios.post(`${this.baseUrl}/rotate-pages`, formData, {
-      headers: formData.getHeaders(),
-      responseType: 'arraybuffer',
-      data: rotations
-    });
-    
-    return Buffer.from(response.data);
-  }
-
-  /**
-   * Reorder pages
-   */
-  async reorderPages(pdfBuffer: Buffer, newOrder: number[]): Promise<Buffer> {
-    const formData = new FormData();
-    formData.append('file', Readable.from(pdfBuffer), 'document.pdf');
-    
-    const response = await axios.post(`${this.advancedUrl}/reorder-pages`, formData, {
-      headers: formData.getHeaders(),
-      responseType: 'arraybuffer',
-      data: newOrder
-    });
-    
-    return Buffer.from(response.data);
-  }
-
-  /**
-   * Find and replace text
-   */
-  async findReplaceText(pdfBuffer: Buffer, options: any): Promise<Buffer> {
-    const formData = new FormData();
-    formData.append('file', Readable.from(pdfBuffer), 'document.pdf');
-    formData.append('findText', options.findText);
-    formData.append('replaceText', options.replaceText);
-    formData.append('matchCase', options.matchCase.toString());
-    formData.append('wholeWords', options.wholeWords.toString());
-    
-    const response = await axios.post(`${this.advancedUrl}/find-replace-formatted`, formData, {
+    const response = await axios.post(`${this.baseUrl}/rotate-page`, formData, {
       headers: formData.getHeaders(),
       responseType: 'arraybuffer'
     });
@@ -832,16 +732,12 @@ class PdfEditorService {
     return Buffer.from(response.data);
   }
 
-  /**
-   * Remove pages
-   */
-  async removePages(pdfBuffer: Buffer, criteria: string, value: any): Promise<Buffer> {
+  async reorderPages(pdfBuffer: Buffer, pageOrder: number[]): Promise<Buffer> {
     const formData = new FormData();
     formData.append('file', Readable.from(pdfBuffer), 'document.pdf');
-    formData.append('criteria', criteria);
-    formData.append('value', value.toString());
+    formData.append('pageOrder', JSON.stringify(pageOrder));
     
-    const response = await axios.post(`${this.advancedUrl}/remove-pages`, formData, {
+    const response = await axios.post(`${this.baseUrl}/reorder-pages`, formData, {
       headers: formData.getHeaders(),
       responseType: 'arraybuffer'
     });
@@ -849,15 +745,25 @@ class PdfEditorService {
     return Buffer.from(response.data);
   }
 
-  /**
-   * Compress PDF
-   */
-  async compressPdf(pdfBuffer: Buffer, level: string = 'medium'): Promise<Buffer> {
+  async removePages(pdfBuffer: Buffer, pageNumbers: number[]): Promise<Buffer> {
     const formData = new FormData();
     formData.append('file', Readable.from(pdfBuffer), 'document.pdf');
-    formData.append('compressionLevel', level);
+    formData.append('pageNumbers', JSON.stringify(pageNumbers));
     
-    const response = await axios.post(`${this.advancedUrl}/compress`, formData, {
+    const response = await axios.post(`${this.baseUrl}/remove-pages`, formData, {
+      headers: formData.getHeaders(),
+      responseType: 'arraybuffer'
+    });
+    
+    return Buffer.from(response.data);
+  }
+
+  async compressPdf(pdfBuffer: Buffer, quality: string): Promise<Buffer> {
+    const formData = new FormData();
+    formData.append('file', Readable.from(pdfBuffer), 'document.pdf');
+    formData.append('quality', quality);
+    
+    const response = await axios.post(`${this.baseUrl}/compress`, formData, {
       headers: formData.getHeaders(),
       responseType: 'arraybuffer'
     });

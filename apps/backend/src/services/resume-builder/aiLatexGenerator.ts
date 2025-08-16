@@ -28,46 +28,56 @@ export interface ResumeInput {
   };
   professionalSummary: string;
   workExperience: Array<{
+    id?: string;
     jobTitle: string;
     company: string;
     location: string;
     startDate: string;
     endDate?: string;
     isCurrentJob: boolean;
-    achievements: string[];
     responsibilities: string[];
+    achievements: string[];
   }>;
   education: Array<{
-    degree: string;
+    id?: string;
     institution: string;
-    fieldOfStudy?: string;
-    location?: string;
+    degree: string;
+    fieldOfStudy: string;
+    graduationDate: string;
     startDate?: string;
     endDate?: string;
-    graduationDate: string;
+    location?: string;
     gpa?: string;
-    honors?: string[];
+    coursework?: string[];
   }>;
   skills: Array<{
+    id?: string;
     name: string;
-    category: string;
-    proficiencyLevel?: string;
+    category: 'technical' | 'soft' | 'language' | 'certification';
+    proficiencyLevel?: 'beginner' | 'intermediate' | 'advanced' | 'expert';
   }>;
   projects?: Array<{
+    id?: string;
     name: string;
-    description: string;
+    description: string[];
     technologies: string[];
     url?: string;
+    startDate?: string;
+    endDate?: string;
   }>;
   certifications?: Array<{
+    id?: string;
     name: string;
     issuer: string;
     date: string;
     expirationDate?: string;
+    credentialId?: string;
+    url?: string;
   }>;
   languages?: Array<{
+    id?: string;
     name: string;
-    proficiency: string;
+    proficiency: 'native' | 'fluent' | 'conversational' | 'basic';
   }>;
   volunteerExperience?: Array<{
     organization: string;
@@ -323,7 +333,7 @@ export class AILatexGenerator {
         location: edu.location,
         graduationDate: edu.graduationDate || edu.endDate,
         gpa: edu.gpa,
-        honors: edu.honors || []
+        honors: edu.coursework || []
       })),
       skills: resumeData.skills || [],
       projects: resumeData.projects || [],
@@ -343,7 +353,18 @@ export class AILatexGenerator {
    */
   private convertFromStandardizedFormat(resumeData: ResumeData): ResumeInput {
     return {
-      personalInfo: resumeData.personalInfo,
+      personalInfo: {
+        firstName: resumeData.personalInfo.firstName,
+        lastName: resumeData.personalInfo.lastName,
+        email: resumeData.personalInfo.email || '',
+        phone: resumeData.personalInfo.phone || '',
+        location: resumeData.personalInfo.location || '',
+        professionalTitle: resumeData.personalInfo.professionalTitle,
+        linkedinUrl: resumeData.personalInfo.linkedinUrl,
+        portfolioUrl: resumeData.personalInfo.portfolioUrl,
+        githubUrl: resumeData.personalInfo.githubUrl,
+        websiteUrl: resumeData.personalInfo.websiteUrl
+      },
       professionalSummary: resumeData.professionalSummary,
       workExperience: (resumeData.workExperience || []).map(exp => ({
         jobTitle: exp.jobTitle,
@@ -362,7 +383,7 @@ export class AILatexGenerator {
         location: edu.location,
         graduationDate: edu.graduationDate,
         gpa: edu.gpa,
-        honors: edu.honors || []
+        honors: edu.coursework || []
       })),
       skills: resumeData.skills || [],
       projects: resumeData.projects || [],

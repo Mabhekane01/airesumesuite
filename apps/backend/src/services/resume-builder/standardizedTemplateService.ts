@@ -1091,7 +1091,7 @@ export class StandardizedTemplateService {
           startDate: this.escapeLatex(edu.graduationDate || ""),
           endDate: this.escapeLatex(edu.graduationDate || ""),
           gpa: edu.gpa ? this.escapeLatex(edu.gpa) : "",
-          honors: edu.honors || [],
+          honors: edu.coursework || [],
           courses: [],
         };
       }
@@ -1617,18 +1617,20 @@ export interface StandardizedResumeData {
     achievements: string[];
   }>;
   education: Array<{
+    id?: string;
     degree: string;
     institution: string;
-    fieldOfStudy?: string;
+    fieldOfStudy: string;
     location?: string;
     graduationDate: string;
     gpa?: string;
-    honors?: string[];
+    coursework?: string[];
   }>;
   skills: Array<{
+    id?: string;
     name: string;
-    category: string;
-    proficiencyLevel?: string;
+    category: 'technical' | 'soft' | 'language' | 'certification';
+    proficiencyLevel?: 'beginner' | 'intermediate' | 'advanced' | 'expert';
   }>;
   projects?: Array<{
     name: string;
@@ -1646,8 +1648,9 @@ export interface StandardizedResumeData {
     url?: string;
   }>;
   languages?: Array<{
+    id?: string;
     name: string;
-    proficiency: string;
+    proficiency: 'native' | 'fluent' | 'conversational' | 'basic';
   }>;
   volunteerExperience?: Array<{
     organization: string;
@@ -1681,9 +1684,10 @@ export interface StandardizedResumeData {
     relationship: string;
   }>;
   hobbies?: Array<{
+    id?: string;
     name: string;
     description?: string;
-    category: string;
+    category: 'creative' | 'sports' | 'technology' | 'volunteer' | 'other';
   }>;
   additionalSections?: Array<{
     title: string;

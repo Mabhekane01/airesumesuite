@@ -40,9 +40,12 @@ export interface PersonalInfo {
   linkedinUrl?: string;
   portfolioUrl?: string;
   githubUrl?: string;
+  websiteUrl?: string;
+  professionalTitle?: string;
 }
 
 export interface WorkExperience {
+  id?: string;
   jobTitle: string;
   company: string;
   location: string;
@@ -54,40 +57,105 @@ export interface WorkExperience {
 }
 
 export interface Education {
+  id?: string;
   institution: string;
   degree: string;
   fieldOfStudy: string;
   graduationDate: string;
+  startDate?: string;
+  endDate?: string;
+  location?: string;
   gpa?: string;
-  honors?: string[];
+  coursework?: string[];
 }
 
 export interface Skill {
+  id?: string;
   name: string;
   category: 'technical' | 'soft' | 'language' | 'certification';
   proficiencyLevel?: 'beginner' | 'intermediate' | 'advanced' | 'expert';
 }
 
 export interface Project {
+  id?: string;
   name: string;
-  description: string;
+  description: string[];
   technologies: string[];
   url?: string;
+  startDate?: string;
+  endDate?: string;
 }
 
 export interface ResumeData {
   _id?: string;
+  id?: string;
   title: string;
+  template: string;
+  isLatexTemplate?: boolean;
   personalInfo: PersonalInfo;
   professionalSummary: string;
   workExperience: WorkExperience[];
   education: Education[];
   skills: Skill[];
+  projects: Project[];
   certifications?: Certification[];
-  languages?: string[];
-  projects?: Project[];
-  templateId: string;
-  isPublic: boolean;
+  languages?: Array<{
+    id?: string;
+    name: string;
+    proficiency: 'native' | 'fluent' | 'conversational' | 'basic';
+  }>;
+  volunteerExperience?: Array<{
+    id?: string;
+    organization: string;
+    role: string;
+    location: string;
+    startDate: string;
+    endDate?: string;
+    isCurrentRole: boolean;
+    description: string;
+    achievements: string[];
+  }>;
+  awards?: Array<{
+    id?: string;
+    title: string;
+    issuer: string;
+    date: string;
+    description?: string;
+  }>;
+  publications?: Array<{
+    title: string;
+    publisher: string;
+    publicationDate: string;
+    url?: string;
+    description?: string;
+  }>;
+  references?: Array<{
+    name: string;
+    title: string;
+    company: string;
+    email: string;
+    phone: string;
+    relationship: string;
+  }>;
+  hobbies?: Array<{
+    id?: string;
+    name: string;
+    description?: string;
+    category: 'creative' | 'sports' | 'technology' | 'volunteer' | 'other';
+  }>;
+  additionalSections?: Array<{
+    title: string;
+    content: string;
+  }>;
+  aiGenerated?: {
+    summary: boolean;
+    lastOptimized?: string;
+    optimizedFor?: string;
+    atsScore?: number;
+    improvements?: string[];
+  };
+  templateId?: string;  // Keep for backward compatibility
+  isPublic?: boolean;   // Keep for backward compatibility
   createdAt?: string;
   updatedAt?: string;
 }

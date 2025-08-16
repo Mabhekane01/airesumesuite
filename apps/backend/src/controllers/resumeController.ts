@@ -46,7 +46,7 @@ function convertToStandardizedData(resume: IResume): ResumeData {
       description: Array.isArray(proj.description) 
         ? proj.description 
         : (proj.description && typeof proj.description === 'string' 
-            ? proj.description.split(/\n+/).map(line => line.trim()).filter(line => line.length > 0)
+            ? (proj.description as string).split(/\n+/).map(line => line.trim()).filter(line => line.length > 0)
             : []),
       technologies: proj.technologies,
       url: proj.url,

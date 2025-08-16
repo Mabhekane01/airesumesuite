@@ -891,7 +891,7 @@ Return the COMPLETE, PERFECT LaTeX code that will compile without ANY errors:`;
         
         let generatedLatex = await templateService.generateLatex(
           templateId,
-          data
+          data as any
         );
         
         console.log(

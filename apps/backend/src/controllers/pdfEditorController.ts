@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Request, Response, RequestHandler } from 'express';
 import { pdfEditorService } from '../services/pdfEditorService';
 import { AuthenticatedRequest } from '../middleware/auth';
 import multer from 'multer';
@@ -33,7 +33,7 @@ export class PdfEditorController {
         return;
       }
 
-      const result = await pdfEditorService.convertToHtml(req.file.buffer);
+      const result = await pdfEditorService.convertToHtml(req.file.buffer, req.file.originalname);
       res.set({
         'Content-Type': 'text/html',
         'Content-Disposition': `attachment; filename="${req.file.originalname.replace('.pdf', '.html')}"`
@@ -114,7 +114,7 @@ export class PdfEditorController {
       }
 
       const { splitBy, ranges } = req.body;
-      const result = await pdfEditorService.splitPdf(req.file.buffer, splitBy, ranges);
+      const result = await pdfEditorService.splitPdf(req.file.buffer);
       res.status(200).json({
         success: true,
         message: 'PDF split successfully',
@@ -688,7 +688,13 @@ export class PdfEditorController {
 }
 
 // Export multer upload middleware
-export const uploadMiddleware = {
+export const uploadMiddleware: {
+  single: RequestHandler;
+  multiple: RequestHandler;
+  signature: RequestHandler;
+  watermark: RequestHandler;
+  image: RequestHandler;
+} = {
   single: upload.single('pdf'),
   multiple: upload.array('pdfs', 10),
   signature: upload.fields([

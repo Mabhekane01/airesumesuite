@@ -166,15 +166,15 @@ export interface Resume {
   workExperience: WorkExperience[];
   education: Education[];
   skills: Skill[];
-  projects: Project[];
-  certifications: Certification[];
-  languages: Language[];
-  volunteerExperience: VolunteerExperience[];
-  awards: Award[];
-  publications: Publication[];
-  references: Reference[];
-  hobbies: Hobby[];
-  additionalSections: AdditionalSection[];
+  projects?: Project[];
+  certifications?: Certification[];
+  languages?: Language[];
+  volunteerExperience?: VolunteerExperience[];
+  awards?: Award[];
+  publications?: Publication[];
+  references?: Reference[];
+  hobbies?: Hobby[];
+  additionalSections?: AdditionalSection[];
   aiGenerated?: {
     summary: boolean;
     lastOptimized?: string;

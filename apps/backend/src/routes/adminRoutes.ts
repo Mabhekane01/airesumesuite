@@ -1,8 +1,8 @@
-import { Router } from 'express';
+import { Router, IRouter } from 'express';
 import { authenticateToken } from '../middleware/auth';
 import { cleanupTokens, getTokenStatistics, cleanupUserTokensEndpoint } from '../controllers/adminController';
 
-const router = Router();
+const router: IRouter = Router();
 
 // Apply authentication middleware to all admin routes
 router.use(authenticateToken);

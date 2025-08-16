@@ -69,6 +69,9 @@ importers:
       express-validator:
         specifier: ^7.0.1
         version: 7.2.1
+      form-data:
+        specifier: ^4.0.4
+        version: 4.0.4
       googleapis:
         specifier: ^131.0.0
         version: 131.0.0
@@ -151,6 +154,9 @@ importers:
       '@types/express':
         specifier: ^4.17.23
         version: 4.17.23
+      '@types/form-data':
+        specifier: ^2.5.2
+        version: 2.5.2
       '@types/jsonwebtoken':
         specifier: ^9.0.5
         version: 9.0.10
@@ -1837,6 +1843,13 @@ packages:
       '@types/express-serve-static-core': 4.19.6
       '@types/qs': 6.14.0
       '@types/serve-static': 1.15.8
+    dev: true
+
+  /@types/form-data@2.5.2:
+    resolution: {integrity: sha512-tfmcyHn1Pp9YHAO5r40+UuZUPAZbUEgqTel3EuEKpmF9hPkXgR4l41853raliXnb4gwyPNoQOfvgGGlHN5WSog==}
+    deprecated: This is a stub types definition. form-data provides its own type definitions, so you do not need this installed.
+    dependencies:
+      form-data: 4.0.4
     dev: true
 
   /@types/http-errors@2.0.5:

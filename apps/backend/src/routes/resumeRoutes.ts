@@ -189,10 +189,10 @@ router.post('/ats-analysis-unsaved',
 router.get('/templates', (req: Request, res: Response) => resumeController.getAvailableTemplates(req, res));
 
 // GET /api/v1/resumes/latex-templates - Get LaTeX templates
-router.get('/latex-templates', (req: Request, res: Response) => resumeController.getLatexTemplates(req, res));
+router.get('/latex-templates', (req: AuthenticatedRequest, res: Response) => resumeController.getLatexTemplates(req, res));
 
 // GET /api/v1/resumes/latex-templates-with-code - Get LaTeX templates with code (for job optimization)
-router.get('/latex-templates-with-code', (req: Request, res: Response) => resumeController.getLatexTemplatesWithCode(req, res));
+router.get('/latex-templates-with-code', (req: AuthenticatedRequest, res: Response) => resumeController.getLatexTemplatesWithCode(req, res));
 
 // ===== ERROR HANDLING =====
 router.use((err: Error, req: Request, res: Response, next: NextFunction) => {

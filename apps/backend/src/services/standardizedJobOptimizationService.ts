@@ -42,9 +42,12 @@ export interface OptimizationSuggestion {
 
 export interface JobMatchAnalysis {
   overallMatch: number; // 0-100
+  overallScore: number; // alias for overallMatch
   skillsMatch: number;
   experienceMatch: number;
   missingSkills: string[];
+  missingKeywords: string[];
+  addedKeywords: string[];
   strongPoints: string[];
   recommendations: string[];
   atsCompatibility: number;
@@ -428,9 +431,12 @@ Return ONLY valid JSON (no text before/after):
 
       return {
         overallMatch: cappedOverallMatch,
+        overallScore: cappedOverallMatch, // alias for overallMatch
         skillsMatch: cappedSkillsMatch,
         experienceMatch: cappedExperienceMatch,
         missingSkills: aiAnalysis.missingSkills || [],
+        missingKeywords: aiAnalysis.missingSkills || [],
+        addedKeywords: aiAnalysis.keywordAlignment || [],
         strongPoints: aiAnalysis.strongPoints || [],
         recommendations: [
           ...(aiAnalysis.improvements || []),
@@ -468,9 +474,12 @@ Return ONLY valid JSON (no text before/after):
 
       return {
         overallMatch: cappedOverallMatch,
+        overallScore: cappedOverallMatch, // alias for overallMatch
         skillsMatch: cappedSkillsMatch,
         experienceMatch: cappedExperienceMatch,
         missingSkills: missingSkills.slice(0, 10),
+        missingKeywords: missingSkills.slice(0, 10),
+        addedKeywords: matchingSkills,
         strongPoints,
         recommendations: [
           ...this.generateRecommendations(cappedOverallMatch, missingSkills, strongPoints),

@@ -40,6 +40,7 @@ export interface ResumeData {
   };
   professionalSummary: string;
   workExperience: Array<{
+    id?: string;
     jobTitle: string;
     company: string;
     location: string;
@@ -50,20 +51,25 @@ export interface ResumeData {
     achievements: string[];
   }>;
   education: Array<{
-    degree: string;
+    id?: string;
     institution: string;
-    fieldOfStudy?: string;
-    location?: string;
+    degree: string;
+    fieldOfStudy: string;
     graduationDate: string;
+    startDate?: string;
+    endDate?: string;
+    location?: string;
     gpa?: string;
-    honors?: string[];
+    coursework?: string[];
   }>;
   skills: Array<{
+    id?: string;
     name: string;
-    category: string;
-    proficiencyLevel?: string;
+    category: 'technical' | 'soft' | 'language' | 'certification';
+    proficiencyLevel?: 'beginner' | 'intermediate' | 'advanced' | 'expert';
   }>;
   projects?: Array<{
+    id?: string;
     name: string;
     description: string[];
     technologies: string[];
@@ -72,16 +78,21 @@ export interface ResumeData {
     endDate?: string;
   }>;
   certifications?: Array<{
+    id?: string;
     name: string;
     issuer: string;
     date: string;
     expirationDate?: string;
+    credentialId?: string;
+    url?: string;
   }>;
   languages?: Array<{
+    id?: string;
     name: string;
-    proficiency: string;
+    proficiency: 'native' | 'fluent' | 'conversational' | 'basic';
   }>;
   volunteerExperience?: Array<{
+    id?: string;
     organization: string;
     role: string;
     location: string;
@@ -92,12 +103,14 @@ export interface ResumeData {
     achievements: string[];
   }>;
   awards?: Array<{
+    id?: string;
     title: string;
     issuer: string;
     date: string;
     description?: string;
   }>;
   publications?: Array<{
+    id?: string;
     title: string;
     publisher: string;
     publicationDate: string;
@@ -105,6 +118,7 @@ export interface ResumeData {
     description?: string;
   }>;
   references?: Array<{
+    id?: string;
     name: string;
     title: string;
     company: string;
@@ -113,9 +127,10 @@ export interface ResumeData {
     relationship: string;
   }>;
   hobbies?: Array<{
+    id?: string;
     name: string;
     description?: string;
-    category: string;
+    category: 'creative' | 'sports' | 'technology' | 'volunteer' | 'other';
   }>;
   additionalSections?: Array<{
     title: string;

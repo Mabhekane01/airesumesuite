@@ -1,11 +1,11 @@
-import express from 'express';
+import express, { IRouter } from 'express';
 import { body } from 'express-validator';
 import { PdfEditorController, uploadMiddleware } from '../controllers/pdfEditorController';
 import { PdfEditorControllerExtensions } from '../controllers/pdfEditorControllerExtensions';
 import { authMiddleware, AuthenticatedRequest } from '../middleware/auth';
 import { handleValidationErrors } from '../middleware/validation';
 
-const router = express.Router();
+const router: IRouter = express.Router();
 
 // Validation middleware
 const addTextValidation = [
