@@ -516,15 +516,15 @@ export const ConvertPDFTool = ({ activeFile }: { activeFile: PDFFile | null }) =
       
       switch (convertTo) {
         case 'word':
-          endpoint = buildPdfServiceUrl('/api/pdf/advanced/convert-to-word');
+          endpoint = buildPdfServiceUrl('/advanced/convert-to-word');
           filename = activeFile.file.name.replace('.pdf', '.docx');
           break;
         case 'text':
-          endpoint = buildPdfServiceUrl('/api/pdf/advanced/convert-to-text');
+          endpoint = buildPdfServiceUrl('/advanced/convert-to-text');
           filename = activeFile.file.name.replace('.pdf', '.txt');
           break;
         case 'html':
-          endpoint = buildPdfServiceUrl('/api/pdf/advanced/convert-to-html');
+          endpoint = buildPdfServiceUrl('/advanced/convert-to-html');
           filename = activeFile.file.name.replace('.pdf', '.html');
           break;
         default:

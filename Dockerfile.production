@@ -1,0 +1,56 @@
+# Use your custom base image with LaTeX and node environment
+FROM your-username/ai-job-suite-latex-base:latest
+
+# Run setup as root
+USER root
+
+WORKDIR /app
+
+# Copy backend source code and package files
+COPY --chown=pptruser:pptruser apps/backend/package.json ./ 
+COPY --chown=pptruser:pptruser apps/backend/tsconfig.json ./
+COPY --chown=pptruser:pptruser pnpm-lock.yaml ./
+COPY --chown=pptruser:pptruser apps/backend/src ./src
+
+# Prevent Puppeteer from downloading Chromium (handled in base image)
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+ENV PUPPETEER_SKIP_DOWNLOAD=true
+
+# Install all dependencies for build
+RUN pnpm install --frozen-lockfile
+
+# Build backend TS code
+RUN pnpm run build
+
+# Clean up dev dependencies after build
+RUN pnpm prune --prod
+
+# Create LaTeX workspace directories with a placeholder template
+RUN mkdir -p ./latex-workspace/templates/ ./latex-workspace/output/ && \
+    echo "% LaTeX template placeholder" > ./latex-workspace/templates/basic.tex
+
+# Fix permissions
+RUN chown -R pptruser:pptruser /app
+
+# Switch to non-root user
+USER pptruser
+
+# Set production environment variables inside container
+ENV LATEX_ENGINE=pdflatex
+ENV PDF_ENGINE=latex
+ENV ENABLE_LATEX_PDF=true
+ENV LATEX_TIMEOUT=300000
+ENV NODE_OPTIONS="--max-old-space-size=2048"
+ENV NODE_ENV=production
+ENV DISABLE_OPENCOLLECTIVE=true
+ENV DISABLE_UPDATE_NOTIFIER=true
+
+# Expose port (ensure it matches your PORT env)
+EXPOSE 3001
+
+# Healthcheck endpoint for production monitoring
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=2 \
+  CMD node -e "require('http').get('http://localhost:3001/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })" || exit 1
+
+# Start backend app
+CMD ["pnpm", "start"]

@@ -75,7 +75,7 @@ const SplitPDFTool: React.FC<SplitPDFToolProps> = ({ activeFile }) => {
       formData.append('file', file);
       formData.append('pages', splitPoints.join(','));
 
-      const response = await fetch(buildPdfServiceUrl('/api/pdf/extract-pages'), {
+      const response = await fetch(buildPdfServiceUrl('/extract-pages'), {
         method: 'POST',
         body: formData,
       });

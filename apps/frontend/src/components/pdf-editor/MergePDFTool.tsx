@@ -109,7 +109,7 @@ const MergePDFTool: React.FC<MergePDFToolProps> = ({ activeFile }) => {
         formData.append('files', pdfFile.file);
       });
 
-      const response = await fetch(buildPdfServiceUrl('/api/pdf/merge'), {
+      const response = await fetch(buildPdfServiceUrl('/merge'), {
         method: 'POST',
         body: formData,
       });
