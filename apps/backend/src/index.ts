@@ -26,7 +26,6 @@ import interviewRoutes from './routes/interviewRoutes';
 import careerCoachRoutes from './routes/careerCoachRoutes';
 import paymentRoutes from './routes/paymentRoutes';
 import notificationRoutes from './routes/notificationRoutes';
-import pdfEditorRoutes from './routes/pdfEditorRoutes';
 import publicRoutes from './routes/publicRoutes';
 import adminRoutes from './routes/adminRoutes';
 import { cleanupExpiredTokens } from './utils/tokenCleanup';
@@ -275,7 +274,6 @@ app.use('/api/v1/interviews', interviewRoutes);
 app.use('/api/v1/coach', careerCoachRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/v1/notifications', notificationRoutes);
-app.use('/api/v1/pdf-editor', pdfEditorRoutes);
 app.use('/api/v1/admin', adminRoutes);
 
 // 404 handler for unmatched API routes

@@ -248,7 +248,7 @@ const LivePDFEditor = ({ file, selectedTool, onTextEdit, onTextDelete, onTextAdd
       formData.append('pdf', file);
       formData.append('modifications', JSON.stringify(modifications));
       
-      const response = await fetch('/api/v1/pdf-editor/apply-changes', {
+      const response = await fetch(buildPdfServiceUrl('/api/pdf/editor/apply-changes'), {
         method: 'POST',
         body: formData
       });

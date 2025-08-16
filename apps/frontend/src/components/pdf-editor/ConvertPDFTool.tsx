@@ -279,9 +279,22 @@ export default function ConvertPDFTool({ activeFile, onFileUpload }: ConvertPDFT
             <Zap className="w-10 h-10 text-white" />
           </div>
           <h2 className="text-4xl font-bold text-white mb-3">Convert PDF</h2>
-          <p className="text-white/80 text-lg max-w-2xl mx-auto">
+          <p className="text-white/80 text-lg max-w-2xl mx-auto mb-4">
             Transform your PDF into any format you need • <span className="text-gray-300 font-medium">{activeFile.file.name}</span>
           </p>
+          <input
+            type="file"
+            accept=".pdf"
+            onChange={(e) => handleFileUpload(e.target.files)}
+            className="hidden"
+            id="convert-change-file"
+          />
+          <label 
+            htmlFor="convert-change-file" 
+            className="inline-flex items-center px-4 py-2 rounded-lg text-white text-sm font-medium transition-all duration-300 bg-slate-600/50 hover:bg-slate-600 cursor-pointer"
+          >
+            Change File
+          </label>
         </div>
 
         {/* Status Messages */}

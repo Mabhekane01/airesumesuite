@@ -253,6 +253,20 @@ const CompressPDFTool: React.FC<CompressPDFToolProps> = ({ activeFile }) => {
                   <span className="text-white font-medium">
                     {formatFileSize(originalSize)}
                   </span>
+                  <span className="text-gray-400">•</span>
+                  <input
+                    type="file"
+                    accept=".pdf"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                    id="compress-change-file"
+                  />
+                  <label 
+                    htmlFor="compress-change-file" 
+                    className="inline-flex items-center px-3 py-1 rounded-lg text-white text-sm font-medium transition-all duration-300 bg-slate-600/50 hover:bg-slate-600 cursor-pointer"
+                  >
+                    Change File
+                  </label>
                 </div>
                 
                 {/* Error Display */}

@@ -3,7 +3,7 @@ import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Upload, Merge, X, GripVertical, FileText, Plus, ArrowUp, ArrowDown, Trash2 } from 'lucide-react';
 import { Document, Page } from 'react-pdf';
-import { buildPdfServiceUrl } from '../../config/api';
+import { buildPdfServiceUrl, buildApiUrl } from '../../config/api';
 
 interface PDFFile {
   id: string;
@@ -109,7 +109,7 @@ const MergePDFTool: React.FC<MergePDFToolProps> = ({ activeFile }) => {
         formData.append('files', pdfFile.file);
       });
 
-      const response = await fetch(buildPdfServiceUrl('/api/pdf/merge'), {
+      const response = await fetch(buildPdfServiceUrl('/api/pdf/editor/merge'), {
         method: 'POST',
         body: formData,
       });

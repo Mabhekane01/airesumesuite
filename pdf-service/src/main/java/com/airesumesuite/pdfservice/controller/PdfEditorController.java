@@ -155,6 +155,213 @@ public class PdfEditorController {
     }
 
     /**
+     * Health check endpoint
+     */
+    @GetMapping("/health")
+    public ResponseEntity<Map<String, Object>> healthCheck() {
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("service", "PDF Editor Service");
+        response.put("status", "healthy");
+        response.put("timestamp", System.currentTimeMillis());
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Add missing /api/pdf/* endpoints for compatibility
+     */
+    @PostMapping("/merge")
+    public ResponseEntity<byte[]> mergePdfs(@RequestParam("files") MultipartFile[] files) {
+        try {
+            if (files.length < 2) {
+                throw new InvalidFileException("At least 2 PDF files are required for merging");
+            }
+            
+            logger.info("Merging {} PDF files", files.length);
+            
+            // Convert array to List for service
+            java.util.List<MultipartFile> fileList = java.util.Arrays.asList(files);
+            
+            // Use PDF editing service to merge files
+            byte[] mergedPdf = pdfEditingService.mergePdfs(fileList);
+            
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_PDF);
+            headers.setContentDispositionFormData("attachment", "merged-document.pdf");
+            headers.setContentLength(mergedPdf.length);
+            
+            return new ResponseEntity<>(mergedPdf, headers, HttpStatus.OK);
+            
+        } catch (Exception e) {
+            logger.error("PDF merge failed: {}", e.getMessage());
+            return createErrorByteResponse("Failed to merge PDFs: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Extract text from PDF
+     */
+    @PostMapping("/extract-text")
+    public ResponseEntity<Map<String, Object>> extractText(@RequestParam("file") MultipartFile file) {
+        try {
+            PdfErrorHandler.validateBasicFile(file);
+            
+            logger.info("Extracting text from PDF: {}", file.getOriginalFilename());
+            
+            // Extract text using PDF editing service
+            Map<String, Object> textData = pdfEditingService.extractTextWithPositions(file);
+            String extractedText = (String) textData.get("text");
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("text", extractedText);
+            response.put("pages", extractedText.split("\\f").length); // Form feed separates pages
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            logger.error("Text extraction failed: {}", e.getMessage());
+            return createErrorResponse("Failed to extract text: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Add text to PDF
+     */
+    @PostMapping("/add-text")
+    public ResponseEntity<byte[]> addText(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("text") String text,
+            @RequestParam("x") double x,
+            @RequestParam("y") double y,
+            @RequestParam("pageNumber") int pageNumber,
+            @RequestParam(value = "fontSize", defaultValue = "12") double fontSize,
+            @RequestParam(value = "color", defaultValue = "black") String color) {
+        try {
+            PdfErrorHandler.validateBasicFile(file);
+            
+            logger.info("Adding text to PDF: {} at ({}, {}) page {}", text, x, y, pageNumber);
+            
+            // Add text using PDF editing service
+            byte[] modifiedPdf = pdfEditingService.addTextAtPosition(file, text, (float)x, (float)y, pageNumber, (float)fontSize, color);
+            
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_PDF);
+            headers.setContentDispositionFormData("attachment", "text-added.pdf");
+            headers.setContentLength(modifiedPdf.length);
+            
+            return new ResponseEntity<>(modifiedPdf, headers, HttpStatus.OK);
+            
+        } catch (Exception e) {
+            logger.error("Add text failed: {}", e.getMessage());
+            return createErrorByteResponse("Failed to add text: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Delete pages from PDF
+     */
+    @PostMapping("/delete-pages")
+    public ResponseEntity<byte[]> deletePages(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("pagesToDelete") String pagesToDeleteJson) {
+        try {
+            PdfErrorHandler.validateBasicFile(file);
+            
+            // Parse page numbers from JSON
+            String[] pageStrings = pagesToDeleteJson.replace("[", "").replace("]", "").replace("\"", "").split(",");
+            java.util.List<Integer> pagesToDelete = new java.util.ArrayList<>();
+            for (String pageStr : pageStrings) {
+                pagesToDelete.add(Integer.parseInt(pageStr.trim()));
+            }
+            
+            logger.info("Deleting {} pages from PDF", pagesToDelete.size());
+            
+            // Delete pages using PDF editing service
+            byte[] modifiedPdf = pdfEditingService.deletePages(file, pagesToDelete);
+            
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_PDF);
+            headers.setContentDispositionFormData("attachment", "pages-deleted.pdf");
+            headers.setContentLength(modifiedPdf.length);
+            
+            return new ResponseEntity<>(modifiedPdf, headers, HttpStatus.OK);
+            
+        } catch (Exception e) {
+            logger.error("Delete pages failed: {}", e.getMessage());
+            return createErrorByteResponse("Failed to delete pages: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Get PDF information
+     */
+    @PostMapping("/info")
+    public ResponseEntity<Map<String, Object>> getPdfInfo(@RequestParam("file") MultipartFile file) {
+        try {
+            PdfErrorHandler.validateBasicFile(file);
+            
+            logger.info("Getting PDF info for: {}", file.getOriginalFilename());
+            
+            // Store PDF temporarily (required for getPdfInfo)
+            String fileId = "info_" + UUID.randomUUID().toString().replace("-", "").substring(0, 8);
+            Path filePath = Paths.get(TEMP_UPLOAD_DIR, fileId + ".pdf");
+            Files.copy(file.getInputStream(), filePath);
+            
+            // Get PDF info using PDF editing service
+            Map<String, Object> pdfInfo = pdfEditingService.getPdfInfo(filePath.toFile());
+            
+            // Clean up temp file
+            Files.deleteIfExists(filePath);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.putAll(pdfInfo);
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            logger.error("Get PDF info failed: {}", e.getMessage());
+            return createErrorResponse("Failed to get PDF info: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Extract specific pages from PDF (for SplitPDFTool)
+     */
+    @PostMapping("/extract-pages")
+    public ResponseEntity<byte[]> extractPages(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("pages") String pagesParam) {
+        try {
+            PdfErrorHandler.validateBasicFile(file);
+            
+            // Parse page numbers from comma-separated string
+            String[] pageStrings = pagesParam.split(",");
+            java.util.List<Integer> pagesToExtract = new java.util.ArrayList<>();
+            for (String pageStr : pageStrings) {
+                pagesToExtract.add(Integer.parseInt(pageStr.trim()));
+            }
+            
+            logger.info("Extracting {} pages from PDF: {}", pagesToExtract.size(), file.getOriginalFilename());
+            
+            // Extract pages using PDF editing service
+            byte[] extractedPdf = pdfEditingService.extractPages(file, pagesToExtract);
+            
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_PDF);
+            headers.setContentDispositionFormData("attachment", "extracted-pages.pdf");
+            headers.setContentLength(extractedPdf.length);
+            
+            return new ResponseEntity<>(extractedPdf, headers, HttpStatus.OK);
+            
+        } catch (Exception e) {
+            logger.error("Extract pages failed: {}", e.getMessage());
+            return createErrorByteResponse("Failed to extract pages: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
      * Get PDF preview/info (optional endpoint for step 2)
      */
     @GetMapping("/preview/{fileId}")
