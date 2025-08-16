@@ -6,6 +6,7 @@ import {
   X, Check, AlertCircle
 } from 'lucide-react';
 import { clsx } from 'clsx';
+import { buildPdfServiceUrl } from '../../config/api';
 
 interface PDFFile {
   file: File;
@@ -515,15 +516,15 @@ export const ConvertPDFTool = ({ activeFile }: { activeFile: PDFFile | null }) =
       
       switch (convertTo) {
         case 'word':
-          endpoint = 'http://localhost:8080/api/pdf/advanced/convert-to-word';
+          endpoint = buildPdfServiceUrl('/api/pdf/advanced/convert-to-word');
           filename = activeFile.file.name.replace('.pdf', '.docx');
           break;
         case 'text':
-          endpoint = 'http://localhost:8080/api/pdf/advanced/convert-to-text';
+          endpoint = buildPdfServiceUrl('/api/pdf/advanced/convert-to-text');
           filename = activeFile.file.name.replace('.pdf', '.txt');
           break;
         case 'html':
-          endpoint = 'http://localhost:8080/api/pdf/advanced/convert-to-html';
+          endpoint = buildPdfServiceUrl('/api/pdf/advanced/convert-to-html');
           filename = activeFile.file.name.replace('.pdf', '.html');
           break;
         default:

@@ -3,6 +3,7 @@ import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Split, Download, FileText, Scissors, ChevronRight, ArrowRight, Check } from 'lucide-react';
 import { Document, Page } from 'react-pdf';
+import { buildPdfServiceUrl } from '../../config/api';
 
 interface SplitPDFToolProps {
   activeFile?: File;
@@ -74,7 +75,7 @@ const SplitPDFTool: React.FC<SplitPDFToolProps> = ({ activeFile }) => {
       formData.append('file', file);
       formData.append('pages', splitPoints.join(','));
 
-      const response = await fetch('http://localhost:8080/api/pdf/extract-pages', {
+      const response = await fetch(buildPdfServiceUrl('/api/pdf/extract-pages'), {
         method: 'POST',
         body: formData,
       });

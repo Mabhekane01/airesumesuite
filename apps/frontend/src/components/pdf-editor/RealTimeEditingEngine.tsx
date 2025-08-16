@@ -9,6 +9,7 @@ import {
 import { clsx } from 'clsx';
 import AdvancedPDFCanvas from './AdvancedPDFCanvas';
 import InteractiveTextEditor from './InteractiveTextEditor';
+import { API_CONFIG } from '../../config/api';
 
 interface EditOperation {
   id: string;
@@ -118,7 +119,7 @@ export default function RealTimeEditingEngine({
 
   const initializeCollaboration = useCallback(() => {
     try {
-      const wsUrl = process.env.REACT_APP_WS_URL || 'ws://localhost:8080/pdf-collaboration';
+      const wsUrl = import.meta.env.VITE_WS_URL || `ws://${API_CONFIG.PDF_SERVICE_URL.replace('http://', '').replace('https://', '')}/pdf-collaboration`;
       wsRef.current = new WebSocket(wsUrl);
 
       wsRef.current.onopen = () => {

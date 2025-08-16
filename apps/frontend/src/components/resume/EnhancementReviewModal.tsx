@@ -105,53 +105,30 @@ export const EnhancementReviewModal: React.FC<EnhancementReviewModalProps> = ({
   };
 
   const buildFinalResumeData = () => {
+    // Start with complete original resume data to preserve ALL fields
     let finalData = JSON.parse(JSON.stringify(enhancementData.originalResumeData));
 
-    // Apply selected enhancements
+    // Apply only the selected AI enhancement suggestions
     Object.entries(enhancementData.enhancementSuggestions).forEach(([sectionName, sectionData]) => {
       sectionData.suggestions.forEach((suggestion, index) => {
         const suggestionId = `${sectionName}-${index}`;
+        
+        // Only apply if suggestion is selected
         if (selectedSuggestions.has(suggestionId)) {
-          // Apply the enhancement based on the field path
+          const enhancedValue = suggestion.suggested;
+          
           if (suggestion.field === 'professionalSummary') {
-            finalData.professionalSummary = suggestion.suggested;
+            finalData.professionalSummary = enhancedValue;
           } else if (suggestion.field.startsWith('workExperience')) {
             // Handle work experience field updates
             const match = suggestion.field.match(/workExperience\[(\d+)\]\.(\w+)/);
-            if (match && finalData.workExperience) {
-              const [, indexStr, fieldName] = match;
-              const index = parseInt(indexStr);
-              if (finalData.workExperience[index]) {
-                finalData.workExperience[index][fieldName] = suggestion.suggested;
-              }
+            if (match && finalData.workExperience?.[parseInt(match[1])]) {
+              finalData.workExperience[parseInt(match[1])][match[2]] = enhancedValue;
             }
-          } else if (sectionName === 'personalInfo' && suggestion.field === 'professionalTitle') {
-            if (!finalData.personalInfo) finalData.personalInfo = {};
-            finalData.personalInfo.professionalTitle = suggestion.suggested;
-          } else if (sectionName === 'skills' && suggestion.field === 'skills') {
-            finalData.skills = suggestion.suggested;
-          } else if (sectionName === 'education' && suggestion.field.startsWith('education')) {
-            // Handle education field updates
-            const match = suggestion.field.match(/education\[(\d+)\]\.(\w+)/);
-            if (match && finalData.education) {
-              const [, indexStr, fieldName] = match;
-              const index = parseInt(indexStr);
-              if (finalData.education[index]) {
-                finalData.education[index][fieldName] = suggestion.suggested;
-              }
-            }
-          } else if (sectionName === 'projects' && suggestion.field.startsWith('projects')) {
-            // Handle projects field updates
-            const match = suggestion.field.match(/projects\[(\d+)\]\.(\w+)/);
-            if (match && finalData.projects) {
-              const [, indexStr, fieldName] = match;
-              const index = parseInt(indexStr);
-              if (finalData.projects[index]) {
-                finalData.projects[index][fieldName] = suggestion.suggested;
-              }
-            }
+          } else if (suggestion.field === 'skills') {
+            finalData.skills = enhancedValue;
           }
-          // Add more field handling as needed
+          // Add more field handlers as AI enhancement expands to cover them
         }
       });
     });

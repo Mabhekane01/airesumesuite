@@ -13,6 +13,7 @@ import {
 import { clsx } from 'clsx';
 import MergePDFTool from './MergePDFTool';
 import SplitPDFTool from './SplitPDFTool';
+import { buildPdfServiceUrl } from '../../config/api';
 import CompressPDFTool from './CompressPDFTool';
 import ConvertPDFTool from './ConvertPDFTool';
 import DeletePagesTool from './DeletePagesTool';
@@ -747,9 +748,9 @@ export default function PDFEditor() {
       const formData = new FormData();
       formData.append('file', file);
       
-      console.log('Sending upload request to:', 'http://localhost:8080/api/pdf/editor/upload');
+      console.log('Sending upload request to:', buildPdfServiceUrl('/api/pdf/editor/upload'));
 
-      const response = await fetch('http://localhost:8080/api/pdf/editor/upload', {
+      const response = await fetch(buildPdfServiceUrl('/api/pdf/editor/upload'), {
         method: 'POST',
         body: formData,
       });
@@ -855,7 +856,7 @@ export default function PDFEditor() {
     setError(null);
 
     try {
-      const response = await fetch('http://localhost:8080/api/pdf/editor/apply-changes', {
+      const response = await fetch(buildPdfServiceUrl('/api/pdf/editor/apply-changes'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

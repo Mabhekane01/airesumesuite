@@ -373,20 +373,60 @@ const ComprehensiveResumeBuilderContent: React.FC = () => {
       toast.loading('Saving resume and generating PDF...', { id: 'save-resume' });
       console.log('💾 Saving resume with PDF to database');
 
+      // Clean and prepare resume data for saving
+      const cleanResumeData = {
+        ...resumeData,
+        // Remove empty certifications
+        certifications: (resumeData.certifications || []).filter(cert => 
+          cert && cert.name && cert.name.trim() && cert.issuer && cert.issuer.trim()
+        ),
+        // Remove empty projects  
+        projects: (resumeData.projects || []).filter(project => 
+          project && project.name && project.name.trim()
+        ),
+        // Remove empty work experience
+        workExperience: (resumeData.workExperience || []).filter(work => 
+          work && work.company && work.company.trim() && work.position && work.position.trim()
+        ),
+        // Remove empty education
+        education: (resumeData.education || []).filter(edu => 
+          edu && edu.institution && edu.institution.trim()
+        ),
+        // Remove empty volunteer experience
+        volunteerExperience: (resumeData.volunteerExperience || []).filter(vol => 
+          vol && vol.organization && vol.organization.trim()
+        ),
+        // Remove empty awards
+        awards: (resumeData.awards || []).filter(award => 
+          award && award.title && award.title.trim()
+        ),
+        // Remove empty languages
+        languages: (resumeData.languages || []).filter(lang => 
+          lang && lang.name && lang.name.trim()
+        ),
+        // Remove empty hobbies
+        hobbies: (resumeData.hobbies || []).filter(hobby => 
+          hobby && hobby.name && hobby.name.trim()
+        )
+      };
+
       // First save the resume data
       const resumeToSave = {
-        title: `${resumeData.personalInfo?.firstName || 'My'} ${resumeData.personalInfo?.lastName || 'Resume'}`,
+        title: `${cleanResumeData.personalInfo?.firstName || 'My'} ${cleanResumeData.personalInfo?.lastName || 'Resume'}`,
         personalInfo: {
-          ...resumeData.personalInfo,
-          location: resumeData.personalInfo?.location || await getDefaultLocation()
+          ...cleanResumeData.personalInfo,
+          location: cleanResumeData.personalInfo?.location || await getDefaultLocation()
         },
-        professionalSummary: resumeData.professionalSummary,
-        workExperience: resumeData.workExperience || [],
-        education: resumeData.education || [],
-        skills: resumeData.skills || [],
-        certifications: resumeData.certifications || [],
-        languages: resumeData.languages || [],
-        projects: resumeData.projects || [],
+        professionalSummary: cleanResumeData.professionalSummary,
+        workExperience: cleanResumeData.workExperience || [],
+        education: cleanResumeData.education || [],
+        skills: cleanResumeData.skills || [],
+        certifications: cleanResumeData.certifications || [],
+        languages: cleanResumeData.languages || [],
+        projects: cleanResumeData.projects || [],
+        volunteerExperience: cleanResumeData.volunteerExperience || [],
+        awards: cleanResumeData.awards || [],
+        hobbies: cleanResumeData.hobbies || [],
         templateId: resumeData.template,
         isPublic: false,
         isLatexTemplate: resumeData.isLatexTemplate,
@@ -642,10 +682,47 @@ const ComprehensiveResumeBuilderContent: React.FC = () => {
             throw new Error(`Please fill in required fields: ${missingFields.join(', ')}`);
           }
           
+          // Clean resume data before saving - remove empty entries that would fail validation
+          const cleanResumeData = {
+            ...resumeData,
+            // Remove empty certifications
+            certifications: (resumeData.certifications || []).filter(cert => 
+              cert && cert.name && cert.name.trim() && cert.issuer && cert.issuer.trim()
+            ),
+            // Remove empty projects  
+            projects: (resumeData.projects || []).filter(project => 
+              project && project.name && project.name.trim()
+            ),
+            // Remove empty work experience
+            workExperience: (resumeData.workExperience || []).filter(work => 
+              work && work.company && work.company.trim() && work.position && work.position.trim()
+            ),
+            // Remove empty education
+            education: (resumeData.education || []).filter(edu => 
+              edu && edu.institution && edu.institution.trim()
+            ),
+            // Remove empty volunteer experience
+            volunteerExperience: (resumeData.volunteerExperience || []).filter(vol => 
+              vol && vol.organization && vol.organization.trim()
+            ),
+            // Remove empty awards
+            awards: (resumeData.awards || []).filter(award => 
+              award && award.title && award.title.trim()
+            ),
+            // Remove empty languages
+            languages: (resumeData.languages || []).filter(lang => 
+              lang && lang.name && lang.name.trim()
+            ),
+            // Remove empty hobbies
+            hobbies: (resumeData.hobbies || []).filter(hobby => 
+              hobby && hobby.name && hobby.name.trim()
+            )
+          };
+
           // Prepare resume data with required title
           const resumeToSave = {
-            ...resumeData,
-            title: resumeData.title || `${personalInfo.firstName} ${personalInfo.lastName}'s Resume`,
+            ...cleanResumeData,
+            title: cleanResumeData.title || `${personalInfo.firstName} ${personalInfo.lastName}'s Resume`,
             personalInfo: personalInfo
           };
           

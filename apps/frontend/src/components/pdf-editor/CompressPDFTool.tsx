@@ -4,6 +4,7 @@ import { Button } from '../ui/Button';
 import { Download, FileText, Zap, Check, Package, Gauge } from 'lucide-react';
 import ErrorDisplay from './ErrorDisplay';
 import { parseApiError, handleApiError, validatePdfFile } from './utils/errorUtils';
+import { buildPdfServiceUrl } from '../../config/api';
 
 interface CompressPDFToolProps {
   activeFile?: File;
@@ -102,7 +103,7 @@ const CompressPDFTool: React.FC<CompressPDFToolProps> = ({ activeFile }) => {
       formData.append('file', file);
       formData.append('compressionLevel', compressionLevel);
 
-      const response = await fetch('http://localhost:8080/api/pdf/advanced/compress', {
+      const response = await fetch(buildPdfServiceUrl('/api/pdf/advanced/compress'), {
         method: 'POST',
         body: formData,
       });

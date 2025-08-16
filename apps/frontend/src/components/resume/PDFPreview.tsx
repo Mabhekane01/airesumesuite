@@ -274,6 +274,7 @@ interface PDFPreviewProps {
   className?: string;
   onPdfGenerated?: (pdfUrl: string, blob: Blob) => void;
   onGenerationStart?: () => void;
+  refreshTrigger?: number; // Force regeneration when this changes
 }
 
 export default function PDFPreview({ 
@@ -287,7 +288,8 @@ export default function PDFPreview({
   onClose,
   className = '',
   onPdfGenerated,
-  onGenerationStart
+  onGenerationStart,
+  refreshTrigger
 }: PDFPreviewProps) {
   // Immediate browser detection
   const userAgent = navigator.userAgent;
@@ -470,6 +472,7 @@ export default function PDFPreview({
     const currentHash = generateResumeHash();
     const isFirstLoad = lastResumeHashRef.current === '';
     const hasContentChanged = currentHash !== lastResumeHashRef.current;
+    const isForceRefresh = refreshTrigger !== undefined && refreshTrigger > 0;
     
     // Update hash immediately to prevent re-render loops
     if (hasContentChanged && currentHash) {
@@ -492,7 +495,8 @@ export default function PDFPreview({
       lastHash: lastResumeHashRef.current.substring(0, 8),
       isFirstLoad,
       hasContentChanged,
-      shouldGeneratePDF: !pdfUrl && !pdfData && templateId && resumeData && (isFirstLoad || hasContentChanged)
+      isForceRefresh,
+      shouldGeneratePDF: !pdfUrl && !pdfData && templateId && resumeData && (isFirstLoad || hasContentChanged || isForceRefresh)
     });
 
     // Note: Hash will be updated after successful PDF generation, not here
@@ -564,13 +568,15 @@ export default function PDFPreview({
           clearTimeout(loadTimeout);
         }
       };
-    } else if (pdfUrl && hasContentChanged) {
-      console.log('🔄 Input changed since last stage 12 visit, clearing cache and regenerating PDF');
-      // Content has changed, clear cache and regenerate
+    } else if (pdfUrl && (hasContentChanged || isForceRefresh)) {
+      console.log('🔄 Input changed or force refresh triggered, clearing cache and regenerating PDF');
+      // Content has changed or force refresh, clear cache and regenerate
       generatePDFPreview();
-    } else if (templateId && resumeData && (isFirstLoad || hasContentChanged)) {
+    } else if (templateId && resumeData && (isFirstLoad || hasContentChanged || isForceRefresh)) {
       if (isFirstLoad) {
         console.log('🚀 First load, generating PDF for template:', templateId, 'Hash:', currentHash.substring(0, 8));
+      } else if (isForceRefresh) {
+        console.log('🚀 Force refresh triggered, generating new PDF for template:', templateId, 'Trigger:', refreshTrigger);
       } else {
         console.log('🚀 Content changed, generating new PDF for template:', templateId, 'Hash:', currentHash.substring(0, 8));
       }
@@ -583,7 +589,7 @@ export default function PDFPreview({
         resumeData: !!resumeData
       });
     }
-  }, [pdfUrl, pdfData, templateId, resumeData]);
+  }, [pdfUrl, pdfData, templateId, resumeData, refreshTrigger]);
 
   // Cleanup timeout on unmount
   useEffect(() => {

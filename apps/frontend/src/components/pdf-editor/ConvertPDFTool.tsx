@@ -8,6 +8,7 @@ import {
 import { clsx } from 'clsx';
 import ErrorDisplay from './ErrorDisplay';
 import { parseApiError, handleApiError, validatePdfFile } from './utils/errorUtils';
+import { buildPdfServiceUrl } from '../../config/api';
 
 interface PDFFile {
   file: File;
@@ -40,7 +41,7 @@ const conversionOptions: ConversionOption[] = [
     description: 'Convert to editable DOCX document',
     icon: FileText,
     color: 'from-blue-500 to-blue-600',
-    endpoint: 'http://localhost:8080/api/pdf/advanced/convert-to-word',
+    endpoint: buildPdfServiceUrl('/api/pdf/advanced/convert-to-word'),
     mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     fileExtension: 'docx'
   },
@@ -50,7 +51,7 @@ const conversionOptions: ConversionOption[] = [
     description: 'Convert to structured XLSX spreadsheet',
     icon: FileSpreadsheet,
     color: 'from-green-500 to-green-600',
-    endpoint: 'http://localhost:8080/api/pdf/advanced/convert-to-excel',
+    endpoint: buildPdfServiceUrl('/api/pdf/advanced/convert-to-excel'),
     mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     fileExtension: 'xlsx'
   },
@@ -60,7 +61,7 @@ const conversionOptions: ConversionOption[] = [
     description: 'Convert to PPTX presentation slides',
     icon: Presentation,
     color: 'from-orange-500 to-orange-600',
-    endpoint: 'http://localhost:8080/api/pdf/advanced/convert-to-powerpoint',
+    endpoint: buildPdfServiceUrl('/api/pdf/advanced/convert-to-powerpoint'),
     mimeType: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
     fileExtension: 'pptx'
   },
@@ -70,7 +71,7 @@ const conversionOptions: ConversionOption[] = [
     description: 'Extract text content only',
     icon: Type,
     color: 'from-gray-500 to-gray-600',
-    endpoint: 'http://localhost:8080/api/pdf/advanced/convert-to-text',
+    endpoint: buildPdfServiceUrl('/api/pdf/advanced/convert-to-text'),
     mimeType: 'text/plain',
     fileExtension: 'txt'
   },
@@ -80,7 +81,7 @@ const conversionOptions: ConversionOption[] = [
     description: 'Convert to HTML with formatting',
     icon: Globe,
     color: 'from-purple-500 to-purple-600',
-    endpoint: 'http://localhost:8080/api/pdf/advanced/convert-to-html',
+    endpoint: buildPdfServiceUrl('/api/pdf/advanced/convert-to-html'),
     mimeType: 'text/html',
     fileExtension: 'html'
   }

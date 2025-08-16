@@ -47,9 +47,9 @@ import {
   Bars3Icon,
   XMarkIcon,
   SparklesIcon,
-  BookOpenIcon,
   CalendarIcon,
   ClipboardDocumentListIcon,
+  ClipboardDocumentCheckIcon,
   CreditCardIcon,
   StarIcon,
 } from "@heroicons/react/24/outline";
@@ -58,6 +58,11 @@ import { toast } from "sonner";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: HomeIcon },
+  {
+    name: "Job Posting",
+    href: "/dashboard/job-posting",
+    icon: ClipboardDocumentCheckIcon,
+  },
   {
     name: "Resume Builder",
     href: "/dashboard/resume/templates",
@@ -81,7 +86,6 @@ const navigation = [
     icon: ClipboardDocumentListIcon,
   },
   { name: "Calendar", href: "/dashboard/calendar", icon: CalendarIcon },
-  { name: "Learning", href: "/dashboard/learning", icon: BookOpenIcon },
 ];
 
 const quickActions = [
@@ -568,14 +572,14 @@ export default function DashboardLayout() {
               <Route path="cover-letter/ai" element={<CoverLetterGenerator />} />
               <Route path="cover-letter/builder" element={<CoverLetterGenerator />} />
               <Route
-                path="learning"
+                path="job-posting"
                 element={
                   <div className="text-center py-12">
                     <h2 className="text-2xl font-bold text-dark-text-primary mb-4">
-                      Learning Hub
+                      Job Posting
                     </h2>
                     <p className="text-dark-text-secondary">
-                      Skill development resources coming soon!
+                      Job posting features coming soon!
                     </p>
                   </div>
                 }

@@ -28,6 +28,7 @@ import { toast } from "sonner";
 import { useSubscriptionModal } from "../../hooks/useSubscriptionModal";
 import { useSubscription } from "../../hooks/useSubscription";
 import SubscriptionModal from "../subscription/SubscriptionModal";
+import { useNavigate } from "react-router-dom";
 
 interface AIAnalysis {
   overallScore: number;
@@ -85,6 +86,7 @@ export default function EnterpriseResumeEnhancer({
     resumeHasContent: !!resume?.personalInfo?.firstName,
   });
 
+  const navigate = useNavigate();
   const {
     updateResumeData,
     updateAIData,
@@ -93,6 +95,8 @@ export default function EnterpriseResumeEnhancer({
     clearOptimizedContent,
     setCachedPdf,
     isCacheValid,
+    clearStorage,
+    clearAllCacheAndBlobUrls,
     // Enhanced PDF management
     savePdfToLibrary,
     downloadPdf,
@@ -157,6 +161,8 @@ export default function EnterpriseResumeEnhancer({
 
   // Track last resume hash for change detection
   const [lastResumeHash, setLastResumeHash] = useState<string>("");
+  // Force PDF regeneration trigger
+  const [pdfRefreshTrigger, setPdfRefreshTrigger] = useState<number>(0);
 
   // AI Progress hooks for different operations
   const atsProgress = useAIProgress("ats-analysis");
@@ -349,6 +355,57 @@ export default function EnterpriseResumeEnhancer({
       setAiEnhancementLoading(false);
     }
   }, [resume, aiEnhancementLoading]);
+
+  // Cleanup function to clear all data and return to template selection
+  const handleStartFresh = useCallback(async () => {
+    try {
+      console.log("🧹 Starting fresh resume build process...");
+      console.log("📊 Current resume data before clear:", resume);
+      console.log("🤖 Current AI data before clear:", aiData);
+      
+      // Clear any local component state first
+      setAiAnalysis(null);
+      setJobMatchAnalysis(null);
+      setOptimizationHistory([]);
+      setShowEnhancementReview(false);
+      setEnhancementReviewData(null);
+      
+      // Clear all cached data and blob URLs
+      clearAllCacheAndBlobUrls();
+      
+      // Clear localStorage FIRST to prevent any data restoration
+      const user = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')!) : null;
+      const userResumeKey = user?.id ? `resume-builder-data-${user.id}` : 'resume-builder-data-guest';
+      const userAIKey = user?.id ? `resume-ai-data-${user.id}` : 'resume-ai-data-guest';
+      
+      // Clear all possible localStorage keys
+      localStorage.removeItem('resume-builder-data');
+      localStorage.removeItem('resume-ai-data');
+      localStorage.removeItem(userResumeKey);
+      localStorage.removeItem(userAIKey);
+      
+      console.log("🗑️ localStorage cleared manually");
+      
+      // Clear context state AFTER localStorage to prevent auto-restore
+      updateResumeData({});
+      updateAIData({});
+      
+      // Force clear context storage function (in case it has different logic)
+      clearStorage();
+      
+      console.log("✅ All data clearing operations completed");
+      
+      toast.success("All data cleared successfully! Starting fresh...");
+      
+      // Navigate immediately
+      console.log("🔄 Navigating to template selection...");
+      navigate("/dashboard/resume/templates");
+      
+    } catch (error) {
+      console.error("❌ Failed to clear data:", error);
+      toast.error("Failed to clear data. Please try again.");
+    }
+  }, [clearAllCacheAndBlobUrls, clearStorage, navigate, updateResumeData, updateAIData, resume, aiData]);
 
 
   // REAL AI Analysis - Actually calls backend AI services
@@ -655,25 +712,8 @@ export default function EnterpriseResumeEnhancer({
             // Clear cached PDF since resume is now optimized
             clearOptimizedContent();
             
-            // Trigger new PDF generation with the optimized resume
-            console.log("🔄 Triggering PDF generation with optimized resume data");
-            setTimeout(async () => {
-              try {
-                const templateId = optimizedResumeData.templateId || optimizedResumeData.template || resume.template || resume.templateId || "template1";
-                const pdfBlob = await resumeService.generateLatexPDFPreview(optimizedResumeData, templateId);
-                
-                // Create blob URL and cache the optimized PDF
-                const pdfUrl = URL.createObjectURL(pdfBlob);
-                const currentHash = generateResumeHash();
-                setCachedPdf(pdfUrl, currentHash, pdfBlob);
-                
-                console.log("✅ Optimized PDF generated and cached");
-                toast.success("Resume PDF updated with job optimization!");
-              } catch (pdfError) {
-                console.error("❌ Failed to generate optimized PDF:", pdfError);
-                toast.error("PDF generation failed, but optimization completed");
-              }
-            }, 500);
+            // Note: PDF will be automatically regenerated when preview system detects form changes
+            console.log("✅ Job optimization completed - PDF will auto-regenerate on preview");
           }
 
           // Auto-switch to preview tab to show optimized resume
@@ -857,6 +897,7 @@ export default function EnterpriseResumeEnhancer({
       }
     }
   }, [shouldSwitchToPreview, onPreviewSwitched]);
+
 
   // Helper functions
   const calculateOverallScore = (resume: Resume): number => {
@@ -1092,7 +1133,22 @@ export default function EnterpriseResumeEnhancer({
     </div>
   );
 
-  const memoizedResumeData = useMemo(() => resume, [resume]);
+  // Generate a hash-based key to detect meaningful resume changes
+  const resumeChangeKey = useMemo(() => {
+    const key = JSON.stringify({
+      personalInfo: resume.personalInfo,
+      professionalSummary: resume.professionalSummary,
+      workExperience: resume.workExperience,
+      education: resume.education,
+      skills: resume.skills,
+      projects: resume.projects,
+      template: resume.template,
+      templateId: resume.templateId
+    });
+    return key;
+  }, [resume.personalInfo, resume.professionalSummary, resume.workExperience, resume.education, resume.skills, resume.projects, resume.template, resume.templateId]);
+
+  const memoizedResumeData = useMemo(() => resume, [resumeChangeKey]);
 
   return (
     <div className="space-y-6">
@@ -1165,6 +1221,15 @@ export default function EnterpriseResumeEnhancer({
                     {resume.isLatexTemplate ? "LaTeX" : "HTML"} formatting -
                     completely free!
                   </p>
+                  <div className="mt-2">
+                    <button
+                      onClick={handleStartFresh}
+                      className="text-xs text-red-400 hover:text-red-300 underline transition-colors"
+                      title="Clear all current data and begin with a different template"
+                    >
+                      Clear everything and go to template selection
+                    </button>
+                  </div>
                 </div>
               </div>
               <span className="text-xs bg-green-500 text-white px-3 py-1 rounded-full font-medium">
@@ -1245,6 +1310,7 @@ export default function EnterpriseResumeEnhancer({
                 className="w-full h-full"
                 onPdfGenerated={handlePdfGenerated}
                 onGenerationStart={handlePdfGenerationStart}
+                refreshTrigger={pdfRefreshTrigger}
                 optimizedLatexCode={aiData.optimizedLatexCode}
               />
             ) : (
@@ -2003,6 +2069,12 @@ export default function EnterpriseResumeEnhancer({
             // Apply the enhanced resume data to the form
             updateResumeData(finalResumeData);
             setShowEnhancementReview(false);
+            
+            // Clear cached PDF to force regeneration
+            clearOptimizedContent();
+            
+            // Trigger PDF refresh
+            setPdfRefreshTrigger(prev => prev + 1);
             
             // Switch to preview tab to show updated resume
             setActiveTab("preview");

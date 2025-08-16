@@ -1,6 +1,7 @@
 // Centralized API configuration
 export const API_CONFIG = {
   BASE_URL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001',
+  PDF_SERVICE_URL: import.meta.env.VITE_PDF_SERVICE_URL || 'http://localhost:8080',
   ENDPOINTS: {
     AUTH: {
       LOGIN: '/api/v1/auth/login',
@@ -33,6 +34,11 @@ export const API_CONFIG = {
 // Helper function to build full URL
 export function buildApiUrl(endpoint: string): string {
   return `${API_CONFIG.BASE_URL}${endpoint}`;
+}
+
+// Helper function to build PDF service URL
+export function buildPdfServiceUrl(endpoint: string): string {
+  return `${API_CONFIG.PDF_SERVICE_URL}${endpoint}`;
 }
 
 // Helper function for making authenticated requests

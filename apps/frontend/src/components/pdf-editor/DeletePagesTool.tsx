@@ -5,6 +5,7 @@ import {
   FileText, Trash2, AlertCircle, CheckCircle, Loader2
 } from 'lucide-react';
 import { Document, Page } from 'react-pdf';
+import { buildPdfServiceUrl } from '../../config/api';
 
 interface PDFFile {
   file: File;
@@ -72,7 +73,7 @@ export default function DeletePagesTool({ activeFile: propActiveFile }: DeletePa
       formData.append('file', activeFile.file);
       formData.append('pagesToDelete', JSON.stringify(selectedPages.sort((a, b) => a - b)));
 
-      const response = await fetch('http://localhost:8080/api/pdf/delete-pages', {
+      const response = await fetch(buildPdfServiceUrl('/api/pdf/delete-pages'), {
         method: 'POST',
         body: formData
       });

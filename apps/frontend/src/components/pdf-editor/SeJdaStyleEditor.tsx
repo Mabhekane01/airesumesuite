@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import ErrorDisplay from './ErrorDisplay';
 import { parseApiError, handleApiError, validatePdfFile } from './utils/errorUtils';
+import { buildPdfServiceUrl } from '../../config/api';
 
 // Configure PDF.js worker
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
@@ -85,7 +86,7 @@ const SeJdaStyleEditor: React.FC = () => {
       formData.append('file', file);
 
       // Upload to server and get file ID + preview
-      const response = await fetch('http://localhost:8080/api/pdf/editor/upload', {
+      const response = await fetch(buildPdfServiceUrl('/api/pdf/editor/upload'), {
         method: 'POST',
         body: formData,
       });
@@ -187,7 +188,7 @@ const SeJdaStyleEditor: React.FC = () => {
 
     try {
       // Send JSON change list + file ID to backend (exactly as specified)
-      const response = await fetch('http://localhost:8080/api/pdf/editor/apply-changes', {
+      const response = await fetch(buildPdfServiceUrl('/api/pdf/editor/apply-changes'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
