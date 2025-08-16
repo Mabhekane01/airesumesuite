@@ -13,6 +13,7 @@ import {
   ArrowPathIcon,
 } from "@heroicons/react/24/outline";
 import { Resume } from "../../types";
+import { EnhancementReviewModal } from './EnhancementReviewModal';
 import { Button } from "../ui/Button";
 import { Card } from "../ui/Card";
 import { resumeTemplates, getTemplateById } from "../../data/resumeTemplates";
@@ -62,6 +63,10 @@ interface EnterpriseResumeEnhancerProps {
   onResumeUpdate?: (updatedResume: Resume) => void;
   hasUnsavedChanges?: boolean;
   onAnalysisComplete?: () => void;
+  onJobOptimizationClick?: () => void;
+  onSwitchToPreview?: () => void;
+  shouldSwitchToPreview?: boolean;
+  onPreviewSwitched?: () => void;
 }
 
 export default function EnterpriseResumeEnhancer({
@@ -69,6 +74,10 @@ export default function EnterpriseResumeEnhancer({
   onResumeUpdate,
   hasUnsavedChanges = false,
   onAnalysisComplete,
+  onJobOptimizationClick,
+  onSwitchToPreview,
+  shouldSwitchToPreview,
+  onPreviewSwitched,
 }: EnterpriseResumeEnhancerProps) {
   console.log("🔍 EnterpriseResumeEnhancer mounted with props:", {
     hasUnsavedChanges,
@@ -91,11 +100,15 @@ export default function EnterpriseResumeEnhancer({
     generateResumeHash,
   } = useResume();
 
+  // State for the new preview-first enhancement flow
+  const [showEnhancementReview, setShowEnhancementReview] = useState(false);
+  const [enhancementReviewData, setEnhancementReviewData] = useState(null);
+
   console.log("🔍 EnterpriseResumeEnhancer aiData on mount:", {
     shouldAutoTrigger: aiData.shouldAutoTrigger,
     cachedPdfUrl: !!aiData.cachedPdfUrl,
     pdfCacheHash: !!aiData.pdfCacheHash,
-    enhancementProgressLoading: aiData.enhancementProgress?.isLoading,
+    analysisProgressLoading: aiData.analysisProgress?.isLoading,
   });
 
   // Check if required fields are missing and show user what's needed
@@ -135,7 +148,6 @@ export default function EnterpriseResumeEnhancer({
   const [aiAnalysis, setAiAnalysis] = useState<AIAnalysis | null>(null);
   const [jobMatchAnalysis, setJobMatchAnalysis] =
     useState<JobMatchAnalysis | null>(null);
-  const [jobUrl, setJobUrl] = useState("");
   const [optimizationHistory, setOptimizationHistory] = useState<any[]>([]);
   const [dynamicTemplate, setDynamicTemplate] = useState<any>(null);
   const [loadingTemplate, setLoadingTemplate] = useState(false);
@@ -148,7 +160,7 @@ export default function EnterpriseResumeEnhancer({
 
   // AI Progress hooks for different operations
   const atsProgress = useAIProgress("ats-analysis");
-  const enhancementProgress = useAIProgress("resume-enhancement");
+  const analysisProgress = useAIProgress("resume-analysis");
   const jobMatchingProgress = useAIProgress("job-matching");
 
   const jobOptimizationProgress = useAIProgress("job-optimization");
@@ -298,68 +310,52 @@ export default function EnterpriseResumeEnhancer({
   // State for AI Enhancement loading
   const [aiEnhancementLoading, setAiEnhancementLoading] = useState(false);
 
-  // AI-Enhanced PDF Generation - Generates AI-enhanced PDF with progress updates
-  const generateAIEnhancedPDF = useCallback(async () => {
-    if (aiEnhancementLoading || enhancementProgress.isLoading) return;
+  // NEW: Preview-First AI Enhancement - Shows suggestions before generating PDF
+  const startAIEnhancementReview = useCallback(async () => {
+    if (aiEnhancementLoading) return;
 
-    console.log("🤖 Starting AI-enhanced PDF generation...");
+    console.log("🤖 Starting AI enhancement preview...");
     setAiEnhancementLoading(true);
-    enhancementProgress.startProgress();
 
     try {
       const templateId = resume.templateId || resume.template || "template1";
 
-      const pdfBlob = await resumeService.enhanceResumeWithAIPDF(
+      // Step 1: Get AI enhancement suggestions (no PDF generation yet)
+      const enhancementData = await resumeService.enhanceResumeContentOnly(
         resume,
         templateId,
         {
           improvementLevel: "comprehensive",
-        },
-        (progressMessage: string) => {
-          console.log("📈 Enhancement progress:", progressMessage);
-          // Progress is automatically managed by useAIProgress hook
-          // Just log the progress message from the backend
         }
       );
 
-      // Create blob URL and cache the PDF
-      const pdfUrl = URL.createObjectURL(pdfBlob);
-      const currentHash = generateResumeHash();
-      setCachedPdf(pdfUrl, currentHash, pdfBlob);
+      console.log("🎯 AI Enhancement Suggestions Received:", {
+        improvements: enhancementData.improvements.length,
+        keywordsAdded: enhancementData.keywordsAdded.length,
+        atsScore: enhancementData.atsScore,
+        sectionsWithChanges: Object.keys(enhancementData.enhancementSuggestions).filter(
+          key => enhancementData.enhancementSuggestions[key].hasChanges
+        )
+      });
 
-      enhancementProgress.completeProgress();
-      console.log("✅ AI-enhanced PDF generated and cached");
-      toast.success("AI-enhanced PDF generated successfully!");
+      // Show the enhancement review modal
+      setEnhancementReviewData(enhancementData);
+      setShowEnhancementReview(true);
+
     } catch (error) {
-      console.error("❌ AI-enhanced PDF generation failed:", error);
-      enhancementProgress.cancelProgress();
-
-      if (isSubscriptionError(error)) {
-        checkAIFeature("AI Resume Enhancement");
-        return;
-      }
-
-      toast.error("Failed to generate AI-enhanced PDF. Please try again.");
+      console.error("❌ AI enhancement preview failed:", error);
+      toast.error(`AI enhancement failed: ${error.message}`);
     } finally {
       setAiEnhancementLoading(false);
     }
-  }, [
-    resume,
-    resumeService,
-    generateResumeHash,
-    setCachedPdf,
-    clearOptimizedContent,
-    checkAIFeature,
-    isSubscriptionError,
-    aiEnhancementLoading,
-    enhancementProgress.isLoading,
-  ]);
+  }, [resume, aiEnhancementLoading]);
+
 
   // REAL AI Analysis - Actually calls backend AI services
   const runComprehensiveAnalysis = useCallback(async () => {
-    if (enhancementProgress.isLoading) return; // Prevent multiple simultaneous calls
+    if (analysisProgress.isLoading) return; // Prevent multiple simultaneous calls
 
-    enhancementProgress.startProgress();
+    analysisProgress.startProgress();
 
     try {
       // Track successful API calls
@@ -385,9 +381,9 @@ export default function EnterpriseResumeEnhancer({
           summaryError.response?.data || summaryError.message
         );
         if (isSubscriptionError(summaryError)) {
-          enhancementProgress.cancelProgress();
+          analysisProgress.cancelProgress();
           // Let the API interceptor handle subscription modal
-          checkAIFeature("AI Resume Enhancement");
+          checkAIFeature("AI Resume Analysis");
           return; // Stop processing - subscription error
         }
       }
@@ -402,9 +398,9 @@ export default function EnterpriseResumeEnhancer({
       } catch (atsError) {
         console.warn("⚠️ ATS analysis failed:", atsError);
         if (isSubscriptionError(atsError)) {
-          enhancementProgress.cancelProgress();
+          analysisProgress.cancelProgress();
           // Let the API interceptor handle subscription modal
-          checkAIFeature("AI Resume Enhancement");
+          checkAIFeature("AI Resume Analysis");
           return; // Stop processing - subscription error
         }
         // Use fallback data
@@ -470,7 +466,7 @@ export default function EnterpriseResumeEnhancer({
         optimizedSummary: aiSummary,
       });
 
-      enhancementProgress.completeProgress();
+      analysisProgress.completeProgress();
 
       // Only show success if we had actual AI successes
       if (successfulCalls > 0) {
@@ -485,7 +481,7 @@ export default function EnterpriseResumeEnhancer({
       }
     } catch (error: any) {
       console.error("❌ AI Analysis completely failed:", error);
-      enhancementProgress.cancelProgress();
+      analysisProgress.cancelProgress();
 
       // Show specific error message to help debug
       const errorMessage =
@@ -522,7 +518,7 @@ export default function EnterpriseResumeEnhancer({
         onAnalysisComplete();
       }
     }
-  }, [resume, updateAIData, enhancementProgress, onAnalysisComplete]);
+  }, [resume, updateAIData, analysisProgress, onAnalysisComplete]);
 
   // Job-Specific Optimization using existing working endpoints
   const optimizeForJob = useCallback(
@@ -820,15 +816,15 @@ export default function EnterpriseResumeEnhancer({
     console.log("🔍 Auto-trigger check:", {
       hasUnsavedChanges,
       shouldAutoTrigger: aiData.shouldAutoTrigger,
-      isLoading: enhancementProgress.isLoading,
+      isLoading: analysisProgress.isLoading,
       willTrigger:
         (hasUnsavedChanges || aiData.shouldAutoTrigger) &&
-        !enhancementProgress.isLoading,
+        !analysisProgress.isLoading,
     });
 
     if (
       (hasUnsavedChanges || aiData.shouldAutoTrigger) &&
-      !enhancementProgress.isLoading
+      !analysisProgress.isLoading
     ) {
       if (hasUnsavedChanges) {
         console.log("🤖 Auto-triggering AI analysis due to unsaved changes");
@@ -848,9 +844,19 @@ export default function EnterpriseResumeEnhancer({
   }, [
     hasUnsavedChanges,
     aiData.shouldAutoTrigger,
-    enhancementProgress.isLoading,
+    analysisProgress.isLoading,
     updateAIData,
   ]); // Added shouldAutoTrigger dependency
+
+  // Effect to handle switching to preview tab when requested
+  useEffect(() => {
+    if (shouldSwitchToPreview) {
+      setActiveTab("preview");
+      if (onPreviewSwitched) {
+        onPreviewSwitched();
+      }
+    }
+  }, [shouldSwitchToPreview, onPreviewSwitched]);
 
   // Helper functions
   const calculateOverallScore = (resume: Resume): number => {
@@ -1309,26 +1315,26 @@ export default function EnterpriseResumeEnhancer({
                   <div className="space-y-3 sm:space-y-3">
                     <Button
                       onClick={runComprehensiveAnalysis}
-                      disabled={enhancementProgress.isLoading}
+                      disabled={analysisProgress.isLoading}
                       className="w-full bg-blue-600 hover:bg-blue-700 py-3 sm:py-3 text-sm sm:text-base"
                     >
-                      {enhancementProgress.isLoading
+                      {analysisProgress.isLoading
                         ? "Analyzing..."
                         : "Refresh Analysis"}
                     </Button>
 
                     <Button
-                      onClick={generateAIEnhancedPDF}
+                      onClick={startAIEnhancementReview}
                       disabled={
-                        enhancementProgress.isLoading || aiEnhancementLoading
+                        analysisProgress.isLoading || aiEnhancementLoading
                       }
                       className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 py-3 sm:py-3 text-sm sm:text-base"
                     >
-                      <SparklesIcon className="w-4 h-4 mr-2 flex-shrink-0" />
+                      <EyeIcon className="w-4 h-4 mr-2 flex-shrink-0" />
                       <span className="truncate">
                         {aiEnhancementLoading
-                          ? "Generating AI PDF..."
-                          : "Generate AI-Enhanced PDF"}
+                          ? "Getting AI Suggestions..."
+                          : "Preview AI Enhancements"}
                       </span>
                     </Button>
 
@@ -1366,16 +1372,16 @@ export default function EnterpriseResumeEnhancer({
                   {/* Secondary Actions - Mobile Stack */}
                   <div className="space-y-3">
                     <Button
-                      onClick={generateAIEnhancedPDF}
+                      onClick={startAIEnhancementReview}
                       disabled={aiEnhancementLoading}
                       variant="outline"
                       className="w-full border-purple-500/30 text-purple-400 hover:bg-purple-500/10 py-3 sm:py-3 text-sm sm:text-base"
                     >
-                      <SparklesIcon className="w-4 h-4 mr-2 flex-shrink-0" />
+                      <EyeIcon className="w-4 h-4 mr-2 flex-shrink-0" />
                       <span className="truncate">
                         {aiEnhancementLoading
-                          ? "Generating AI PDF..."
-                          : "Generate AI-Enhanced PDF"}
+                          ? "Getting AI Suggestions..."
+                          : "Preview AI Enhancements"}
                       </span>
                     </Button>
 
@@ -1527,16 +1533,16 @@ export default function EnterpriseResumeEnhancer({
                   industry-specific recommendations.
                 </p>
 
-                {enhancementProgress.isLoading ? (
+                {analysisProgress.isLoading ? (
                   <div className="space-y-4">
                     <div className="w-full bg-dark-tertiary rounded-full h-2">
                       <div
                         className="h-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 transition-all duration-500"
-                        style={{ width: `${enhancementProgress.progress}%` }}
+                        style={{ width: `${analysisProgress.progress}%` }}
                       />
                     </div>
                     <p className="text-sm text-dark-text-muted">
-                      {enhancementProgress.currentStep ||
+                      {analysisProgress.currentStep ||
                         "Running AI analysis..."}
                     </p>
                   </div>
@@ -1551,15 +1557,15 @@ export default function EnterpriseResumeEnhancer({
                     </Button>
 
                     <Button
-                      onClick={generateAIEnhancedPDF}
+                      onClick={startAIEnhancementReview}
                       disabled={aiEnhancementLoading}
                       variant="outline"
                       className="w-full border-purple-500/30 text-purple-400 hover:bg-purple-500/10"
                     >
-                      <SparklesIcon className="w-4 h-4 mr-2" />
+                      <EyeIcon className="w-4 h-4 mr-2" />
                       {aiEnhancementLoading
-                        ? "Generating AI PDF..."
-                        : "Generate AI-Enhanced PDF"}
+                        ? "Getting AI Suggestions..."
+                        : "Preview AI Enhancements"}
                     </Button>
 
                     <p className="text-xs text-dark-text-muted text-center">
@@ -1622,21 +1628,18 @@ export default function EnterpriseResumeEnhancer({
                 <label className="block text-sm font-medium text-dark-text-primary mb-2">
                   Job Posting URL
                 </label>
-                <div className="flex gap-3">
-                  <input
-                    type="url"
-                    value={jobUrl}
-                    onChange={(e) => setJobUrl(e.target.value)}
-                    placeholder="https://company.com/careers/job-posting"
-                    className="flex-1 px-3 py-2 bg-dark-tertiary border border-dark-border rounded-lg text-white placeholder-dark-text-muted focus:border-blue-500 focus:outline-none"
-                  />
-                  <Button
-                    onClick={() => optimizeForJob(jobUrl)}
-                    disabled={
-                      jobOptimizationProgress.isLoading || !jobUrl.trim()
+                <Button
+                  onClick={() => {
+                    // Use the preview-first JobOptimizationModal flow
+                    if (onJobOptimizationClick) {
+                      onJobOptimizationClick();
+                    } else {
+                      // Fallback: inform user to use modal
+                      toast.info("Please use the job optimization modal for the best experience");
                     }
-                    className="bg-blue-600 hover:bg-blue-700 flex items-center gap-2"
-                  >
+                  }}
+                  className="bg-blue-600 hover:bg-blue-700 flex items-center gap-2 w-full justify-center"
+                >
                     {jobOptimizationProgress.isLoading ? (
                       <>
                         <BoltIcon className="w-4 h-4 animate-pulse" />
@@ -1645,7 +1648,7 @@ export default function EnterpriseResumeEnhancer({
                     ) : (
                       <>
                         <BoltIcon className="w-4 h-4" />
-                        Optimize
+                        AI Job Optimization
                       </>
                     )}
                   </Button>
@@ -1721,7 +1724,6 @@ export default function EnterpriseResumeEnhancer({
                   </div>
                 </div>
               )}
-            </div>
           </Card>
 
           {optimizationHistory.length > 0 && (
@@ -1808,10 +1810,10 @@ export default function EnterpriseResumeEnhancer({
               </p>
               <Button 
                 onClick={runComprehensiveAnalysis}
-                disabled={enhancementProgress.isLoading}
+                disabled={analysisProgress.isLoading}
                 className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-6 py-3 rounded-lg font-medium transition-all duration-300 hover:shadow-glow-sm disabled:opacity-50"
               >
-                {enhancementProgress.isLoading ? (
+                {analysisProgress.isLoading ? (
                   <>
                     <ArrowPathIcon className="w-5 h-5 mr-2 animate-spin" />
                     Analyzing...
@@ -1943,13 +1945,13 @@ export default function EnterpriseResumeEnhancer({
 
       {/* AI Loading Overlays */}
       <AILoadingOverlay
-        isVisible={enhancementProgress.isLoading}
-        title="🤖 AI Resume Enhancement"
-        description="AI is comprehensively analyzing and enhancing your resume"
-        progress={enhancementProgress.progress}
-        currentStep={enhancementProgress.currentStep}
-        estimatedTime={enhancementProgress.estimatedTime}
-        onCancel={enhancementProgress.cancelProgress}
+        isVisible={analysisProgress.isLoading}
+        title="🔍 AI Resume Analysis"
+        description="AI is comprehensively analyzing your resume for strengths and improvements"
+        progress={analysisProgress.progress}
+        currentStep={analysisProgress.currentStep}
+        estimatedTime={analysisProgress.estimatedTime}
+        onCancel={analysisProgress.cancelProgress}
       />
 
       <AILoadingOverlay
@@ -1990,6 +1992,25 @@ export default function EnterpriseResumeEnhancer({
         title={modalProps.title}
         description={modalProps.description}
       />
+
+      {/* Enhancement Review Modal */}
+      {enhancementReviewData && (
+        <EnhancementReviewModal
+          isOpen={showEnhancementReview}
+          onClose={() => setShowEnhancementReview(false)}
+          enhancementData={enhancementReviewData}
+          onApplySelected={(finalResumeData) => {
+            // Apply the enhanced resume data to the form
+            updateResumeData(finalResumeData);
+            setShowEnhancementReview(false);
+            
+            // Switch to preview tab to show updated resume
+            setActiveTab("preview");
+            
+            toast.success('Enhancement applied successfully! Check your updated resume in the preview.');
+          }}
+        />
+      )}
     </div>
   );
 }

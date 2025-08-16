@@ -1,311 +1,273 @@
 package com.airesumesuite.pdfservice.service;
-import org.sejda.sambox.pdmodel.PDDocument;
-import org.sejda.sambox.pdmodel.PDPage;
-import org.sejda.sambox.pdmodel.PDPageContentStream;
-import org.sejda.sambox.pdmodel.font.PDType1Font;
-import org.sejda.sambox.pdmodel.graphics.state.RenderingMode;
-import org.sejda.sambox.rendering.PDFRenderer;
-import org.sejda.sambox.text.PDFTextStripper;
+
+import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
+import org.apache.pdfbox.rendering.PDFRenderer;
+import org.apache.pdfbox.text.PDFTextStripper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.airesumesuite.pdfservice.config.PdfErrorHandler;
+import com.airesumesuite.pdfservice.config.PdfErrorHandler.*;
+
 import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.TesseractException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-import java.util.logging.Logger;
+import java.io.*;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
-/**
- * Production-ready service for OCR operations on PDF documents using SAMBox and Tesseract
- */
 @Service
 public class PdfOcrService {
 
-    private static final Logger logger = Logger.getLogger(PdfOcrService.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(PdfOcrService.class);
     private static final String DEFAULT_TESSDATA_PATH = "/usr/share/tesseract-ocr/4.00/tessdata";
     private static final String DEFAULT_LANGUAGE = "eng";
     private static final int DEFAULT_DPI = 300;
     private static final float DEFAULT_FONT_SIZE = 12f;
 
-    /**
-     * Perform OCR on PDF with proper error handling
-     */
-    public Map<String, Object> performOcr(MultipartFile file, String language) throws IOException {
-        if (file == null || file.isEmpty()) {
-            throw new IllegalArgumentException("File cannot be null or empty");
-        }
+    public Map<String, Object> performOcr(MultipartFile file, String language) throws IOException, PdfServiceException {
+        try {
+            PdfErrorHandler.validateFileForOperation(file, "ocr");
+            
+            logger.info("Starting OCR processing for file: {}", file.getOriginalFilename());
 
-        File tempFile = createTempFile(file);
-        
-        try (PDDocument document = PDDocument.load(tempFile)) {
-            Map<String, Object> result = new HashMap<>();
-            
-            // First, try to extract existing text using SAMBox
-            PDFTextStripper textStripper = new PDFTextStripper();
-            String existingText = textStripper.getText(document);
-            
-            if (existingText != null && !existingText.trim().isEmpty()) {
-                // Document already has text
-                result.put("success", true);
-                result.put("text", existingText);
-                result.put("method", "SAMBox text extraction");
-                result.put("confidence", 1.0);
-                result.put("hasExistingText", true);
-            } else {
-                // Document appears to be image-based, perform OCR
-                String ocrText = performOcrOnPdf(document, language != null ? language : DEFAULT_LANGUAGE);
-                result.put("success", true);
-                result.put("text", ocrText);
-                result.put("method", "Tesseract OCR");
-                result.put("confidence", 0.85);
-                result.put("hasExistingText", false);
-                result.put("language", language);
-            }
-            
-            result.put("pageCount", document.getNumberOfPages());
-            result.put("processingTime", System.currentTimeMillis());
-            
-            return result;
-        } finally {
-            cleanupTempFile(tempFile);
-        }
-    }
-
-    /**
-     * Make PDF searchable by adding OCR text layer
-     */
-    public byte[] makeSearchablePdf(MultipartFile file, String language) throws IOException {
-        if (file == null || file.isEmpty()) {
-            throw new IllegalArgumentException("File cannot be null or empty");
-        }
-
-        File tempFile = createTempFile(file);
-
-        try (PDDocument document = PDDocument.load(tempFile)) {
-            
-            // Check if document already has text
-            PDFTextStripper textStripper = new PDFTextStripper();
-            String existingText = textStripper.getText(document);
-            
-            if (existingText != null && !existingText.trim().isEmpty()) {
-                // Document already has text, return as-is
-                File outputFile = File.createTempFile("searchable_pdf_" + UUID.randomUUID(), ".pdf");
-                try {
-                    document.save(outputFile.getAbsolutePath());
-                    return java.nio.file.Files.readAllBytes(outputFile.toPath());
-                } finally {
-                    cleanupTempFile(outputFile);
-                }
-            }
-            
-            // For image-based PDFs, render pages and perform OCR
-            PDFRenderer renderer = new PDFRenderer(document);
-            String lang = language != null ? language : DEFAULT_LANGUAGE;
-            
-            for (int pageIndex = 0; pageIndex < document.getNumberOfPages(); pageIndex++) {
-                try {
-                    // Render page to image
-                    BufferedImage pageImage = renderer.renderImageWithDPI(pageIndex, DEFAULT_DPI);
-                    
-                    // Perform OCR on the image
-                    String ocrText = performOcrOnImage(pageImage, lang);
-                    
-                    // Add invisible text layer to page
-                    if (!ocrText.isEmpty()) {
-                        addInvisibleTextLayer(document, pageIndex, ocrText);
-                    }
-                } catch (IOException | RuntimeException e) {
-                    logger.log(Level.WARNING, "Error processing page " + (pageIndex + 1), e);
-                    // Continue with other pages even if one fails
-                }
-            }
-            
-            File outputFile = File.createTempFile("searchable_pdf_" + UUID.randomUUID(), ".pdf");
-            try {
-                document.save(outputFile.getAbsolutePath());
-                return java.nio.file.Files.readAllBytes(outputFile.toPath());
-            } finally {
-                cleanupTempFile(outputFile);
-            }
-        } finally {
-            cleanupTempFile(tempFile);
-        }
-    }
-
-    /**
-     * Extract text from specific page using OCR
-     */
-    public String extractTextFromPage(MultipartFile file, int pageNumber, String language) throws IOException {
-        if (file == null || file.isEmpty()) {
-            throw new IllegalArgumentException("File cannot be null or empty");
-        }
-        
-        if (pageNumber <= 0) {
-            throw new IllegalArgumentException("Page number must be greater than 0");
-        }
-
-        File tempFile = createTempFile(file);
-
-        try (PDDocument document = PDDocument.load(tempFile)) {
-            if (pageNumber <= document.getNumberOfPages()) {
+            File tempFile = createTempFile(file);
+            try (PDDocument document = Loader.loadPDF(tempFile)) {
+                PdfErrorHandler.validatePageCount(document.getNumberOfPages(), "ocr");
                 
-                // First try SAMBox text extraction
-                PDFTextStripper textStripper = new PDFTextStripper();
-                textStripper.setStartPage(pageNumber);
-                textStripper.setEndPage(pageNumber);
-                String existingText = textStripper.getText(document);
-                
+                long startTime = System.currentTimeMillis();
+                Map<String, Object> result = new HashMap<>();
+                PDFTextStripper stripper = new PDFTextStripper();
+                String existingText = stripper.getText(document);
+
                 if (existingText != null && !existingText.trim().isEmpty()) {
-                    return existingText;
+                    result.put("success", true);
+                    result.put("text", existingText);
+                    result.put("method", "PDFBox text extraction");
+                    result.put("confidence", 1.0);
+                    result.put("hasExistingText", true);
+                } else {
+                    String ocrText = performOcrOnPdf(document, language != null ? language : DEFAULT_LANGUAGE);
+                    result.put("success", true);
+                    result.put("text", ocrText);
+                    result.put("method", "Tesseract OCR");
+                    result.put("confidence", 0.85);
+                    result.put("hasExistingText", false);
+                    result.put("language", language);
+                }
+
+                result.put("pageCount", document.getNumberOfPages());
+                result.put("processingTime", System.currentTimeMillis() - startTime);
+                
+                logger.info("OCR processing completed for file: {}", file.getOriginalFilename());
+                return result;
+            } finally {
+                cleanupTempFile(tempFile);
+            }
+        } catch (PdfServiceException e) {
+            logger.error("PDF service error during OCR: {}", e.getMessage());
+            throw e;
+        } catch (OutOfMemoryError e) {
+            logger.error("Out of memory during OCR: {}", e.getMessage());
+            throw new InsufficientMemoryException("File too large or complex for OCR processing");
+        } catch (IOException e) {
+            logger.error("IO error during OCR: {}", e.getMessage());
+            if (e.getMessage().contains("damaged") || e.getMessage().contains("corrupt")) {
+                throw new CorruptedFileException("PDF file appears to be corrupted");
+            }
+            throw new PdfServiceException("OCR processing failed: " + e.getMessage(), e, 500);
+        } catch (Exception e) {
+            logger.error("Unexpected error during OCR: {}", e.getMessage());
+            throw new PdfServiceException("OCR processing failed due to unexpected error", e, 500);
+        }
+    }
+
+    public byte[] makeSearchablePdf(MultipartFile file, String language) throws IOException, PdfServiceException {
+        try {
+            PdfErrorHandler.validateFileForOperation(file, "ocr");
+            
+            logger.info("Creating searchable PDF for file: {}", file.getOriginalFilename());
+
+            File tempFile = createTempFile(file);
+            try (PDDocument document = Loader.loadPDF(tempFile)) {
+                PdfErrorHandler.validatePageCount(document.getNumberOfPages(), "ocr");
+
+                PDFTextStripper stripper = new PDFTextStripper();
+                String existingText = stripper.getText(document);
+                if (existingText != null && !existingText.trim().isEmpty()) {
+                    logger.info("PDF already has searchable text, returning original");
+                    return saveToByteArray(document);
+                }
+
+                PDFRenderer renderer = new PDFRenderer(document);
+                String lang = language != null ? language : DEFAULT_LANGUAGE;
+
+                for (int i = 0; i < document.getNumberOfPages(); i++) {
+                    try {
+                        BufferedImage image = renderer.renderImageWithDPI(i, DEFAULT_DPI);
+                        String ocrText = performOcrOnImage(image, lang);
+                        if (!ocrText.isEmpty()) {
+                            addInvisibleTextLayer(document, i, ocrText);
+                        }
+                    } catch (IOException | RuntimeException e) {
+                        logger.warn("Error processing page {}: {}", i + 1, e.getMessage());
+                    }
                 }
                 
-                // If no text found, use OCR
-                PDFRenderer renderer = new PDFRenderer(document);
-                BufferedImage pageImage = renderer.renderImageWithDPI(pageNumber - 1, DEFAULT_DPI);
-                return performOcrOnImage(pageImage, language != null ? language : DEFAULT_LANGUAGE);
+                logger.info("Successfully created searchable PDF");
+                return saveToByteArray(document);
+            } finally {
+                cleanupTempFile(tempFile);
             }
-            
-            throw new IllegalArgumentException("Page number " + pageNumber + " exceeds document page count: " + document.getNumberOfPages());
+        } catch (PdfServiceException e) {
+            logger.error("PDF service error during searchable PDF creation: {}", e.getMessage());
+            throw e;
+        } catch (OutOfMemoryError e) {
+            logger.error("Out of memory during searchable PDF creation: {}", e.getMessage());
+            throw new InsufficientMemoryException("File too large or complex for OCR processing");
+        } catch (IOException e) {
+            logger.error("IO error during searchable PDF creation: {}", e.getMessage());
+            if (e.getMessage().contains("damaged") || e.getMessage().contains("corrupt")) {
+                throw new CorruptedFileException("PDF file appears to be corrupted");
+            }
+            throw new PdfServiceException("Searchable PDF creation failed: " + e.getMessage(), e, 500);
+        } catch (Exception e) {
+            logger.error("Unexpected error during searchable PDF creation: {}", e.getMessage());
+            throw new PdfServiceException("Searchable PDF creation failed due to unexpected error", e, 500);
+        }
+    }
+
+    public String extractTextFromPage(MultipartFile file, int pageNumber, String language) throws IOException {
+        if (file == null || file.isEmpty())
+            throw new IllegalArgumentException("File cannot be null or empty");
+        if (pageNumber <= 0)
+            throw new IllegalArgumentException("Page number must be greater than 0");
+
+        File tempFile = createTempFile(file);
+        try (PDDocument document = Loader.loadPDF(tempFile)) {
+            if (pageNumber > document.getNumberOfPages())
+                throw new IllegalArgumentException("Page number exceeds page count");
+
+            PDFTextStripper stripper = new PDFTextStripper();
+            stripper.setStartPage(pageNumber);
+            stripper.setEndPage(pageNumber);
+            String existingText = stripper.getText(document);
+            if (existingText != null && !existingText.trim().isEmpty())
+                return existingText;
+
+            BufferedImage image = new PDFRenderer(document).renderImageWithDPI(pageNumber - 1, DEFAULT_DPI);
+            return performOcrOnImage(image, language != null ? language : DEFAULT_LANGUAGE);
         } finally {
             cleanupTempFile(tempFile);
         }
     }
 
-    /**
-     * Get OCR confidence scores for PDF
-     */
     public Map<String, Object> getOcrConfidence(MultipartFile file) throws IOException {
-        if (file == null || file.isEmpty()) {
+        if (file == null || file.isEmpty())
             throw new IllegalArgumentException("File cannot be null or empty");
-        }
 
         File tempFile = createTempFile(file);
+        try (PDDocument document = Loader.loadPDF(tempFile)) {
+            Map<String, Object> conf = new HashMap<>();
+            PDFTextStripper stripper = new PDFTextStripper();
+            String existingText = stripper.getText(document);
 
-        try (PDDocument document = PDDocument.load(tempFile)) {
-            Map<String, Object> confidence = new HashMap<>();
-            
-            // Analyze document for OCR quality
-            PDFTextStripper textStripper = new PDFTextStripper();
-            String existingText = textStripper.getText(document);
-            
             if (existingText != null && !existingText.trim().isEmpty()) {
-                confidence.put("hasText", true);
-                confidence.put("confidence", 1.0);
-                confidence.put("method", "Native text");
+                conf.put("hasText", true);
+                conf.put("confidence", 1.0);
+                conf.put("method", "Native text");
             } else {
-                confidence.put("hasText", false);
-                confidence.put("confidence", 0.85); // Estimated OCR confidence
-                confidence.put("method", "OCR needed");
+                conf.put("hasText", false);
+                conf.put("confidence", 0.85);
+                conf.put("method", "OCR needed");
             }
-            
-            confidence.put("pageCount", document.getNumberOfPages());
-            
-            return confidence;
+
+            conf.put("pageCount", document.getNumberOfPages());
+            return conf;
         } finally {
             cleanupTempFile(tempFile);
         }
     }
 
-    /**
-     * Detect document language
-     */
     public String detectLanguage(MultipartFile file) throws IOException {
-        if (file == null || file.isEmpty()) {
+        if (file == null || file.isEmpty())
             throw new IllegalArgumentException("File cannot be null or empty");
-        }
-
         File tempFile = createTempFile(file);
-
-        try (PDDocument document = PDDocument.load(tempFile)) {
-            
-            // Simple language detection based on text analysis
-            PDFTextStripper textStripper = new PDFTextStripper();
-            textStripper.setEndPage(Math.min(3, document.getNumberOfPages())); // Sample first 3 pages
-            String sampleText = textStripper.getText(document);
-            
-            if (sampleText != null && !sampleText.trim().isEmpty()) {
-                return detectLanguageFromText(sampleText);
-            }
-            
-            return DEFAULT_LANGUAGE;
+        try (PDDocument document = Loader.loadPDF(tempFile)) {
+            PDFTextStripper stripper = new PDFTextStripper();
+            stripper.setEndPage(Math.min(3, document.getNumberOfPages()));
+            String sampleText = stripper.getText(document);
+            return sampleText != null && !sampleText.trim().isEmpty()
+                   ? detectLanguageFromText(sampleText) : DEFAULT_LANGUAGE;
         } finally {
             cleanupTempFile(tempFile);
         }
     }
 
-    // Private helper methods
+    private byte[] saveToByteArray(PDDocument document) throws IOException {
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            document.save(baos);
+            return baos.toByteArray();
+        }
+    }
 
     private File createTempFile(MultipartFile file) throws IOException {
-        File tempFile = File.createTempFile("sambox_pdf_" + UUID.randomUUID(), ".pdf");
-        try (FileOutputStream fos = new FileOutputStream(tempFile)) {
+        File temp = File.createTempFile("pdfocr_" + UUID.randomUUID(), ".pdf");
+        try (FileOutputStream fos = new FileOutputStream(temp)) {
             fos.write(file.getBytes());
         }
-        return tempFile;
+        return temp;
     }
 
     private void cleanupTempFile(File tempFile) {
         if (tempFile != null && tempFile.exists()) {
-            try {
-                if (!tempFile.delete()) {
-                    tempFile.deleteOnExit();
-                    logger.log(Level.WARNING, "Could not delete temp file immediately: {0}", tempFile.getAbsolutePath());
-                }
-            } catch (SecurityException e) {
-                logger.log(Level.WARNING, "Error deleting temp file: " + tempFile.getAbsolutePath(), e);
+            if (!tempFile.delete()) {
+                tempFile.deleteOnExit();
+                logger.warn("Could not delete temp file immediately: {}", tempFile.getAbsolutePath());
             }
         }
     }
 
     private String performOcrOnPdf(PDDocument document, String language) throws IOException {
-        StringBuilder fullText = new StringBuilder();
+        StringBuilder sb = new StringBuilder();
         PDFRenderer renderer = new PDFRenderer(document);
-        
-        for (int pageIndex = 0; pageIndex < document.getNumberOfPages(); pageIndex++) {
+        for (int i = 0; i < document.getNumberOfPages(); i++) {
             try {
-                BufferedImage pageImage = renderer.renderImageWithDPI(pageIndex, DEFAULT_DPI);
-                String pageText = performOcrOnImage(pageImage, language);
-                if (!pageText.isEmpty()) {
-                    if (fullText.length() > 0) {
-                        fullText.append("\n\n--- Page ").append(pageIndex + 1).append(" ---\n\n");
+                BufferedImage image = renderer.renderImageWithDPI(i, DEFAULT_DPI);
+                String text = performOcrOnImage(image, language);
+                if (!text.isEmpty()) {
+                    if (sb.length() > 0) {
+                        sb.append("\n\n--- Page ").append(i + 1).append(" ---\n\n");
                     }
-                    fullText.append(pageText);
+                    sb.append(text);
                 }
-            } catch (IOException | RuntimeException e) {
-                logger.log(Level.WARNING, "Error performing OCR on page " + (pageIndex + 1), e);
+            } catch (IOException e) {
+                logger.warn("OCR error on page {}: {}", i + 1, e.getMessage());
             }
         }
-        
-        return fullText.toString();
+        return sb.toString();
     }
 
     private String performOcrOnImage(BufferedImage image, String language) {
+        Tesseract tesseract = new Tesseract();
+        tesseract.setDatapath(DEFAULT_TESSDATA_PATH);
+        tesseract.setLanguage(language);
+        tesseract.setOcrEngineMode(1);
+        tesseract.setPageSegMode(1);
         try {
-            // Initialize Tesseract instance
-            Tesseract tesseract = new Tesseract();
-
-            // Configure Tesseract
-            tesseract.setDatapath(DEFAULT_TESSDATA_PATH);
-            tesseract.setLanguage(language != null ? language : DEFAULT_LANGUAGE);
-            
-            // Set OCR Engine Mode and Page Segmentation Mode for better accuracy
-            tesseract.setOcrEngineMode(1); // Neural nets LSTM engine only
-            tesseract.setPageSegMode(1); // Automatic page segmentation with OSD
-            
-            // Perform OCR on the BufferedImage
-            String result = tesseract.doOCR(image);
-
-            return result != null ? result.trim() : "";
+            String res = tesseract.doOCR(image);
+            return res != null ? res.trim() : "";
         } catch (TesseractException e) {
-            logger.log(Level.SEVERE, "Tesseract OCR failed", e);
-            return "";
-        } catch (RuntimeException | Error e) {
-            logger.log(Level.SEVERE, "Unexpected error during OCR", e);
+            logger.error("Tesseract OCR failed: {}", e.getMessage());
             return "";
         }
     }
@@ -314,80 +276,48 @@ public class PdfOcrService {
         if (ocrText == null || ocrText.trim().isEmpty()) {
             return;
         }
-        
         PDPage page = document.getPage(pageIndex);
-        
-        // Add invisible text layer
-        try (PDPageContentStream contentStream = new PDPageContentStream(document, page, 
-            PDPageContentStream.AppendMode.APPEND, true, true)) {
-            
-            // Set text to invisible (render mode 3)
-            contentStream.beginText();
-            contentStream.setFont(PDType1Font.HELVETICA(), DEFAULT_FONT_SIZE);
-            contentStream.setTextRenderingMode(RenderingMode.NEITHER); // Invisible text
-            contentStream.newLineAtOffset(0, page.getMediaBox().getHeight() - 20);
-            
-            // Add OCR text as invisible overlay
-            String[] lines = ocrText.split("\\r?\\n");
-            for (String line : lines) {
-                if (line.trim().length() > 0) {
-                    try {
-                        contentStream.showText(line);
-                        contentStream.newLineAtOffset(0, -DEFAULT_FONT_SIZE);
-                    } catch (IOException | IllegalArgumentException e) {
-                        logger.log(Level.WARNING, "Error adding text line: " + line, e);
-                    }
+        try (PDPageContentStream cs = new PDPageContentStream(document, page,
+                PDPageContentStream.AppendMode.APPEND, true, true)) {
+            cs.beginText();
+            cs.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA), DEFAULT_FONT_SIZE);
+            cs.setRenderingMode(org.apache.pdfbox.pdmodel.graphics.state.RenderingMode.NEITHER);
+            cs.newLineAtOffset(0, page.getMediaBox().getHeight() - 20);
+            for (String line : ocrText.split("\\r?\\n")) {
+                if (!line.trim().isEmpty()) {
+                    cs.showText(line);
+                    cs.newLineAtOffset(0, -DEFAULT_FONT_SIZE);
                 }
             }
-            
-            contentStream.endText();
-        } catch (IOException | RuntimeException e) {
-            logger.log(Level.WARNING, "Error adding invisible text layer to page " + (pageIndex + 1), e);
-            throw new IOException("Failed to add invisible text layer", e);
+            cs.endText();
+        } catch (IOException e) {
+            logger.warn("Failed adding invisible text on page {}: {}", pageIndex + 1, e.getMessage());
+            throw e;
         }
     }
 
     private String detectLanguageFromText(String text) {
-        if (text == null || text.trim().isEmpty()) {
-            return DEFAULT_LANGUAGE;
-        }
-        
-        // Simple language detection based on character patterns
-        text = text.toLowerCase().replaceAll("[^a-z\\s]", " ");
-        
-        // Count common words for each language
-        int englishScore = countMatches(text, new String[]{"the ", "and ", "of ", "to ", "a ", "in ", "is ", "it ", "you ", "that "});
-        int germanScore = countMatches(text, new String[]{"der ", "die ", "und ", "in ", "den ", "von ", "zu ", "das ", "mit ", "sich "});
-        int frenchScore = countMatches(text, new String[]{"le ", "de ", "et ", "à ", "un ", "il ", "être ", "et ", "en ", "avoir "});
-        int spanishScore = countMatches(text, new String[]{"el ", "de ", "que ", "y ", "a ", "en ", "un ", "es ", "se ", "no "});
-        
-        // Return language with highest score
-        int maxScore = Math.max(Math.max(englishScore, germanScore), Math.max(frenchScore, spanishScore));
-        
-        if (maxScore == 0) {
-            return DEFAULT_LANGUAGE;
-        }
-        
-        if (maxScore == germanScore) {
-            return "deu";
-        } else if (maxScore == frenchScore) {
-            return "fra";
-        } else if (maxScore == spanishScore) {
-            return "spa";
-        } else {
-            return "eng";
-        }
+        text = text == null ? "" : text.toLowerCase().replaceAll("[^a-z\\s]", " ");
+        Map<String, Integer> scores = Map.of(
+                "eng", countMatches(text, new String[]{" the ", " and ", " from ", " to ", " is "}),
+                "deu", countMatches(text, new String[]{" der ", " die ", " und ", " in ", " den "}),
+                "fra", countMatches(text, new String[]{" le ", " de ", " et ", " la ", " un "}),
+                "spa", countMatches(text, new String[]{" el ", " de ", " y ", " en ", " que "})
+        );
+        return scores.entrySet().stream().max(Map.Entry.comparingByValue())
+                .filter(e -> e.getValue() > 0)
+                .map(Map.Entry::getKey).orElse(DEFAULT_LANGUAGE);
     }
-    
+
     private int countMatches(String text, String[] patterns) {
-        int count = 0;
-        for (String pattern : patterns) {
-            int index = 0;
-            while ((index = text.indexOf(pattern, index)) != -1) {
-                count++;
-                index += pattern.length();
+        int c = 0;
+        for (String p : patterns) {
+            int idx = 0;
+            while ((idx = text.indexOf(p, idx)) != -1) {
+                c++;
+                idx += p.length();
             }
         }
-        return count;
+        return c;
     }
 }

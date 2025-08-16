@@ -3,7 +3,7 @@ import { geminiService } from '../ai/gemini';
 import { Resume } from '../../models/Resume';
 import mongoose from 'mongoose';
 import { aiLatexGenerator } from './aiLatexGenerator';
-import { standardizedTemplateService } from './standardizedTemplateService';
+import { templateService } from './templateService';
 import { standardizedJobOptimizationService } from '../standardizedJobOptimizationService';
 import { overleafTemplateManager } from './overleafTemplateManager';
 
@@ -415,13 +415,9 @@ export class AIResumeService {
       progressCallback?.('Generating optimized LaTeX code with standardized templates...');
       
       // Convert to standardized format and generate LaTeX
-      const optimizedLatexCode = await standardizedTemplateService.generateLatex(
+      const optimizedLatexCode = await templateService.generateLatex(
         templateId,
-        enhancementResult.improvedResume,
-        {
-          enhanceWithAI: false, // Already enhanced
-          jobDescription: options.optimizeForJob?.jobDescription
-        }
+        enhancementResult.improvedResume
       );
 
       progressCallback?.('Enhancement complete!');

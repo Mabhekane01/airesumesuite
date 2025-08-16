@@ -4,8 +4,8 @@ import { PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
 import { Input } from '../ui/Input';
-import { Textarea } from '../ui/Textarea';
 import { DatePicker } from '../ui/DatePicker';
+import { BulletPointEditor } from '../ui/BulletPointEditor';
 import { Project } from '../../types';
 
 export default function ProjectsForm() {
@@ -18,14 +18,7 @@ export default function ProjectsForm() {
 
   const handleProjectChange = (index: number, field: keyof Project, value: any) => {
     const updatedProjects = [...(projects || [])];
-    if (field === 'technologies' && typeof value === 'string') {
-      updatedProjects[index] = {
-        ...updatedProjects[index],
-        [field]: value.split(',').map(tech => tech.trim()).filter(tech => tech.length > 0)
-      };
-    } else {
-      updatedProjects[index] = { ...updatedProjects[index], [field]: value };
-    }
+    updatedProjects[index] = { ...updatedProjects[index], [field]: value };
     updateProjects(updatedProjects);
   };
 
@@ -35,7 +28,7 @@ export default function ProjectsForm() {
       {
         id: Date.now().toString(),
         name: '',
-        description: '',
+        description: [], // Now an array for bullet points
         technologies: [],
         url: '',
         startDate: '',
@@ -114,25 +107,69 @@ export default function ProjectsForm() {
               />
             </div>
 
-            <div className="mb-4">
-              <Input
-                label="Technologies Used"
-                value={project.technologies.join(', ')}
-                onChange={(e) => handleProjectChange(index, 'technologies', e.target.value)}
-                placeholder="e.g., React, Node.js, MongoDB, AWS"
-              />
-              <p className="text-sm text-dark-text-muted mt-1">
-                Separate technologies with commas
-              </p>
+            {/* Technologies Used Section */}
+            <div className="mb-4 space-y-3">
+              <label className="text-sm font-medium text-dark-text-primary">
+                Technologies Used
+              </label>
+              
+              {/* Technology Chips Display */}
+              {project.technologies && project.technologies.length > 0 && (
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {project.technologies.map((tech, techIndex) => (
+                    <div 
+                      key={techIndex} 
+                      className="inline-flex items-center bg-accent-primary/10 text-accent-primary px-3 py-1 rounded-full text-sm font-medium border border-accent-primary/20"
+                    >
+                      <span>{tech}</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newTechnologies = project.technologies?.filter((_, i) => i !== techIndex);
+                          handleProjectChange(index, 'technologies', newTechnologies);
+                        }}
+                        className="ml-2 text-accent-primary/60 hover:text-accent-primary transition-colors"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              {/* Single Input for Adding Technologies */}
+              <div>
+                <Input
+                  placeholder="Type technology and press Enter (e.g., React, Node.js, Python)"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === 'Tab' || e.key === ',') {
+                      e.preventDefault();
+                      const input = e.target as HTMLInputElement;
+                      const value = input.value.trim();
+                      if (value && !project.technologies?.includes(value)) {
+                        const newTechnologies = [...(project.technologies || []), value];
+                        handleProjectChange(index, 'technologies', newTechnologies);
+                        input.value = '';
+                      }
+                    }
+                  }}
+                  className="w-full"
+                />
+                <p className="text-xs text-dark-text-muted mt-1">
+                  Press <kbd className="px-1 py-0.5 bg-dark-tertiary rounded text-xs">Enter</kbd>, <kbd className="px-1 py-0.5 bg-dark-tertiary rounded text-xs">Tab</kbd>, or <kbd className="px-1 py-0.5 bg-dark-tertiary rounded text-xs">,</kbd> to add • Click × on chips to remove
+                </p>
+              </div>
             </div>
 
-            <Textarea
-              label="Project Description *"
-              value={project.description}
-              onChange={(e) => handleProjectChange(index, 'description', e.target.value)}
-              placeholder="Describe the project goals, your role, key challenges solved, and measurable outcomes..."
-              rows={4}
+            <BulletPointEditor
+              label="Project Description & Achievements *"
+              value={Array.isArray(project.description) ? project.description : []}
+              onChange={(value) => handleProjectChange(index, 'description', value)}
+              placeholder="Describe your role, key challenges solved, technologies used, and measurable outcomes..."
+              minItems={1}
+              maxItems={6}
               required
+              helpText="Use bullet points to highlight your contributions and achievements in this project"
             />
           </Card>
         ))}
@@ -148,12 +185,14 @@ export default function ProjectsForm() {
       </Button>
 
       <div className="glass-dark p-4 rounded-lg border border-dark-border">
-        <h4 className="font-medium text-dark-accent mb-2">💡 Tips for Great Project Descriptions</h4>
+        <h4 className="font-medium text-dark-accent mb-2">💡 Tips for Great Project Bullet Points</h4>
         <ul className="text-sm text-dark-text-secondary space-y-1">
-          <li>• Focus on problems solved and impact achieved</li>
-          <li>• Include specific technologies and methodologies used</li>
-          <li>• Quantify results where possible (performance improvements, user growth, etc.)</li>
-          <li>• Mention your specific role and contributions to team projects</li>
+          <li>• Start each bullet with an action verb (Built, Developed, Implemented, Designed)</li>
+          <li>• Focus on your specific role and contributions to the project</li>
+          <li>• Include quantifiable results and impact (e.g., "Improved performance by 40%")</li>
+          <li>• Mention key technologies, frameworks, and methodologies used</li>
+          <li>• Highlight problems solved and challenges overcome</li>
+          <li>• Keep each bullet point concise and impactful (1-2 lines max)</li>
         </ul>
       </div>
     </div>

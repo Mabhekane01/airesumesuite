@@ -3,7 +3,7 @@ import * as bcrypt from 'bcryptjs';
 import { User, IUser } from '../models/User';
 import { UserSession } from '../models/UserSession';
 import { EmailOTP } from '../models/EmailVerification';
-import { generateTokenPair, verifyRefreshToken } from '../utils/jwt';
+import { generateTokenPair, verifyRefreshToken, limitActiveTokens } from '../utils/jwt';
 import { AuthenticatedRequest } from '../middleware/auth';
 import { emailService } from '../services/emailService';
 import { notificationService } from '../services/notificationService';
@@ -11,6 +11,13 @@ import { INotification } from '../models/Notification';
 import { recaptchaService, RecaptchaVerificationResult } from '../services/recaptchaService';
 import { otpService } from '../services/otpService';
 import * as crypto from 'crypto';
+
+// Helper function to add new token and clean up old ones
+const addTokenWithCleanup = async (user: IUser, newRefreshToken: string): Promise<void> => {
+  user.refreshTokens.push(newRefreshToken);
+  user.refreshTokens = limitActiveTokens(user.refreshTokens, 5);
+  console.log(`🧹 Token cleanup for ${user.email}. Active tokens: ${user.refreshTokens.length}`);
+};
 
 // Step 1: Send OTP for email verification BEFORE registration
 export const sendRegistrationOTP = async (req: Request, res: Response) => {
@@ -236,7 +243,7 @@ export const verifyRegistrationOTP = async (req: Request, res: Response) => {
     // Generate tokens for immediate login
     const { accessToken, refreshToken } = generateTokenPair(user);
     
-    // Create session
+    // Create session (for tracking purposes)
     const sessionId = crypto.randomUUID();
     const sessionData = {
       userId: user._id,
@@ -249,13 +256,14 @@ export const verifyRegistrationOTP = async (req: Request, res: Response) => {
         browser: req.get('User-Agent') || 'Unknown'
       },
       isActive: true,
-      refreshTokens: [refreshToken]
+      lastActivity: new Date()
     };
     
     const userSession = new UserSession(sessionData);
     await userSession.save();
     
-    user.refreshTokens.push(refreshToken);
+    // Manage tokens with cleanup
+    await addTokenWithCleanup(user, refreshToken);
     user.lastLoginAt = new Date();
     await user.save();
     // --- END AUTHENTICATION ---
@@ -637,7 +645,7 @@ export const login = async (req: Request, res: Response) => {
     // Generate tokens
     const { accessToken, refreshToken } = generateTokenPair(user);
     
-    // Create session
+    // Create session (for tracking purposes)
     const sessionId = crypto.randomUUID();
     const sessionData = {
       userId: user._id,
@@ -653,14 +661,14 @@ export const login = async (req: Request, res: Response) => {
         browser: req.get('User-Agent') || 'Unknown'
       },
       isActive: true,
-      refreshTokens: [refreshToken]
+      lastActivity: new Date()
     };
     
     const userSession = new UserSession(sessionData);
     await userSession.save();
     
-    // Update user's last login
-    user.refreshTokens.push(refreshToken);
+    // Update user's last login and manage tokens
+    await addTokenWithCleanup(user, refreshToken);
     user.lastLoginAt = new Date();
     await user.save();
 
@@ -725,12 +733,18 @@ export const refreshToken = async (req: Request, res: Response) => {
       return res.status(403).json({ message: 'Invalid refresh token' });
     }
 
+    // Clean expired tokens and remove the current one
     user.refreshTokens = user.refreshTokens.filter(token => token !== refreshToken);
 
     const { accessToken, refreshToken: newRefreshToken } = generateTokenPair(user);
     
+    // Add new token and limit total active tokens to 5
     user.refreshTokens.push(newRefreshToken);
+    user.refreshTokens = limitActiveTokens(user.refreshTokens, 5);
+    
     await user.save();
+
+    console.log(`🔄 Token refreshed for user ${user.email}. Active tokens: ${user.refreshTokens.length}`);
 
     return res.json({
       accessToken,
@@ -759,18 +773,7 @@ export const logout = async (req: AuthenticatedRequest, res: Response) => {
           { sessionId, userId, isActive: true },
           { 
             isActive: false, 
-            logoutTime: new Date(),
-            $pull: { refreshTokens: refreshToken }
-          }
-        );
-      } else {
-        // If no sessionId provided, end sessions with this refresh token
-        await UserSession.updateMany(
-          { userId, refreshTokens: refreshToken, isActive: true },
-          { 
-            isActive: false, 
-            logoutTime: new Date(),
-            $pull: { refreshTokens: refreshToken }
+            logoutTime: new Date()
           }
         );
       }
@@ -802,8 +805,7 @@ export const logoutAll = async (req: AuthenticatedRequest, res: Response) => {
         { userId, isActive: true },
         { 
           isActive: false, 
-          logoutTime: new Date(),
-          refreshTokens: []
+          logoutTime: new Date()
         }
       );
     }
@@ -833,7 +835,7 @@ export const googleCallback = async (req: Request, res: Response) => {
     
     const { accessToken, refreshToken } = generateTokenPair(user);
     
-    // Create session (consistent with local auth)
+    // Create session (for tracking purposes)
     const sessionId = crypto.randomUUID();
     const sessionData = {
       userId: user._id,
@@ -846,14 +848,14 @@ export const googleCallback = async (req: Request, res: Response) => {
         browser: req.get('User-Agent') || 'Unknown'
       },
       isActive: true,
-      refreshTokens: [refreshToken]
+      lastActivity: new Date()
     };
     
     const userSession = new UserSession(sessionData);
     await userSession.save();
     
-    // Update user tokens and login time
-    user.refreshTokens.push(refreshToken);
+    // Update user tokens and login time with cleanup
+    await addTokenWithCleanup(user, refreshToken);
     user.lastLoginAt = new Date();
     await user.save();
 
@@ -977,7 +979,7 @@ export const verifyEmail = async (req: Request, res: Response) => {
     // Generate tokens for immediate login
     const { accessToken, refreshToken } = generateTokenPair(user);
     
-    // Create session
+    // Create session (for tracking purposes)
     const sessionId = crypto.randomUUID();
     const sessionData = {
       userId: user._id,
@@ -990,13 +992,14 @@ export const verifyEmail = async (req: Request, res: Response) => {
         browser: req.get('User-Agent') || 'Unknown'
       },
       isActive: true,
-      refreshTokens: [refreshToken]
+      lastActivity: new Date()
     };
     
     const userSession = new UserSession(sessionData);
     await userSession.save();
     
-    user.refreshTokens.push(refreshToken);
+    // Manage tokens with cleanup
+    await addTokenWithCleanup(user, refreshToken);
     user.lastLoginAt = new Date();
     await user.save();
 
@@ -1202,14 +1205,14 @@ export const verifyOTP = async (req: Request, res: Response) => {
         browser: req.get('User-Agent') || 'Unknown'
       },
       isActive: true,
-      refreshTokens: [refreshToken]
+      lastActivity: new Date()
     };
     
     const userSession = new UserSession(sessionData);
     await userSession.save();
     
-    // Update user's last login and add refresh token
-    user.refreshTokens.push(refreshToken);
+    // Update user's last login and manage tokens with cleanup
+    await addTokenWithCleanup(user, refreshToken);
     user.lastLoginAt = new Date();
     await user.save();
 

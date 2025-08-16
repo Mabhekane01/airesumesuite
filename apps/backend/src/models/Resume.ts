@@ -15,13 +15,12 @@ export interface IEducation {
   institution: string;
   degree: string;
   fieldOfStudy: string;
+  graduationDate: Date; // Made required to match frontend
   startDate?: Date;
   endDate?: Date;
-  graduationDate?: Date; // Keep for backward compatibility
   location?: string;
   gpa?: string;
-  honors?: string[];
-  courses?: string[];
+  coursework?: string[]; // Optional relevant coursework as bullet points
 }
 
 export interface ISkill {
@@ -104,7 +103,7 @@ export interface IResume extends Document {
   }[];
   projects?: {
     name: string;
-    description: string;
+    description: string[]; // Changed to array for bullet points
     technologies: string[];
     url?: string;
     startDate?: Date;
@@ -175,13 +174,12 @@ const EducationSchema = new Schema<IEducation>({
   institution: { type: String, required: true },
   degree: { type: String, required: true },
   fieldOfStudy: { type: String, required: true },
+  graduationDate: { type: Date, required: true }, // Made required to match frontend
   startDate: { type: Date },
   endDate: { type: Date },
-  graduationDate: { type: Date }, // Keep for backward compatibility
   location: { type: String },
   gpa: { type: String },
-  honors: [{ type: String }],
-  courses: [{ type: String }]
+  coursework: [{ type: String }] // Optional relevant coursework as bullet points
 });
 
 const SkillSchema = new Schema<ISkill>({
@@ -290,7 +288,7 @@ const ResumeSchema = new Schema<IResume>({
   }],
   projects: [{
     name: { type: String, required: true },
-    description: { type: String, required: true },
+    description: [{ type: String }], // Changed to array for bullet points
     technologies: [{ type: String }],
     url: { type: String },
     startDate: { type: Date },

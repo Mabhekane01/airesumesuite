@@ -22,7 +22,7 @@ export interface IUserSession extends Document {
     device?: string;
   };
   isActive: boolean;
-  refreshTokens: string[];
+  lastActivity?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -70,9 +70,11 @@ const UserSessionSchema = new Schema<IUserSession>({
     default: true,
     index: true
   },
-  refreshTokens: [{
-    type: String
-  }]
+  lastActivity: {
+    type: Date,
+    default: Date.now,
+    index: true
+  }
 }, {
   timestamps: true
 });

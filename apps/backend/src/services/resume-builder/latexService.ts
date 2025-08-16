@@ -887,15 +887,11 @@ Return the COMPLETE, PERFECT LaTeX code that will compile without ANY errors:`;
       
       // Try standardized template service first (more reliable)
       try {
-        const { standardizedTemplateService } = await import('./standardizedTemplateService');
+        const { templateService } = await import('./templateService');
         
-        let generatedLatex = await standardizedTemplateService.generateLatex(
+        let generatedLatex = await templateService.generateLatex(
           templateId,
-          data,
-          {
-            enhanceWithAI: true, // Use AI for content enhancement only
-            jobDescription: undefined
-          }
+          data
         );
         
         console.log(
@@ -1096,7 +1092,7 @@ ${p.technologies ? `\\\\\\textit{Technologies:} ${escape(p.technologies.join(", 
   private detectRequiredCompiler(latexSource: string): string {
     const lowerSource = latexSource.toLowerCase();
     
-    // Check for explicit compiler requirements in comments
+    // Check for explicit compiler requirements in comments (most reliable)
     if (lowerSource.includes('needs to be compiled with xelatex') || 
         lowerSource.includes('compile with xelatex') ||
         lowerSource.includes('xelatex required')) {
@@ -1104,24 +1100,32 @@ ${p.technologies ? `\\\\\\textit{Technologies:} ${escape(p.technologies.join(", 
       return "C:\\texlive\\2025\\bin\\windows\\xelatex.exe";
     }
     
-    // Check for LuaLaTeX requirements
-    if (lowerSource.includes('lualatex') || lowerSource.includes('luatex')) {
+    // Check for explicit LuaLaTeX requirements (avoid comments, look for actual usage)
+    if ((lowerSource.includes('lualatex') && !lowerSource.includes('% check if engine is')) || 
+        lowerSource.includes('\\usepackage{luatex') ||
+        lowerSource.includes('\\directlua') ||
+        lowerSource.includes('\\luacode')) {
       console.log('🔍 Detected LuaLaTeX requirement from template');
       return "C:\\texlive\\2025\\bin\\windows\\lualatex.exe";
     }
     
-    // Check for packages that require XeLaTeX
+    // Check for packages that require XeLaTeX (more specific detection)
     const xelatexPackages = ['fontspec', 'xunicode', 'xltxtra', 'polyglossia'];
     for (const pkg of xelatexPackages) {
-      if (lowerSource.includes(`\\usepackage{${pkg}}`) || lowerSource.includes(`\\usepackage[`)) {
-        if (lowerSource.includes(pkg)) {
-          console.log(`🔍 Detected XeLaTeX requirement due to package: ${pkg}`);
-          return "C:\\texlive\\2025\\bin\\windows\\xelatex.exe";
-        }
+      if (lowerSource.includes(`\\usepackage{${pkg}}`) || 
+          (lowerSource.includes(`\\usepackage[`) && lowerSource.includes(`${pkg}`))) {
+        console.log(`🔍 Detected XeLaTeX requirement due to package: ${pkg}`);
+        return "C:\\texlive\\2025\\bin\\windows\\xelatex.exe";
       }
     }
     
-    // Default to pdflatex
+    // If template has problematic combinations, try fallback strategy
+    if (lowerSource.includes('\\input{glyphtounicode}') && lowerSource.includes('xelatex')) {
+      console.log('🔍 Template has glyphtounicode + XeLaTeX, trying pdflatex fallback');
+      return this.config.latexCompiler; // Use pdflatex instead
+    }
+    
+    // Default to pdflatex (most compatible)
     console.log('🔍 Using default pdflatex compiler');
     return this.config.latexCompiler;
   }

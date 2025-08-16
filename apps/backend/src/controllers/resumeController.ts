@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { resumeService, CreateResumeData } from '../services/resume-builder/resumeService';
-import { standardizedTemplateService, StandardizedResumeData } from '../services/resume-builder/standardizedTemplateService';
+import { ResumeData } from '../services/resume-builder/templateService';
 import { standardizedJobOptimizationService } from '../services/standardizedJobOptimizationService';
 import { aiContentEnhancer } from '../services/resume-builder/aiContentEnhancer';
 import { aiLatexGenerator } from '../services/resume-builder/aiLatexGenerator';
@@ -11,7 +11,7 @@ import { IResume } from '../models/Resume';
 import { convertDatesForFrontend } from '../utils/dateHandler';
 
 // Helper function to convert IResume to StandardizedResumeData
-function convertToStandardizedData(resume: IResume): StandardizedResumeData {
+function convertToStandardizedData(resume: IResume): ResumeData {
   return {
     personalInfo: resume.personalInfo,
     professionalSummary: resume.professionalSummary || '',
@@ -31,8 +31,10 @@ function convertToStandardizedData(resume: IResume): StandardizedResumeData {
       fieldOfStudy: edu.fieldOfStudy,
       location: (edu as any).location,
       graduationDate: edu.graduationDate instanceof Date ? edu.graduationDate.toISOString().split('T')[0] : String(edu.graduationDate || ''),
+      startDate: (edu as any).startDate instanceof Date ? (edu as any).startDate.toISOString().split('T')[0] : (edu as any).startDate,
+      endDate: (edu as any).endDate instanceof Date ? (edu as any).endDate.toISOString().split('T')[0] : (edu as any).endDate,
       gpa: edu.gpa,
-      honors: edu.honors
+      coursework: (edu as any).coursework
     })) || [],
     skills: resume.skills?.map(skill => ({
       name: skill.name,
@@ -40,7 +42,14 @@ function convertToStandardizedData(resume: IResume): StandardizedResumeData {
       proficiencyLevel: skill.proficiencyLevel
     })) || [],
     projects: resume.projects?.map(proj => ({
-      ...proj,
+      name: proj.name,
+      description: Array.isArray(proj.description) 
+        ? proj.description 
+        : (proj.description && typeof proj.description === 'string' 
+            ? proj.description.split(/\n+/).map(line => line.trim()).filter(line => line.length > 0)
+            : []),
+      technologies: proj.technologies,
+      url: proj.url,
       startDate: proj.startDate instanceof Date ? proj.startDate.toISOString().split('T')[0] : proj.startDate,
       endDate: proj.endDate instanceof Date ? proj.endDate.toISOString().split('T')[0] : proj.endDate
     })) || [],
@@ -342,12 +351,12 @@ export class StandardizedResumeController {
 
       console.log('📄 [STANDARDIZED] Generating PDF using standardized template system');
 
-      // Use standardized template service for PDF generation
+      // Use template service for PDF generation
       const standardizedData = convertToStandardizedData(resume);
-      const latex = await standardizedTemplateService.generateLatex(
+      const { templateService } = await import('../services/resume-builder/templateService');
+      const latex = await templateService.generateLatex(
         templateId,
-        standardizedData,
-        { enhanceWithAI: false }
+        standardizedData
       );
 
       const pdfBuffer = await resumeService.generateLatexResumePDF(standardizedData, {
@@ -386,11 +395,11 @@ export class StandardizedResumeController {
 
       console.log('📄 [STANDARDIZED] Generating unsaved resume PDF using standardized templates');
 
-      // Use standardized template service
-      const latex = await standardizedTemplateService.generateLatex(
+      // Use template service
+      const { templateService } = await import('../services/resume-builder/templateService');
+      const latex = await templateService.generateLatex(
         templateId,
-        resumeData,
-        { enhanceWithAI: false }
+        resumeData
       );
 
       const pdfBuffer = await resumeService.generateLatexResumePDF(resumeData, {
@@ -438,15 +447,23 @@ export class StandardizedResumeController {
 
       console.log('🤖 [STANDARDIZED] Enhancing resume with AI content enhancer + standardized templates');
 
-      // Use standardized template service with AI enhancement
+      // Use template service with AI enhancement
       const standardizedData = convertToStandardizedData(resume);
-      const enhancedLatex = await standardizedTemplateService.generateLatex(
+      
+      // First enhance content with AI if requested
+      let finalData = standardizedData;
+      if (jobDescription) {
+        const contentEnhancement = await aiContentEnhancer.optimizeForJob(standardizedData, jobDescription);
+        finalData = contentEnhancement.enhancedContent;
+      } else {
+        const contentEnhancement = await aiContentEnhancer.enhanceResumeContent(standardizedData);
+        finalData = contentEnhancement.enhancedContent;
+      }
+      
+      const { templateService } = await import('../services/resume-builder/templateService');
+      const enhancedLatex = await templateService.generateLatex(
         templateId,
-        standardizedData,
-        {
-          enhanceWithAI: true,
-          jobDescription
-        }
+        finalData
       );
 
       // Get detailed enhancement info
@@ -498,10 +515,10 @@ export class StandardizedResumeController {
         : await aiContentEnhancer.enhanceResumeContent(resumeData);
 
       // Generate LaTeX with enhanced content
-      const enhancedLatex = await standardizedTemplateService.generateLatex(
+      const { templateService } = await import('../services/resume-builder/templateService');
+      const enhancedLatex = await templateService.generateLatex(
         templateId,
-        contentEnhancement.enhancedContent,
-        { enhanceWithAI: false } // Already enhanced
+        contentEnhancement.enhancedContent
       );
 
       res.status(200).json({
@@ -995,7 +1012,8 @@ export class StandardizedResumeController {
 
   async getLatexTemplates(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
-      const templates = await standardizedTemplateService.getAvailableTemplates();
+      const { templateService } = await import('../services/resume-builder/templateService');
+      const templates = await templateService.getAvailableTemplates();
       res.json({
         success: true,
         data: templates
@@ -1011,7 +1029,8 @@ export class StandardizedResumeController {
 
   async getLatexTemplatesWithCode(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
-      const templates = await standardizedTemplateService.getAvailableTemplates();
+      const { templateService } = await import('../services/resume-builder/templateService');
+      const templates = await templateService.getAvailableTemplates();
       res.json({
         success: true,
         data: templates
@@ -1037,10 +1056,47 @@ export class StandardizedResumeController {
         return;
       }
 
-      const latex = await standardizedTemplateService.generateLatex(
+      // Process the resume data to ensure proper formatting (arrays for bullet points, etc.)
+      console.log('🔍 Starting PDF preview generation with data processing...');
+      console.log('🔍 Raw project data:', JSON.stringify(resumeData.projects?.slice(0, 1), null, 2));
+      
+      let processedResumeData;
+      try {
+        const { processCompleteResumeData } = await import('../utils/resumeDataProcessor');
+        
+        // Add required fields for processing if missing (for preview requests)
+        const dataToProcess = {
+          ...resumeData,
+          userId: resumeData.userId || 'preview-user-id', // Temporary ID for preview
+          title: resumeData.title || `${resumeData.personalInfo?.firstName || 'My'} ${resumeData.personalInfo?.lastName || 'Resume'}`
+        };
+        
+        processedResumeData = processCompleteResumeData(dataToProcess);
+        console.log('✅ Resume data processed successfully for preview');
+        console.log('🔍 Processed project data:', JSON.stringify(processedResumeData.projects?.slice(0, 1), null, 2));
+        
+        // Debug: Check if description is array or string
+        if (processedResumeData.projects && processedResumeData.projects.length > 0) {
+          const firstProject = processedResumeData.projects[0];
+          console.log('🔍 First project description type:', typeof firstProject.description);
+          console.log('🔍 First project description is array:', Array.isArray(firstProject.description));
+          if (Array.isArray(firstProject.description)) {
+            console.log('🔍 Description array length:', firstProject.description.length);
+            console.log('🔍 Description array items:', firstProject.description);
+          }
+        }
+      } catch (processingError) {
+        console.error('⚠️ Data processing failed, using raw data:', processingError);
+        // Fallback to raw data if processing fails
+        processedResumeData = resumeData;
+      }
+
+      // Import the new template service
+      const { templateService } = await import('../services/resume-builder/templateService');
+      
+      const latex = await templateService.generateLatex(
         templateId,
-        resumeData,
-        { enhanceWithAI: false }
+        processedResumeData
       );
 
       // Import the LaTeX service
@@ -1079,7 +1135,7 @@ export class StandardizedResumeController {
 
   async analyzeJobFromUrl(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
-      const { jobUrl } = req.body;
+      const { jobUrl, resumeData } = req.body;
       const userId = req.user?.id;
 
       if (!userId) {
@@ -1096,11 +1152,33 @@ export class StandardizedResumeController {
       }
 
       // Use standardized job optimization service for job analysis
-      const analysis = await standardizedJobOptimizationService.analyzeJobFromUrl(jobUrl);
+      const analysis = await standardizedJobOptimizationService.analyzeJobFromUrl(jobUrl, resumeData);
+
+      // Transform the response to match frontend expectations
+      const transformedAnalysis = {
+        jobDetails: {
+          title: analysis.jobTitle || 'Job Title Not Available',
+          company: analysis.companyName || 'Company Not Available',
+          description: analysis.jobDescription || '',
+          requirements: analysis.requirements || analysis.requiredSkills || [],
+          location: analysis.location || '',
+          salary: analysis.salary || '',
+          benefits: analysis.benefits || [],
+          responsibilities: analysis.responsibilities || [],
+          qualifications: analysis.qualifications || [],
+          experienceLevel: analysis.experienceLevel || 'mid'
+        },
+        matchAnalysis: analysis.matchAnalysis || {},
+        recommendations: analysis.recommendations || [
+          'Review job requirements and align your resume accordingly',
+          'Highlight relevant skills and experience',
+          'Quantify your achievements where possible'
+        ]
+      };
 
       res.json({
         success: true,
-        data: analysis
+        data: transformedAnalysis
       });
     } catch (error) {
       console.error('Error analyzing job from URL:', error);
@@ -1281,7 +1359,7 @@ export class StandardizedResumeController {
         console.log('🔄 Generating PDF from resume data...');
         
         // Convert resume data to standardized format
-        const standardizedData: StandardizedResumeData = {
+        const standardizedData: ResumeData = {
           personalInfo: resumeData.personalInfo,
           professionalSummary: resumeData.professionalSummary || '',
           workExperience: resumeData.workExperience?.map((exp: any) => ({
@@ -1318,10 +1396,19 @@ export class StandardizedResumeController {
           additionalSections: resumeData.additionalSections || []
         };
 
-        // Generate PDF using standardized template service
-        pdfBuffer = await standardizedTemplateService.generatePDF(
-          standardizedData,
-          templateId || 'modern-1'
+        // Generate PDF using template service
+        const { templateService } = await import('../services/resume-builder/templateService');
+        const { latexService } = await import('../services/resume-builder/latexService');
+        
+        const latex = await templateService.generateLatex(
+          templateId || 'template01',
+          standardizedData
+        );
+        
+        pdfBuffer = await latexService.compileLatexToPDF(
+          latex,
+          templateId || 'template01',
+          'pdf'
         );
         
         console.log('✅ PDF generated from resume data, size:', pdfBuffer.length);
@@ -1339,10 +1426,19 @@ export class StandardizedResumeController {
 
         const standardizedData = convertToStandardizedData(savedResume);
         
-        // Generate PDF using standardized template service
-        pdfBuffer = await standardizedTemplateService.generatePDF(
-          standardizedData,
-          templateId || savedResume.templateId || 'modern-1'
+        // Generate PDF using template service
+        const { templateService } = await import('../services/resume-builder/templateService');
+        const { latexService } = await import('../services/resume-builder/latexService');
+        
+        const latex = await templateService.generateLatex(
+          templateId || savedResume.templateId || 'template01',
+          standardizedData
+        );
+        
+        pdfBuffer = await latexService.compileLatexToPDF(
+          latex,
+          templateId || savedResume.templateId || 'template01',
+          'pdf'
         );
         
         console.log('✅ PDF generated from saved resume, size:', pdfBuffer.length);
@@ -1433,6 +1529,466 @@ export class StandardizedResumeController {
       console.error('Error downloading saved PDF:', error);
       res.status(500).json({ success: false, message: 'Failed to download PDF' });
     }
+  }
+
+  // New methods for AI enhancement with direct PDF generation
+  async enhanceResumeWithLatexPDF(req: Request, res: Response): Promise<void> {
+    try {
+      const { resumeData, templateId = 'template01', options } = req.body;
+      
+      if (!resumeData) {
+        res.status(400).json({
+          success: false,
+          message: 'Resume data is required'
+        });
+        return;
+      }
+
+      console.log('🤖 [AI-PDF] Enhancing resume and generating PDF...');
+
+      // Enhance content with AI
+      const contentEnhancement = await aiContentEnhancer.enhanceResumeContent(resumeData);
+
+      // Generate LaTeX with enhanced content
+      const { templateService } = await import('../services/resume-builder/templateService');
+      const enhancedLatex = await templateService.generateLatex(
+        templateId,
+        contentEnhancement.enhancedContent
+      );
+
+      // Generate PDF from LaTeX
+      const { latexService } = await import('../services/resume-builder/latexService');
+      const pdfBuffer = await latexService.compileLatexToPDF(
+        enhancedLatex,
+        templateId,
+        'pdf'
+      );
+
+      // Also include enhanced data in response headers (JSON encoded)
+      const enhancedDataHeader = JSON.stringify({
+        enhancedResumeData: contentEnhancement.enhancedContent,
+        improvements: contentEnhancement.improvements,
+        keywordsAdded: contentEnhancement.keywordsAdded || [],
+        atsScore: contentEnhancement.atsScore || 0
+      });
+      
+      res.setHeader('X-Enhanced-Data', Buffer.from(enhancedDataHeader).toString('base64'));
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', 'attachment; filename="enhanced-resume.pdf"');
+      res.setHeader('Content-Length', pdfBuffer.length);
+
+      // Send PDF buffer
+      res.send(pdfBuffer);
+      console.log('✅ AI-enhanced PDF generated successfully:', pdfBuffer.length, 'bytes');
+
+    } catch (error) {
+      console.error('❌ AI-enhanced PDF generation failed:', error);
+      res.status(500).json({
+        success: false,
+        message: 'AI enhancement with PDF generation failed',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  }
+
+  async enhanceResumeWithLatexStreamPDF(req: Request, res: Response): Promise<void> {
+    try {
+      const { resumeData, templateId = 'template01', options } = req.body;
+      
+      if (!resumeData) {
+        res.status(400).json({
+          success: false,
+          message: 'Resume data is required'
+        });
+        return;
+      }
+
+      console.log('🤖 [AI-PDF-STREAM] Enhancing resume with streaming updates...');
+
+      // Set headers for streaming response
+      res.setHeader('Content-Type', 'application/octet-stream');
+      res.setHeader('Transfer-Encoding', 'chunked');
+      res.setHeader('X-Content-Type-Options', 'nosniff');
+
+      // Send initial progress update
+      const sendProgress = (message: string) => {
+        res.write(`PROGRESS: ${message}\n`);
+      };
+
+      sendProgress('Starting AI content enhancement...');
+
+      // Enhance content with AI
+      const contentEnhancement = await aiContentEnhancer.enhanceResumeContent(resumeData);
+      sendProgress('Content enhancement complete. Generating LaTeX...');
+
+      // Generate LaTeX with enhanced content
+      const { templateService } = await import('../services/resume-builder/templateService');
+      const enhancedLatex = await templateService.generateLatex(
+        templateId,
+        contentEnhancement.enhancedContent
+      );
+      sendProgress('LaTeX generation complete. Compiling PDF...');
+
+      // Generate PDF from LaTeX
+      const { latexService } = await import('../services/resume-builder/latexService');
+      const pdfBuffer = await latexService.compileLatexToPDF(
+        enhancedLatex,
+        templateId,
+        'pdf'
+      );
+      sendProgress('PDF compilation complete. Preparing enhanced data...');
+
+      // Send enhanced data first
+      const enhancedDataResponse = JSON.stringify({
+        enhancedResumeData: contentEnhancement.enhancedContent,
+        improvements: contentEnhancement.improvements,
+        keywordsAdded: contentEnhancement.keywordsAdded || [],
+        atsScore: contentEnhancement.atsScore || 0
+      });
+      
+      res.write(`ENHANCED_DATA_START\n`);
+      res.write(enhancedDataResponse);
+      res.write(`\nENHANCED_DATA_END\n`);
+
+      // Send PDF marker and data
+      res.write(`PDF_START\n`);
+      res.write(pdfBuffer);
+      res.end();
+
+      console.log('✅ AI-enhanced streaming PDF generated successfully:', pdfBuffer.length, 'bytes');
+
+    } catch (error) {
+      console.error('❌ AI-enhanced streaming PDF generation failed:', error);
+      
+      // Send error through stream
+      res.write(`ERROR: ${error instanceof Error ? error.message : 'Unknown error'}\n`);
+      res.end();
+    }
+  }
+
+  // New method for AI enhancement without PDF generation (preview-first flow)
+  async enhanceResumeContentOnly(req: Request, res: Response): Promise<void> {
+    try {
+      const { resumeData, templateId = 'template01', options } = req.body;
+      
+      if (!resumeData) {
+        res.status(400).json({
+          success: false,
+          message: 'Resume data is required'
+        });
+        return;
+      }
+
+      console.log('🤖 [AI-PREVIEW] Generating AI enhancement suggestions...');
+
+      // Enhance content with AI (but don't generate PDF yet)
+      const contentEnhancement = await aiContentEnhancer.enhanceResumeContent(resumeData);
+
+      // Return enhancement data for user review
+      res.status(200).json({
+        success: true,
+        data: {
+          originalResumeData: resumeData,
+          enhancedResumeData: contentEnhancement.enhancedContent,
+          improvements: contentEnhancement.improvements,
+          keywordsAdded: contentEnhancement.keywordsAdded || [],
+          atsScore: contentEnhancement.atsScore || 0,
+          enhancementSuggestions: {
+            // Create detailed suggestions for each section
+            personalInfo: this.createPersonalInfoSuggestions(resumeData.personalInfo, contentEnhancement.enhancedContent.personalInfo),
+            professionalSummary: this.createSummarySuggestions(resumeData.professionalSummary, contentEnhancement.enhancedContent.professionalSummary),
+            workExperience: this.createWorkExperienceSuggestions(resumeData.workExperience, contentEnhancement.enhancedContent.workExperience),
+            education: this.createEducationSuggestions(resumeData.education, contentEnhancement.enhancedContent.education),
+            skills: this.createSkillsSuggestions(resumeData.skills, contentEnhancement.enhancedContent.skills),
+            projects: this.createProjectsSuggestions(resumeData.projects, contentEnhancement.enhancedContent.projects)
+          }
+        }
+      });
+
+      console.log('✅ AI enhancement suggestions generated successfully');
+
+    } catch (error) {
+      console.error('❌ AI enhancement preview failed:', error);
+      res.status(500).json({
+        success: false,
+        message: 'AI enhancement preview failed',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  }
+
+  // Helper methods for creating detailed suggestions
+  private createPersonalInfoSuggestions(original: any, enhanced: any): any {
+    const suggestions = [];
+    
+    if (original?.professionalTitle !== enhanced?.professionalTitle && enhanced?.professionalTitle) {
+      suggestions.push({
+        field: 'professionalTitle',
+        type: 'improvement',
+        original: original?.professionalTitle || 'Not specified',
+        suggested: enhanced.professionalTitle,
+        reason: 'Enhanced professional title for better visibility'
+      });
+    }
+    
+    return { suggestions, hasChanges: suggestions.length > 0 };
+  }
+
+  private createSummarySuggestions(original: string, enhanced: string): any {
+    return {
+      suggestions: [{
+        field: 'professionalSummary',
+        type: 'improvement',
+        original: original || 'No summary',
+        suggested: enhanced || 'No enhanced summary',
+        reason: 'Improved summary with better keywords and impact statements',
+        hasChanges: original !== enhanced
+      }],
+      hasChanges: original !== enhanced
+    };
+  }
+
+  private createWorkExperienceSuggestions(original: any[], enhanced: any[]): any {
+    const suggestions = [];
+    
+    if (original && enhanced && original.length === enhanced.length) {
+      for (let i = 0; i < original.length; i++) {
+        const origExp = original[i];
+        const enhExp = enhanced[i];
+        
+        // Check for responsibility improvements
+        if (JSON.stringify(origExp.responsibilities) !== JSON.stringify(enhExp.responsibilities)) {
+          suggestions.push({
+            field: `workExperience[${i}].responsibilities`,
+            type: 'improvement',
+            original: origExp.responsibilities,
+            suggested: enhExp.responsibilities,
+            reason: 'Enhanced responsibilities with stronger action verbs and quantifiable results'
+          });
+        }
+        
+        // Check for achievement improvements
+        if (JSON.stringify(origExp.achievements) !== JSON.stringify(enhExp.achievements)) {
+          suggestions.push({
+            field: `workExperience[${i}].achievements`,
+            type: 'improvement', 
+            original: origExp.achievements,
+            suggested: enhExp.achievements,
+            reason: 'Enhanced achievements with measurable impact and industry keywords'
+          });
+        }
+      }
+    }
+    
+    return { suggestions, hasChanges: suggestions.length > 0 };
+  }
+
+  private createEducationSuggestions(original: any[], enhanced: any[]): any {
+    const suggestions = [];
+    // Basic comparison - can be enhanced based on specific needs
+    if (JSON.stringify(original) !== JSON.stringify(enhanced)) {
+      suggestions.push({
+        field: 'education',
+        type: 'improvement',
+        original: original,
+        suggested: enhanced,
+        reason: 'Enhanced education section formatting and relevant coursework'
+      });
+    }
+    
+    return { suggestions, hasChanges: suggestions.length > 0 };
+  }
+
+  private createSkillsSuggestions(original: any[], enhanced: any[]): any {
+    const suggestions = [];
+    if (JSON.stringify(original) !== JSON.stringify(enhanced)) {
+      suggestions.push({
+        field: 'skills',
+        type: 'improvement',
+        original: original,
+        suggested: enhanced,
+        reason: 'Enhanced skills with industry-relevant technologies and better categorization'
+      });
+    }
+    
+    return { suggestions, hasChanges: suggestions.length > 0 };
+  }
+
+  private createProjectsSuggestions(original: any[], enhanced: any[]): any {
+    const suggestions = [];
+    if (JSON.stringify(original) !== JSON.stringify(enhanced)) {
+      suggestions.push({
+        field: 'projects',
+        type: 'improvement',
+        original: original,
+        suggested: enhanced,
+        reason: 'Enhanced project descriptions with technical details and measurable outcomes'
+      });
+    }
+    
+    return { suggestions, hasChanges: suggestions.length > 0 };
+  }
+
+  // NEW: Job optimization preview-first method
+  async optimizeForJobPreview(req: Request, res: Response): Promise<void> {
+    try {
+      const { resumeData, jobDescription, jobTitle, companyName, templateId = 'template01' } = req.body;
+      
+      if (!resumeData || !jobDescription) {
+        res.status(400).json({
+          success: false,
+          message: 'Resume data and job description are required'
+        });
+        return;
+      }
+
+      console.log('🎯 [JOB-OPTIMIZATION-PREVIEW] Generating job optimization suggestions...');
+
+      // Use standardized job optimization service for preview
+      const optimizationResult = await standardizedJobOptimizationService.optimizeResumeForJob({
+        resumeData,
+        jobDescription,
+        jobTitle,
+        companyName,
+        templateId
+      });
+
+      // Extract detailed suggestions by comparing original vs optimized data
+      const optimizationSuggestions = {
+        personalInfo: this.createJobOptimizationSuggestions(
+          'personalInfo', 
+          resumeData.personalInfo, 
+          optimizationResult.optimizedResume?.personalInfo
+        ),
+        professionalSummary: this.createJobOptimizationSuggestions(
+          'professionalSummary', 
+          resumeData.professionalSummary, 
+          optimizationResult.optimizedResume?.professionalSummary
+        ),
+        workExperience: this.createJobOptimizationSuggestions(
+          'workExperience', 
+          resumeData.workExperience, 
+          optimizationResult.optimizedResume?.workExperience
+        ),
+        education: this.createJobOptimizationSuggestions(
+          'education', 
+          resumeData.education, 
+          optimizationResult.optimizedResume?.education
+        ),
+        skills: this.createJobOptimizationSuggestions(
+          'skills', 
+          resumeData.skills, 
+          optimizationResult.optimizedResume?.skills
+        ),
+        projects: this.createJobOptimizationSuggestions(
+          'projects', 
+          resumeData.projects, 
+          optimizationResult.optimizedResume?.projects
+        )
+      };
+
+      // Return job optimization preview data
+      res.status(200).json({
+        success: true,
+        data: {
+          originalResumeData: resumeData,
+          optimizedResumeData: optimizationResult.optimizedResume,
+          jobMatchScore: optimizationResult.jobMatchAnalysis?.overallScore || 0,
+          keywordAlignment: optimizationResult.jobMatchAnalysis?.keywordAlignment || 0,
+          skillsMatch: optimizationResult.jobMatchAnalysis?.skillsMatch || 0,
+          experienceMatch: optimizationResult.jobMatchAnalysis?.experienceMatch || 0,
+          addedKeywords: optimizationResult.jobMatchAnalysis?.addedKeywords || [],
+          missingKeywords: optimizationResult.jobMatchAnalysis?.missingKeywords || [],
+          recommendations: optimizationResult.jobMatchAnalysis?.recommendations || [],
+          jobContext: {
+            jobTitle: jobTitle || 'Target Position',
+            companyName: companyName || 'Target Company',
+            jobDescription: jobDescription.substring(0, 500) + '...'
+          },
+          optimizationSuggestions
+        }
+      });
+
+      console.log('✅ Job optimization suggestions generated successfully');
+
+    } catch (error) {
+      console.error('❌ Job optimization preview failed:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Job optimization preview failed',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  }
+
+  // Helper method for creating job optimization suggestions
+  private createJobOptimizationSuggestions(sectionName: string, original: any, optimized: any): any {
+    const suggestions = [];
+    
+    if (JSON.stringify(original) !== JSON.stringify(optimized)) {
+      if (sectionName === 'professionalSummary') {
+        suggestions.push({
+          field: 'professionalSummary',
+          type: 'job_optimization',
+          original: original || 'No summary',
+          suggested: optimized || 'No optimized summary',
+          reason: 'Optimized summary to align with job requirements and include relevant keywords'
+        });
+      } else if (sectionName === 'skills') {
+        // Compare skill arrays
+        const originalSkills = Array.isArray(original) ? original.map(s => s.name || s).join(', ') : '';
+        const optimizedSkills = Array.isArray(optimized) ? optimized.map(s => s.name || s).join(', ') : '';
+        
+        if (originalSkills !== optimizedSkills) {
+          suggestions.push({
+            field: 'skills',
+            type: 'job_optimization',
+            original: originalSkills || 'No skills listed',
+            suggested: optimizedSkills || 'No optimized skills',
+            reason: 'Added job-relevant skills and prioritized skills mentioned in the job posting'
+          });
+        }
+      } else if (sectionName === 'workExperience') {
+        // Compare work experience - focus on responsibilities and achievements
+        if (Array.isArray(original) && Array.isArray(optimized) && original.length === optimized.length) {
+          for (let i = 0; i < original.length; i++) {
+            const origExp = original[i];
+            const optExp = optimized[i];
+            
+            if (JSON.stringify(origExp.responsibilities) !== JSON.stringify(optExp.responsibilities)) {
+              suggestions.push({
+                field: `workExperience[${i}].responsibilities`,
+                type: 'job_optimization',
+                original: origExp.responsibilities || [],
+                suggested: optExp.responsibilities || [],
+                reason: `Enhanced responsibilities to highlight relevant experience for ${sectionName}`
+              });
+            }
+            
+            if (JSON.stringify(origExp.achievements) !== JSON.stringify(optExp.achievements)) {
+              suggestions.push({
+                field: `workExperience[${i}].achievements`,
+                type: 'job_optimization',
+                original: origExp.achievements || [],
+                suggested: optExp.achievements || [],
+                reason: `Optimized achievements to demonstrate value proposition for target role`
+              });
+            }
+          }
+        }
+      } else {
+        // Generic comparison for other sections
+        suggestions.push({
+          field: sectionName,
+          type: 'job_optimization',
+          original: original,
+          suggested: optimized,
+          reason: `Optimized ${sectionName} section to better align with job requirements`
+        });
+      }
+    }
+    
+    return { suggestions, hasChanges: suggestions.length > 0 };
   }
 }
 

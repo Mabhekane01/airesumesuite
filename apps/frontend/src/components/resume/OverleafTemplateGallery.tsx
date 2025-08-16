@@ -16,8 +16,9 @@ interface OverleafTemplate {
   id: string;
   name: string;
   description: string;
-  category: 'modern' | 'professional' | 'creative' | 'academic' | 'minimalist';
+  category: 'modern' | 'professional' | 'creative' | 'academic' | 'minimalist' | 'technology';
   screenshotUrl?: string;
+  enabled?: boolean;
   preview?: {
     screenshotUrl: string;
     thumbnailUrl: string;
@@ -100,7 +101,25 @@ export default function OverleafTemplateGallery({
     selectedCategory === 'all' || template.category === selectedCategory
   );
 
+  // Check if we're in production mode
+  const isProduction = false; // Temporarily set to false for testing
+  
+  // Function to check if template is available
+  const isTemplateAvailable = (templateId: string) => {
+    const template = templates.find(t => t.id === templateId);
+    return template?.enabled === true;
+  };
+
   const handleTemplateSelect = (templateId: string) => {
+    // Check if template is available for selection
+    if (!isTemplateAvailable(templateId)) {
+      toast.info('This template is coming soon! We\'re working hard to make it available for you.', {
+        duration: 4000,
+        position: 'top-center'
+      });
+      return;
+    }
+    
     onTemplateSelect(templateId);
     if (onClose) {
       onClose();
@@ -152,6 +171,29 @@ export default function OverleafTemplateGallery({
           <CheckIconSolid className="h-4 w-4 text-accent-success ml-4" />
           <span>ATS-optimized</span>
         </div>
+
+        {/* Production Notice */}
+        {isProduction && (
+          <div className="mt-6 p-4 bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 rounded-xl">
+            <div className="flex items-start space-x-3">
+              <div className="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                <SparklesIcon className="h-5 w-5 text-blue-400" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-dark-text-primary mb-1">
+                  🚀 More Templates Coming Soon!
+                </h3>
+                <p className="text-dark-text-secondary text-sm leading-relaxed">
+                  We're currently perfecting our template collection. The <span className="text-blue-400 font-medium">ASU Sparky Sundevil template</span> is ready for use, 
+                  while other templates are being fine-tuned for the best experience. Stay tuned for updates!
+                </p>
+                <div className="mt-2 text-xs text-dark-text-tertiary">
+                  ✨ New templates will be automatically available once they're ready
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Category Filters */}
@@ -199,16 +241,23 @@ export default function OverleafTemplateGallery({
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredTemplates.map((template) => {
           const isSelected = selectedTemplateId === template.id;
+          const isAvailable = isTemplateAvailable(template.id);
           const config = categoryConfig[template.category];
           const imageUrl = getImageUrl(template.preview?.thumbnailUrl || template.screenshotUrl);
           
           return (
             <Card
               key={template.id}
-              className={`card-glass-dark p-0 cursor-pointer transition-all duration-300 hover:shadow-glow-md group ${
+              className={`card-glass-dark p-0 transition-all duration-300 group relative ${
+                !isAvailable
+                  ? 'opacity-60 cursor-not-allowed'
+                  : 'cursor-pointer hover:shadow-glow-md'
+              } ${
                 isSelected 
                   ? 'border-accent-primary shadow-glow-sm' 
-                  : 'border-dark-border hover:border-accent-primary/50'
+                  : isAvailable
+                    ? 'border-dark-border hover:border-accent-primary/50'
+                    : 'border-dark-border/50'
               }`}
             >
               {/* Template Preview */}
@@ -235,18 +284,42 @@ export default function OverleafTemplateGallery({
                 </div>
                 
                 {/* Overlay Actions */}
-                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
-                  <Button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleTemplateSelect(template.id);
-                    }}
-                    className="bg-accent-primary text-white hover:bg-accent-primary/80 shadow-lg"
-                  >
-                    <CheckIcon className="h-4 w-4 mr-2" />
-                    Use This Template
-                  </Button>
+                <div className={`absolute inset-0 bg-black/50 opacity-0 transition-opacity duration-200 flex items-center justify-center ${
+                  isAvailable ? 'group-hover:opacity-100' : ''
+                }`}>
+                  {isAvailable ? (
+                    <Button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleTemplateSelect(template.id);
+                      }}
+                      className="bg-accent-primary text-white hover:bg-accent-primary/80 shadow-lg"
+                    >
+                      <CheckIcon className="h-4 w-4 mr-2" />
+                      Use This Template
+                    </Button>
+                  ) : (
+                    <div className="opacity-100 text-center">
+                      <div className="bg-orange-500/90 text-white px-4 py-2 rounded-lg font-medium text-sm shadow-lg">
+                        🚧 Coming Soon
+                      </div>
+                      <div className="mt-2 text-white/80 text-xs">
+                        Being perfected for you
+                      </div>
+                    </div>
+                  )}
                 </div>
+                
+                {/* Disabled Overlay for unavailable templates */}
+                {!isAvailable && (
+                  <div className="absolute inset-0 bg-black/30 opacity-100 flex items-center justify-center">
+                    <div className="text-center">
+                      <div className="bg-orange-500/90 text-white px-3 py-1.5 rounded-lg font-medium text-sm shadow-lg">
+                        🚧 Coming Soon
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Selected Indicator */}
                 {isSelected && (
@@ -258,29 +331,51 @@ export default function OverleafTemplateGallery({
 
               {/* Template Info */}
               <div className="space-y-2 p-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-dark-text-primary group-hover:text-accent-primary transition-colors">
-                    {template.name}
-                  </h3>
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1">
+                    <h3 className={`font-semibold transition-colors ${
+                      isAvailable 
+                        ? 'text-dark-text-primary group-hover:text-accent-primary' 
+                        : 'text-dark-text-secondary'
+                    }`}>
+                      {template.name}
+                      {!isAvailable && (
+                        <span className="ml-2 text-orange-400 text-sm font-normal">
+                          (Coming Soon)
+                        </span>
+                      )}
+                    </h3>
+                    {template.id === 'template01' && isProduction && (
+                      <div className="mt-1 text-xs text-green-400 font-medium">
+                        ✅ Available Now
+                      </div>
+                    )}
+                  </div>
                   <Badge
-                    className={`bg-gradient-to-r ${config.gradient} text-white text-xs px-2 py-1`}
+                    className={`bg-gradient-to-r ${config.gradient} text-white text-xs px-2 py-1 flex-shrink-0`}
                   >
                     {config.name}
                   </Badge>
                 </div>
                 
-                <p className="text-sm text-dark-text-secondary line-clamp-2">
+                <p className={`text-sm line-clamp-2 ${
+                  isAvailable ? 'text-dark-text-secondary' : 'text-dark-text-muted'
+                }`}>
                   {template.description}
                 </p>
               </div>
 
               {/* Click to Select */}
               <div 
-                className="absolute inset-0 cursor-pointer"
+                className={`absolute inset-0 ${isAvailable ? 'cursor-pointer' : 'cursor-not-allowed'}`}
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  handleTemplateSelect(template.id);
+                  if (isAvailable) {
+                    handleTemplateSelect(template.id);
+                  } else {
+                    handleTemplateSelect(template.id); // This will show the toast message
+                  }
                 }}
               />
             </Card>

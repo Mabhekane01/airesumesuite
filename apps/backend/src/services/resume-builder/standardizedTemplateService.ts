@@ -3,111 +3,22 @@ import path from "path";
 import {
   aiContentEnhancer,
   type ResumeData as AIResumeData,
-} from "./aiContentEnhancer"; // Assuming this path is correct
+} from "./aiContentEnhancer";
 
-// --- Interface Definition ---
-export interface StandardizedResumeData {
-  personalInfo: {
-    firstName: string;
-    lastName: string;
-    email: string;
-    phone: string;
-    location: string;
-    linkedinUrl?: string;
-    portfolioUrl?: string;
-    githubUrl?: string;
-    websiteUrl?: string;
-    professionalTitle?: string;
-  };
-  professionalSummary: string;
-  workExperience: Array<{
-    jobTitle: string;
-    company: string;
-    location: string;
-    startDate: string;
-    endDate?: string;
-    isCurrentJob: boolean;
-    responsibilities: string[];
-    achievements: string[];
-  }>;
-  education: Array<{
-    degree: string;
-    institution: string;
-    fieldOfStudy?: string;
-    location?: string;
-    graduationDate: string;
-    gpa?: string;
-    honors?: string[];
-  }>;
-  skills: Array<{
-    name: string;
-    category: string;
-    proficiencyLevel?: string;
-  }>;
-  projects?: Array<{
-    name: string;
-    description: string;
-    technologies: string[];
-    url?: string;
-    startDate?: string;
-    endDate?: string;
-  }>;
-  certifications?: Array<{
-    name: string;
-    issuer: string;
-    date: string;
-    expirationDate?: string;
-    url?: string;
-  }>;
-  languages?: Array<{
-    name: string;
-    proficiency: string;
-  }>;
-  volunteerExperience?: Array<{
-    organization: string;
-    role: string;
-    location: string;
-    startDate: string;
-    endDate?: string;
-    isCurrentRole: boolean;
-    description: string;
-    achievements: string[];
-  }>;
-  awards?: Array<{
-    title: string;
-    issuer: string;
-    date: string;
-    description?: string;
-  }>;
-  publications?: Array<{
-    title: string;
-    publisher: string;
-    publicationDate: string;
-    url?: string;
-    description?: string;
-  }>;
-  references?: Array<{
-    name: string;
-    title: string;
-    company: string;
-    email: string;
-    phone: string;
-    relationship: string;
-  }>;
-  hobbies?: Array<{
-    name: string;
-    description?: string;
-    category: string;
-  }>;
-  additionalSections?: Array<{
-    title: string;
-    content: string;
-  }>;
+// Template style detection and custom rendering
+interface TemplateStyle {
+  hasCustomCommands: boolean;
+  customCommands: string[];
+  usesSections: boolean;
+  usesItemize: boolean;
+  spacing: "compact" | "normal" | "spacious";
+  headerStyle: "simple" | "custom" | "complex";
 }
 
-// --- Service Class Definition ---
 export class StandardizedTemplateService {
   private templatesPath: string;
+  private templateCache: Map<string, string> = new Map();
+  private styleCache: Map<string, TemplateStyle> = new Map();
 
   constructor() {
     this.templatesPath = path.join(
@@ -120,7 +31,7 @@ export class StandardizedTemplateService {
   }
 
   /**
-   * Main method: Generate LaTeX from standardized template
+   * Main method: Generate LaTeX preserving original template style
    */
   async generateLatex(
     templateId: string,
@@ -132,31 +43,36 @@ export class StandardizedTemplateService {
     } = {}
   ): Promise<string> {
     console.log(
-      `🎯 Generating LaTeX with standardized template: ${templateId}`
+      `🎯 Generating LaTeX with style-preserving template: ${templateId}`
     );
+
     try {
-      // Step 1: Validate input data
       this.validateResumeData(resumeData);
 
-      // Step 2: Use provided template code or load from file
       const templateCode =
         options.customTemplateCode || (await this.loadTemplate(templateId));
 
-      // Step 3: Enhance content with AI (optional)
+      // Analyze template style to determine rendering approach
+      const templateStyle = this.analyzeTemplateStyle(templateCode, templateId);
+      console.log(`🎨 Detected template style:`, templateStyle);
+
       const enhancedData = options.enhanceWithAI
         ? await this.enhanceContent(resumeData, options.jobDescription)
         : resumeData;
 
-      // Step 4: Render template with data
-      const result = await this.renderTemplate(templateCode, enhancedData);
+      // Use style-aware rendering
+      const result = await this.renderWithStylePreservation(
+        templateCode,
+        enhancedData,
+        templateStyle
+      );
 
       console.log(
         `✅ LaTeX generated successfully (${result.length} characters)`
       );
       return result;
     } catch (error) {
-      console.error(`❌ Standardized template generation failed:`, error);
-      // Provide a more informative error message without exposing internal details
+      console.error(`❌ Style-preserving template generation failed:`, error);
       throw new Error(
         `Failed to generate LaTeX resume. Please check your data and try again.`
       );
@@ -164,10 +80,759 @@ export class StandardizedTemplateService {
   }
 
   /**
-   * Validate resume data to prevent LaTeX errors
+   * Analyze template to detect its specific style and commands
    */
+  private analyzeTemplateStyle(
+    template: string,
+    templateId: string
+  ): TemplateStyle {
+    if (this.styleCache.has(templateId)) {
+      return this.styleCache.get(templateId)!;
+    }
+
+    const style: TemplateStyle = {
+      hasCustomCommands: false,
+      customCommands: [],
+      usesSections: false,
+      usesItemize: true, // default to true unless we detect otherwise
+      spacing: "normal",
+      headerStyle: "simple",
+    };
+
+    // Detect custom commands
+    const customCommandMatches =
+      template.match(/\\newcommand\{\\(\w+)\}/g) || [];
+    style.customCommands = customCommandMatches.map((match) =>
+      match.replace(/\\newcommand\{\\(\w+)\}/, "$1")
+    );
+    style.hasCustomCommands = style.customCommands.length > 0;
+
+    // Detect specific custom commands we know about
+    if (template.includes("\\NameEmailPhoneSiteGithub")) {
+      style.headerStyle = "custom";
+      style.customCommands.push("NameEmailPhoneSiteGithub");
+    }
+    if (template.includes("\\NewPart")) {
+      style.usesSections = true;
+      style.customCommands.push("NewPart");
+    }
+    if (template.includes("\\SkillsEntry")) {
+      style.customCommands.push("SkillsEntry");
+    }
+
+    // Detect spacing style
+    if (
+      template.includes("\\sepspace") ||
+      template.includes("vspace*{0.5em}")
+    ) {
+      style.spacing = "compact";
+    } else if (
+      template.includes("\\bigskip") ||
+      template.includes("vspace{2em}")
+    ) {
+      style.spacing = "spacious";
+    }
+
+    // Check if template avoids itemize (some templates use custom formatting)
+    if (
+      template.includes("\\noindent\\hangindent") ||
+      template.includes("\\parbox") ||
+      style.customCommands.includes("SkillsEntry")
+    ) {
+      style.usesItemize = false;
+    }
+
+    console.log(`🔍 Template ${templateId} style analysis:`, style);
+    this.styleCache.set(templateId, style);
+    return style;
+  }
+
+  /**
+   * Render template with style preservation
+   */
+  private async renderWithStylePreservation(
+    template: string,
+    data: StandardizedResumeData,
+    style: TemplateStyle
+  ): Promise<string> {
+    let result = template;
+
+    // Handle personal information with style-aware approach
+    result = this.injectPersonalInfoStyleAware(
+      result,
+      data.personalInfo,
+      style
+    );
+
+    // Handle professional summary
+    result = result.replace(
+      /\{\{PROFESSIONAL_SUMMARY\}\}/g,
+      this.escapeLatex(
+        data.professionalSummary || "Professional seeking new opportunities."
+      )
+    );
+
+    // Check for template content placeholder
+    if (result.includes("{{TEMPLATE_CONTENT}}")) {
+      console.log(
+        "📋 Processing {{TEMPLATE_CONTENT}} with style preservation..."
+      );
+      const content = this.generateStyleAwareContent(data, style);
+      result = result.replace(/\{\{TEMPLATE_CONTENT\}\}/g, content);
+    } else {
+      // Process individual sections with style awareness
+      result = this.injectStyleAwareSection(
+        result,
+        "WORK_EXPERIENCE",
+        data.workExperience,
+        style,
+        this.renderWorkExperienceStyleAware
+      );
+      result = this.injectStyleAwareSection(
+        result,
+        "EDUCATION",
+        data.education,
+        style,
+        this.renderEducationStyleAware
+      );
+      result = this.injectStyleAwareSection(
+        result,
+        "SKILLS",
+        data.skills,
+        style,
+        this.renderSkillsStyleAware
+      );
+      result = this.injectStyleAwareSection(
+        result,
+        "PROJECTS",
+        data.projects,
+        style,
+        this.renderProjectsStyleAware
+      );
+      result = this.injectStyleAwareSection(
+        result,
+        "CERTIFICATIONS",
+        data.certifications,
+        style,
+        this.renderCertificationsStyleAware
+      );
+      result = this.injectStyleAwareSection(
+        result,
+        "LANGUAGES",
+        data.languages,
+        style,
+        this.renderLanguagesStyleAware
+      );
+      result = this.injectStyleAwareSection(
+        result,
+        "VOLUNTEER_EXPERIENCE",
+        data.volunteerExperience,
+        style,
+        this.renderVolunteerStyleAware
+      );
+      result = this.injectStyleAwareSection(
+        result,
+        "AWARDS",
+        data.awards,
+        style,
+        this.renderAwardsStyleAware
+      );
+      result = this.injectStyleAwareSection(
+        result,
+        "PUBLICATIONS",
+        data.publications,
+        style,
+        this.renderPublicationsStyleAware
+      );
+      result = this.injectStyleAwareSection(
+        result,
+        "REFERENCES",
+        data.references,
+        style,
+        this.renderReferencesStyleAware
+      );
+      result = this.injectStyleAwareSection(
+        result,
+        "HOBBIES",
+        data.hobbies,
+        style,
+        this.renderHobbiesStyleAware
+      );
+    }
+
+    // Handle handlebars if present
+    if (this.hasHandlebarsLoops(result)) {
+      result = this.renderHandlebarsTemplate(result, data);
+    }
+
+    // Clean up remaining placeholders
+    result = this.cleanupRemainingPlaceholders(result);
+
+    return result;
+  }
+
+  /**
+   * Generate full resume content with style awareness
+   */
+  private generateStyleAwareContent(
+    data: StandardizedResumeData,
+    style: TemplateStyle
+  ): string {
+    const sections: string[] = [];
+
+    // Personal Information Header - use template's custom commands if available
+    if (style.customCommands.includes("NameEmailPhoneSiteGithub")) {
+      const name = `${data.personalInfo.firstName} ${data.personalInfo.lastName}`;
+      const phone = data.personalInfo.phone || "";
+      const email = data.personalInfo.email || "";
+      const website =
+        data.personalInfo.websiteUrl || data.personalInfo.portfolioUrl || "";
+      const github = data.personalInfo.githubUrl || "";
+
+      sections.push(
+        `\\NameEmailPhoneSiteGithub{${this.escapeLatex(name)}}{${this.escapeLatex(email)}}{${this.escapeLatex(phone)}}{${this.escapeLatex(website)}}{${this.escapeLatex(github)}}`
+      );
+    } else {
+      // Fallback to generic header
+      sections.push(`\\begin{center}`);
+      sections.push(
+        `{\\Huge \\textbf{${this.escapeLatex(data.personalInfo.firstName)} ${this.escapeLatex(data.personalInfo.lastName)}}}\\\\[0.5em]`
+      );
+      sections.push(
+        `${this.escapeLatex(data.personalInfo.email)} $\\bullet$ ${this.escapeLatex(data.personalInfo.phone)}`
+      );
+      if (data.personalInfo.location) {
+        sections.push(
+          ` $\\bullet$ ${this.escapeLatex(data.personalInfo.location)}`
+        );
+      }
+      sections.push(`\\end{center}`);
+    }
+
+    this.addSpacing(sections, style);
+
+    // Professional Summary
+    if (data.professionalSummary) {
+      this.addSectionHeader(sections, "Professional Summary", style);
+      sections.push(this.escapeLatex(data.professionalSummary));
+      this.addSpacing(sections, style);
+    }
+
+    // Work Experience
+    if (data.workExperience?.length > 0) {
+      this.addSectionHeader(sections, "Work Experience", style);
+      data.workExperience.forEach((exp) => {
+        const content = this.renderWorkExperienceStyleAware([exp], style);
+        if (content.trim()) {
+          sections.push(content);
+        }
+      });
+      this.addSpacing(sections, style);
+    }
+
+    // Education
+    if (data.education?.length > 0) {
+      this.addSectionHeader(sections, "Education", style);
+      data.education.forEach((edu) => {
+        const content = this.renderEducationStyleAware([edu], style);
+        if (content.trim()) {
+          sections.push(content);
+        }
+      });
+      this.addSpacing(sections, style);
+    }
+
+    // Skills - use template's custom formatting if available
+    if (data.skills?.length > 0) {
+      this.addSectionHeader(sections, "Skills", style);
+      const skillsContent = this.renderSkillsStyleAware(data.skills, style);
+      if (skillsContent.trim()) {
+        sections.push(skillsContent);
+      }
+      this.addSpacing(sections, style);
+    }
+
+    // Continue with other sections...
+    this.addRemainingSection(
+      sections,
+      data.projects,
+      "Projects",
+      style,
+      this.renderProjectsStyleAware
+    );
+    this.addRemainingSection(
+      sections,
+      data.certifications,
+      "Certifications",
+      style,
+      this.renderCertificationsStyleAware
+    );
+    this.addRemainingSection(
+      sections,
+      data.languages,
+      "Languages",
+      style,
+      this.renderLanguagesStyleAware
+    );
+    this.addRemainingSection(
+      sections,
+      data.volunteerExperience,
+      "Volunteer Experience",
+      style,
+      this.renderVolunteerStyleAware
+    );
+    this.addRemainingSection(
+      sections,
+      data.awards,
+      "Awards & Honors",
+      style,
+      this.renderAwardsStyleAware
+    );
+    this.addRemainingSection(
+      sections,
+      data.publications,
+      "Publications",
+      style,
+      this.renderPublicationsStyleAware
+    );
+    this.addRemainingSection(
+      sections,
+      data.hobbies,
+      "Interests & Hobbies",
+      style,
+      this.renderHobbiesStyleAware
+    );
+
+    // References
+    if (data.references?.length > 0) {
+      this.addSectionHeader(sections, "References", style);
+      const referencesContent = this.renderReferencesStyleAware(
+        data.references,
+        style
+      );
+      if (referencesContent.trim()) {
+        sections.push(referencesContent);
+      }
+    } else {
+      this.addSectionHeader(sections, "References", style);
+      sections.push("References available upon request.");
+    }
+
+    return sections.join("\n");
+  }
+
+  /**
+   * Helper method to add remaining sections
+   */
+  private addRemainingSection(
+    sections: string[],
+    data: any[] | undefined,
+    title: string,
+    style: TemplateStyle,
+    renderer: (data: any[], style: TemplateStyle) => string
+  ): void {
+    if (data?.length > 0) {
+      this.addSectionHeader(sections, title, style);
+      const content = renderer.call(this, data, style);
+      if (content.trim()) {
+        sections.push(content);
+      }
+      this.addSpacing(sections, style);
+    }
+  }
+
+  /**
+   * Add section header using template's style
+   */
+  private addSectionHeader(
+    sections: string[],
+    title: string,
+    style: TemplateStyle
+  ): void {
+    if (style.customCommands.includes("NewPart")) {
+      sections.push(`\\NewPart{${this.escapeLatex(title)}}`);
+    } else if (style.usesSections) {
+      sections.push(`\\section*{${this.escapeLatex(title).toUpperCase()}}`);
+    } else {
+      sections.push(
+        `{\\large \\textbf{${this.escapeLatex(title)}}}\\\\[0.3em]`
+      );
+    }
+  }
+
+  /**
+   * Add appropriate spacing based on template style
+   */
+  private addSpacing(sections: string[], style: TemplateStyle): void {
+    switch (style.spacing) {
+      case "compact":
+        if (style.customCommands.includes("sepspace")) {
+          sections.push("\\sepspace");
+        } else {
+          sections.push("\\vspace{0.5em}");
+        }
+        break;
+      case "spacious":
+        sections.push("\\bigskip");
+        break;
+      default:
+        sections.push("\\medskip");
+    }
+  }
+
+  /**
+   * Style-aware work experience renderer
+   */
+  private renderWorkExperienceStyleAware = (
+    experiences: any[],
+    style: TemplateStyle
+  ): string => {
+    if (!Array.isArray(experiences) || experiences.length === 0) return "";
+
+    return experiences
+      .filter((exp) => exp?.jobTitle && exp?.company)
+      .map((exp) => {
+        const endDate = exp.isCurrentJob ? "Present" : exp.endDate || "";
+
+        let result = "";
+
+        // Use template-appropriate formatting
+        if (style.spacing === "compact") {
+          result += `\\textbf{${this.escapeLatex(exp.jobTitle)}} \\hfill ${this.escapeLatex(exp.startDate)} - ${this.escapeLatex(endDate)}\\\\`;
+          result += `\\textit{${this.escapeLatex(exp.company)}} \\hfill ${this.escapeLatex(exp.location)}\\\\[0.3em]`;
+        } else {
+          result += `{\\large \\textbf{${this.escapeLatex(exp.jobTitle)}}}\\\\`;
+          result += `\\textit{${this.escapeLatex(exp.company)}, ${this.escapeLatex(exp.location)}} \\hfill ${this.escapeLatex(exp.startDate)} - ${this.escapeLatex(endDate)}\\\\[0.5em]`;
+        }
+
+        // Handle responsibilities and achievements
+        const allItems = [
+          ...(exp.responsibilities || []),
+          ...(exp.achievements || []),
+        ];
+        if (allItems.length > 0) {
+          if (style.usesItemize) {
+            result += `\\begin{itemize}[leftmargin=*, parsep=0pt, itemsep=0pt]`;
+            allItems.forEach((item) => {
+              result += `\\item ${this.escapeLatex(item)}`;
+            });
+            result += `\\end{itemize}`;
+          } else {
+            // Use paragraph-style formatting for templates that avoid itemize
+            allItems.forEach((item) => {
+              result += `\\noindent $\\bullet$ ${this.escapeLatex(item)}\\\\`;
+            });
+          }
+        }
+
+        return result;
+      })
+      .join("\n\n");
+  };
+
+  /**
+   * Style-aware skills renderer
+   */
+  private renderSkillsStyleAware = (
+    skills: any[],
+    style: TemplateStyle
+  ): string => {
+    if (!Array.isArray(skills) || skills.length === 0) return "";
+
+    const skillsByCategory = skills.reduce(
+      (acc, skill) => {
+        const category = skill.category || "General";
+        if (!acc[category]) acc[category] = [];
+        acc[category].push(skill.name);
+        return acc;
+      },
+      {} as Record<string, string[]>
+    );
+
+    // Use SkillsEntry command if available
+    if (style.customCommands.includes("SkillsEntry")) {
+      return Object.entries(skillsByCategory)
+        .map(
+          ([category, skillNames]: [string, string[]]) =>
+            `\\SkillsEntry{${this.escapeLatex(category)}}{${this.escapeLatex(skillNames.join(", "))}}`
+        )
+        .join("\n");
+    } else {
+      // Fallback formatting
+      return Object.entries(skillsByCategory)
+        .map(
+          ([category, skillNames]: [string, string[]]) =>
+            `\\textbf{${this.escapeLatex(category)}:} ${this.escapeLatex(skillNames.join(", "))}\\\\[0.2em]`
+        )
+        .join("\n");
+    }
+  };
+
+  /**
+   * Style-aware personal info injection
+   */
+  private injectPersonalInfoStyleAware(
+    template: string,
+    personalInfo: any,
+    style: TemplateStyle
+  ): string {
+    if (!personalInfo) return template;
+
+    let result = template;
+
+    // Handle custom NameEmailPhoneSiteGithub command
+    if (style.customCommands.includes("NameEmailPhoneSiteGithub")) {
+      const fullName =
+        `${personalInfo.firstName || ""} ${personalInfo.lastName || ""}`.trim();
+      const email = personalInfo.email || "";
+      const phone = personalInfo.phone || "";
+      const website =
+        personalInfo.websiteUrl || personalInfo.portfolioUrl || "";
+      const github = personalInfo.githubUrl || "";
+
+      // Find and replace the command with proper escaping
+      const commandRegex =
+        /\\NameEmailPhoneSiteGithub\{[^}]*\}\{[^}]*\}\{[^}]*\}\{[^}]*\}\{[^}]*\}/;
+      result = result.replace(
+        commandRegex,
+        `\\NameEmailPhoneSiteGithub{${this.escapeLatex(fullName)}}{${this.escapeLatex(email)}}{${this.escapeLatex(phone)}}{${this.escapeLatex(website)}}{${this.escapeLatex(github)}}`
+      );
+    }
+
+    // Handle other personal info placeholders
+    result = result.replace(
+      /\{\{FIRST_NAME\}\}/g,
+      this.escapeLatex(personalInfo.firstName || "")
+    );
+    result = result.replace(
+      /\{\{LAST_NAME\}\}/g,
+      this.escapeLatex(personalInfo.lastName || "")
+    );
+    result = result.replace(
+      /\{\{EMAIL\}\}/g,
+      this.escapeLatex(personalInfo.email || "")
+    );
+    result = result.replace(
+      /\{\{PHONE\}\}/g,
+      this.escapeLatex(personalInfo.phone || "")
+    );
+
+    return result;
+  }
+
+  // Add style-aware renderers for other sections
+  private renderEducationStyleAware = (
+    education: any[],
+    style: TemplateStyle
+  ): string => {
+    if (!Array.isArray(education) || education.length === 0) return "";
+
+    return education
+      .filter((edu) => edu?.degree && edu?.institution)
+      .map((edu) => {
+        if (style.spacing === "compact") {
+          return (
+            `\\textbf{${this.escapeLatex(edu.degree)}} \\hfill ${this.escapeLatex(edu.graduationDate)}\\\\` +
+            `\\textit{${this.escapeLatex(edu.institution)}} ${edu.location ? `\\hfill ${this.escapeLatex(edu.location)}` : ""}\\\\[0.3em]`
+          );
+        } else {
+          return (
+            `{\\textbf{${this.escapeLatex(edu.degree)}}}\\\\` +
+            `${this.escapeLatex(edu.institution)}, ${this.escapeLatex(edu.location || "")} \\hfill ${this.escapeLatex(edu.graduationDate)}\\\\[0.5em]`
+          );
+        }
+      })
+      .join("\n\n");
+  };
+
+  private renderProjectsStyleAware = (
+    projects: any[],
+    style: TemplateStyle
+  ): string => {
+    if (!Array.isArray(projects) || projects.length === 0) return "";
+
+    return projects
+      .filter((project) => project?.name)
+      .map((project) => {
+        let result = `\\textbf{${this.escapeLatex(project.name)}}`;
+        if (project.url) {
+          result += ` \\hfill \\url{${this.escapeLatex(project.url)}}`;
+        }
+        result += "\\\\";
+
+        if (
+          Array.isArray(project.description) &&
+          project.description.length > 0
+        ) {
+          if (style.usesItemize) {
+            result += "\\begin{itemize}[leftmargin=*, parsep=0pt, itemsep=0pt]";
+            project.description.forEach((desc) => {
+              result += `\\item ${this.escapeLatex(desc)}`;
+            });
+            result += "\\end{itemize}";
+          } else {
+            project.description.forEach((desc) => {
+              result += `$\\bullet$ ${this.escapeLatex(desc)}\\\\`;
+            });
+          }
+        }
+
+        if (project.technologies?.length > 0) {
+          result += `\\textit{Technologies: ${this.escapeLatex(project.technologies.join(", "))}}\\\\[0.3em]`;
+        }
+
+        return result;
+      })
+      .join("\n\n");
+  };
+
+  // Add other style-aware renderers...
+  private renderCertificationsStyleAware = (
+    certifications: any[],
+    style: TemplateStyle
+  ): string => {
+    if (!Array.isArray(certifications) || certifications.length === 0)
+      return "";
+
+    return certifications
+      .filter((cert) => cert?.name && cert?.issuer)
+      .map((cert) => {
+        return (
+          `\\textbf{${this.escapeLatex(cert.name)}} \\hfill ${this.escapeLatex(cert.date)}\\\\` +
+          `\\textit{${this.escapeLatex(cert.issuer)}}\\\\[0.3em]`
+        );
+      })
+      .join("\n");
+  };
+
+  private renderLanguagesStyleAware = (
+    languages: any[],
+    style: TemplateStyle
+  ): string => {
+    if (!Array.isArray(languages) || languages.length === 0) return "";
+
+    if (style.customCommands.includes("SkillsEntry")) {
+      return `\\SkillsEntry{Languages}{${languages.map((lang) => `${this.escapeLatex(lang.name)} (${this.escapeLatex(lang.proficiency)})`).join(", ")}}`;
+    } else {
+      return languages
+        .map(
+          (lang) =>
+            `\\textbf{${this.escapeLatex(lang.name)}}: ${this.escapeLatex(lang.proficiency)}\\\\[0.2em]`
+        )
+        .join("\n");
+    }
+  };
+
+  private renderVolunteerStyleAware = (
+    volunteer: any[],
+    style: TemplateStyle
+  ): string => {
+    if (!Array.isArray(volunteer) || volunteer.length === 0) return "";
+
+    return volunteer
+      .filter((vol) => vol?.role && vol?.organization)
+      .map((vol) => {
+        const endDate = vol.isCurrentRole ? "Present" : vol.endDate || "";
+        return (
+          `\\textbf{${this.escapeLatex(vol.role)}} \\hfill ${this.escapeLatex(vol.startDate)} - ${this.escapeLatex(endDate)}\\\\` +
+          `\\textit{${this.escapeLatex(vol.organization)}, ${this.escapeLatex(vol.location)}}\\\\` +
+          (vol.description
+            ? `${this.escapeLatex(vol.description)}\\\\[0.3em]`
+            : "")
+        );
+      })
+      .join("\n\n");
+  };
+
+  private renderAwardsStyleAware = (
+    awards: any[],
+    style: TemplateStyle
+  ): string => {
+    if (!Array.isArray(awards) || awards.length === 0) return "";
+
+    return awards
+      .filter((award) => award?.title && award?.issuer)
+      .map((award) => {
+        return (
+          `\\textbf{${this.escapeLatex(award.title)}} \\hfill ${this.escapeLatex(award.date)}\\\\` +
+          `\\textit{${this.escapeLatex(award.issuer)}}\\\\[0.3em]`
+        );
+      })
+      .join("\n");
+  };
+
+  private renderPublicationsStyleAware = (
+    publications: any[],
+    style: TemplateStyle
+  ): string => {
+    if (!Array.isArray(publications) || publications.length === 0) return "";
+
+    return publications
+      .filter((pub) => pub?.title && pub?.publisher)
+      .map((pub) => {
+        return (
+          `\\textbf{${this.escapeLatex(pub.title)}} \\hfill ${this.escapeLatex(pub.publicationDate)}\\\\` +
+          `\\textit{${this.escapeLatex(pub.publisher)}}\\\\[0.3em]`
+        );
+      })
+      .join("\n");
+  };
+
+  private renderReferencesStyleAware = (
+    references: any[],
+    style: TemplateStyle
+  ): string => {
+    if (!Array.isArray(references) || references.length === 0) return "";
+
+    return references
+      .filter((ref) => ref?.name && ref?.email)
+      .map((ref) => {
+        return (
+          `\\textbf{${this.escapeLatex(ref.name)}} - ${this.escapeLatex(ref.title)}\\\\` +
+          `\\textit{${this.escapeLatex(ref.company)}}\\\\` +
+          `${this.escapeLatex(ref.email)} $\\bullet$ ${this.escapeLatex(ref.phone)}\\\\[0.3em]`
+        );
+      })
+      .join("\n");
+  };
+
+  private renderHobbiesStyleAware = (
+    hobbies: any[],
+    style: TemplateStyle
+  ): string => {
+    if (!Array.isArray(hobbies) || hobbies.length === 0) return "";
+
+    const hobbiesByCategory = hobbies.reduce(
+      (acc, hobby) => {
+        const category = hobby.category || "other";
+        if (!acc[category]) acc[category] = [];
+        acc[category].push(hobby.name);
+        return acc;
+      },
+      {} as Record<string, string[]>
+    );
+
+    if (style.customCommands.includes("SkillsEntry")) {
+      return Object.entries(hobbiesByCategory)
+        .map(([category, hobbyNames]: [string, string[]]) => {
+          const categoryName =
+            category.charAt(0).toUpperCase() + category.slice(1);
+          return `\\SkillsEntry{${this.escapeLatex(categoryName)}}{${this.escapeLatex(hobbyNames.join(", "))}}`;
+        })
+        .join("\n");
+    } else {
+      return Object.entries(hobbiesByCategory)
+        .map(([category, hobbyNames]: [string, string[]]) => {
+          const categoryName =
+            category.charAt(0).toUpperCase() + category.slice(1);
+          return `\\textbf{${this.escapeLatex(categoryName)}:} ${this.escapeLatex(hobbyNames.join(", "))}\\\\[0.2em]`;
+        })
+        .join("\n");
+    }
+  };
+
+  // Include all the other existing methods...
   private validateResumeData(data: StandardizedResumeData): void {
-    // Ensure required fields are present
     if (!data.personalInfo?.firstName || !data.personalInfo?.lastName) {
       throw new Error("First name and last name are required");
     }
@@ -175,7 +840,7 @@ export class StandardizedTemplateService {
       throw new Error("Email is required");
     }
 
-    // Ensure arrays are properly initialized (defensive programming)
+    // Initialize arrays
     data.workExperience = Array.isArray(data.workExperience)
       ? data.workExperience
       : [];
@@ -199,21 +864,20 @@ export class StandardizedTemplateService {
       ? data.additionalSections
       : [];
 
-    // Ensure professional summary exists
     if (!data.professionalSummary) {
       data.professionalSummary = "Professional seeking new opportunities.";
     }
   }
 
-  /**
-   * Load template from file system - prioritizes standardized templates
-   */
   private async loadTemplate(templateId: string): Promise<string> {
-    // Handle special case for template21 which has a space in directory name
+    if (this.templateCache.has(templateId)) {
+      return this.templateCache.get(templateId)!;
+    }
+
     const directoryName =
       templateId === "template21" ? "template 21" : templateId;
 
-    // First try to load standardized template
+    // Try standardized first
     const standardizedPath = path.join(
       this.templatesPath,
       directoryName,
@@ -223,13 +887,10 @@ export class StandardizedTemplateService {
     try {
       const template = await fs.readFile(standardizedPath, "utf8");
       console.log(`✅ Loaded standardized template: ${templateId}`);
+      this.templateCache.set(templateId, template);
       return template;
     } catch (error) {
-      console.log(
-        `⚠️ No standardized template found for ${templateId}, falling back to templatecode.txt`
-      );
-
-      // Fallback to original template file
+      // Fallback to original
       const originalPath = path.join(
         this.templatesPath,
         directoryName,
@@ -239,6 +900,7 @@ export class StandardizedTemplateService {
       try {
         const template = await fs.readFile(originalPath, "utf8");
         console.log(`✅ Loaded original template: ${templateId}`);
+        this.templateCache.set(templateId, template);
         return template;
       } catch (fallbackError) {
         throw new Error(
@@ -248,16 +910,12 @@ export class StandardizedTemplateService {
     }
   }
 
-  /**
-   * Enhanced content enhancement with error handling
-   */
   private async enhanceContent(
     resumeData: StandardizedResumeData,
     jobDescription?: string
   ): Promise<StandardizedResumeData> {
-    console.log("🤖 Enhancing content with new AI Content Enhancer...");
+    console.log("🤖 Enhancing content with AI Content Enhancer...");
     try {
-      // Convert to AI enhancer format (defensive copy)
       const aiResumeData: AIResumeData = {
         personalInfo: { ...resumeData.personalInfo },
         professionalSummary: resumeData.professionalSummary || "",
@@ -275,7 +933,6 @@ export class StandardizedTemplateService {
         additionalSections: [...(resumeData.additionalSections || [])],
       };
 
-      // Use the new AI content enhancer
       const enhancementResult = jobDescription
         ? await aiContentEnhancer.optimizeForJob(aiResumeData, jobDescription)
         : await aiContentEnhancer.enhanceResumeContent(aiResumeData);
@@ -283,16 +940,7 @@ export class StandardizedTemplateService {
       console.log(
         `✅ Content enhanced with AI. ATS Score: ${enhancementResult.atsScore}%`
       );
-      console.log(
-        `🔧 Improvements made: ${enhancementResult.improvements.join(", ")}`
-      );
-      if (enhancementResult.keywordsAdded?.length > 0) {
-        console.log(
-          `🎯 Keywords added: ${enhancementResult.keywordsAdded.join(", ")}`
-        );
-      }
 
-      // Convert back to StandardizedResumeData format (defensive copy)
       return {
         personalInfo: { ...enhancementResult.enhancedContent.personalInfo },
         professionalSummary:
@@ -319,354 +967,60 @@ export class StandardizedTemplateService {
         "⚠️ AI content enhancement failed, using original content:",
         error
       );
-      return resumeData; // Return original data on AI failure
+      return resumeData;
     }
   }
 
-  /**
-   * Enhanced template rendering with better error handling
-   */
-  private async renderTemplate(
+  private injectStyleAwareSection(
     template: string,
-    data: StandardizedResumeData
-  ): Promise<string> {
-    let result = template;
+    sectionName: string,
+    data: any,
+    style: TemplateStyle,
+    renderer: (data: any, style: TemplateStyle) => string
+  ): string {
     try {
-      // Personal Information (always present)
-      result = this.injectPersonalInfo(result, data.personalInfo);
+      const hasData =
+        data &&
+        ((Array.isArray(data) && data.length > 0) ||
+          (!Array.isArray(data) && data));
 
-      // Professional Summary (always present)
-      result = result.replace(
-        /\{\{PROFESSIONAL_SUMMARY\}\}/g,
-        this.escapeLatex(
-          data.professionalSummary || "Professional seeking new opportunities."
-        )
-      );
+      if (hasData) {
+        const renderedContent = renderer.call(this, data, style);
 
-      // Check if template uses handlebars-style loops and process accordingly
-      if (this.hasHandlebarsLoops(result)) {
-        console.log(
-          "🔄 Template uses handlebars-style loops, processing with handlebars renderer"
+        const conditionalRegex = new RegExp(
+          `\\{\\{#IF_${sectionName}\\}\\}([\\s\\S]*?)\\{\\{${sectionName}\\}\\}([\\s\\S]*?)\\{\\{/IF_${sectionName}\\}\\}`,
+          "g"
         );
-        result = this.renderHandlebarsTemplate(result, data);
+
+        template = template.replace(
+          conditionalRegex,
+          (match, beforeContent, afterContent) => {
+            if (renderedContent && renderedContent.trim()) {
+              return beforeContent + renderedContent + afterContent;
+            } else {
+              return "";
+            }
+          }
+        );
       } else {
-        console.log(
-          "📝 Template uses simple placeholders, processing with standard renderer"
+        const conditionalRegex = new RegExp(
+          `\\{\\{#IF_${sectionName}\\}\\}[\\s\\S]*?\\{\\{/IF_${sectionName}\\}\\}`,
+          "g"
         );
-        // Conditional sections - with enhanced error handling
-        result = this.injectConditionalSection(
-          result,
-          "WORK_EXPERIENCE",
-          data.workExperience,
-          this.renderWorkExperience
-        );
-        result = this.injectConditionalSection(
-          result,
-          "EDUCATION",
-          data.education,
-          this.renderEducation
-        );
-        result = this.injectConditionalSection(
-          result,
-          "SKILLS",
-          data.skills,
-          this.renderSkills
-        );
-        result = this.injectConditionalSection(
-          result,
-          "PROJECTS",
-          data.projects,
-          this.renderProjects
-        );
-        result = this.injectConditionalSection(
-          result,
-          "CERTIFICATIONS",
-          data.certifications,
-          this.renderCertifications
-        );
-        result = this.injectConditionalSection(
-          result,
-          "LANGUAGES",
-          data.languages,
-          this.renderLanguages
-        );
-        result = this.injectConditionalSection(
-          result,
-          "VOLUNTEER_EXPERIENCE",
-          data.volunteerExperience,
-          this.renderVolunteerExperience
-        );
-        result = this.injectConditionalSection(
-          result,
-          "AWARDS",
-          data.awards,
-          this.renderAwards
-        );
-        result = this.injectConditionalSection(
-          result,
-          "PUBLICATIONS",
-          data.publications,
-          this.renderPublications
-        );
-        result = this.injectConditionalSection(
-          result,
-          "REFERENCES",
-          data.references,
-          this.renderReferences
-        );
-        result = this.injectConditionalSection(
-          result,
-          "HOBBIES",
-          data.hobbies,
-          this.renderHobbies
-        );
-        result = this.injectConditionalSection(
-          result,
-          "ADDITIONAL_SECTIONS",
-          data.additionalSections,
-          this.renderAdditionalSections
-        );
+        template = template.replace(conditionalRegex, "");
       }
 
-      // Handle single TEMPLATE_CONTENT placeholder (some templates use this instead of individual placeholders)
-      if (result.includes('{{TEMPLATE_CONTENT}}')) {
-        console.log('📋 Processing {{TEMPLATE_CONTENT}} placeholder...');
-        const content = this.generateFullResumeContent(data);
-        result = result.replace(/\{\{TEMPLATE_CONTENT\}\}/g, content);
-      }
-
-      // CRITICAL: Clean up any remaining unprocessed placeholders
-      result = this.cleanupRemainingPlaceholders(result);
-
-      // Final validation
-      this.validateLatexOutput(result);
-
-      return result;
+      return template;
     } catch (error) {
-      console.error("❌ Template rendering failed:", error);
-      throw new Error(`Template rendering failed. Please check your data.`);
+      console.error(`❌ Error processing section ${sectionName}:`, error);
+      const conditionalRegex = new RegExp(
+        `\\{\\{#IF_${sectionName}\\}\\}[\\s\\S]*?\\{\\{/IF_${sectionName}\\}\\}`,
+        "g"
+      );
+      return template.replace(conditionalRegex, "");
     }
   }
 
-  /**
-   * Generate full resume content for TEMPLATE_CONTENT placeholder
-   */
-  private generateFullResumeContent(data: StandardizedResumeData): string {
-    console.log('🔍 Generating full resume content with sections:', {
-      languages: data.languages?.length || 0,
-      hobbies: data.hobbies?.length || 0,
-      volunteerExperience: data.volunteerExperience?.length || 0,
-      awards: data.awards?.length || 0,
-      publications: data.publications?.length || 0,
-      references: data.references?.length || 0,
-      additionalSections: data.additionalSections?.length || 0,
-      certifications: data.certifications?.length || 0,
-      workExperience: data.workExperience?.length || 0,
-      education: data.education?.length || 0,
-      skills: data.skills?.length || 0,
-      projects: data.projects?.length || 0
-    });
-    
-    const sections: string[] = [];
-
-    // Personal Information Header - using the template's custom commands
-    const name = `${data.personalInfo.firstName} ${data.personalInfo.lastName}`;
-    const email = data.personalInfo.email;
-    const phone = data.personalInfo.phone;
-    const website = data.personalInfo.websiteUrl || data.personalInfo.portfolioUrl || '';
-    const github = data.personalInfo.githubUrl || '';
-    
-    sections.push(`\\NameEmailPhoneSiteGithub{${this.escapeLatex(name)}}{${this.escapeLatex(email)}}{${this.escapeLatex(phone)}}{${this.escapeLatex(website)}}{${this.escapeLatex(github)}}`);
-    sections.push('\\sepspace');
-
-    // Professional Summary
-    if (data.professionalSummary) {
-      sections.push(`\\NewPart{Professional Summary}`);
-      sections.push(this.escapeLatex(data.professionalSummary));
-      sections.push('\\sepspace');
-    }
-
-    // Work Experience
-    if (data.workExperience && data.workExperience.length > 0) {
-      sections.push(`\\NewPart{Work Experience}`);
-      data.workExperience.forEach(exp => {
-        const endDate = exp.endDate || 'Present';
-        sections.push(`\\textbf{${this.escapeLatex(exp.jobTitle)}} \\hfill ${this.escapeLatex(exp.startDate)} - ${this.escapeLatex(endDate)}`);
-        sections.push(`\\textit{${this.escapeLatex(exp.company)}} \\hfill ${this.escapeLatex(exp.location)}`);
-        
-        if (exp.achievements && exp.achievements.length > 0) {
-          sections.push('\\begin{itemize}');
-          exp.achievements.forEach(achievement => {
-            sections.push(`\\item ${this.escapeLatex(achievement)}`);
-          });
-          sections.push('\\end{itemize}');
-        }
-        sections.push('\\sepspace');
-      });
-    }
-
-    // Education
-    if (data.education && data.education.length > 0) {
-      sections.push(`\\NewPart{Education}`);
-      data.education.forEach(edu => {
-        sections.push(`\\textbf{${this.escapeLatex(edu.degree)}} \\hfill ${this.escapeLatex(edu.graduationDate)}`);
-        sections.push(`\\textit{${this.escapeLatex(edu.institution)}} ${edu.location ? `\\hfill ${this.escapeLatex(edu.location)}` : ''}`);
-        if (edu.gpa) {
-          sections.push(`GPA: ${this.escapeLatex(edu.gpa)}`);
-        }
-        sections.push('\\sepspace');
-      });
-    }
-
-    // Skills
-    if (data.skills && data.skills.length > 0) {
-      sections.push(`\\NewPart{Skills}`);
-      const skillsByCategory = data.skills.reduce((acc, skill) => {
-        const category = skill.category || 'General';
-        if (!acc[category]) acc[category] = [];
-        acc[category].push(skill.name);
-        return acc;
-      }, {} as Record<string, string[]>);
-
-      Object.entries(skillsByCategory).forEach(([category, skills]) => {
-        sections.push(`\\SkillsEntry{${this.escapeLatex(category)}}{${this.escapeLatex(skills.join(', '))}}`);
-      });
-      sections.push('\\sepspace');
-    }
-
-    // Projects
-    if (data.projects && data.projects.length > 0) {
-      sections.push(`\\NewPart{Projects}`);
-      data.projects.forEach(project => {
-        sections.push(`\\textbf{${this.escapeLatex(project.name)}} ${project.url ? `\\hfill \\url{${this.escapeLatex(project.url)}}` : ''}`);
-        sections.push(this.escapeLatex(project.description));
-        if (project.technologies && project.technologies.length > 0) {
-          sections.push(`\\textit{Technologies: ${this.escapeLatex(project.technologies.join(', '))}}`);
-        }
-        sections.push('\\sepspace');
-      });
-    }
-
-    // Certifications
-    if (data.certifications && data.certifications.length > 0) {
-      sections.push(`\\NewPart{Certifications}`);
-      data.certifications.forEach(cert => {
-        sections.push(`\\textbf{${this.escapeLatex(cert.name)}} \\hfill ${this.escapeLatex(cert.date)}`);
-        sections.push(`\\textit{${this.escapeLatex(cert.issuer)}}`);
-        if (cert.expirationDate) {
-          sections.push(`\\textit{Expires: ${this.escapeLatex(cert.expirationDate)}}`);
-        }
-        sections.push('\\sepspace');
-      });
-    }
-
-    // Languages
-    if (data.languages && data.languages.length > 0) {
-      sections.push(`\\NewPart{Languages}`);
-      data.languages.forEach(lang => {
-        sections.push(`\\textbf{${this.escapeLatex(lang.name)}} \\hfill ${this.escapeLatex(lang.proficiency)}`);
-      });
-      sections.push('\\sepspace');
-    }
-
-    // Volunteer Experience
-    if (data.volunteerExperience && data.volunteerExperience.length > 0) {
-      sections.push(`\\NewPart{Volunteer Experience}`);
-      data.volunteerExperience.forEach(vol => {
-        const endDate = vol.endDate || 'Present';
-        sections.push(`\\textbf{${this.escapeLatex(vol.role)}} \\hfill ${this.escapeLatex(vol.startDate)} - ${this.escapeLatex(endDate)}`);
-        sections.push(`\\textit{${this.escapeLatex(vol.organization)}} \\hfill ${this.escapeLatex(vol.location)}`);
-        sections.push(this.escapeLatex(vol.description));
-        
-        if (vol.achievements && vol.achievements.length > 0) {
-          sections.push('\\begin{itemize}');
-          vol.achievements.forEach(achievement => {
-            sections.push(`\\item ${this.escapeLatex(achievement)}`);
-          });
-          sections.push('\\end{itemize}');
-        }
-        sections.push('\\sepspace');
-      });
-    }
-
-    // Awards
-    if (data.awards && data.awards.length > 0) {
-      sections.push(`\\NewPart{Awards \\& Honors}`);
-      data.awards.forEach(award => {
-        sections.push(`\\textbf{${this.escapeLatex(award.title)}} \\hfill ${this.escapeLatex(award.date)}`);
-        sections.push(`\\textit{${this.escapeLatex(award.issuer)}}`);
-        if (award.description) {
-          sections.push(this.escapeLatex(award.description));
-        }
-        sections.push('\\sepspace');
-      });
-    }
-
-    // Publications
-    if (data.publications && data.publications.length > 0) {
-      sections.push(`\\NewPart{Publications}`);
-      data.publications.forEach(pub => {
-        sections.push(`\\textbf{${this.escapeLatex(pub.title)}} \\hfill ${this.escapeLatex(pub.publicationDate)}`);
-        sections.push(`\\textit{${this.escapeLatex(pub.publisher)}}`);
-        if (pub.url) {
-          sections.push(`\\url{${this.escapeLatex(pub.url)}}`);
-        }
-        if (pub.description) {
-          sections.push(this.escapeLatex(pub.description));
-        }
-        sections.push('\\sepspace');
-      });
-    }
-
-    // Hobbies
-    if (data.hobbies && data.hobbies.length > 0) {
-      sections.push(`\\NewPart{Interests \\& Hobbies}`);
-      const hobbiesByCategory = data.hobbies.reduce((acc, hobby) => {
-        const category = hobby.category || 'other';
-        if (!acc[category]) acc[category] = [];
-        acc[category].push(hobby.name);
-        return acc;
-      }, {} as Record<string, string[]>);
-
-      Object.entries(hobbiesByCategory).forEach(([category, hobbies]) => {
-        const categoryName = category.charAt(0).toUpperCase() + category.slice(1);
-        sections.push(`\\SkillsEntry{${this.escapeLatex(categoryName)}}{${this.escapeLatex(hobbies.join(', '))}}`);
-      });
-      sections.push('\\sepspace');
-    }
-
-    // References
-    if (data.references && data.references.length > 0) {
-      sections.push(`\\NewPart{References}`);
-      data.references.forEach(ref => {
-        sections.push(`\\textbf{${this.escapeLatex(ref.name)}} - ${this.escapeLatex(ref.title)}`);
-        sections.push(`\\textit{${this.escapeLatex(ref.company)}}`);
-        sections.push(`${this.escapeLatex(ref.email)} $\\bullet$ ${this.escapeLatex(ref.phone)}`);
-        sections.push(`\\textit{Relationship: ${this.escapeLatex(ref.relationship)}}`);
-        sections.push('\\sepspace');
-      });
-    } else {
-      // Add standard references available upon request
-      sections.push(`\\NewPart{References}`);
-      sections.push('References available upon request.');
-      sections.push('\\sepspace');
-    }
-
-    // Additional Sections
-    if (data.additionalSections && data.additionalSections.length > 0) {
-      data.additionalSections.forEach(section => {
-        sections.push(`\\NewPart{${this.escapeLatex(section.title)}}`);
-        sections.push(this.escapeLatex(section.content));
-        sections.push('\\sepspace');
-      });
-    }
-
-    return sections.join('\n');
-  }
-
-  /**
-   * Check if template uses handlebars-style loops
-   */
   private hasHandlebarsLoops(template: string): boolean {
     const handlebarsPatterns = [
       /\{\{#WORK_EXPERIENCE\}\}/,
@@ -684,10 +1038,6 @@ export class StandardizedTemplateService {
     return handlebarsPatterns.some((pattern) => pattern.test(template));
   }
 
-  /**
-   * Render template with handlebars-style loops
-   * This is the core logic for processing complex templates
-   */
   private renderHandlebarsTemplate(
     template: string,
     data: StandardizedResumeData
@@ -706,7 +1056,7 @@ export class StandardizedTemplateService {
           .join("\n  ");
         const achievements = (exp.achievements || [])
           .map((a) => `\\item \\textit{${this.escapeLatex(a)}}`)
-          .join("\n  "); // Italicize achievements
+          .join("\n  ");
         let itemsContent = "";
         if (responsibilities || achievements) {
           itemsContent = `\\begin{itemize}\n  ${responsibilities}${responsibilities && achievements ? "\n  " : ""}${achievements}\n\\end{itemize}`;
@@ -738,11 +1088,11 @@ export class StandardizedTemplateService {
             ? this.escapeLatex(edu.fieldOfStudy)
             : "",
           location: edu.location ? this.escapeLatex(edu.location) : "",
-          startDate: this.escapeLatex(edu.graduationDate || ""), // Note: using graduationDate as startDate for compatibility
+          startDate: this.escapeLatex(edu.graduationDate || ""),
           endDate: this.escapeLatex(edu.graduationDate || ""),
           gpa: edu.gpa ? this.escapeLatex(edu.gpa) : "",
           honors: edu.honors || [],
-          courses: [], // Add courses if needed in future
+          courses: [],
         };
       }
     );
@@ -784,7 +1134,11 @@ export class StandardizedTemplateService {
       (project) => {
         return {
           name: this.escapeLatex(project.name || ""),
-          description: this.escapeLatex(project.description || ""),
+          description: this.escapeLatex(
+            Array.isArray(project.description)
+              ? project.description.join(". ")
+              : project.description || ""
+          ),
           technologies: project.technologies || [],
           url: project.url || "",
           startDate: project.startDate || "",
@@ -804,7 +1158,7 @@ export class StandardizedTemplateService {
           issuer: this.escapeLatex(cert.issuer || ""),
           date: this.escapeLatex(cert.date || ""),
           expirationDate: cert.expirationDate || "",
-          credentialId: cert.url || "", // Using url as credentialId for compatibility
+          credentialId: cert.url || "",
           url: cert.url || "",
         };
       }
@@ -832,7 +1186,7 @@ export class StandardizedTemplateService {
           isCurrentRole: vol.isCurrentRole,
           description: this.escapeLatex(vol.description || ""),
           achievements: vol.achievements || [],
-          achievementsList, // Pre-rendered achievements list
+          achievementsList,
         };
       }
     );
@@ -906,18 +1260,13 @@ export class StandardizedTemplateService {
     return result;
   }
 
-  /**
-   * Process a handlebars section with loop support
-   * This is the core engine for handling {{#SECTION}}...{{/SECTION}} blocks
-   */
   private processHandlebarsSection<T>(
     template: string,
     sectionName: string,
     data: T[] | undefined,
-    transformer: (item: T) => Record<string, any> // Return a record for easier placeholder replacement
+    transformer: (item: T) => Record<string, any>
   ): string {
     if (!data || data.length === 0) {
-      // Remove the entire conditional section if no data
       const sectionRegex = new RegExp(
         `\\{\\{#IF_${sectionName}\\}\\}[\\s\\S]*?\\{\\{/IF_${sectionName}\\}\\}`,
         "g"
@@ -925,21 +1274,20 @@ export class StandardizedTemplateService {
       return template.replace(sectionRegex, "");
     }
 
-    // Find and process the handlebars loop
     const loopRegex = new RegExp(
       `\\{\\{#${sectionName}\\}\\}([\\s\\S]*?)\\{\\{/${sectionName}\\}\\}`,
       "g"
     );
+
     return template.replace(loopRegex, (match, loopContent) => {
       return data
         .map((item) => {
           const transformedItem = transformer(item);
           let renderedItem = loopContent;
 
-          // --- 1. Handle array fields (e.g., {{#responsibilities}}...{{/responsibilities}}) ---
+          // Handle array fields
           Object.entries(transformedItem).forEach(([key, value]) => {
             if (Array.isArray(value)) {
-              // Handle array fields like responsibilities, achievements, technologies, honors
               const arrayRegex = new RegExp(
                 `\\{\\{#${key}\\}\\}([\\s\\S]*?)\\{\\{/${key}\\}\\}`,
                 "g"
@@ -947,14 +1295,11 @@ export class StandardizedTemplateService {
               renderedItem = renderedItem.replace(
                 arrayRegex,
                 (arrayMatch, arrayContent) => {
-                  // If the array is empty, remove the block entirely
                   if (value.length === 0) {
                     return "";
                   }
                   return value
                     .map((arrayItem) => {
-                      // Handle {{.}} for current item in iteration
-                      // Also handle simple placeholders like {{this}} if used
                       let processedArrayItemContent = arrayContent
                         .replace(
                           /\{\{\.\}\}/g,
@@ -966,68 +1311,56 @@ export class StandardizedTemplateService {
                         );
                       return processedArrayItemContent;
                     })
-                    .join("\n"); // Join array items with newlines
+                    .join("\n");
                 }
               );
             }
-            // Simple field replacements are handled later
           });
 
-          // --- 2. Handle conditional fields like {{#if isCurrentJob}}...{{/if}} ---
+          // Handle conditional fields
           renderedItem = renderedItem.replace(
             /\{\{#if (\w+)\}\}([\s\S]*?)\{\{\/if\}\}/g,
             (m, fieldName, content) => {
               const fieldValue = transformedItem[fieldName];
-              // If field is truthy (and not false/0/""), include the content
               if (fieldValue) {
                 return content;
               }
-              // Otherwise, remove the block
               return "";
             }
           );
 
-          // --- 3. Handle {{#unless fieldName}}...{{/unless}} ---
           renderedItem = renderedItem.replace(
             /\{\{#unless (\w+)\}\}([\s\S]*?)\{\{\/unless\}\}/g,
             (m, fieldName, content) => {
               const fieldValue = transformedItem[fieldName];
-              // If field is falsy, include the content
               if (!fieldValue) {
                 return content;
               }
-              // Otherwise, remove the block
               return "";
             }
           );
 
-          // --- 4. Handle {{#fieldName}}...{{/fieldName}} for optional content ---
-          // If the field has a value, replace the block content with the content inside.
-          // If not, remove the block entirely.
+          // Handle optional content blocks
           renderedItem = renderedItem.replace(
             /\{\{#(\w+)\}\}([\s\S]*?)\{\{\/\1\}\}/g,
             (m, fieldName, content) => {
               const fieldValue = transformedItem[fieldName];
-              // If field exists and is not empty/falsy, return the content inside the block
               if (
                 fieldValue !== undefined &&
                 fieldValue !== null &&
                 fieldValue !== ""
               ) {
-                // Replace the placeholder inside the block content if it matches the field name
                 return content.replace(
                   new RegExp(`\\{\\{${fieldName}\\}\\}`, "g"),
                   String(fieldValue)
                 );
               }
-              // Otherwise, remove the block
               return "";
             }
           );
 
-          // --- 5. Handle simple field replacements (e.g., {{jobTitle}}, {{company}}) ---
+          // Handle simple field replacements
           Object.entries(transformedItem).forEach(([key, value]) => {
-            // Only replace simple fields, not arrays (already handled) or complex objects
             if (
               typeof value === "string" ||
               typeof value === "number" ||
@@ -1040,58 +1373,31 @@ export class StandardizedTemplateService {
 
           return renderedItem;
         })
-        .join("\n"); // Join individual items with a newline
+        .join("\n");
     });
   }
 
-  /**
-   * Validate LaTeX output for common errors (basic checks)
-   */
-  private validateLatexOutput(latex: string): void {
-    // Check for remaining placeholders (this should ideally be empty after cleanup)
-    const remainingPlaceholders = latex.match(/\{\{[^}]+\}\}/g);
-    if (remainingPlaceholders) {
-      console.warn("⚠️ Found unprocessed placeholders:", remainingPlaceholders);
-      // In production, you might want to throw an error or log this more prominently
-    }
-
-    // Check for unmatched braces (very basic check)
-    const openBraces = (latex.match(/\{/g) || []).length;
-    const closeBraces = (latex.match(/\}/g) || []).length;
-    if (Math.abs(openBraces - closeBraces) > 5) {
-      // Allow small discrepancies due to complex templates
-      console.warn(
-        `⚠️ Potential unmatched braces detected: ${openBraces} open, ${closeBraces} close`
-      );
-    }
-  }
-
-  /**
-   * Enhanced placeholder cleanup - more robust and iterative
-   */
   private cleanupRemainingPlaceholders(template: string): string {
     console.log("🧹 Cleaning up remaining placeholders...");
     let result = template;
     let iterations = 0;
-    const maxIterations = 15; // Increased iterations for complex templates
+    const maxIterations = 15;
 
     while (iterations < maxIterations) {
       const originalLength = result.length;
 
-      // 1. Remove complex conditional blocks first (these can contain problematic characters)
+      // Remove complex conditional blocks first
       result = result.replace(
         /\{\{#IF_[^}]+\}\}[\s\S]*?\{\{\/IF_[^}]+\}\}/g,
         ""
       );
 
-      // 2. Remove remaining simple placeholders
+      // Remove remaining simple placeholders
       result = result.replace(/\{\{[^}]+\}\}/g, "");
 
-      // 3. Remove empty lines that might have been left, but be careful not to remove intentional spacing
-      // Only collapse multiple consecutive newlines, not single ones
-      result = result.replace(/\n{3,}/g, "\n\n"); // Reduce excessive newlines
+      // Clean up excessive newlines
+      result = result.replace(/\n{3,}/g, "\n\n");
 
-      // If no changes made, break
       if (result.length === originalLength) {
         break;
       }
@@ -1108,677 +1414,34 @@ export class StandardizedTemplateService {
     return result;
   }
 
-  /**
-   * Enhanced personal info injection with better validation
-   */
-  private injectPersonalInfo(template: string, personalInfo: any): string {
-    let result = template;
-    if (!personalInfo) {
-        // Clean up all possible personal info placeholders if no data is provided
-        result = result.replace(/\{\{\{?PERSONAL_INFO\.\w+\}?}\}\}/g, '');
-        result = result.replace(/\{\{[A-Z_]+\}\}/g, '');
-        return result;
-    }
-
-    const fullName = `${personalInfo.firstName || ''} ${personalInfo.lastName || ''}`.trim();
-    const phone = personalInfo.phone || '';
-    const email = personalInfo.email || '';
-    const portfolioUrl = personalInfo.portfolioUrl ? `\\href{${personalInfo.portfolioUrl}}{${personalInfo.portfolioUrl}}` : '';
-    const githubUrl = personalInfo.githubUrl ? `\\href{${personalInfo.githubUrl}}{${personalInfo.githubUrl}}` : '';
-
-    // This regex is designed to find the \NameEmailPhoneSiteGithub command and its placeholders
-    const commandRegex = /\\NameEmailPhoneSiteGithub\{[^\{\}]*\}\{[^\{\}]*\}\{[^\{\}]*\}\{[^\{\}]*\}\{[^\{\}]*\}/;
-
-    result = result.replace(commandRegex, `\\NameEmailPhoneSiteGithub{${this.escapeLatex(fullName)}}{${this.escapeLatex(phone)}}{${this.escapeLatex(email)}}{${portfolioUrl}}{${githubUrl}}`);
-
-    // Handle simple placeholders like {{FIRST_NAME}} for backward compatibility
-    result = result.replace(/\{\{FIRST_NAME\}\}/g, this.escapeLatex(personalInfo.firstName || ""));
-    result = result.replace(/\{\{LAST_NAME\}\}/g, this.escapeLatex(personalInfo.lastName || ""));
-    result = result.replace(/\{\{EMAIL\}\}/g, this.escapeLatex(personalInfo.email || ""));
-    result = result.replace(/\{\{PHONE\}\}/g, this.escapeLatex(personalInfo.phone || ""));
-    result = result.replace(/\{\{LOCATION\}\}/g, this.escapeLatex(personalInfo.location || ""));
-
-    // Conditional personal info fields (for {{#IF_...}} blocks)
-    result = this.handleConditionalField(
-      result,
-      "LOCATION",
-      personalInfo.location
-    );
-    result = this.handleConditionalField(
-      result,
-      "PROFESSIONAL_TITLE",
-      personalInfo.professionalTitle
-    );
-    result = this.handleConditionalField(
-      result,
-      "LINKEDIN",
-      personalInfo.linkedinUrl
-    );
-    result = this.handleConditionalField(
-      result,
-      "GITHUB",
-      personalInfo.githubUrl
-    );
-    result = this.handleConditionalField(
-      result,
-      "PORTFOLIO",
-      personalInfo.portfolioUrl
-    );
-    result = this.handleConditionalField(
-      result,
-      "WEBSITE",
-      personalInfo.websiteUrl
-    );
-
-    return result;
-  }
-
-  /**
-   * Enhanced conditional section handling
-   */
-  private injectConditionalSection(
-    template: string,
-    sectionName: string,
-    data: any,
-    renderer: (data: any) => string
-  ): string {
-    try {
-      const hasData =
-        data &&
-        ((Array.isArray(data) && data.length > 0) ||
-          (!Array.isArray(data) && data));
-
-      if (hasData) {
-        // Render content first to check if it's valid
-        const renderedContent = renderer.call(this, data);
-
-        // Remove conditional tags and inject content
-        // This regex looks for {{#IF_SECTION}}...{{SECTION}}...{{/IF_SECTION}}
-        const conditionalRegex = new RegExp(
-          `\\{\\{#IF_${sectionName}\\}\\}([\\s\\S]*?)\\{\\{${sectionName}\\}\\}([\\s\\S]*?)\\{\\{/IF_${sectionName}\\}\\}`,
-          "g"
-        );
-        template = template.replace(
-          conditionalRegex,
-          (match, beforeContent, afterContent) => {
-            // Only include the section if rendered content is not empty and doesn't contain obvious errors
-            if (
-              renderedContent &&
-              renderedContent.trim() &&
-              !this.containsCriticalLatexErrors(renderedContent)
-            ) {
-              return beforeContent + renderedContent + afterContent;
-            } else {
-              console.log(
-                `⚠️ Skipping ${sectionName} section due to rendering issues or no content`
-              );
-              return ""; // Remove section if content has issues or is empty
-            }
-          }
-        );
-      } else {
-        // Remove entire conditional section if no data
-        const conditionalRegex = new RegExp(
-          `\\{\\{#IF_${sectionName}\\}\\}[\\s\\S]*?\\{\\{/IF_${sectionName}\\}\\}`,
-          "g"
-        );
-        template = template.replace(conditionalRegex, "");
-      }
-
-      return template;
-    } catch (error) {
-      console.error(`❌ Error processing section ${sectionName}:`, error);
-      // Remove the problematic section entirely to prevent LaTeX errors
-      const conditionalRegex = new RegExp(
-        `\\{\\{#IF_${sectionName}\\}\\}[\\s\\S]*?\\{\\{/IF_${sectionName}\\}\\}`,
-        "g"
-      );
-      return template.replace(conditionalRegex, "");
-    }
-  }
-
-  /**
-   * Check if content contains critical LaTeX errors that would prevent compilation
-   * This is a heuristic, not exhaustive.
-   */
-  private containsCriticalLatexErrors(content: string): boolean {
-    // Check for unescaped special characters that are very likely to cause errors
-    // We are more lenient here than in escapeLatex, focusing on the most problematic ones
-    const criticalPatterns = [
-      /(?<!\\)[%$#_{}&]/, // Most critical unescaped chars (excluding ^~ which are less common in data)
-      // A very basic check for malformed LaTeX commands (e.g., \itemnotcommand)
-      // This is tricky, but looking for common commands followed by letters without space/line break
-      /\\(textbf|textit|underline|href|url|begin|end)\w/, // e.g., \textbfsomething
-    ];
-    return criticalPatterns.some((pattern) => pattern.test(content));
-  }
-
-  /**
-   * Enhanced conditional field handling with better error recovery
-   */
-  private handleConditionalField(
-    template: string,
-    fieldName: string,
-    value?: string
-  ): string {
-    try {
-      return this.processNestedConditionals(template, fieldName, value);
-    } catch (error) {
-      console.error(
-        `❌ Error processing conditional field ${fieldName}:`,
-        error
-      );
-      // Remove the problematic conditional blocks to prevent template corruption
-      const regex = new RegExp(
-        `\\{\\{#IF_${fieldName}\\}\\}[\\s\\S]*?\\{\\{/IF_${fieldName}\\}\\}`,
-        "g"
-      );
-      return template.replace(regex, "");
-    }
-  }
-
-  /**
-   * Enhanced nested conditionals processing
-   * Handles {{#IF_FIELD}}...{{FIELD}}...{{/IF_FIELD}} blocks
-   */
-  private processNestedConditionals(
-    template: string,
-    fieldName: string,
-    value?: string
-  ): string {
-    let result = template;
-    let iterations = 0;
-    const maxIterations = 10;
-
-    while (iterations < maxIterations) {
-      const originalResult = result;
-
-      // Find all conditional blocks for this field
-      const startTag = `{{#IF_${fieldName}}}`;
-      const endTag = `{{/IF_${fieldName}}}`;
-      let startIndex = result.indexOf(startTag);
-
-      while (startIndex !== -1) {
-        // Find the matching end tag (simple approach, might need refinement for deeply nested identical tags)
-        let depth = 1;
-        let pos = startIndex + startTag.length;
-        let endIndex = -1;
-
-        while (pos < result.length && depth > 0) {
-          const nextStart = result.indexOf(startTag, pos);
-          const nextEnd = result.indexOf(endTag, pos);
-
-          if (nextEnd === -1) break;
-
-          if (nextStart !== -1 && nextStart < nextEnd) {
-            depth++;
-            pos = nextStart + startTag.length;
-          } else {
-            depth--;
-            if (depth === 0) {
-              endIndex = nextEnd;
-              break;
-            }
-            pos = nextEnd + endTag.length;
-          }
-        }
-
-        if (endIndex !== -1) {
-          const content = result.substring(
-            startIndex + startTag.length,
-            endIndex
-          );
-
-          if (value && value.trim()) {
-            // Replace field placeholder and keep content
-            const processedContent = content.replace(
-              new RegExp(`\\{\\{${fieldName}\\}\\}`, "g"),
-              this.escapeLatex(value)
-            );
-            result =
-              result.substring(0, startIndex) +
-              processedContent +
-              result.substring(endIndex + endTag.length);
-          } else {
-            // Remove the entire block if no value
-            result =
-              result.substring(0, startIndex) +
-              result.substring(endIndex + endTag.length);
-          }
-        } else {
-          // Malformed conditional, remove it to prevent errors
-          console.warn(`⚠️ Malformed conditional for ${fieldName}, removing`);
-          result =
-            result.substring(0, startIndex) +
-            result.substring(startIndex + startTag.length);
-        }
-
-        // Find next occurrence
-        startIndex = result.indexOf(startTag, startIndex);
-      }
-
-      // If no changes were made, break
-      if (result === originalResult) {
-        break;
-      }
-      iterations++;
-    }
-
-    return result;
-  }
-
-  // --- Renderer Functions ---
-  // These are used for templates that do NOT use handlebars-style loops
-
-  private renderWorkExperience = (experiences: any[]): string => {
-    if (!Array.isArray(experiences) || experiences.length === 0) {
-      return "";
-    }
-
-    return experiences
-      .filter((exp) => exp && exp.jobTitle && exp.company)
-      .map((exp) => {
-        try {
-          const endDate = exp.isCurrentJob ? "Present" : exp.endDate || "";
-
-          const responsibilities = (exp.responsibilities || [])
-            .filter((r) => r && r.trim())
-            .map((r) => `\\item ${this.escapeLatex(r)}`)
-            .join("\n");
-
-          const achievements = (exp.achievements || [])
-            .filter((a) => a && a.trim())
-            .map((a) => `\\item \\textit{${this.escapeLatex(a)}}`) // Italicize achievements
-            .join("\n");
-
-          const allItems = [responsibilities, achievements]
-            .filter((item) => item.trim())
-            .join("\n");
-
-          const itemsList = allItems
-            ? `\\begin{itemize}\n${allItems}\n\\end{itemize}`
-            : "";
-
-          return `\\noindent\\textbf{${this.escapeLatex(exp.jobTitle)}} \\hfill \\textit{${this.escapeLatex(exp.startDate || "")} - ${this.escapeLatex(endDate)}}\\\\
-\\textit{${this.escapeLatex(exp.company)}, ${this.escapeLatex(exp.location || "")}}\\\\[0.3em]
-${itemsList}${itemsList ? "\\vspace{0.5em}" : ""}`;
-        } catch (error) {
-          console.error("❌ Error rendering work experience item:", error);
-          return ""; // Skip problematic items gracefully
-        }
-      })
-      .filter((item) => item.trim())
-      .join("\n\n");
-  };
-
-  private renderEducation = (education: any[]): string => {
-    if (!Array.isArray(education) || education.length === 0) {
-      return "";
-    }
-
-    return education
-      .filter((edu) => edu && edu.degree && edu.institution)
-      .map((edu) => {
-        try {
-          const gpaText = edu.gpa ? ` (GPA: ${this.escapeLatex(edu.gpa)})` : "";
-          const honorsText =
-            edu.honors && edu.honors.length > 0
-              ? `\\\\Honors: ${edu.honors.map((h) => this.escapeLatex(h)).join(", ")}`
-              : "";
-
-          return `\\noindent\\textbf{${this.escapeLatex(edu.degree)}} \\hfill \\textit{${this.escapeLatex(edu.graduationDate || "")}}\\\\
-\\textit{${this.escapeLatex(edu.institution)}, ${this.escapeLatex(edu.location || "")}}${gpaText}${honorsText}\\\\[0.3em]`;
-        } catch (error) {
-          console.error("❌ Error rendering education item:", error);
-          return "";
-        }
-      })
-      .filter((item) => item.trim())
-      .join("\n\n");
-  };
-
-  private renderSkills = (skills: any[]): string => {
-    if (!Array.isArray(skills) || skills.length === 0) {
-      return "";
-    }
-    try {
-      const validSkills = skills.filter(
-        (skill) => skill && skill.name && skill.name.trim()
-      );
-
-      if (validSkills.length === 0) {
-        return "";
-      }
-
-      const skillsByCategory = validSkills.reduce(
-        (acc, skill) => {
-          const category = skill.category || "Other";
-          if (!acc[category]) acc[category] = [];
-          acc[category].push(this.escapeLatex(skill.name));
-          return acc;
-        },
-        {} as Record<string, string[]>
-      );
-
-      return (Object.entries(skillsByCategory) as [string, string[]][])
-        .filter(([category, skillNames]) => skillNames.length > 0)
-        .map(([category, skillNames]) => {
-          const categoryName =
-            category.charAt(0).toUpperCase() + category.slice(1);
-          return `\\noindent\\textbf{${this.escapeLatex(categoryName)}:} ${skillNames.join(", ")}\\\\[0.2em]`;
-        })
-        .join("\n");
-    } catch (error) {
-      console.error("❌ Error rendering skills:", error);
-      return "";
-    }
-  };
-
-  private renderProjects = (projects: any[]): string => {
-    if (!Array.isArray(projects) || projects.length === 0) {
-      return "";
-    }
-
-    return projects
-      .filter((project) => project && project.name && project.description)
-      .map((project) => {
-        try {
-          const dateRange =
-            project.startDate && project.endDate
-              ? ` \\hfill \\textit{${this.escapeLatex(project.startDate)} - ${this.escapeLatex(project.endDate)}}`
-              : "";
-          const url = project.url
-            ? `\\\\URL: \\url{${this.escapeLatex(project.url)}}`
-            : ""; // Escape URL
-          const technologies = (project.technologies || [])
-            .filter((t) => t && t.trim())
-            .map((t) => this.escapeLatex(t))
-            .join(", ");
-
-          return `\\noindent\\textbf{${this.escapeLatex(project.name)}}${dateRange}\\\\
-${this.escapeLatex(project.description)}\\\\
-${technologies ? `\\textit{Technologies:} ${technologies}` : ""}${url}\\\\[0.3em]`;
-        } catch (error) {
-          console.error("❌ Error rendering project item:", error);
-          return "";
-        }
-      })
-      .filter((item) => item.trim())
-      .join("\n\n");
-  };
-
-  private renderCertifications = (certifications: any[]): string => {
-    if (!Array.isArray(certifications) || certifications.length === 0) {
-      return "";
-    }
-
-    return certifications
-      .filter((cert) => cert && cert.name && cert.issuer)
-      .map((cert) => {
-        try {
-          const expiration = cert.expirationDate
-            ? ` (Expires: ${this.escapeLatex(cert.expirationDate)})`
-            : "";
-          const url = cert.url
-            ? `\\\\URL: \\url{${this.escapeLatex(cert.url)}}`
-            : ""; // Escape URL
-
-          return `\\noindent\\textbf{${this.escapeLatex(cert.name)}} \\hfill \\textit{${this.escapeLatex(cert.date || "")}}\\\\
-\\textit{${this.escapeLatex(cert.issuer)}}${expiration}${url}\\\\[0.3em]`;
-        } catch (error) {
-          console.error("❌ Error rendering certification item:", error);
-          return "";
-        }
-      })
-      .filter((item) => item.trim())
-      .join("\n\n");
-  };
-
-  private renderLanguages = (languages: any[]): string => {
-    if (!Array.isArray(languages) || languages.length === 0) {
-      return "";
-    }
-
-    return languages
-      .filter((lang) => lang && lang.name && lang.proficiency)
-      .map((lang) => {
-        try {
-          return `\\noindent\\textbf{${this.escapeLatex(lang.name)}}: ${this.escapeLatex(lang.proficiency)}\\\\[0.2em]`;
-        } catch (error) {
-          console.error("❌ Error rendering language item:", error);
-          return "";
-        }
-      })
-      .filter((item) => item.trim())
-      .join("\n");
-  };
-
-  private renderVolunteerExperience = (volunteer: any[]): string => {
-    if (!Array.isArray(volunteer) || volunteer.length === 0) {
-      return "";
-    }
-
-    return volunteer
-      .filter((vol) => vol && vol.role && vol.organization)
-      .map((vol) => {
-        try {
-          const endDate = vol.isCurrentRole ? "Present" : vol.endDate || "";
-          const achievements = (vol.achievements || [])
-            .filter((a) => a && a.trim())
-            .map((a) => `\\item ${this.escapeLatex(a)}`)
-            .join("\n");
-
-          const achievementsList = achievements
-            ? `\\begin{itemize}\n${achievements}\n\\end{itemize}`
-            : "";
-
-          return `\\noindent\\textbf{${this.escapeLatex(vol.role)}} \\hfill \\textit{${this.escapeLatex(vol.startDate || "")} - ${this.escapeLatex(endDate)}}\\\\
-\\textit{${this.escapeLatex(vol.organization)}, ${this.escapeLatex(vol.location || "")}}\\\\[0.3em]
-${vol.description ? this.escapeLatex(vol.description) + "\\\\[0.2em]" : ""}
-${achievementsList}${achievementsList ? "\\vspace{0.5em}" : ""}`;
-        } catch (error) {
-          console.error("❌ Error rendering volunteer experience item:", error);
-          return "";
-        }
-      })
-      .filter((item) => item.trim())
-      .join("\n\n");
-  };
-
-  private renderAwards = (awards: any[]): string => {
-    if (!Array.isArray(awards) || awards.length === 0) {
-      return "";
-    }
-
-    return awards
-      .filter((award) => award && award.title && award.issuer)
-      .map((award) => {
-        try {
-          const description = award.description
-            ? `\\\\${this.escapeLatex(award.description)}`
-            : "";
-
-          return `\\noindent\\textbf{${this.escapeLatex(award.title)}} \\hfill \\textit{${this.escapeLatex(award.date || "")}}\\\\
-\\textit{${this.escapeLatex(award.issuer)}}${description}\\\\[0.3em]`;
-        } catch (error) {
-          console.error("❌ Error rendering award item:", error);
-          return "";
-        }
-      })
-      .filter((item) => item.trim())
-      .join("\n\n");
-  };
-
-  private renderPublications = (publications: any[]): string => {
-    if (!Array.isArray(publications) || publications.length === 0) {
-      return "";
-    }
-
-    return publications
-      .filter((pub) => pub && pub.title && pub.publisher)
-      .map((pub) => {
-        try {
-          const url = pub.url
-            ? `\\\\URL: \\url{${this.escapeLatex(pub.url)}}`
-            : ""; // Escape URL
-          const description = pub.description
-            ? `\\\\${this.escapeLatex(pub.description)}`
-            : "";
-
-          return `\\noindent\\textbf{${this.escapeLatex(pub.title)}} \\hfill \\textit{${this.escapeLatex(pub.publicationDate || "")}}\\\\
-\\textit{${this.escapeLatex(pub.publisher)}}${description}${url}\\\\[0.3em]`;
-        } catch (error) {
-          console.error("❌ Error rendering publication item:", error);
-          return "";
-        }
-      })
-      .filter((item) => item.trim())
-      .join("\n\n");
-  };
-
-  private renderReferences = (references: any[]): string => {
-    if (!Array.isArray(references) || references.length === 0) {
-      return "";
-    }
-
-    return references
-      .filter((ref) => ref && ref.name && ref.email)
-      .map((ref) => {
-        try {
-          // Escape all reference fields
-          const name = this.escapeLatex(ref.name);
-          const title = this.escapeLatex(ref.title || "");
-          const company = this.escapeLatex(ref.company || "");
-          const email = this.escapeLatex(ref.email);
-          const phone = this.escapeLatex(ref.phone || "");
-          const relationship = this.escapeLatex(ref.relationship || "");
-
-          return `\\noindent\\textbf{${name}}\\\\
-\\textit{${title}, ${company}}\\\\
-Email: ${email} ${phone ? `| Phone: ${phone}` : ""}\\\\
-\\textit{Relationship: ${relationship}}\\\\[0.3em]`;
-        } catch (error) {
-          console.error("❌ Error rendering reference item:", error);
-          return "";
-        }
-      })
-      .filter((item) => item.trim())
-      .join("\n\n");
-  };
-
-  private renderHobbies = (hobbies: any[]): string => {
-    if (!Array.isArray(hobbies) || hobbies.length === 0) {
-      return "";
-    }
-    try {
-      const validHobbies = hobbies.filter(
-        (hobby) => hobby && hobby.name && hobby.name.trim()
-      );
-
-      if (validHobbies.length === 0) {
-        return "";
-      }
-
-      const hobbiesByCategory = validHobbies.reduce(
-        (acc, hobby) => {
-          const category = hobby.category || "Other";
-          if (!acc[category]) acc[category] = [];
-          const hobbyText = hobby.description
-            ? `${this.escapeLatex(hobby.name)} (${this.escapeLatex(hobby.description)})`
-            : this.escapeLatex(hobby.name);
-          acc[category].push(hobbyText);
-          return acc;
-        },
-        {} as Record<string, string[]>
-      );
-
-      return Object.entries(hobbiesByCategory)
-        .filter(
-          ([category, hobbyNames]: [string, string[]]) => hobbyNames.length > 0
-        )
-        .map(([category, hobbyNames]: [string, string[]]) => {
-          const categoryName =
-            category.charAt(0).toUpperCase() + category.slice(1);
-          return `\\noindent\\textbf{${this.escapeLatex(categoryName)}:} ${hobbyNames.join(", ")}\\\\[0.2em]`;
-        })
-        .join("\n");
-    } catch (error) {
-      console.error("❌ Error rendering hobbies:", error);
-      return "";
-    }
-  };
-
-  private renderAdditionalSections = (sections: any[]): string => {
-    if (!Array.isArray(sections) || sections.length === 0) {
-      return "";
-    }
-
-    return sections
-      .filter((section) => section && section.title && section.content)
-      .map((section) => {
-        try {
-          return `\\noindent\\textbf{${this.escapeLatex(section.title)}}\\\\[0.2em]
-${this.escapeLatex(section.content)}\\\\[0.3em]`;
-        } catch (error) {
-          console.error("❌ Error rendering additional section:", error);
-          return "";
-        }
-      })
-      .filter((item) => item.trim())
-      .join("\n\n");
-  };
-
-  /**
-   * Enhanced LaTeX escaping function to handle special characters
-   * This is crucial for preventing LaTeX compilation errors.
-   * Focuses on characters that are most likely to break LaTeX.
-   */
   private escapeLatex(text: string): string {
     if (text === null || text === undefined) {
-      return ""; // Handle null/undefined gracefully
+      return "";
     }
     if (typeof text !== "string") {
-      text = String(text); // Convert numbers, booleans to string
+      text = String(text);
     }
 
-    return (
-      text
-        // Escape backslashes first
-        .replace(/\\/g, "\\textbackslash{}")
-        // Escape braces
-        .replace(/\{/g, "\\{")
-        .replace(/\}/g, "\\}")
-        // Escape other critical special LaTeX characters
-        .replace(/\$/g, "\\$")
-        .replace(/&/g, "\\&")
-        .replace(/%/g, "\\%")
-        .replace(/#/g, "\\#")
-        .replace(/\^/g, "\\textasciicircum{}")
-        .replace(/_/g, "\\_")
-        .replace(/~/g, "\\textasciitilde{}")
-        // Handle quotes (simple approach)
-        .replace(/"/g, "''")
-        .replace(/'/g, "'") // Apostrophes usually okay
-        // Handle en/em dashes and ellipsis
-        .replace(/[–—]/g, "--") // En/em dash to double hyphen
-        .replace(/…/g, "...")
-        // Remove or replace other very problematic unicode characters
-        // This is a balance between data preservation and preventing errors
-        .replace(
-          // Matches a range of punctuation/symbols, but excludes common safe ones like ,.!?;:()
-          // Also excludes space (\s) and basic word characters (\w)
-          /[^\w\s,.\-:;!?()]/g,
-          (match) => {
-            // Keep basic punctuation that is generally safe
-            if (/[,.\-:;!?()]/.test(match)) return match;
-            // For other characters, replace with a space or remove
-            // Using space is often safer than removal to avoid word concatenation
-            return " ";
-          }
-        )
-        // Trim leading/trailing whitespace that might have been introduced
-        .trim()
-    );
+    return text
+      .replace(/\\/g, "\\textbackslash{}")
+      .replace(/\{/g, "\\{")
+      .replace(/\}/g, "\\}")
+      .replace(/\$/g, "\\$")
+      .replace(/&/g, "\\&")
+      .replace(/%/g, "\\%")
+      .replace(/#/g, "\\#")
+      .replace(/\^/g, "\\textasciicircum{}")
+      .replace(/_/g, "\\_")
+      .replace(/~/g, "\\textasciitilde{}")
+      .replace(/"/g, "''")
+      .replace(/'/g, "'")
+      .replace(/[–—]/g, "--")
+      .replace(/…/g, "...")
+      .replace(/[^\w\s,.\-:;!?()]/g, (match) => {
+        if (/[,.\-:;!?()]/.test(match)) return match;
+        return " ";
+      })
+      .trim();
   }
 
   /**
@@ -1786,24 +1449,30 @@ ${this.escapeLatex(section.content)}\\\\[0.3em]`;
    */
   async generatePDF(
     resumeData: StandardizedResumeData,
-    templateId: string = 'modern-1'
+    templateId: string = "modern-1"
   ): Promise<Buffer> {
-    console.log(`🎯 Generating PDF with standardized template: ${templateId}`);
+    console.log(
+      `🎯 Generating PDF with style-preserving template: ${templateId}`
+    );
     try {
-      // Generate LaTeX code using the standardized template service
       const latexCode = await this.generateLatex(templateId, resumeData, {
-        enhanceWithAI: false
+        enhanceWithAI: false,
       });
 
-      // Import and use the LaTeX service to compile to PDF
-      const { latexService } = await import('./latexService');
-      const pdfBuffer = await latexService.compileLatexToPDF(latexCode, templateId, 'pdf');
+      const { latexService } = await import("./latexService");
+      const pdfBuffer = await latexService.compileLatexToPDF(
+        latexCode,
+        templateId,
+        "pdf"
+      );
 
       console.log(`✅ PDF generated successfully (${pdfBuffer.length} bytes)`);
       return pdfBuffer;
     } catch (error) {
       console.error(`❌ PDF generation failed:`, error);
-      throw new Error(`Failed to generate PDF. Please check your data and try again.`);
+      throw new Error(
+        `Failed to generate PDF. Please check your data and try again.`
+      );
     }
   }
 
@@ -1825,7 +1494,6 @@ ${this.escapeLatex(section.content)}\\\\[0.3em]`;
         this.templatesPath
       );
 
-      // Read templates directory
       const templateDirs = await fs.readdir(this.templatesPath);
       const templates = [];
 
@@ -1835,7 +1503,6 @@ ${this.escapeLatex(section.content)}\\\\[0.3em]`;
           const stats = await fs.stat(templatePath);
 
           if (stats.isDirectory()) {
-            // Check if template has required files
             const hasStandardized = await this.fileExists(
               path.join(templatePath, `${dir}-standardized.tex`)
             );
@@ -1844,7 +1511,6 @@ ${this.escapeLatex(section.content)}\\\\[0.3em]`;
             );
 
             if (hasStandardized || hasOriginal) {
-              // Find the preview image file (could be .jpeg, .jpg, .png, etc.)
               const previewImage = await this.findPreviewImage(
                 templatePath,
                 dir
@@ -1875,9 +1541,6 @@ ${this.escapeLatex(section.content)}\\\\[0.3em]`;
     }
   }
 
-  /**
-   * Check if file exists
-   */
   private async fileExists(filePath: string): Promise<boolean> {
     try {
       await fs.access(filePath);
@@ -1887,9 +1550,6 @@ ${this.escapeLatex(section.content)}\\\\[0.3em]`;
     }
   }
 
-  /**
-   * Find preview image file in template directory
-   */
   private async findPreviewImage(
     templatePath: string,
     templateId: string
@@ -1897,12 +1557,10 @@ ${this.escapeLatex(section.content)}\\\\[0.3em]`;
     try {
       const files = await fs.readdir(templatePath);
 
-      // Look for common image file extensions
       const imageExtensions = [".jpeg", ".jpg", ".png", ".gif", ".webp"];
       for (const file of files) {
         const fileExt = path.extname(file).toLowerCase();
         if (imageExtensions.includes(fileExt)) {
-          // Found an image file, return the public URL path
           const relativePath = `/templates/${templateId}/${file}`;
           console.log(
             `📸 Found preview image for ${templateId}: ${relativePath}`
@@ -1919,9 +1577,6 @@ ${this.escapeLatex(section.content)}\\\\[0.3em]`;
     }
   }
 
-  /**
-   * Format template name for display
-   */
   private formatTemplateName(templateId: string): string {
     return templateId
       .replace(/template(\d+)/i, "Template $1")
@@ -1935,3 +1590,103 @@ ${this.escapeLatex(section.content)}\\\\[0.3em]`;
 
 // Export singleton instance
 export const standardizedTemplateService = new StandardizedTemplateService();
+
+// Keep original interface for backwards compatibility
+export interface StandardizedResumeData {
+  personalInfo: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+    location: string;
+    linkedinUrl?: string;
+    portfolioUrl?: string;
+    githubUrl?: string;
+    websiteUrl?: string;
+    professionalTitle?: string;
+  };
+  professionalSummary: string;
+  workExperience: Array<{
+    jobTitle: string;
+    company: string;
+    location: string;
+    startDate: string;
+    endDate?: string;
+    isCurrentJob: boolean;
+    responsibilities: string[];
+    achievements: string[];
+  }>;
+  education: Array<{
+    degree: string;
+    institution: string;
+    fieldOfStudy?: string;
+    location?: string;
+    graduationDate: string;
+    gpa?: string;
+    honors?: string[];
+  }>;
+  skills: Array<{
+    name: string;
+    category: string;
+    proficiencyLevel?: string;
+  }>;
+  projects?: Array<{
+    name: string;
+    description: string[];
+    technologies: string[];
+    url?: string;
+    startDate?: string;
+    endDate?: string;
+  }>;
+  certifications?: Array<{
+    name: string;
+    issuer: string;
+    date: string;
+    expirationDate?: string;
+    url?: string;
+  }>;
+  languages?: Array<{
+    name: string;
+    proficiency: string;
+  }>;
+  volunteerExperience?: Array<{
+    organization: string;
+    role: string;
+    location: string;
+    startDate: string;
+    endDate?: string;
+    isCurrentRole: boolean;
+    description: string;
+    achievements: string[];
+  }>;
+  awards?: Array<{
+    title: string;
+    issuer: string;
+    date: string;
+    description?: string;
+  }>;
+  publications?: Array<{
+    title: string;
+    publisher: string;
+    publicationDate: string;
+    url?: string;
+    description?: string;
+  }>;
+  references?: Array<{
+    name: string;
+    title: string;
+    company: string;
+    email: string;
+    phone: string;
+    relationship: string;
+  }>;
+  hobbies?: Array<{
+    name: string;
+    description?: string;
+    category: string;
+  }>;
+  additionalSections?: Array<{
+    title: string;
+    content: string;
+  }>;
+}

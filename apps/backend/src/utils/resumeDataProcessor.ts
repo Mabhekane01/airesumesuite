@@ -9,9 +9,14 @@ import { safeParseDate } from './dateHandler';
 /**
  * Validates and converts user ID to ObjectId
  */
-export function validateUserId(userId: any): mongoose.Types.ObjectId {
+export function validateUserId(userId: any): mongoose.Types.ObjectId | string {
   if (!userId || typeof userId !== 'string') {
     throw new Error('User ID is required and must be a string');
+  }
+  
+  // Allow preview user IDs for PDF generation
+  if (userId === 'preview-user-id') {
+    return userId;
   }
   
   try {
@@ -27,18 +32,36 @@ export function validateUserId(userId: any): mongoose.Types.ObjectId {
 export function processEducationData(educationData: any[]): any[] {
   if (!Array.isArray(educationData)) return [];
   
-  return educationData.map((edu: any) => ({
-    institution: edu.institution || '',
-    degree: edu.degree || '',
-    fieldOfStudy: edu.fieldOfStudy || '',
-    startDate: safeParseDate(edu.startDate),
-    endDate: safeParseDate(edu.endDate),
-    graduationDate: safeParseDate(edu.graduationDate || edu.endDate), // Use endDate as graduation fallback
-    location: edu.location || undefined,
-    gpa: edu.gpa || undefined,
-    honors: Array.isArray(edu.honors) ? edu.honors.filter(h => h) : [],
-    courses: Array.isArray(edu.courses) ? edu.courses.filter(c => c) : []
-  }));
+  console.log('🔍 [DEBUG] Processing education data:', JSON.stringify(educationData, null, 2));
+  
+  return educationData.map((edu: any) => {
+    console.log('🔍 [DEBUG] Processing education item:', {
+      startDate: edu.startDate,
+      endDate: edu.endDate,
+      graduationDate: edu.graduationDate
+    });
+    
+    const processed = {
+      institution: edu.institution || '',
+      degree: edu.degree || '',
+      fieldOfStudy: edu.fieldOfStudy || '',
+      startDate: safeParseDate(edu.startDate),
+      endDate: safeParseDate(edu.endDate),
+      graduationDate: safeParseDate(edu.graduationDate || edu.endDate), // Use endDate as graduation fallback
+      location: edu.location || undefined,
+      gpa: edu.gpa || undefined,
+      honors: Array.isArray(edu.honors) ? edu.honors.filter(h => h) : [],
+      courses: Array.isArray(edu.courses) ? edu.courses.filter(c => c) : []
+    };
+    
+    console.log('🔍 [DEBUG] Processed education item:', {
+      startDate: processed.startDate,
+      endDate: processed.endDate,
+      graduationDate: processed.graduationDate
+    });
+    
+    return processed;
+  });
 }
 
 /**
@@ -47,16 +70,34 @@ export function processEducationData(educationData: any[]): any[] {
 export function processWorkExperienceData(workData: any[]): any[] {
   if (!Array.isArray(workData)) return [];
   
-  return workData.map((work: any) => ({
-    jobTitle: work.jobTitle || work.position || '',
-    company: work.company || '',
-    location: work.location || '',
-    startDate: safeParseDate(work.startDate) || new Date(),
-    endDate: work.endDate && !work.isCurrentJob ? safeParseDate(work.endDate) : undefined,
-    isCurrentJob: Boolean(work.isCurrentJob),
-    responsibilities: Array.isArray(work.responsibilities) ? work.responsibilities.filter(r => r) : [],
-    achievements: Array.isArray(work.achievements) ? work.achievements.filter(a => a) : []
-  }));
+  console.log('🔍 [DEBUG] Processing work experience data:', JSON.stringify(workData, null, 2));
+  
+  return workData.map((work: any) => {
+    console.log('🔍 [DEBUG] Processing work item:', {
+      startDate: work.startDate,
+      endDate: work.endDate,
+      isCurrentJob: work.isCurrentJob
+    });
+    
+    const processed = {
+      jobTitle: work.jobTitle || work.position || '',
+      company: work.company || '',
+      location: work.location || '',
+      startDate: safeParseDate(work.startDate) || new Date(),
+      endDate: work.endDate ? safeParseDate(work.endDate) : undefined,
+      isCurrentJob: Boolean(work.isCurrentJob) || (!work.endDate && work.isCurrentJob !== false),
+      responsibilities: processDescriptionToArray(work.responsibilities),
+      achievements: processDescriptionToArray(work.achievements)
+    };
+    
+    console.log('🔍 [DEBUG] Processed work item:', {
+      startDate: processed.startDate,
+      endDate: processed.endDate,
+      isCurrentJob: processed.isCurrentJob
+    });
+    
+    return processed;
+  });
 }
 
 /**
@@ -80,12 +121,58 @@ export function processProjectsData(projectsData: any[]): any[] {
   
   return projectsData.map((project: any) => ({
     name: project.name || '',
-    description: project.description || '',
+    description: processDescriptionToArray(project.description),
     technologies: Array.isArray(project.technologies) ? project.technologies.filter(t => t) : [],
     url: project.url || undefined,
     startDate: safeParseDate(project.startDate),
     endDate: safeParseDate(project.endDate)
   }));
+}
+
+/**
+ * Converts description to array format for bullet points
+ */
+function processDescriptionToArray(description: any): string[] {
+  if (!description) return [];
+  
+  // If already an array, clean and return
+  if (Array.isArray(description)) {
+    return description.filter(item => item && typeof item === 'string' && item.trim().length > 0);
+  }
+  
+  // If string, split by common delimiters into bullet points
+  if (typeof description === 'string') {
+    const cleaned = description.trim();
+    if (!cleaned) return [];
+    
+    // Split by newlines first - this is the most common case
+    let bulletPoints = cleaned.split(/\n+/)
+      .map(point => point.trim())
+      .filter(point => point.length > 0);
+    
+    // If we only have one item after newline split, try other delimiters
+    if (bulletPoints.length === 1) {
+      bulletPoints = cleaned
+        .split(/•|\*|-\s|\d+\.\s+/) // Split by bullets, asterisks, dashes with space, or numbered lists
+        .map(point => point.trim())
+        .filter(point => point.length > 0);
+    }
+    
+    // Clean up the bullet points
+    bulletPoints = bulletPoints
+      .filter(point => point.length > 5) // Remove very short fragments
+      .filter(point => !point.match(/^[\d\.\-•\*\s]*$/)) // Remove empty bullet markers
+      .filter(point => !point.match(/^(ment|ing|tion|ness)$/i)); // Remove word fragments
+    
+    // If no meaningful splits found, return as single item
+    if (bulletPoints.length === 0) {
+      return [cleaned];
+    }
+    
+    return bulletPoints;
+  }
+  
+  return [];
 }
 
 /**
@@ -115,8 +202,8 @@ export function processVolunteerExperienceData(volunteerData: any[]): any[] {
     role: vol.role || '',
     location: vol.location || '',
     startDate: safeParseDate(vol.startDate) || new Date(),
-    endDate: vol.endDate && !vol.isCurrentRole ? safeParseDate(vol.endDate) : undefined,
-    isCurrentRole: Boolean(vol.isCurrentRole),
+    endDate: vol.endDate ? safeParseDate(vol.endDate) : undefined,
+    isCurrentRole: Boolean(vol.isCurrentRole) || (!vol.endDate && vol.isCurrentRole !== false),
     description: vol.description || '',
     achievements: Array.isArray(vol.achievements) ? vol.achievements.filter(a => a) : []
   }));

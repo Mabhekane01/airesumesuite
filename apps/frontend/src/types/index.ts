@@ -71,8 +71,7 @@ export interface Education {
   endDate?: string;
   location?: string;
   gpa?: string;
-  honors: string[];
-  courses?: string[];
+  coursework?: string[]; // Optional relevant coursework as bullet points
 }
 
 export interface Skill {
@@ -85,7 +84,7 @@ export interface Skill {
 export interface Project {
   id?: string;
   name: string;
-  description: string;
+  description: string[]; // Changed to array for bullet points
   technologies: string[];
   url?: string;
   startDate?: string;

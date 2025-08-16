@@ -1191,12 +1191,12 @@ ${customInstructions ? `\n✨ CUSTOM INSTRUCTIONS: ${customInstructions}` : ''}
 
 Create a compelling cover letter that:
 
-1. **INTELLIGENT MATCHING**: Analyze the job requirements and match them with the candidate's background
-2. **COMPANY RESEARCH**: Use the company information to show genuine interest and knowledge
-3. **SKILLS ALIGNMENT**: Highlight skills that directly match the job requirements  
-4. **QUANTIFIED ACHIEVEMENTS**: Include specific metrics and accomplishments from the resume
-5. **ROLE-SPECIFIC LANGUAGE**: Use industry terms and keywords from the job posting
-6. **COMPELLING NARRATIVE**: Tell a story that shows progression and fit for this specific role
+1. INTELLIGENT MATCHING: Analyze the job requirements and match them with the candidate's background
+2. COMPANY RESEARCH: Use the company information to show genuine interest and knowledge
+3. SKILLS ALIGNMENT: Highlight skills that directly match the job requirements  
+4. QUANTIFIED ACHIEVEMENTS: Include specific metrics and accomplishments from the resume
+5. ROLE-SPECIFIC LANGUAGE: Use industry terms and keywords from the job posting
+6. COMPELLING NARRATIVE: Tell a story that shows progression and fit for this specific role
 
 STRUCTURE:
 - Opening: Hook that shows immediate value and knowledge of the company

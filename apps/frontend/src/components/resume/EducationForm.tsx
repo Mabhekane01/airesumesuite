@@ -19,8 +19,7 @@ export function EducationForm() {
       startDate: '',
       endDate: '',
       gpa: '',
-      honors: [],
-      courses: [],
+      coursework: [],
       location: '',
     };
     handleDataChange('education', [...(education || []), newEducation]);
@@ -120,8 +119,83 @@ export function EducationForm() {
               helpText="City and state of the institution (optional)"
             />
           </div>
+
+          {/* Relevant Coursework Section (Optional) */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-medium text-dark-text-primary">
+                Relevant Coursework 
+                <span className="text-dark-text-muted ml-1">(Optional)</span>
+              </label>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  const updatedEducation = education?.map(education =>
+                    education.id === edu.id 
+                      ? { ...education, coursework: [...(education.coursework || []), ''] }
+                      : education
+                  );
+                  handleDataChange('education', updatedEducation);
+                }}
+                className="text-accent-primary hover:text-accent-primary/80"
+              >
+                <PlusIcon className="w-4 h-4 mr-1" />
+                Add Course
+              </Button>
+            </div>
+            
+            {edu.coursework && edu.coursework.length > 0 && (
+              <div className="space-y-2">
+                {edu.coursework.map((course, courseIndex) => (
+                  <div key={courseIndex} className="flex items-center space-x-2">
+                    <Input
+                      value={course}
+                      onChange={(e) => {
+                        const newCoursework = [...(edu.coursework || [])];
+                        newCoursework[courseIndex] = e.target.value;
+                        const updatedEducation = education?.map(education =>
+                          education.id === edu.id 
+                            ? { ...education, coursework: newCoursework }
+                            : education
+                        );
+                        handleDataChange('education', updatedEducation);
+                      }}
+                      placeholder="e.g., Advanced Data Structures and Algorithms"
+                      className="flex-1"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        const newCoursework = edu.coursework?.filter((_, i) => i !== courseIndex);
+                        const updatedEducation = education?.map(education =>
+                          education.id === edu.id 
+                            ? { ...education, coursework: newCoursework }
+                            : education
+                        );
+                        handleDataChange('education', updatedEducation);
+                      }}
+                      className="text-red-400 hover:text-red-300 p-2"
+                    >
+                      <TrashIcon className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            {(!edu.coursework || edu.coursework.length === 0) && (
+              <p className="text-xs text-dark-text-muted">
+                Add specific courses that are relevant to your target position
+              </p>
+            )}
+          </div>
+
           <div className="flex justify-end">
-            <Button variant="danger" onClick={() => handleRemoveEducation(edu.id)} className="accent-danger">
+            <Button variant="danger" onClick={() => handleRemoveEducation(edu.id!)} className="accent-danger">
               <TrashIcon className="w-4 h-4 mr-2" />
               Remove
             </Button>

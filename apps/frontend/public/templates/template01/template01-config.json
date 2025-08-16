@@ -1,9 +1,9 @@
 {
   "templateId": "template01",
-  "templateName": "Anti-CV Creative Template",
-  "description": "A unique creative template inspired by the 'anti-CV' concept, featuring heart symbols and squiggly arrows. Perfect for creative professionals who want to stand out.",
-  "category": "creative",
-  "tags": ["single-column", "creative", "unique", "colorful"],
+  "templateName": "ASU Sparky Sundevil Resume",
+  "description": "A professional academic resume template designed at Arizona State University featuring clean sections and excellent readability. Perfect for students and early career professionals in technical fields.",
+  "category": "academic",
+  "tags": ["single-column", "academic", "student", "ats-friendly", "professional"],
   "isStandardized": true,
   "requiredFields": [
     "personalInfo.firstName",
@@ -20,7 +20,7 @@
     "personalInfo.websiteUrl",
     "personalInfo.location",
     "workExperience",
-    "education", 
+    "education",
     "skills",
     "projects",
     "certifications",
@@ -35,7 +35,7 @@
   "placeholders": {
     "personalInfo": [
       "FIRST_NAME",
-      "LAST_NAME", 
+      "LAST_NAME",
       "EMAIL",
       "PHONE",
       "LOCATION",
@@ -49,7 +49,7 @@
       "PROFESSIONAL_SUMMARY",
       "WORK_EXPERIENCE",
       "EDUCATION",
-      "SKILLS", 
+      "SKILLS",
       "PROJECTS",
       "CERTIFICATIONS",
       "LANGUAGES",
@@ -62,19 +62,49 @@
     ]
   },
   "conditionalSections": {
+    "professionalTitle": {
+      "ifTag": "IF_PROFESSIONAL_TITLE",
+      "endIfTag": "/IF_PROFESSIONAL_TITLE",
+      "required": false
+    },
+    "location": {
+      "ifTag": "IF_LOCATION",
+      "endIfTag": "/IF_LOCATION",
+      "required": false
+    },
+    "linkedin": {
+      "ifTag": "IF_LINKEDIN",
+      "endIfTag": "/IF_LINKEDIN",
+      "required": false
+    },
+    "github": {
+      "ifTag": "IF_GITHUB",
+      "endIfTag": "/IF_GITHUB",
+      "required": false
+    },
+    "portfolio": {
+      "ifTag": "IF_PORTFOLIO",
+      "endIfTag": "/IF_PORTFOLIO",
+      "required": false
+    },
+    "website": {
+      "ifTag": "IF_WEBSITE",
+      "endIfTag": "/IF_WEBSITE",
+      "required": false
+    },
     "workExperience": {
       "ifTag": "IF_WORK_EXPERIENCE",
       "endIfTag": "/IF_WORK_EXPERIENCE",
       "required": false
     },
     "education": {
-      "ifTag": "IF_EDUCATION", 
+      "ifTag": "IF_EDUCATION",
       "endIfTag": "/IF_EDUCATION",
       "required": false
     },
     "skills": {
       "ifTag": "IF_SKILLS",
-      "endIfTag": "/IF_SKILLS", 
+      "endIfTag": "/IF_SKILLS",
       "required": false
     },
     "projects": {
@@ -126,13 +156,13 @@
   "compilationSettings": {
     "compiler": "pdflatex",
     "passes": 2,
-    "specialPackages": ["tikz", "xcolor", "kpfonts"]
+    "specialPackages": ["fontawesome5", "multicol", "tabularx", "geometry", "xcolor"]
   },
   "metadata": {
     "author": "AI Job Suite",
     "version": "1.0.0",
-    "lastUpdated": "2025-08-05",
-    "screenshotPath": "/templates/template01/23504.jpeg",
-    "previewUrl": "/templates/template01/23504.jpeg"
+    "lastUpdated": "2025-08-13",
+    "screenshotPath": "/templates/template01/33592.jpeg",
+    "previewUrl": "/templates/template01/33592.jpeg"
   }
 }

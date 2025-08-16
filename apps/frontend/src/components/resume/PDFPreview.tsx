@@ -210,7 +210,7 @@ const PDFFromBlob = ({ blobUrl, pdfBlob, title, isFullscreenMode, onFullscreen, 
         className="w-full h-full border-none"
         title={title || 'PDF Preview'}
         style={{
-          transform: 'scale(1.15)',
+          transform: 'scale(1.0)',
           transformOrigin: 'top center',
           overflow: 'hidden'
         }}
@@ -948,7 +948,7 @@ export default function PDFPreview({
             onError={handleViewerError}
             style={{
               imageRendering: 'crisp-edges',
-              transform: 'scale(1.1)',
+              transform: 'scale(1.0)',
               transformOrigin: 'top center'
             }}
           />
@@ -962,7 +962,7 @@ export default function PDFPreview({
             onError={handleViewerError}
             style={{
               imageRendering: 'crisp-edges',
-              transform: 'scale(1.1)',
+              transform: 'scale(1.0)',
               transformOrigin: 'top center'
             }}
           >

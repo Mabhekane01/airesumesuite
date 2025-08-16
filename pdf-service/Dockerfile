@@ -3,7 +3,7 @@
 # ============================================
 
 # Stage 1: Build stage
-FROM openjdk:17-jdk-slim AS builder
+FROM openjdk:23-jdk-slim AS builder
 
 # Install build dependencies
 RUN apt-get update && apt-get install -y \
@@ -28,7 +28,7 @@ COPY src ./src
 RUN mvn clean package -DskipTests=true
 
 # Stage 2: Production stage
-FROM openjdk:17-jre-slim AS production
+FROM openjdk:23-jre-slim AS production
 
 # Install runtime dependencies for PDF processing
 RUN apt-get update && apt-get install -y \
@@ -61,14 +61,15 @@ USER pdfservice
 # Set environment variables
 ENV JAVA_OPTS="-Xms512m -Xmx2048m -XX:+UseG1GC -XX:G1HeapRegionSize=16m -XX:+UseStringDeduplication"
 ENV SPRING_PROFILES_ACTIVE=prod
-ENV SERVER_PORT=8080
+# Render will provide $PORT dynamically
+ENV PORT=8080
 
-# Health check
+# Health check (uses dynamic $PORT)
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD curl -f http://localhost:8080/actuator/health || exit 1
+    CMD curl -f http://localhost:$PORT/actuator/health || exit 1
 
-# Expose port
-EXPOSE 8080
+# Expose the Render port
+EXPOSE $PORT
 
-# Run the application
-CMD ["sh", "-c", "java $JAVA_OPTS -Djava.security.egd=file:/dev/./urandom -jar app.jar"]
+# Run the application (bind to dynamic $PORT)
+CMD ["sh", "-c", "java $JAVA_OPTS -Dserver.port=$PORT -Djava.security.egd=file:/dev/./urandom -jar app.jar"]

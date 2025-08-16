@@ -378,18 +378,7 @@ export const ResumeProvider: React.FC<ResumeProviderProps> = ({ children, initia
     updateResumeData({ [propertyName]: data });
   }, [updateResumeData]);
 
-  // Auto-save to localStorage when data changes (debounced)
-  useEffect(() => {
-    if (Object.keys(resumeData).length > 0) {
-      debouncedSave();
-    }
-  }, [resumeData]);
-
-  useEffect(() => {
-    if (Object.keys(aiData).length > 0) {
-      debouncedSave();
-    }
-  }, [aiData]);
+  // Note: Auto-save removed - users must manually save their resumes
 
   const saveToStorage = async () => {
     try {

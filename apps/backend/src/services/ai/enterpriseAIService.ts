@@ -615,6 +615,31 @@ Respond with this JSON structure:
     return this.parseAIResponse(text, type);
   }
 
+  private cleanMarkdownFromParsedContent(data: any): any {
+    if (typeof data === 'string') {
+      return data
+        .replace(/\*\*(.*?)\*\*/g, '$1')  // Remove **bold**
+        .replace(/\*(.*?)\*/g, '$1')      // Remove *italic*
+        .replace(/^\*\s*/g, '')           // Remove leading bullet points
+        .replace(/^•\s*/g, '')            // Remove bullet point symbols
+        .trim();
+    }
+    
+    if (Array.isArray(data)) {
+      return data.map(item => this.cleanMarkdownFromParsedContent(item));
+    }
+    
+    if (data && typeof data === 'object') {
+      const cleaned: any = {};
+      for (const [key, value] of Object.entries(data)) {
+        cleaned[key] = this.cleanMarkdownFromParsedContent(value);
+      }
+      return cleaned;
+    }
+    
+    return data;
+  }
+
   private parseAIResponse(text: string, type: string): any {
     console.log(`🔧 [${type}] Raw AI response (${text.length} chars):`, text.substring(0, 200));
     
@@ -642,7 +667,9 @@ Respond with this JSON structure:
         .replace(/^The.*?:\s*/gi, '') // "The JSON response..."
         .replace(/^Response.*?:\s*/gi, '') // "Response:"
         .replace(/^Based on.*?:\s*/gi, '') // "Based on..."
-        .replace(/^\*\*.*?\*\*\s*/gi, '') // **Bold text**
+        .replace(/\*\*(.*?)\*\*/g, '$1') // Remove **bold** formatting everywhere
+        .replace(/\*(.*?)\*/g, '$1') // Remove *italic* formatting everywhere
+        .replace(/^\*\*.*?\*\*\s*/gi, '') // Legacy: **Bold text** at start
         .replace(/^\d+\.\s*/gm, '') // Numbered list items
         .replace(/^[-•]\s*/gm, '') // Bullet points
         .trim();
@@ -655,7 +682,7 @@ Respond with this JSON structure:
       try {
         const directParsed = JSON.parse(cleanedText);
         console.log(`✅ [${type}] Direct parse succeeded!`);
-        return directParsed;
+        return this.cleanMarkdownFromParsedContent(directParsed);
       } catch (e) {
         console.log(`❌ [${type}] Direct parse failed:`, e.message);
       }
@@ -706,7 +733,7 @@ Respond with this JSON structure:
         try {
           const parsed = JSON.parse(extractedJson);
           console.log(`✅ [${type}] JSON parsed successfully!`);
-          return parsed;
+          return this.cleanMarkdownFromParsedContent(parsed);
         } catch (parseError) {
           console.warn(`❌ [${type}] JSON parse failed:`, parseError.message);
         }
@@ -716,7 +743,7 @@ Respond with this JSON structure:
       try {
         const parsed = JSON.parse(cleanedText);
         console.log(`✅ [${type}] Direct parse succeeded!`);
-        return parsed;
+        return this.cleanMarkdownFromParsedContent(parsed);
       } catch (e) {
         console.warn(`❌ [${type}] Direct parse failed:`, e.message);
       }

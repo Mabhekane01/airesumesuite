@@ -6,7 +6,7 @@
  */
 
 import { aiContentEnhancer, type ResumeData } from './resume-builder/aiContentEnhancer';
-import { standardizedTemplateService } from './resume-builder/standardizedTemplateService';
+import { templateService } from './resume-builder/templateService';
 import { geminiService } from './ai/gemini';
 
 export interface JobOptimizationRequest {
@@ -79,15 +79,10 @@ export class StandardizedJobOptimizationService {
         jobAnalysis
       );
 
-      // 4. Generate LaTeX using standardized template service
-      const optimizedLatex = await standardizedTemplateService.generateLatex(
+      // 4. Generate LaTeX using template service
+      const optimizedLatex = await templateService.generateLatex(
         request.templateId,
-        contentOptimization.enhancedContent,
-        {
-          enhanceWithAI: false, // Already enhanced
-          jobDescription: request.jobDescription,
-          customTemplateCode: request.templateCode
-        }
+        contentOptimization.enhancedContent
       );
 
       // 5. Calculate job match analysis
@@ -748,34 +743,64 @@ Return ONLY valid JSON (no text before/after):
   }
 
   /**
-   * Analyze job posting from URL (for frontend compatibility)
+   * Analyze job posting from URL using AI directly with personalized recommendations
    */
-  async analyzeJobFromUrl(jobUrl: string): Promise<any> {
+  async analyzeJobFromUrl(jobUrl: string, resumeData?: any): Promise<any> {
     try {
-      console.log('🔍 Analyzing job from URL:', jobUrl);
+      console.log('🤖 Using AI to analyze job from URL:', jobUrl);
       
-      // Use Gemini to scrape and analyze the job posting
-      const jobAnalysis = await geminiService.scrapeJobFromUrl(jobUrl);
+      // Use Gemini AI to scrape and analyze the job posting directly
+      const jobAnalysis = await geminiService.scrapeJobFromUrl(jobUrl, resumeData);
       
+      // AI handles everything - scraping, extraction, and analysis
       return {
         jobDescription: jobAnalysis.jobDescription || '',
-        jobTitle: jobAnalysis.jobTitle || '',
-        companyName: jobAnalysis.companyName || '',
-        requiredSkills: jobAnalysis.requiredSkills || [],
-        preferredSkills: jobAnalysis.preferredSkills || [],
-        experienceLevel: jobAnalysis.experienceLevel || 'mid',
+        jobTitle: jobAnalysis.jobTitle || 'Job Title Not Available',
+        companyName: jobAnalysis.companyName || 'Company Not Available',
+        requirements: jobAnalysis.requirements || jobAnalysis.requiredSkills || [],
         location: jobAnalysis.location || '',
         salary: jobAnalysis.salary || '',
         benefits: jobAnalysis.benefits || [],
         responsibilities: jobAnalysis.responsibilities || [],
         qualifications: jobAnalysis.qualifications || [],
+        experienceLevel: jobAnalysis.experienceLevel || 'mid',
+        requiredSkills: jobAnalysis.requiredSkills || [],
+        preferredSkills: jobAnalysis.preferredSkills || [],
         keywords: jobAnalysis.keywords || [],
         matchAnalysis: jobAnalysis,
-        recommendations: jobAnalysis.recommendations || []
+        recommendations: jobAnalysis.recommendations || [
+          'Review the job requirements and align your resume accordingly',
+          'Highlight relevant skills and technologies mentioned in the posting',
+          'Quantify your achievements to demonstrate impact',
+          'Use keywords from the job description throughout your resume'
+        ]
       };
     } catch (error) {
-      console.error('Failed to analyze job from URL:', error);
-      throw new Error('Failed to analyze job posting');
+      console.error('AI job analysis failed:', error);
+      
+      // Return fallback data with helpful message
+      return {
+        jobDescription: `AI could not analyze the job posting at ${jobUrl}. This may be due to site restrictions or temporary access issues. Please try again or paste the job description manually for better optimization results.`,
+        jobTitle: 'Job Title Not Available',
+        companyName: 'Company Not Available',
+        requirements: [],
+        location: '',
+        salary: '',
+        benefits: [],
+        responsibilities: [],
+        qualifications: [],
+        experienceLevel: 'mid',
+        requiredSkills: [],
+        preferredSkills: [],
+        keywords: [],
+        matchAnalysis: {},
+        recommendations: [
+          'Try the URL again - AI access may vary by site',
+          'Consider pasting the job description manually',
+          'Ensure your resume includes relevant keywords',
+          'Highlight achievements with quantifiable results'
+        ]
+      };
     }
   }
 }

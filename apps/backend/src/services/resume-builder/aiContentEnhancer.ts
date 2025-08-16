@@ -65,9 +65,11 @@ export interface ResumeData {
   }>;
   projects?: Array<{
     name: string;
-    description: string;
+    description: string[];
     technologies: string[];
     url?: string;
+    startDate?: string;
+    endDate?: string;
   }>;
   certifications?: Array<{
     name: string;
@@ -232,18 +234,22 @@ GUIDELINES:
 4. Use strong action words and industry keywords
 5. Maintain the original tone and personality
 6. Make it ATS-friendly with relevant keywords
-7. Return ONLY the enhanced summary, no explanations
+7. Use PLAIN TEXT ONLY - NO markdown formatting (no **bold**, no *italic*, no special characters)
+8. Return ONLY the enhanced summary, no explanations
 
 Enhanced Summary:`;
 
       const enhancedSummary = await geminiService.generateText(prompt);
 
+      // Clean any markdown formatting that might have slipped through
+      const cleanedSummary = this.cleanMarkdownFormatting(enhancedSummary);
+
       // Extract improvements and keywords
-      const improvements = this.identifyImprovements(originalSummary, enhancedSummary);
-      const keywords = this.extractKeywords(enhancedSummary, options);
+      const improvements = this.identifyImprovements(originalSummary, cleanedSummary);
+      const keywords = this.extractKeywords(cleanedSummary, options);
 
       return {
-        content: enhancedSummary,
+        content: cleanedSummary,
         improvements,
         keywords,
       };
@@ -324,6 +330,7 @@ GUIDELINES:
 4. Focus on achievements over responsibilities
 5. Keep each bullet point to 1-2 lines
 6. Make them ATS-friendly
+7. Use PLAIN TEXT ONLY - NO markdown formatting (no **bold**, no *italic*, no special characters)
 
 Return the enhanced content in this exact JSON format:
 {
@@ -338,10 +345,16 @@ Return the enhanced content in this exact JSON format:
       if (jsonMatch) {
         const enhancedData = JSON.parse(jsonMatch[0]);
         
+        // Clean markdown formatting from all text arrays
+        const cleanedResponsibilities = (enhancedData.responsibilities || experience.responsibilities || [])
+          .map((item: string) => this.cleanMarkdownFormatting(item));
+        const cleanedAchievements = (enhancedData.achievements || experience.achievements || [])
+          .map((item: string) => this.cleanMarkdownFormatting(item));
+        
         const enhancedExperience = {
           ...experience,
-          responsibilities: enhancedData.responsibilities || experience.responsibilities,
-          achievements: enhancedData.achievements || experience.achievements,
+          responsibilities: cleanedResponsibilities,
+          achievements: cleanedAchievements,
         };
 
         const improvements = this.identifyWorkExperienceImprovements(experience, enhancedExperience);
@@ -411,7 +424,7 @@ Return the enhanced content in this exact JSON format:
       const prompt = `Enhance this project description to be more impactful and professional.
 
 PROJECT: ${project.name}
-CURRENT DESCRIPTION: ${project.description}
+CURRENT DESCRIPTION: ${Array.isArray(project.description) ? project.description.join('. ') : project.description || ''}
 TECHNOLOGIES: ${project.technologies?.join(', ') || 'Not specified'}
 
 ENHANCEMENT REQUIREMENTS:
@@ -429,9 +442,14 @@ Return only the enhanced description, no other text:`;
 
       const enhancedDescription = await geminiService.generateText(prompt);
 
+      // Convert enhanced description back to array format if original was array
+      const processedDescription = Array.isArray(project.description)
+        ? enhancedDescription.split(/[.!?]+/).map(s => s.trim()).filter(s => s.length > 0)
+        : enhancedDescription;
+
       const enhancedProject = {
         ...project,
-        description: enhancedDescription,
+        description: processedDescription,
       };
 
       const improvements = [`Enhanced project description for "${project.name}"`];
@@ -542,6 +560,20 @@ Return only the enhanced description, no other text:`;
     }
     
     return improvements;
+  }
+
+  /**
+   * Clean markdown formatting from AI-generated content
+   */
+  private cleanMarkdownFormatting(text: string): string {
+    return text
+      .replace(/\*\*(.*?)\*\*/g, '$1')  // Remove **bold**
+      .replace(/\*(.*?)\*/g, '$1')      // Remove *italic*
+      .replace(/^\*\s*/gm, '')          // Remove leading bullet points
+      .replace(/^•\s*/gm, '')           // Remove bullet point symbols
+      .replace(/`(.*?)`/g, '$1')        // Remove `code` formatting
+      .replace(/_{2,}(.*?)_{2,}/g, '$1') // Remove __underline__
+      .trim();
   }
 
   /**

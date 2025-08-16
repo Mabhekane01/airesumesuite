@@ -15,7 +15,6 @@ import resumeRoutes from './routes/resumeRoutes';
 import fileUploadRoutes from './routes/fileUploadRoutes';
 import coverLetterRoutes from './routes/coverLetterRoutes';
 import authRoutes from './routes/authRoutes';
-import jobScrapingRoutes from './routes/jobScrapingRoutes';
 import jobApplicationRoutes from './routes/jobApplicationRoutes';
 import simpleAnalyticsRoutes from './routes/simpleAnalyticsRoutes';
 import accountRoutes from './routes/accountRoutes';
@@ -29,6 +28,9 @@ import paymentRoutes from './routes/paymentRoutes';
 import notificationRoutes from './routes/notificationRoutes';
 import pdfEditorRoutes from './routes/pdfEditorRoutes';
 import publicRoutes from './routes/publicRoutes';
+import adminRoutes from './routes/adminRoutes';
+import { cleanupExpiredTokens } from './utils/tokenCleanup';
+import { tokenCleanupScheduler } from './services/tokenCleanupScheduler';
 import { 
   requestIdMiddleware, 
   requestLogger, 
@@ -149,7 +151,8 @@ const corsOptions = {
     'Access-Control-Request-Method',
     'Access-Control-Request-Headers',
     'Cache-Control',
-    'Pragma'
+    'Pragma',
+    'response-type'
   ],
   exposedHeaders: ['Set-Cookie', 'X-Request-ID'],
   preflightContinue: false,
@@ -261,7 +264,6 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/resumes', resumeRoutes);
 app.use('/api/v1/upload', fileUploadRoutes);
 app.use('/api/v1/cover-letters', coverLetterRoutes);
-app.use('/api/v1/job-scraper', jobScrapingRoutes);
 app.use('/api/v1/job-applications', jobApplicationRoutes);
 app.use('/api/v1/analytics', simpleAnalyticsRoutes);
 app.use('/api/v1/account', accountRoutes);
@@ -274,6 +276,7 @@ app.use('/api/v1/coach', careerCoachRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/v1/notifications', notificationRoutes);
 app.use('/api/v1/pdf-editor', pdfEditorRoutes);
+app.use('/api/v1/admin', adminRoutes);
 
 // 404 handler for unmatched API routes
 app.use('/api/v1', notFoundHandler);
@@ -292,6 +295,15 @@ const startServer = async () => {
     await locationService.initializeDatabase();
     await companyService.initializeDatabase();
     await currencyService.initializeDatabase();
+    
+    // Clean up expired tokens on startup
+    console.log('🧹 Running startup token cleanup...');
+    try {
+      const cleanupResult = await cleanupExpiredTokens();
+      console.log(`✅ Startup cleanup: ${cleanupResult.tokensRemoved} expired tokens removed, ${cleanupResult.oldSessionsClosed} old sessions closed`);
+    } catch (error) {
+      console.warn('⚠️  Startup token cleanup failed:', error);
+    }
     
     // Test email service connection
     try {
@@ -316,6 +328,9 @@ const startServer = async () => {
     // Start automation service
     automationService.startAutomation();
     
+    // Start token cleanup scheduler (runs every 6 hours)
+    tokenCleanupScheduler.start();
+    
     app.listen(PORT, () => {
       console.log(`🚀 Backend server running on port ${PORT}`);
       console.log(`🤖 Enterprise automation service started`);
@@ -324,6 +339,7 @@ const startServer = async () => {
       console.log(`💰 Currency service ready with all English-speaking countries' currencies`);
       console.log(`🔔 Interview notification service with automated reminders`);
       console.log(`📧 Email service ready for calendar invites and reminders`);
+      console.log(`🧹 Token cleanup scheduler started (runs every 6 hours)`);
     });
   } catch (error) {
     console.error('Failed to start server:', error);

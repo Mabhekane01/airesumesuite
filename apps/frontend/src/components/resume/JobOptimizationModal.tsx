@@ -5,6 +5,7 @@ import { resumeService } from '../../services/resumeService';
 import { useResume } from '../../contexts/ResumeContext';
 import { api } from '../../services/api';
 import { useSubscription } from '../../hooks/useSubscription';
+import { JobOptimizationReviewModal } from './JobOptimizationReviewModal';
 import { 
   SparklesIcon, 
   GlobeAltIcon, 
@@ -12,7 +13,8 @@ import {
   CheckCircleIcon,
   ExclamationTriangleIcon,
   ArrowPathIcon,
-  ChartBarIcon
+  ChartBarIcon,
+  EyeIcon
 } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
 
@@ -21,16 +23,17 @@ interface JobOptimizationModalProps {
   onClose: () => void;
   resumeData?: any;
   onOptimize?: (optimizedData: any) => void;
+  onSwitchToPreview?: () => void;
 }
 
 type OptimizationMethod = 'url';
-type OptimizationType = 'job-specific' | 'comprehensive' | 'ats' | 'content';
 
 export default function JobOptimizationModal({ 
   isOpen, 
   onClose, 
   resumeData,
-  onOptimize 
+  onOptimize,
+  onSwitchToPreview
 }: JobOptimizationModalProps) {
   const { 
     resumeData: contextResumeData, 
@@ -43,7 +46,6 @@ export default function JobOptimizationModal({
   const { hasActiveSubscription } = useSubscription();
   
   const [method, setMethod] = useState<OptimizationMethod>('url');
-  const [optimizationType, setOptimizationType] = useState<OptimizationType>('job-specific');
   const [jobUrl, setJobUrl] = useState('');
   const [jobTitle, setJobTitle] = useState('');
   const [companyName, setCompanyName] = useState('');
@@ -52,6 +54,8 @@ export default function JobOptimizationModal({
   const [jobAnalysis, setJobAnalysis] = useState<any>(null);
   const [optimizationResult, setOptimizationResult] = useState<any>(null);
   const [step, setStep] = useState<'input' | 'analysis' | 'results'>('input');
+  const [showOptimizationReview, setShowOptimizationReview] = useState(false);
+  const [optimizationPreviewData, setOptimizationPreviewData] = useState<any>(null);
 
   const analyzeJobUrl = async () => {
     if (!jobUrl.trim()) {
@@ -61,10 +65,13 @@ export default function JobOptimizationModal({
 
     setIsAnalyzing(true);
     try {
-      const analysis = await resumeService.analyzeJobFromUrl({ jobUrl });
+      const analysis = await resumeService.analyzeJobFromUrl({ 
+        jobUrl,
+        resumeData: activeResumeData 
+      });
       setJobAnalysis(analysis);
-      setJobTitle(analysis.jobDetails.title || '');
-      setCompanyName(analysis.jobDetails.company || '');
+      setJobTitle(analysis?.jobDetails?.title || '');
+      setCompanyName(analysis?.jobDetails?.company || '');
       setStep('analysis');
       toast.success('Job posting analyzed successfully!');
     } catch (error) {
@@ -72,6 +79,44 @@ export default function JobOptimizationModal({
       toast.error('Failed to analyze job posting. Please check the URL and try again.');
     } finally {
       setIsAnalyzing(false);
+    }
+  };
+
+  const handleOptimizePreview = async () => {
+    if (!jobAnalysis?.jobDetails?.description) {
+      toast.error('Job description not available for optimization');
+      return;
+    }
+
+    setIsLoading(true);
+    
+    // Inform user about preview generation
+    toast.info('Generating job optimization preview...', {
+      description: 'AI is analyzing your resume for this job. This may take 30-60 seconds.',
+      duration: 5000
+    });
+    
+    try {
+      console.log('🎯 Getting job optimization preview...');
+      const previewData = await resumeService.optimizeForJobPreview(
+        activeResumeData,
+        jobAnalysis?.jobDetails?.description,
+        jobTitle,
+        companyName,
+        activeResumeData.template || activeResumeData.templateId || 'template01'
+      );
+      
+      setOptimizationPreviewData(previewData);
+      setShowOptimizationReview(true);
+      
+      toast.success('Job optimization preview ready!', {
+        description: 'Review the suggested optimizations before generating your PDF.'
+      });
+    } catch (error) {
+      console.error('Failed to generate job optimization preview:', error);
+      toast.error('Failed to generate optimization preview. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -215,6 +260,7 @@ export default function JobOptimizationModal({
     }
   };
 
+
   const resetModal = () => {
     setStep('input');
     setJobUrl('');
@@ -222,6 +268,8 @@ export default function JobOptimizationModal({
     setCompanyName('');
     setJobAnalysis(null);
     setOptimizationResult(null);
+    setShowOptimizationReview(false);
+    setOptimizationPreviewData(null);
   };
 
   const renderInputStep = () => (
@@ -275,51 +323,25 @@ export default function JobOptimizationModal({
         </div>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-dark-text-primary mb-3">
-          Optimization Type
-        </label>
-        <div className="grid grid-cols-2 gap-3">
-          {[
-            { value: 'job-specific', label: 'Job-Specific', desc: 'Tailor to this specific job posting' },
-            { value: 'comprehensive', label: 'Comprehensive', desc: 'Full resume enhancement + job alignment' },
-            { value: 'ats', label: 'ATS Focus', desc: 'Optimize for applicant tracking systems' },
-            { value: 'content', label: 'Content Only', desc: 'Improve writing and achievements' }
-          ].map((type) => (
-            <button
-              key={type.value}
-              onClick={() => setOptimizationType(type.value as OptimizationType)}
-              className={`p-3 border rounded-lg text-left text-sm transition-all ${
-                optimizationType === type.value
-                  ? 'border-accent-primary bg-accent-primary/10 text-accent-primary'
-                  : 'border-dark-border text-dark-text-secondary hover:border-accent-primary/50'
-              }`}
-            >
-              <div className="font-medium">{type.label}</div>
-              <div className="text-xs opacity-75">{type.desc}</div>
-            </button>
-          ))}
-        </div>
-      </div>
 
       <div className="flex justify-between pt-4">
         <Button onClick={onClose} variant="outline" className="btn-secondary-dark">
           Cancel
         </Button>
         <Button
-          onClick={handleOptimize}
-          disabled={isLoading || !jobUrl.trim()}
+          onClick={analyzeJobUrl}
+          disabled={isAnalyzing || !jobUrl.trim()}
           className="btn-primary-dark"
         >
-          {isLoading ? (
+          {isAnalyzing ? (
             <>
               <ArrowPathIcon className="w-4 h-4 mr-2 animate-spin" />
-              Optimizing (3-5 min)...
+              Analyzing...
             </>
           ) : (
             <>
-              <SparklesIcon className="w-4 h-4 mr-2" />
-              Optimize Resume
+              <GlobeAltIcon className="w-4 h-4 mr-2" />
+              Analyze Job & Continue
             </>
           )}
         </Button>
@@ -342,9 +364,21 @@ export default function JobOptimizationModal({
           <div className="card-glass-dark p-4 border border-dark-border rounded-lg">
             <h4 className="font-semibold text-dark-text-primary mb-2">Job Details</h4>
             <div className="space-y-2 text-sm">
-              <div><span className="font-medium">Title:</span> {jobAnalysis.jobDetails.title}</div>
-              <div><span className="font-medium">Company:</span> {jobAnalysis.jobDetails.company}</div>
-              <div><span className="font-medium">Requirements:</span> {jobAnalysis.jobDetails.requirements?.length || 0} identified</div>
+              <div><span className="font-medium">Title:</span> {jobAnalysis?.jobDetails?.title || 'Not available'}</div>
+              <div><span className="font-medium">Company:</span> {jobAnalysis?.jobDetails?.company || 'Not available'}</div>
+              <div><span className="font-medium">Requirements ({jobAnalysis?.jobDetails?.requirements?.length || 0}):</span></div>
+              {jobAnalysis?.jobDetails?.requirements && jobAnalysis.jobDetails.requirements.length > 0 ? (
+                <ul className="ml-4 space-y-1">
+                  {jobAnalysis.jobDetails.requirements.map((req: string, index: number) => (
+                    <li key={index} className="flex items-start">
+                      <span className="text-accent-primary mr-2">•</span>
+                      <span className="text-dark-text-secondary">{req}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <div className="ml-4 text-dark-text-muted italic">No requirements identified</div>
+              )}
             </div>
           </div>
 
@@ -366,19 +400,43 @@ export default function JobOptimizationModal({
         <Button onClick={resetModal} variant="outline" className="btn-secondary-dark">
           Start Over
         </Button>
-        <Button onClick={handleOptimize} disabled={isLoading} className="btn-primary-dark">
-          {isLoading ? (
-            <>
-              <ArrowPathIcon className="w-4 h-4 mr-2 animate-spin" />
-              Optimizing (3-5 min)...
-            </>
-          ) : (
-            <>
-              <SparklesIcon className="w-4 h-4 mr-2" />
-              Optimize Resume
-            </>
-          )}
-        </Button>
+        <div className="flex flex-col sm:flex-row gap-3">
+          <Button 
+            onClick={handleOptimizePreview} 
+            disabled={isLoading} 
+            className="btn-primary-dark flex-1 sm:flex-none"
+          >
+            {isLoading ? (
+              <>
+                <ArrowPathIcon className="w-4 h-4 mr-2 animate-spin" />
+                Getting Preview...
+              </>
+            ) : (
+              <>
+                <EyeIcon className="w-4 h-4 mr-2" />
+                Preview Optimizations
+              </>
+            )}
+          </Button>
+          <Button 
+            onClick={handleOptimize} 
+            disabled={isLoading} 
+            variant="outline" 
+            className="btn-secondary-dark flex-1 sm:flex-none text-sm"
+          >
+            {isLoading ? (
+              <>
+                <ArrowPathIcon className="w-4 h-4 mr-2 animate-spin" />
+                Direct Optimize...
+              </>
+            ) : (
+              <>
+                <SparklesIcon className="w-4 h-4 mr-2" />
+                Skip Preview
+              </>
+            )}
+          </Button>
+        </div>
       </div>
     </div>
   );
@@ -464,18 +522,45 @@ export default function JobOptimizationModal({
   );
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={() => {
-        resetModal();
-        onClose();
-      }}
-      title="AI Job Optimization"
-      size="lg"
-    >
-      {step === 'input' && renderInputStep()}
-      {step === 'analysis' && renderAnalysisStep()}
-      {step === 'results' && renderResultsStep()}
-    </Modal>
+    <>
+      <Modal
+        isOpen={isOpen && !showOptimizationReview}
+        onClose={() => {
+          resetModal();
+          onClose();
+        }}
+        title="AI Job Optimization"
+        size="lg"
+      >
+        {step === 'input' && renderInputStep()}
+        {step === 'analysis' && renderAnalysisStep()}
+        {step === 'results' && renderResultsStep()}
+      </Modal>
+
+      {/* Job Optimization Review Modal */}
+      {optimizationPreviewData && (
+        <JobOptimizationReviewModal
+          isOpen={showOptimizationReview}
+          onClose={() => setShowOptimizationReview(false)}
+          optimizationData={optimizationPreviewData}
+          onApplySelected={(finalResumeData) => {
+            // Apply the job-optimized resume data to the form
+            updateResumeData(finalResumeData);
+            
+            // Close review modal and main modal
+            setShowOptimizationReview(false);
+            resetModal();
+            onClose();
+            
+            // Switch to preview tab to show updated resume
+            if (onSwitchToPreview) {
+              onSwitchToPreview();
+            }
+            
+            toast.success('Job optimization applied! Check your updated resume in the preview.');
+          }}
+        />
+      )}
+    </>
   );
 }

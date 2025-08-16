@@ -184,7 +184,7 @@ ItalicFont=SourceSansPro-RegularIt.otf
 
 
 %%%%%%% --------------------------------------------------------------------------------------
-%%%%%%%  ACADEMIC PROJECTS
+%%%%%%%  PROJECTS
 %%%%%%% --------------------------------------------------------------------------------------
 \section{Projects} %% (Or "Research", select as appropriate)
 

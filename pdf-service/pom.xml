@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
                              http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
@@ -11,27 +11,7 @@
     <packaging>jar</packaging>
 
     <name>AI Resume Suite - PDF Service</name>
-    <description>SAMBox-powered PDF editing service for AI Resume Suite</description>
-
-    <properties>
-        <maven.compiler.release>17</maven.compiler.release>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        
-        <!-- Primary PDF Library -->
-        <sambox.version>5.1.13</sambox.version>
-        
-        <!-- Security and Cryptography -->
-        <bouncycastle.version>1.77</bouncycastle.version>
-        
-        <!-- Document Processing -->
-        <poi.version>5.2.5</poi.version>
-        <tess4j.version>5.11.0</tess4j.version>
-        <pdfbox.version>2.0.32</pdfbox.version>
-        
-        <!-- Utilities -->
-        <commons-fileupload.version>1.5</commons-fileupload.version>
-        <commons-io.version>2.15.1</commons-io.version>
-    </properties>
+    <description>PDFBox-powered PDF editing service for AI Resume Suite</description>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -40,132 +20,65 @@
         <relativePath/>
     </parent>
 
-    <repositories>
-        <repository>
-            <id>central</id>
-            <name>Maven Central</name>
-            <url>https://repo1.maven.org/maven2</url>
-        </repository>
-    </repositories>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <java.version>23</java.version>
+
+        <pdfbox.version>3.0.5</pdfbox.version>
+        <bouncycastle.version>1.81</bouncycastle.version>
+        <poi.version>5.4.1</poi.version>
+        <tess4j.version>5.16.0</tess4j.version>
+    </properties>
 
     <dependencies>
-
-        <!-- ================================== -->
-        <!-- SPRING BOOT CORE                  -->
-        <!-- ================================== -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
-        
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-logging</artifactId>
-        </dependency>
 
-        <!-- ================================== -->
-        <!-- PDF PROCESSING - PRIMARY          -->
-        <!-- ================================== -->
-        <!-- SAMBox - Primary PDF library for watermarking -->
-        <dependency>
-            <groupId>org.sejda</groupId>
-            <artifactId>sejda-sambox</artifactId>
-            <version>${sambox.version}</version>
-        </dependency>
-
-        <!-- PDFBox - For additional PDF operations -->
         <dependency>
             <groupId>org.apache.pdfbox</groupId>
             <artifactId>pdfbox</artifactId>
             <version>${pdfbox.version}</version>
         </dependency>
-        
         <dependency>
             <groupId>org.apache.pdfbox</groupId>
             <artifactId>pdfbox-tools</artifactId>
             <version>${pdfbox.version}</version>
         </dependency>
-           
-        <dependency>
-            <groupId>org.apache.pdfbox</groupId>
-            <artifactId>fontbox</artifactId>
-            <version>${pdfbox.version}</version>
-        </dependency>
 
-        <!-- ================================== -->
-        <!-- DOCUMENT PROCESSING                -->
-        <!-- ================================== -->
-        <!-- Apache POI for Word/Excel processing -->
+        <dependency>
+    <groupId>org.jodconverter</groupId>
+    <artifactId>jodconverter-spring-boot-starter</artifactId>
+    <version>4.4.6</version>
+     </dependency>
+
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml</artifactId>
             <version>${poi.version}</version>
         </dependency>
-        
-        <dependency>
-            <groupId>org.apache.poi</groupId>
-            <artifactId>poi-scratchpad</artifactId>
-            <version>${poi.version}</version>
-        </dependency>
-
-        <!-- Tesseract OCR for text extraction -->
         <dependency>
             <groupId>net.sourceforge.tess4j</groupId>
             <artifactId>tess4j</artifactId>
             <version>${tess4j.version}</version>
         </dependency>
-
-        <!-- ================================== -->
-        <!-- SECURITY & CRYPTOGRAPHY            -->
-        <!-- ================================== -->
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk18on</artifactId>
             <version>${bouncycastle.version}</version>
         </dependency>
-        
-        <dependency>
-            <groupId>org.bouncycastle</groupId>
-            <artifactId>bcpkix-jdk18on</artifactId>
-            <version>${bouncycastle.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.bouncycastle</groupId>
-            <artifactId>bcmail-jdk18on</artifactId>
-            <version>${bouncycastle.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.bouncycastle</groupId>
-            <artifactId>bcpg-jdk18on</artifactId>
-            <version>${bouncycastle.version}</version>
-        </dependency>
-
-        <!-- ================================== -->
-        <!-- FILE HANDLING & UTILITIES          -->
-        <!-- ================================== -->
-        <dependency>
-            <groupId>commons-fileupload</groupId>
-            <artifactId>commons-fileupload</artifactId>
-            <version>${commons-fileupload.version}</version>
-        </dependency>
-        
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>${commons-io.version}</version>
+            <version>2.20.0</version>
         </dependency>
 
-        <!-- JSON processing (managed by Spring Boot) -->
         <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
         </dependency>
-
-        <!-- ================================== -->
-        <!-- DEVELOPMENT TOOLS                  -->
-        <!-- ================================== -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
@@ -173,25 +86,41 @@
             <optional>true</optional>
         </dependency>
 
-        <!-- Spring Boot Actuator for health checks and monitoring -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-actuator</artifactId>
-        </dependency>
-
-        <!-- ================================== -->
-        <!-- TESTING                            -->
-        <!-- ================================== -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+
+
+        <dependency>
+    <groupId>org.jodconverter</groupId>
+    <artifactId>jodconverter-core</artifactId>
+    <version>4.4.6</version>
+</dependency>
+
+<dependency>
+    <groupId>org.jodconverter</groupId>
+    <artifactId>jodconverter-local</artifactId>
+    <version>4.4.6</version>
+</dependency>
+
+<dependency>
+    <groupId>org.apache.tika</groupId>
+    <artifactId>tika-core</artifactId>
+    <version>2.9.1</version>
+</dependency>
+<dependency>
+    <groupId>org.apache.tika</groupId>
+    <artifactId>tika-parsers-standard-package</artifactId>
+    <version>2.9.1</version>
+</dependency>
+
+
     </dependencies>
 
     <build>
         <plugins>
-            <!-- Spring Boot Maven plugin -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
@@ -204,26 +133,10 @@
                     </excludes>
                 </configuration>
             </plugin>
-            
-            <!-- Maven Compiler Plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.14.0</version>
-                <configuration>
-                    <release>17</release>
-                    <encoding>UTF-8</encoding>
-                </configuration>
-            </plugin>
-            
-            <!-- Maven Surefire Plugin for testing -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.1.2</version>
-                <configuration>
-                    <useSystemClassLoader>false</useSystemClassLoader>
-                </configuration>
             </plugin>
         </plugins>
     </build>

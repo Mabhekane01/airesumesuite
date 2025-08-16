@@ -45,6 +45,15 @@ export const AI_OPERATION_CONFIGS: Record<string, AIProgressConfig> = {
       { name: 'finalizing', duration: 5, message: 'Finalizing improvements...' }
     ]
   },
+  'resume-analysis': {
+    totalEstimatedTime: 30,
+    steps: [
+      { name: 'analyzing', duration: 25, message: 'Analyzing resume content and structure...' },
+      { name: 'scoring', duration: 35, message: 'Calculating ATS compatibility score...' },
+      { name: 'evaluating', duration: 25, message: 'Evaluating strengths and weaknesses...' },
+      { name: 'finalizing', duration: 15, message: 'Generating improvement suggestions...' }
+    ]
+  },
   'job-optimization': {
     totalEstimatedTime: 40,
     steps: [
@@ -65,7 +74,12 @@ export const useAIProgress = (operationType: keyof typeof AI_OPERATION_CONFIGS) 
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const startTimeRef = useRef<number>(0);
   
-  const config = AI_OPERATION_CONFIGS[operationType];
+  const config = AI_OPERATION_CONFIGS[operationType] || {
+    totalEstimatedTime: 30,
+    steps: [
+      { name: 'processing', duration: 100, message: 'Processing...' }
+    ]
+  };
 
   const startProgress = () => {
     setIsLoading(true);

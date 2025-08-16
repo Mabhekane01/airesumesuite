@@ -41,3 +41,29 @@ export const generateTokenPair = (user: IUser) => {
   
   return { accessToken, refreshToken };
 };
+
+export const isTokenExpired = (token: string): boolean => {
+  try {
+    jwt.verify(token, REFRESH_TOKEN_SECRET);
+    return false;
+  } catch (error) {
+    if (error instanceof jwt.TokenExpiredError) {
+      return true;
+    }
+    return true;
+  }
+};
+
+export const cleanExpiredTokens = (tokens: string[]): string[] => {
+  return tokens.filter(token => !isTokenExpired(token));
+};
+
+export const limitActiveTokens = (tokens: string[], maxTokens: number = 5): string[] => {
+  const validTokens = cleanExpiredTokens(tokens);
+  
+  if (validTokens.length <= maxTokens) {
+    return validTokens;
+  }
+  
+  return validTokens.slice(-maxTokens);
+};

@@ -8,7 +8,7 @@
  */
 
 import { aiContentEnhancer, type ResumeData } from "./aiContentEnhancer";
-import { standardizedTemplateService } from "./standardizedTemplateService";
+import { templateService } from "./templateService";
 import fs from "fs/promises";
 import path from "path";
 
@@ -151,14 +151,10 @@ export class AILatexGenerator {
       // Convert legacy ResumeInput to new ResumeData format
       const standardizedResumeData: ResumeData = this.convertToStandardizedFormat(resumeData);
       
-      // Use standardized template service (with AI enhancement)
-      const latex = await standardizedTemplateService.generateLatex(
+      // Use template service (AI enhancement should be done separately)
+      const latex = await templateService.generateLatex(
         templateId,
-        standardizedResumeData,
-        {
-          enhanceWithAI: true, // Enable AI content enhancement
-          jobDescription: undefined
-        }
+        standardizedResumeData
       );
       
       console.log(`✅ Generated LaTeX using standardized template system. Length: ${latex.length}`);

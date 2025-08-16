@@ -70,6 +70,39 @@ router.post('/enhance-unsaved',
   (req: Request, res: Response) => resumeController.enhanceUnsavedResume(req, res)
 );
 
+// POST /api/v1/resumes/enhance-with-latex - Enhance resume and return PDF
+router.post('/enhance-with-latex',
+  authMiddleware,
+  requireEnterpriseSubscription,
+  subscriptionRateLimit('ai-resume-builder'),
+  trackFeatureUsage('ai-resume-enhancement-pdf'),
+  (req: Request, res: Response) => resumeController.enhanceResumeWithLatexPDF(req, res)
+);
+
+// POST /api/v1/resumes/enhance-with-latex-stream - Enhance resume with streaming progress
+router.post('/enhance-with-latex-stream',
+  authMiddleware,
+  requireEnterpriseSubscription, 
+  subscriptionRateLimit('ai-resume-builder'),
+  trackFeatureUsage('ai-resume-enhancement-pdf-stream'),
+  (req: Request, res: Response) => resumeController.enhanceResumeWithLatexStreamPDF(req, res)
+);
+
+// POST /api/v1/resumes/enhance-content-only - Get AI enhancements without PDF generation
+router.post('/enhance-content-only',
+  authMiddleware,
+  requireEnterpriseSubscription,
+  subscriptionRateLimit('ai-resume-builder'),
+  trackFeatureUsage('ai-resume-enhancement-preview'),
+  (req: Request, res: Response) => resumeController.enhanceResumeContentOnly(req, res)
+);
+
+// POST /api/v1/resumes/generate-preview-pdf - Generate PDF with specific resume data
+router.post('/generate-preview-pdf',
+  authMiddleware,
+  (req: Request, res: Response) => resumeController.generateUnsavedResumePreview(req, res)
+);
+
 // ===== JOB OPTIMIZATION =====
 // All job optimization uses standardized job optimization service
 
@@ -98,6 +131,15 @@ router.post('/optimize-for-job-pdf',
   subscriptionRateLimit('ai-resume-builder'), 
   trackFeatureUsage('ai-job-optimization'), 
   (req: AuthenticatedRequest, res: Response) => resumeController.optimizeUnsavedResumeForJobPDF(req, res)
+);
+
+// POST /api/v1/resumes/optimize-for-job-preview - Get job optimization suggestions without PDF generation
+router.post('/optimize-for-job-preview',
+  authMiddleware,
+  requireEnterpriseSubscription,
+  subscriptionRateLimit('ai-resume-builder'),
+  trackFeatureUsage('ai-job-optimization-preview'),
+  (req: Request, res: Response) => resumeController.optimizeForJobPreview(req, res)
 );
 
 // POST /api/v1/resumes/:id/optimize-with-url - Optimize resume using job URL
@@ -145,6 +187,12 @@ router.post('/ats-analysis-unsaved',
 
 // GET /api/v1/resumes/templates - Get available templates
 router.get('/templates', (req: Request, res: Response) => resumeController.getAvailableTemplates(req, res));
+
+// GET /api/v1/resumes/latex-templates - Get LaTeX templates
+router.get('/latex-templates', (req: Request, res: Response) => resumeController.getLatexTemplates(req, res));
+
+// GET /api/v1/resumes/latex-templates-with-code - Get LaTeX templates with code (for job optimization)
+router.get('/latex-templates-with-code', (req: Request, res: Response) => resumeController.getLatexTemplatesWithCode(req, res));
 
 // ===== ERROR HANDLING =====
 router.use((err: Error, req: Request, res: Response, next: NextFunction) => {

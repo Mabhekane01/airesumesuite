@@ -414,7 +414,7 @@ export class ResumeService {
     }
   }
 
-  analyzeJobFromUrl = async (options: { jobUrl: string }): Promise<{
+  analyzeJobFromUrl = async (options: { jobUrl: string; resumeData?: any }): Promise<{
     jobDetails: any;
     matchAnalysis: any;
     recommendations: string[];
@@ -800,7 +800,15 @@ export class ResumeService {
       improvementLevel?: 'basic' | 'comprehensive' | 'expert';
     },
     progressCallback?: (progress: string) => void
-  ): Promise<Blob> => {
+  ): Promise<{
+    pdfBlob: Blob;
+    enhancedData?: {
+      enhancedResumeData: any;
+      improvements: string[];
+      keywordsAdded: string[];
+      atsScore: number;
+    };
+  }> => {
     try {
       console.log('🤖 Enhancing resume with AI and generating PDF...');
       
@@ -830,7 +838,7 @@ export class ResumeService {
         }, progressCallback);
         
         // Cache the result
-        this.setCachedData(cacheKey, result);
+        this.setCachedData(cacheKey, result.pdfBlob);
         return result;
       }
 
@@ -852,14 +860,197 @@ export class ResumeService {
         throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
       }
 
-      // Return the PDF blob
-      const result = await response.blob();
+      // Extract enhanced data from headers
+      const enhancedDataHeader = response.headers.get('X-Enhanced-Data');
+      let enhancedData = undefined;
       
-      // Cache the result
-      this.setCachedData(cacheKey, result);
+      if (enhancedDataHeader) {
+        try {
+          const decodedHeader = atob(enhancedDataHeader);
+          enhancedData = JSON.parse(decodedHeader);
+        } catch (error) {
+          console.warn('Failed to parse enhanced data from headers:', error);
+        }
+      }
+
+      // Get the PDF blob
+      const pdfBlob = await response.blob();
+      
+      const result = { pdfBlob, enhancedData };
+      
+      // Cache the PDF blob
+      this.setCachedData(cacheKey, pdfBlob);
       return result;
     } catch (error) {
       console.error('❌ AI Enhancement with PDF failed:', error);
+      throw error;
+    }
+  };
+
+  // New method for preview-first AI enhancement (no PDF generation)
+  enhanceResumeContentOnly = async (
+    resumeData: any,
+    templateId: string,
+    options?: {
+      focusAreas?: string[];
+      improvementLevel?: 'basic' | 'comprehensive' | 'expert';
+    }
+  ): Promise<{
+    originalResumeData: any;
+    enhancedResumeData: any;
+    improvements: string[];
+    keywordsAdded: string[];
+    atsScore: number;
+    enhancementSuggestions: {
+      personalInfo: any;
+      professionalSummary: any;
+      workExperience: any;
+      education: any;
+      skills: any;
+      projects: any;
+    };
+  }> => {
+    try {
+      console.log('🤖 Getting AI enhancement suggestions...');
+      
+      const token = this.getAccessToken();
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+      const url = `${baseUrl}/api/v1/resumes/enhance-content-only`;
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          resumeData,
+          templateId,
+          options
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      console.log('✅ AI enhancement suggestions received');
+      
+      return result.data;
+
+    } catch (error) {
+      console.error('❌ AI enhancement suggestions failed:', error);
+      throw error;
+    }
+  };
+
+  // Method to generate PDF with selected enhancements
+  generatePDFWithSelectedEnhancements = async (
+    finalResumeData: any,
+    templateId: string
+  ): Promise<Blob> => {
+    try {
+      console.log('📄 Generating PDF with selected enhancements...');
+      
+      const token = this.getAccessToken();
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+      const url = `${baseUrl}/api/v1/resumes/generate-preview-pdf`;
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          resumeData: finalResumeData,
+          templateId
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const pdfBlob = await response.blob();
+      console.log('✅ PDF generated with selected enhancements');
+      
+      return pdfBlob;
+
+    } catch (error) {
+      console.error('❌ PDF generation with selected enhancements failed:', error);
+      throw error;
+    }
+  };
+
+  // NEW: Job optimization preview method
+  optimizeForJobPreview = async (
+    resumeData: any,
+    jobDescription: string,
+    jobTitle?: string,
+    companyName?: string,
+    templateId: string = 'template01'
+  ): Promise<{
+    originalResumeData: any;
+    optimizedResumeData: any;
+    jobMatchScore: number;
+    keywordAlignment: number;
+    skillsMatch: number;
+    experienceMatch: number;
+    addedKeywords: string[];
+    missingKeywords: string[];
+    recommendations: string[];
+    jobContext: {
+      jobTitle: string;
+      companyName: string;
+      jobDescription: string;
+    };
+    optimizationSuggestions: {
+      personalInfo: any;
+      professionalSummary: any;
+      workExperience: any;
+      education: any;
+      skills: any;
+      projects: any;
+    };
+  }> => {
+    try {
+      console.log('🎯 Getting job optimization suggestions...');
+      
+      const token = this.getAccessToken();
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+      const url = `${baseUrl}/api/v1/resumes/optimize-for-job-preview`;
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          resumeData,
+          jobDescription,
+          jobTitle,
+          companyName,
+          templateId
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      console.log('✅ Job optimization suggestions received');
+      
+      return result.data;
+
+    } catch (error) {
+      console.error('❌ Job optimization suggestions failed:', error);
       throw error;
     }
   };
@@ -869,7 +1060,15 @@ export class ResumeService {
     url: string,
     payload: any,
     progressCallback: (progress: string) => void
-  ): Promise<Blob> => {
+  ): Promise<{
+    pdfBlob: Blob;
+    enhancedData?: {
+      enhancedResumeData: any;
+      improvements: string[];
+      keywordsAdded: string[];
+      atsScore: number;
+    };
+  }> => {
     const token = this.getAccessToken();
     
     return new Promise((resolve, reject) => {
@@ -894,6 +1093,9 @@ export class ResumeService {
         let buffer = '';
         let pdfData: Uint8Array | null = null;
         let isPdfData = false;
+        let isEnhancedData = false;
+        let enhancedDataBuffer = '';
+        let enhancedData: any = undefined;
 
         try {
           while (true) {
@@ -914,7 +1116,31 @@ export class ResumeService {
             }
 
             const chunk = decoder.decode(value, { stream: true });
-            buffer += chunk;
+            
+            if (isEnhancedData) {
+              enhancedDataBuffer += chunk;
+            } else {
+              buffer += chunk;
+            }
+
+            // Process enhanced data buffer if we're collecting it
+            if (isEnhancedData) {
+              const enhancedLines = enhancedDataBuffer.split('\n');
+              for (const line of enhancedLines) {
+                if (line === 'ENHANCED_DATA_END') {
+                  // Parse the collected enhanced data
+                  try {
+                    const jsonData = enhancedDataBuffer.replace('ENHANCED_DATA_END\n', '').trim();
+                    enhancedData = JSON.parse(jsonData);
+                  } catch (error) {
+                    console.warn('Failed to parse enhanced data:', error);
+                  }
+                  isEnhancedData = false;
+                  enhancedDataBuffer = '';
+                  break;
+                }
+              }
+            }
 
             const lines = buffer.split('\n');
             buffer = lines.pop() || ''; // Keep incomplete line in buffer
@@ -922,14 +1148,25 @@ export class ResumeService {
             for (const line of lines) {
               if (line.trim() === '') continue;
 
-              if (line === 'PDF_DATA:') {
+              if (line === 'ENHANCED_DATA_START') {
+                isEnhancedData = true;
+                continue;
+              }
+
+              if (line === 'PDF_START') {
                 isPdfData = true;
                 continue;
               }
 
-              if (line.startsWith('PDF_READY')) {
-                progressCallback('PDF ready for download');
+              if (line.startsWith('PROGRESS:')) {
+                const progress = line.replace('PROGRESS:', '').trim();
+                progressCallback(progress);
                 continue;
+              }
+
+              if (line.startsWith('ERROR:')) {
+                const error = line.replace('ERROR:', '').trim();
+                throw new Error(error);
               }
 
               if (line.startsWith('PDF_SIZE:')) {
@@ -955,7 +1192,8 @@ export class ResumeService {
           }
 
           if (pdfData) {
-            resolve(new Blob([pdfData], { type: 'application/pdf' }));
+            const pdfBlob = new Blob([pdfData], { type: 'application/pdf' });
+            resolve({ pdfBlob, enhancedData });
           } else {
             throw new Error('No PDF data received');
           }

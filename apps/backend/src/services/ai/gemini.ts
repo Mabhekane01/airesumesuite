@@ -1825,7 +1825,7 @@ Respond only with the JSON object, no additional text.
   /**
    * Scrape job posting from URL and extract structured information
    */
-  async scrapeJobFromUrl(jobUrl: string, retryCount: number = 0): Promise<{
+  async scrapeJobFromUrl(jobUrl: string, resumeData?: any, retryCount: number = 0): Promise<{
     jobDescription: string;
     jobTitle: string;
     companyName: string;
@@ -1855,27 +1855,44 @@ Respond only with the JSON object, no additional text.
         console.log(`🔄 JOB SCRAPING RETRY ATTEMPT ${retryCount}/${maxRetries}`);
       }
 
-      const prompt = `Please access and read the content of this job posting URL: ${jobUrl}
+      const prompt = `IMPORTANT: Access this job posting URL and extract REAL information: ${jobUrl}
 
-Read the job posting content and extract the following information in JSON format:
+You MUST visit the actual webpage and read the job posting content. ${resumeData ? 'Also analyze the provided resume data to give personalized recommendations.' : ''} Extract the actual job details and return them in this exact JSON format:
 
 {
-  "jobTitle": "exact job title from the posting",
-  "companyName": "company name", 
-  "location": "job location if mentioned",
-  "salary": "salary range if mentioned",
-  "jobDescription": "complete job description text",
-  "requirements": ["key requirements listed in the posting"],
-  "benefits": ["benefits mentioned in the posting"]
+  "jobTitle": "ACTUAL job title from the webpage",
+  "companyName": "ACTUAL company name from the webpage", 
+  "location": "ACTUAL location from the webpage",
+  "salary": "ACTUAL salary if mentioned on the webpage",
+  "jobDescription": "COMPLETE job description text from the webpage",
+  "requirements": ["ACTUAL requirement 1", "ACTUAL requirement 2", "ACTUAL requirement 3"],
+  "benefits": ["ACTUAL benefit 1", "ACTUAL benefit 2"],
+  "requiredSkills": ["ACTUAL skill 1", "ACTUAL skill 2", "ACTUAL skill 3"],
+  "preferredSkills": ["ACTUAL preferred skill 1", "ACTUAL preferred skill 2"],
+  "experienceLevel": "entry/mid/senior/executive based on ACTUAL posting",
+  "responsibilities": ["ACTUAL responsibility 1", "ACTUAL responsibility 2"],
+  "qualifications": ["ACTUAL qualification 1", "ACTUAL qualification 2"],
+  "keywords": ["ACTUAL keyword 1", "ACTUAL keyword 2", "ACTUAL keyword 3"],
+  "recommendations": ["ACTUAL recommendation 1", "ACTUAL recommendation 2", "ACTUAL recommendation 3", "ACTUAL recommendation 4"]
 }
 
-Important:
-- Only read the content at this specific URL
-- Extract information directly from the job posting text
-- If you cannot access the URL, set jobDescription to "URL_ACCESS_FAILED"
-- Return valid JSON only, no additional text
+CRITICAL: 
+- You MUST access the URL ${jobUrl}
+- Extract REAL information, not placeholder text
+- For "recommendations": provide 3-4 SPECIFIC tips for applicants based on this job posting${resumeData ? ' and their resume' : ''}
+- Examples: "Highlight experience with React and Node.js", "Emphasize teamwork skills", "Include portfolio links"
+- DO NOT use markdown formatting like **bold**, *italic*, or special characters in recommendations
+- DO NOT leave recommendations empty - always provide helpful advice
+- Use plain text only for all fields
+- If you cannot access the URL, set jobDescription to "CANNOT_ACCESS_URL"
+- Return ONLY the JSON object, no other text
 
-URL to read: ${jobUrl}`;
+${resumeData ? `CANDIDATE'S RESUME DATA:
+${JSON.stringify(resumeData, null, 2)}
+
+Based on this resume and the job posting, provide personalized recommendations that address gaps and emphasize strengths.` : ''}
+
+ACCESS: ${jobUrl}`;
 
       const response = await this.client.models.generateContent({
         model: "gemini-2.5-flash",
@@ -1910,11 +1927,49 @@ URL to read: ${jobUrl}`;
 
       // Try to parse JSON response
       try {
-        const cleanedText = text.replace(/```json|```/g, '').trim();
+        let cleanedText = text.replace(/```json|```/g, '').trim();
+        console.log('🔍 AI Response (first 500 chars):', cleanedText.substring(0, 500));
+        console.log('📏 Full AI Response length:', cleanedText.length);
+        
+        // Try to extract complete JSON object - be more aggressive about finding the end
+        let jsonMatch = cleanedText.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          cleanedText = jsonMatch[0];
+        } else {
+          // If no complete JSON found, try to complete it
+          console.log('⚠️ No complete JSON found, attempting to fix...');
+          if (cleanedText.startsWith('{') && !cleanedText.endsWith('}')) {
+            // Count open/close braces and add missing closing braces
+            const openBraces = (cleanedText.match(/\{/g) || []).length;
+            const closeBraces = (cleanedText.match(/\}/g) || []).length;
+            const missingBraces = openBraces - closeBraces;
+            if (missingBraces > 0) {
+              cleanedText += '}'.repeat(missingBraces);
+              console.log(`🔧 Added ${missingBraces} missing closing braces`);
+            }
+          }
+        }
+        
+        // Fix common JSON issues
+        cleanedText = cleanedText
+          .replace(/,\s*}/g, '}')  // Remove trailing commas
+          .replace(/,\s*]/g, ']')  // Remove trailing commas in arrays
+          .replace(/\n/g, ' ')     // Replace newlines with spaces
+          .trim();
+        
+        console.log('🔧 Final JSON length:', cleanedText.length);
+        console.log('🔧 Final JSON (first 500 chars):', cleanedText.substring(0, 500));
+        console.log('🔧 Final JSON (last 200 chars):', cleanedText.substring(Math.max(0, cleanedText.length - 200)));
         const jobData = JSON.parse(cleanedText);
+        console.log('✅ Parsed job data:', {
+          title: jobData.jobTitle,
+          company: jobData.companyName,
+          requirementsCount: jobData.requirements?.length || 0,
+          hasDescription: jobData.jobDescription?.length > 50
+        });
         
         // Check if URL access failed
-        if (jobData.jobDescription === "URL_ACCESS_FAILED") {
+        if (jobData.jobDescription === "URL_ACCESS_FAILED" || jobData.jobDescription === "CANNOT_ACCESS_URL") {
           console.warn('⚠️ Gemini could not access the URL, returning fallback');
           return {
             jobDescription: `Could not access job posting at ${jobUrl}. Please paste the job description manually for better optimization results.`,
@@ -1934,21 +1989,35 @@ URL to read: ${jobUrl}`;
           };
         }
         
+        // Clean markdown formatting from recommendations and other text fields
+        const cleanMarkdown = (text: string): string => {
+          return text
+            .replace(/\*\*(.*?)\*\*/g, '$1')  // Remove **bold**
+            .replace(/\*(.*?)\*/g, '$1')      // Remove *italic*
+            .replace(/^\*\s*/g, '')           // Remove leading bullet points
+            .replace(/^•\s*/g, '')            // Remove bullet point symbols
+            .trim();
+        };
+
+        const cleanArray = (arr: string[]): string[] => {
+          return arr.map(item => cleanMarkdown(item));
+        };
+
         return {
           jobDescription: jobData.jobDescription || '',
           jobTitle: jobData.jobTitle || 'Job Title Not Found',
           companyName: jobData.companyName || 'Company Not Found',
-          requirements: jobData.requirements || [],
-          benefits: jobData.benefits || [],
+          requirements: cleanArray(jobData.requirements || []),
+          benefits: cleanArray(jobData.benefits || []),
           location: jobData.location,
           salary: jobData.salary,
-          requiredSkills: jobData.requiredSkills || [],
-          preferredSkills: jobData.preferredSkills || [],
+          requiredSkills: cleanArray(jobData.requiredSkills || []),
+          preferredSkills: cleanArray(jobData.preferredSkills || []),
           experienceLevel: jobData.experienceLevel,
-          responsibilities: jobData.responsibilities || [],
-          qualifications: jobData.qualifications || [],
-          keywords: jobData.keywords || [],
-          recommendations: jobData.recommendations || []
+          responsibilities: cleanArray(jobData.responsibilities || []),
+          qualifications: cleanArray(jobData.qualifications || []),
+          keywords: cleanArray(jobData.keywords || []),
+          recommendations: cleanArray(jobData.recommendations || [])
         };
       } catch (parseError) {
         console.warn('Failed to parse job data as JSON, analyzing raw response for URL access issues');
@@ -2013,7 +2082,7 @@ URL to read: ${jobUrl}`;
         console.log(`🔄 Job scraping retryable error detected, waiting ${delay}ms before retry ${retryCount + 1}/${maxRetries}`);
         
         await new Promise(resolve => setTimeout(resolve, delay));
-        return this.scrapeJobFromUrl(jobUrl, retryCount + 1);
+        return this.scrapeJobFromUrl(jobUrl, resumeData, retryCount + 1);
       }
       
       // If all retries failed or non-retryable error, return fallback data

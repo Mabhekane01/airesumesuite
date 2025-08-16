@@ -19,8 +19,8 @@
 \usepackage{fontawesome5} % for using icons
 \usepackage{amsmath} % for math
 \usepackage[
-    pdftitle={{{PERSONAL_INFO.firstName}} {{PERSONAL_INFO.lastName}}'s CV},
-    pdfauthor={{{PERSONAL_INFO.firstName}} {{PERSONAL_INFO.lastName}}},
+    pdftitle={CV Template},
+    pdfauthor={CV Author},
     pdfcreator={LaTeX with RenderCV},
     colorlinks=true,
     urlcolor=primaryColor
@@ -71,7 +71,7 @@
 
 \renewcommand\labelitemi{$\vcenter{\hbox{\small$\bullet$}}$} % custom bullet points
 \newenvironment{highlights}{
-    [
+    \begin{itemize}[
         topsep=0.10 cm,
         parsep=0.10 cm,
         partopsep=0pt,
@@ -79,10 +79,11 @@
         leftmargin=0 cm + 10pt
     ]
 }{
+    \end{itemize}
 } % new environment for highlights
 
 \newenvironment{highlightsforbulletentries}{
-    [
+    \begin{itemize}[
         topsep=0.10 cm,
         parsep=0.10 cm,
         partopsep=0pt,
@@ -90,6 +91,7 @@
         leftmargin=10pt
     ]
 }{
+    \end{itemize}
 } % new environment for highlights for bullet entries
 
 \newenvironment{onecolentry}{
@@ -156,130 +158,6 @@
     \newsavebox\ANDbox
     \sbox\ANDbox{$|$}
 
-    \begin{header}
-        \fontsize{25 pt}{25 pt}\selectfont {{PERSONAL_INFO.firstName}} {{PERSONAL_INFO.lastName}}
-
-        \vspace{5 pt}
-
-        \normalsize
-        \mbox{{{PERSONAL_INFO.location}}}%
-        \kern 5.0 pt%
-        \AND%
-        \kern 5.0 pt%
-        \mbox{\hrefWithoutArrow{mailto:{{{PERSONAL_INFO.email}}}}{{{PERSONAL_INFO.email}}}}%
-        \kern 5.0 pt%
-        \AND%
-        \kern 5.0 pt%
-        \mbox{\hrefWithoutArrow{tel:{{{PERSONAL_INFO.phone}}}}{{{PERSONAL_INFO.phone}}}}%
-        {{#IF_PORTFOLIO}}
-        \kern 5.0 pt%
-        \AND%
-        \kern 5.0 pt%
-        \mbox{\hrefWithoutArrow{{{PERSONAL_INFO.portfolioUrl}}}{{{PERSONAL_INFO.portfolioUrl}}}}%
-        {{/IF_PORTFOLIO}}
-        {{#IF_LINKEDIN}}
-        \kern 5.0 pt%
-        \AND%
-        \kern 5.0 pt%
-        \mbox{\hrefWithoutArrow{{{PERSONAL_INFO.linkedinUrl}}}{{{PERSONAL_INFO.linkedinUrl}}}}%
-        {{/IF_LINKEDIN}}
-        {{#IF_GITHUB}}
-        \kern 5.0 pt%
-        \AND%
-        \kern 5.0 pt%
-        \mbox{\hrefWithoutArrow{{{PERSONAL_INFO.githubUrl}}}{{{PERSONAL_INFO.githubUrl}}}}%
-        {{/IF_GITHUB}}
-    \end{header}
-
-    \vspace{5 pt - 0.3 cm}
-
-    {{#IF_PROFESSIONAL_SUMMARY}}
-    \section{Professional Summary}
-
-    \begin{onecolentry}
-        {{PROFESSIONAL_SUMMARY}}
-    \end{onecolentry}
-
-    \vspace{0.2 cm}
-    {{/IF_PROFESSIONAL_SUMMARY}}
-
-    {{#IF_EDUCATION}}
-    \section{Education}
-    {{#EDUCATION}}
-    \begin{twocolentry}{
-        {{graduationDate}}
-    }
-        \textbf{{{institution}}}, {{degree}}{{#if fieldOfStudy}} in {{fieldOfStudy}}{{/if}}
-    \end{twocolentry}
-
-    \vspace{0.10 cm}
-    \begin{onecolentry}
-        \begin{highlights}
-            {{#if gpa}}\item GPA: {{gpa}}{{/if}}
-            {{#honors}}\item {{.}}{{/honors}}
-        \end{highlights}
-    \end{onecolentry}
-
-    \vspace{0.2 cm}
-    {{/EDUCATION}}
-    {{/IF_EDUCATION}}
-
-    {{#IF_WORK_EXPERIENCE}}
-    \section{Experience}
-    {{#WORK_EXPERIENCE}}
-    \begin{twocolentry}{
-        {{startDate}} – {{#if isCurrentJob}}Present{{else}}{{endDate}}{{/if}}
-    }
-        \textbf{{{jobTitle}}}, {{company}} -- {{location}}
-    \end{twocolentry}
-
-    \vspace{0.10 cm}
-    \begin{onecolentry}
-        \begin{highlights}
-            {{#responsibilities}}\item {{.}}{{/responsibilities}}
-            {{#achievements}}\item {{.}}{{/achievements}}
-        \end{highlights}
-    \end{onecolentry}
-
-    \vspace{0.2 cm}
-    {{/WORK_EXPERIENCE}}
-    {{/IF_WORK_EXPERIENCE}}
-
-    {{#IF_PROJECTS}}
-    \section{Projects}
-    {{#PROJECTS}}
-    \begin{twocolentry}{
-        {{#if url}}\href{{{url}}}{{{url}}}{{else}}{{startDate}}{{#if endDate}} – {{endDate}}{{/if}}{{/if}}
-    }
-        \textbf{{{name}}}
-    \end{twocolentry}
-
-    \vspace{0.10 cm}
-    \begin{onecolentry}
-        \begin{highlights}
-            \item {{description}}
-            {{#technologies}}\item Technology: {{.}}{{/technologies}}
-        \end{highlights}
-    \end{onecolentry}
-
-    \vspace{0.2 cm}
-    {{/PROJECTS}}
-    {{/IF_PROJECTS}}
-
-    {{#IF_SKILLS}}
-    \section{Technologies}
-
-    \begin{onecolentry}
-        \textbf{Skills:} {{#SKILLS}}{{name}}{{#unless @last}}, {{/unless}}{{/SKILLS}}
-    \end{onecolentry}
-    {{/IF_SKILLS}}
-
-    {{#IF_CERTIFICATIONS}}
-    \vspace{0.2 cm}
-
-    \begin{onecolentry}
-        \textbf{Certifications:} {{#CERTIFICATIONS}}{{name}}{{#if issuer}} ({{issuer}}){{/if}}{{#unless @last}}, {{/unless}}{{/CERTIFICATIONS}}
-    \end{onecolentry}
-    {{/IF_CERTIFICATIONS}}
+{{TEMPLATE_CONTENT}}
 
 \end{document}

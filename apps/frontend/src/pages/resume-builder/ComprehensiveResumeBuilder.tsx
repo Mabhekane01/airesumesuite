@@ -154,8 +154,6 @@ const ComprehensiveResumeBuilderContent: React.FC = () => {
     updateResumeData, 
     updateAIData, 
     handleDataChange, 
-    isAutoSaving, 
-    lastSaved, 
     isLoading: isContextLoading,
     // Enhanced PDF management
     savePdfToLibrary,
@@ -171,12 +169,12 @@ const ComprehensiveResumeBuilderContent: React.FC = () => {
   const [atsScore, setAtsScore] = useState<number>(aiData.atsScore);
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
   const [isJobOptimizationModalOpen, setIsJobOptimizationModalOpen] = useState(false);
+  const [shouldSwitchToPreview, setShouldSwitchToPreview] = useState(false);
   
   // AI Progress for final step improvement
   const aiImprovementProgress = useAIProgress('professional-summary');
   
   // Track if user has made changes since last AI analysis
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [lastAnalyzedHash, setLastAnalyzedHash] = useState<string>('');
 
   // Track resume changes and invalidate PDF cache
@@ -197,10 +195,8 @@ const ComprehensiveResumeBuilderContent: React.FC = () => {
       
       if (hasRequired) {
         console.log('📝 User input changed since last AI analysis (required fields complete)');
-        setHasUnsavedChanges(true);
       } else {
-        console.log('📝 User input changed but required fields incomplete - not marking as unsaved');
-        setHasUnsavedChanges(false);
+        console.log('📝 User input changed but required fields incomplete');
       }
     }
     
@@ -294,7 +290,7 @@ const ComprehensiveResumeBuilderContent: React.FC = () => {
 
   const handleAIImprovement = async () => {
     // Simply navigate to the preview step where users can explore AI features
-    setCurrentStepIndex(steps.findIndex(step => step.id === 'preview'));
+    setCurrentStep(steps.findIndex(step => step.id === 'preview'));
   };
 
   const handleATSCheck = async () => {
@@ -374,7 +370,10 @@ const ComprehensiveResumeBuilderContent: React.FC = () => {
         return;
       }
 
-      // Save resume with complete current user data
+      toast.loading('Saving resume and generating PDF...', { id: 'save-resume' });
+      console.log('💾 Saving resume with PDF to database');
+
+      // First save the resume data
       const resumeToSave = {
         title: `${resumeData.personalInfo?.firstName || 'My'} ${resumeData.personalInfo?.lastName || 'Resume'}`,
         personalInfo: {
@@ -390,28 +389,89 @@ const ComprehensiveResumeBuilderContent: React.FC = () => {
         projects: resumeData.projects || [],
         templateId: resumeData.template,
         isPublic: false,
-        // Include AI enhancements if present
         isLatexTemplate: resumeData.isLatexTemplate,
         optimizedLatexCode: aiData?.optimizedLatexCode
       };
 
-      toast.loading('Saving your resume...', { id: 'save-resume' });
-      console.log('💾 Saving resume with current user data');
-      
       const result = await resumeService.createResume(resumeToSave);
       
-      if (result.success && result.data?._id) {
-        toast.success('Resume saved successfully!', { id: 'save-resume' });
-        // Update local resume data with saved ID for future operations
-        console.log('🔍 result.data._id type:', typeof result.data._id, 'value:', result.data._id);
-        updateResumeData({ ...resumeData, _id: String(result.data._id) });
-        
-        navigate(`/dashboard/resume/preview/${String(result.data._id)}`);
-      } else {
+      if (!result.success || !result.data?._id) {
         throw new Error(result.message || 'Failed to save resume');
       }
+
+      // Properly convert ObjectId to string
+      let resumeId = '';
+      const rawId = result.data._id;
+      
+      console.log('🔍 Raw ID received:', rawId, 'Type:', typeof rawId, 'Constructor:', rawId?.constructor?.name);
+      
+      if (typeof rawId === 'string') {
+        resumeId = rawId;
+      } else if (rawId && rawId.buffer && rawId.buffer.data && Array.isArray(rawId.buffer.data)) {
+        // Handle MongoDB ObjectId Buffer format
+        const bytes = Array.from(rawId.buffer.data);
+        resumeId = bytes.map((b: number) => b.toString(16).padStart(2, '0')).join('');
+      } else if (rawId && rawId.toString && typeof rawId.toString === 'function') {
+        const stringResult = rawId.toString();
+        if (stringResult !== '[object Object]') {
+          resumeId = stringResult;
+        } else {
+          resumeId = JSON.stringify(rawId);
+        }
+      } else {
+        resumeId = String(rawId);
+      }
+      
+      console.log('✅ Resume saved with ID:', resumeId, 'Type:', typeof resumeId);
+
+      // Update local resume data with saved ID
+      updateResumeData({ ...resumeData, _id: resumeId });
+
+      // Now generate and save PDF with the latest resume data
+      let pdfBlob: Blob;
+      
+      // Check if we have cached PDF that matches current data
+      const currentHash = generateResumeHash(resumeData);
+      const hasCachedPdf = aiData?.cachedPdfUrl && isCacheValid(currentHash) && aiData.pdfBlob;
+      
+      if (hasCachedPdf) {
+        console.log('📄 Using cached PDF for save');
+        pdfBlob = aiData.pdfBlob!;
+      } else {
+        console.log('🔄 Generating fresh PDF for save...');
+        
+        const templateId = resumeData.template || 'modern-creative-1';
+        const isLatexTemplateId = (templateId: string): boolean => {
+          return templateId?.startsWith('template') && !templateId.includes('modern-creative');
+        };
+        const isLatexTemplate = resumeData.isLatexTemplate || isLatexTemplateId(templateId);
+        
+        // Generate PDF with current resume data
+        pdfBlob = await resumeService.downloadResumeWithEngine(resumeData, 'pdf', {
+          engine: isLatexTemplate ? 'latex' : 'html',
+          templateId: templateId,
+          optimizedLatexCode: aiData?.optimizedLatexCode
+        });
+        
+        // Cache the generated PDF
+        const pdfUrl = URL.createObjectURL(pdfBlob);
+        setCachedPdf(pdfUrl, currentHash, pdfBlob);
+      }
+
+      // Save PDF to database
+      await resumeService.savePDFToDatabase(resumeId, {
+        templateId: resumeData.template || 'modern-creative-1',
+        optimizedLatexCode: aiData?.optimizedLatexCode,
+        jobOptimized: aiData?.optimizedForJob,
+        resumeData: resumeToSave,
+        pdfBlob: pdfBlob
+      });
+
+      toast.success('✅ Resume and PDF saved successfully!', { id: 'save-resume' });
+      console.log('🎉 Complete save successful - resume data + PDF saved');
+      
     } catch (error: any) {
-      console.error('Failed to save resume:', error);
+      console.error('❌ Failed to save resume:', error);
       toast.error(error.message || 'Failed to save resume. Please try again.', { id: 'save-resume' });
     } finally {
       setIsLoading(false);
@@ -796,22 +856,19 @@ const ComprehensiveResumeBuilderContent: React.FC = () => {
                         </h2>
                       </div>
                       
-                      {/* Auto-save indicator */}
+                      {/* Manual save status */}
                       <div className="flex items-center space-x-2">
-                        {isAutoSaving ? (
-                          <div className="flex items-center text-blue-400 text-sm">
-                            <div className="w-2 h-2 bg-blue-400 rounded-full mr-2 animate-pulse"></div>
-                            Saving...
-                          </div>
-                        ) : lastSaved && (
+                        {resumeData._id && (typeof resumeData._id !== 'string' || !resumeData._id.includes('temp')) ? (
                           <div className="flex items-center text-green-400 text-sm">
                             <CheckCircleIcon className="w-4 h-4 mr-1" />
-                            Saved {lastSaved.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            Saved to Account
+                          </div>
+                        ) : (
+                          <div className="flex items-center text-yellow-400 text-sm">
+                            <div className="w-2 h-2 bg-yellow-400 rounded-full mr-2"></div>
+                            Not Saved
                           </div>
                         )}
-                        <div className="text-xs text-dark-text-muted">
-                          ✓ Auto-save
-                        </div>
                       </div>
                     </div>
                     <p className="text-dark-text-secondary">{currentStepData.description}</p>
@@ -821,13 +878,18 @@ const ComprehensiveResumeBuilderContent: React.FC = () => {
                     <EnterpriseResumeEnhancer
                       resume={resumeData as Resume}
                       onResumeUpdate={updateResumeData}
-                      hasUnsavedChanges={hasUnsavedChanges}
+                      hasUnsavedChanges={false}
                       onAnalysisComplete={() => {
                         const currentHash = generateResumeHash();
                         setLastAnalyzedHash(currentHash);
-                        setHasUnsavedChanges(false);
-                        console.log('🔄 AI analysis completed, marking changes as saved');
+                        console.log('🔄 AI analysis completed');
                       }}
+                      onJobOptimizationClick={() => setIsJobOptimizationModalOpen(true)}
+                      onSwitchToPreview={() => {
+                        setShouldSwitchToPreview(true);
+                      }}
+                      shouldSwitchToPreview={shouldSwitchToPreview}
+                      onPreviewSwitched={() => setShouldSwitchToPreview(false)}
                     />
                   ) : (
                     <StepComponent {...getStepProps(currentStepData.id)} />
@@ -853,6 +915,19 @@ const ComprehensiveResumeBuilderContent: React.FC = () => {
                 {/* Final step buttons - Stack on mobile */}
                 {currentStep === steps.length - 1 && (
                   <>
+                    {/* Save Resume Button - For new resumes */}
+                    {(!resumeData._id || (typeof resumeData._id === 'string' && resumeData._id.includes('temp'))) && (
+                      <Button
+                        onClick={handleSaveResume}
+                        variant="default"
+                        disabled={isLoading || !resumeData.personalInfo?.firstName || !resumeData.personalInfo?.lastName}
+                        className="btn-primary-dark w-full justify-center"
+                      >
+                        <CloudIcon className="w-4 h-4 mr-2 flex-shrink-0" />
+                        Save Resume to Account
+                      </Button>
+                    )}
+
                     {/* PDF Download - Always available */}
                     <Button
                       onClick={() => handleDownloadResume('pdf')}
@@ -866,7 +941,7 @@ const ComprehensiveResumeBuilderContent: React.FC = () => {
                       </span>
                     </Button>
 
-                    {/* Save PDF to Database - Only if resume is saved */}
+                    {/* Update Resume with PDF - For existing resumes */}
                     {resumeData._id && (typeof resumeData._id !== 'string' || !resumeData._id.includes('temp')) && (
                       <Button
                         onClick={handleSavePDFToDatabase}
@@ -875,7 +950,7 @@ const ComprehensiveResumeBuilderContent: React.FC = () => {
                         className="btn-secondary-dark w-full justify-center"
                       >
                         <CloudIcon className="w-4 h-4 mr-2 flex-shrink-0" />
-                        Save PDF to Account
+                        Update Resume & PDF
                       </Button>
                     )}
 
@@ -897,6 +972,19 @@ const ComprehensiveResumeBuilderContent: React.FC = () => {
 
                 {currentStep === steps.length - 1 ? (
                   <div className="flex flex-wrap gap-3">
+                    {/* Save Resume Button - For new resumes */}
+                    {(!resumeData._id || (typeof resumeData._id === 'string' && resumeData._id.includes('temp'))) && (
+                      <Button
+                        onClick={handleSaveResume}
+                        variant="default"
+                        disabled={isLoading || !resumeData.personalInfo?.firstName || !resumeData.personalInfo?.lastName}
+                        className="btn-primary-dark"
+                      >
+                        <CloudIcon className="w-4 h-4 mr-2" />
+                        Save Resume to Account
+                      </Button>
+                    )}
+
                     {/* PDF Download - Always available */}
                     <Button
                       onClick={() => handleDownloadResume('pdf')}
@@ -908,7 +996,7 @@ const ComprehensiveResumeBuilderContent: React.FC = () => {
                       {resumeData.isLatexTemplate ? 'Download LaTeX PDF' : 'Download PDF'}
                     </Button>
 
-                    {/* Save PDF to Database - Only if resume is saved */}
+                    {/* Update Resume with PDF - For existing resumes */}
                     {resumeData._id && (typeof resumeData._id !== 'string' || !resumeData._id.includes('temp')) && (
                       <Button
                         onClick={handleSavePDFToDatabase}
@@ -917,7 +1005,7 @@ const ComprehensiveResumeBuilderContent: React.FC = () => {
                         className="btn-secondary-dark"
                       >
                         <CloudIcon className="w-4 h-4 mr-2" />
-                        Save PDF to Account
+                        Update Resume & PDF
                       </Button>
                     )}
 
@@ -966,6 +1054,7 @@ const ComprehensiveResumeBuilderContent: React.FC = () => {
     <JobOptimizationModal
         isOpen={isJobOptimizationModalOpen}
         onClose={() => setIsJobOptimizationModalOpen(false)}
+        onSwitchToPreview={() => setShouldSwitchToPreview(true)}
       />
     </div>
   );
