@@ -45,6 +45,8 @@ jobs:
           VITE_RECAPTCHA_SITE_KEY: ${{ secrets.VITE_RECAPTCHA_SITE_KEY }}
           VITE_GA_TRACKING_ID: ${{ secrets.VITE_GA_TRACKING_ID }}
           VITE_PAYSTACK_PUBLISHABLE_KEY: ${{ secrets.VITE_PAYSTACK_PUBLISHABLE_KEY }}
+          VITE_PDF_SERVICE_URL: ${{ secrets.VITE_PDF_SERVICE_URL}}
+          VITE_WS_URL: ${{ secrets.VITE_WS_URL}}
           VITE_ENABLE_AI_FEATURES: true
           VITE_ENABLE_PAYMENT_PROCESSING: true
           VITE_ENABLE_ANALYTICS: true
