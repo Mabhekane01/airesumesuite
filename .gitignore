@@ -30,6 +30,10 @@ jwt-secret*
 oauth*
 auth-config*
 
+# Exception: Allow tokenCleanup utility files
+!**/tokenCleanup.ts
+!**/tokenCleanupScheduler.ts
+
 # Database Credentials
 database.json
 db-config*
