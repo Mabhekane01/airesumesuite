@@ -73,7 +73,7 @@ export default function DeletePagesTool({ activeFile: propActiveFile }: DeletePa
       formData.append('file', activeFile.file);
       formData.append('pagesToDelete', JSON.stringify(selectedPages.sort((a, b) => a - b)));
 
-      const response = await fetch(buildPdfServiceUrl('/delete-pages'), {
+      const response = await fetch(buildPdfServiceUrl('/api/pdf/delete-pages'), {
         method: 'POST',
         body: formData
       });

@@ -86,7 +86,7 @@ const SeJdaStyleEditor: React.FC = () => {
       formData.append('file', file);
 
       // Upload to server and get file ID + preview
-      const response = await fetch(buildPdfServiceUrl('/editor/upload'), {
+      const response = await fetch(buildPdfServiceUrl('/api/pdf/editor/upload'), {
         method: 'POST',
         body: formData,
       });
@@ -188,7 +188,7 @@ const SeJdaStyleEditor: React.FC = () => {
 
     try {
       // Send JSON change list + file ID to backend (exactly as specified)
-      const response = await fetch(buildPdfServiceUrl('/editor/apply-changes'), {
+      const response = await fetch(buildPdfServiceUrl('/api/pdf/editor/apply-changes'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

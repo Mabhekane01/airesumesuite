@@ -748,9 +748,9 @@ export default function PDFEditor() {
       const formData = new FormData();
       formData.append('file', file);
       
-      console.log('Sending upload request to:', buildPdfServiceUrl('/editor/upload'));
+      console.log('Sending upload request to:', buildPdfServiceUrl('/api/pdf/editor/upload'));
 
-      const response = await fetch(buildPdfServiceUrl('/editor/upload'), {
+      const response = await fetch(buildPdfServiceUrl('/api/pdf/editor/upload'), {
         method: 'POST',
         body: formData,
       });
@@ -856,7 +856,7 @@ export default function PDFEditor() {
     setError(null);
 
     try {
-      const response = await fetch(buildPdfServiceUrl('/editor/apply-changes'), {
+      const response = await fetch(buildPdfServiceUrl('/api/pdf/editor/apply-changes'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

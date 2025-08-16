@@ -103,7 +103,7 @@ const CompressPDFTool: React.FC<CompressPDFToolProps> = ({ activeFile }) => {
       formData.append('file', file);
       formData.append('compressionLevel', compressionLevel);
 
-      const response = await fetch(buildPdfServiceUrl('/advanced/compress'), {
+      const response = await fetch(buildPdfServiceUrl('/api/pdf/advanced/compress'), {
         method: 'POST',
         body: formData,
       });
