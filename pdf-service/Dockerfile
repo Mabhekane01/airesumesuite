@@ -3,7 +3,7 @@
 # ============================================
 
 # Stage 1: Build stage
-FROM openjdk:23-jdk-slim AS builder
+FROM eclipse-temurin:23-jdk AS builder
 
 # Install build dependencies
 RUN apt-get update && apt-get install -y \
@@ -28,7 +28,7 @@ COPY src ./src
 RUN mvn clean package -DskipTests=true
 
 # Stage 2: Production stage
-FROM openjdk:23-jre-slim AS production
+FROM eclipse-temurin:23-jre AS production
 
 # Install runtime dependencies for PDF processing
 RUN apt-get update && apt-get install -y \
