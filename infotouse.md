@@ -1,3 +1,24 @@
+2025-08-17 07:50:39.482 [http-nio-10000-exec-10] INFO [o.a.c.c.C.[.[localhost].[/api/pdf]] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-08-17 07:50:39.827 [http-nio-10000-exec-10] ERROR [c.a.p.config.GlobalExceptionHandler] - Unexpected error: No static resource editor/health.
+org.springframework.web.servlet.resource.NoResourceFoundException: No static resource editor/health.
+at org.springframework.web.servlet.resource.ResourceHttpRequestHandler.handleRequest(ResourceHttpRequestHandler.java:585)
+at org.springframework.web.servlet.mvc.HttpRequestHandlerAdapter.handle(HttpRequestHandlerAdapter.java:52)
+at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1089)
+at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:979)
+at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1014)
+at org.springframework.web.servlet.FrameworkServlet.doGet(FrameworkServlet.java:903)
+at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:564)
+at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:885)
+at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:658)
+at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:195)
+at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:51)
+at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100)
+at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
 at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93)
 at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
 at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
@@ -23,5 +44,3 @@ at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecuto
 at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:658)
 	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63)
 at java.base/java.lang.Thread.run(Unknown Source)
-
-Need better ways to work
