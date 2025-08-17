@@ -36,7 +36,11 @@ public class GlobalExceptionHandler {
         errorResponse.put("error", ex.getMessage());
         errorResponse.put("timestamp", System.currentTimeMillis());
         
-        return ResponseEntity.status(ex.getErrorCode()).body(errorResponse);
+        return ResponseEntity.status(ex.getErrorCode())
+                .header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS")
+                .header("Access-Control-Allow-Headers", "*")
+                .body(errorResponse);
     }
 
     /**
@@ -52,7 +56,11 @@ public class GlobalExceptionHandler {
         errorResponse.put("error", "File size exceeds maximum allowed limit");
         errorResponse.put("timestamp", System.currentTimeMillis());
         
-        return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).body(errorResponse);
+        return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
+                .header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS")
+                .header("Access-Control-Allow-Headers", "*")
+                .body(errorResponse);
     }
 
     /**
@@ -84,6 +92,10 @@ public class GlobalExceptionHandler {
         errorResponse.put("error", "An unexpected error occurred");
         errorResponse.put("timestamp", System.currentTimeMillis());
         
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS")
+                .header("Access-Control-Allow-Headers", "*")
+                .body(errorResponse);
     }
 }
