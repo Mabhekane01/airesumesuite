@@ -14,11 +14,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+
 import javax.imageio.ImageIO;
 
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.io.MemoryUsageSetting;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
@@ -30,6 +30,8 @@ import org.apache.pdfbox.pdmodel.graphics.image.LosslessFactory;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.pdmodel.graphics.state.PDExtendedGraphicsState;
 import org.apache.pdfbox.rendering.PDFRenderer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -52,6 +54,8 @@ import org.springframework.web.multipart.MultipartFile;
  */
 @Service
 public class PdfImageService {
+
+    private static final Logger log = LoggerFactory.getLogger(PdfImageService.class);
 
     /**
      * Add image to PDF at specified location
@@ -131,9 +135,9 @@ public class PdfImageService {
                             }
                         } catch (IOException ioEx) {
                             // log and continue - do not fail entire extraction
-                            System.err.println("IO error extracting image on page " + (pageIndex + 1) + ": " + ioEx.getMessage());
+                            log.error("IO error extracting image on page {}: {}", pageIndex + 1, ioEx.getMessage(), ioEx);
                         } catch (RuntimeException rEx) {
-                            System.err.println("Runtime error extracting image on page " + (pageIndex + 1) + ": " + rEx.getMessage());
+                            log.error("Runtime error extracting image on page {}: {}", pageIndex + 1, rEx.getMessage(), rEx);
                         }
                     }
                 }
@@ -276,12 +280,12 @@ public class PdfImageService {
                                 File filteredImageFile = File.createTempFile("filtered_image_", ".png");
                                 ImageIO.write(filteredImage, "PNG", filteredImageFile);
 
-                                filteredImages.add(new FilteredImageInfo(filteredImageFile, originalImage.getWidth(), originalImage.getHeight(), name));
+                                filteredImages.add(new FilteredImageInfo(filteredImageFile, originalImage.getWidth(), originalImage.getHeight()));
                             }
                         } catch (IOException ioEx) {
-                            System.err.println("IO error filtering image: " + ioEx.getMessage());
+                            log.error("IO error filtering image: {}", ioEx.getMessage(), ioEx);
                         } catch (RuntimeException rEx) {
-                            System.err.println("Runtime error filtering image: " + rEx.getMessage());
+                            log.error("Runtime error filtering image: {}", rEx.getMessage(), rEx);
                         }
                     }
 
@@ -337,13 +341,11 @@ public class PdfImageService {
         final File file;
         final int width;
         final int height;
-        final COSName resourceName;
 
-        FilteredImageInfo(File file, int width, int height, COSName resourceName) {
+        FilteredImageInfo(File file, int width, int height) {
             this.file = file;
             this.width = width;
             this.height = height;
-            this.resourceName = resourceName;
         }
     }
 
@@ -379,15 +381,17 @@ public class PdfImageService {
                                 break;
                             }
                         } catch (IOException ioEx) {
-                            System.err.println("Error accessing resource while replacing: " + ioEx.getMessage());
+                            log.error("Error accessing resource while replacing: {}", ioEx.getMessage(), ioEx);
                         }
                     }
                 }
 
                 // If not replaced (no image resources), just append the new image (overlay)
-                try (PDPageContentStream contentStream = new PDPageContentStream(document, page,
-                        PDPageContentStream.AppendMode.APPEND, true, true)) {
-                    contentStream.drawImage(imageObject, x, y, width, height);
+                if (!replaced) {
+                    try (PDPageContentStream contentStream = new PDPageContentStream(document, page,
+                            PDPageContentStream.AppendMode.APPEND, true, true)) {
+                        contentStream.drawImage(imageObject, x, y, width, height);
+                    }
                 }
             }
 

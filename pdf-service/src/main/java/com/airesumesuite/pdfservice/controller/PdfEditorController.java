@@ -1,6 +1,5 @@
 package com.airesumesuite.pdfservice.controller;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -17,11 +16,18 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.airesumesuite.pdfservice.config.PdfErrorHandler;
-import com.airesumesuite.pdfservice.config.PdfErrorHandler.*;
+import com.airesumesuite.pdfservice.config.PdfErrorHandler.InvalidFileException;
+import com.airesumesuite.pdfservice.config.PdfErrorHandler.PdfServiceException;
 import com.airesumesuite.pdfservice.service.PdfEditingService;
 
 /**
@@ -191,7 +197,7 @@ public class PdfEditorController {
             
             return new ResponseEntity<>(mergedPdf, headers, HttpStatus.OK);
             
-        } catch (Exception e) {
+        } catch (InvalidFileException | IOException e) {
             logger.error("PDF merge failed: {}", e.getMessage());
             return createErrorByteResponse("Failed to merge PDFs: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -218,7 +224,7 @@ public class PdfEditorController {
             
             return ResponseEntity.ok(response);
             
-        } catch (Exception e) {
+        } catch (PdfServiceException | IOException e) {
             logger.error("Text extraction failed: {}", e.getMessage());
             return createErrorResponse("Failed to extract text: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -251,7 +257,7 @@ public class PdfEditorController {
             
             return new ResponseEntity<>(modifiedPdf, headers, HttpStatus.OK);
             
-        } catch (Exception e) {
+        } catch (PdfServiceException | IOException e) {
             logger.error("Add text failed: {}", e.getMessage());
             return createErrorByteResponse("Failed to add text: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -271,7 +277,7 @@ public class PdfEditorController {
             String[] pageStrings = pagesToDeleteJson.replace("[", "").replace("]", "").replace("\"", "").split(",");
             java.util.List<Integer> pagesToDelete = new java.util.ArrayList<>();
             for (String pageStr : pageStrings) {
-                pagesToDelete.add(Integer.parseInt(pageStr.trim()));
+                pagesToDelete.add(Integer.valueOf(pageStr.trim()));
             }
             
             logger.info("Deleting {} pages from PDF", pagesToDelete.size());
@@ -286,7 +292,7 @@ public class PdfEditorController {
             
             return new ResponseEntity<>(modifiedPdf, headers, HttpStatus.OK);
             
-        } catch (Exception e) {
+        } catch (PdfServiceException | IOException | NumberFormatException e) {
             logger.error("Delete pages failed: {}", e.getMessage());
             return createErrorByteResponse("Failed to delete pages: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -319,7 +325,7 @@ public class PdfEditorController {
             
             return ResponseEntity.ok(response);
             
-        } catch (Exception e) {
+        } catch (PdfServiceException | IOException e) {
             logger.error("Get PDF info failed: {}", e.getMessage());
             return createErrorResponse("Failed to get PDF info: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -339,7 +345,7 @@ public class PdfEditorController {
             String[] pageStrings = pagesParam.split(",");
             java.util.List<Integer> pagesToExtract = new java.util.ArrayList<>();
             for (String pageStr : pageStrings) {
-                pagesToExtract.add(Integer.parseInt(pageStr.trim()));
+                pagesToExtract.add(Integer.valueOf(pageStr.trim()));
             }
             
             logger.info("Extracting {} pages from PDF: {}", pagesToExtract.size(), file.getOriginalFilename());
@@ -354,7 +360,7 @@ public class PdfEditorController {
             
             return new ResponseEntity<>(extractedPdf, headers, HttpStatus.OK);
             
-        } catch (Exception e) {
+        } catch (PdfServiceException | IOException | NumberFormatException e) {
             logger.error("Extract pages failed: {}", e.getMessage());
             return createErrorByteResponse("Failed to extract pages: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -378,7 +384,7 @@ public class PdfEditorController {
         } catch (PdfServiceException e) {
             logger.error("PDF service error during preview: {}", e.getMessage());
             return createErrorResponse(PdfErrorHandler.getUserFriendlyMessage(e), HttpStatus.valueOf(e.getErrorCode()));
-        } catch (Exception e) {
+        } catch (IOException e) {
             logger.error("Unexpected error during preview: {}", e.getMessage());
             return createErrorResponse("Preview failed", HttpStatus.INTERNAL_SERVER_ERROR);
         }

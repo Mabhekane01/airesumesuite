@@ -94,22 +94,15 @@ public class PdfErrorHandler {
     public static final int ERROR_INTERNAL = 500;
     
     public static String getErrorMessage(int errorCode) {
-        switch (errorCode) {
-            case 400:
-                return "Invalid file format or parameters";
-            case 403:
-                return "Security restrictions prevent this operation";
-            case 408:
-                return "Processing timeout - file too complex or system overloaded";
-            case 413:
-                return "File size exceeds maximum allowed limit";
-            case 422:
-                return "File is corrupted or operation not supported";
-            case 507:
-                return "Insufficient memory to process file";
-            default:
-                return "Internal server error during processing";
-        }
+        return switch (errorCode) {
+            case 400 -> "Invalid file format or parameters";
+            case 403 -> "Security restrictions prevent this operation";
+            case 408 -> "Processing timeout - file too complex or system overloaded";
+            case 413 -> "File size exceeds maximum allowed limit";
+            case 422 -> "File is corrupted or operation not supported";
+            case 507 -> "Insufficient memory to process file";
+            default -> "Internal server error during processing";
+        };
     }
     
     public static String getUserFriendlyMessage(Exception e) {
@@ -151,43 +144,41 @@ public class PdfErrorHandler {
         validateBasicFile(file);
         
         switch (operation.toLowerCase()) {
-            case "compression":
-            case "compress":
+            case "compression", "compress" -> {
                 if (file.getSize() > MAX_COMPRESSION_FILE_SIZE) {
                     throw new FileSizeException("File size for compression cannot exceed " + (MAX_COMPRESSION_FILE_SIZE / 1024 / 1024) + "MB");
                 }
-                break;
-            case "ocr":
+            }
+            case "ocr" -> {
                 if (file.getSize() > MAX_OCR_FILE_SIZE) {
                     throw new FileSizeException("File size for OCR cannot exceed " + (MAX_OCR_FILE_SIZE / 1024 / 1024) + "MB");
                 }
-                break;
-            case "conversion":
-            case "convert":
+            }
+            case "conversion", "convert" -> {
                 if (file.getSize() > MAX_CONVERSION_FILE_SIZE) {
                     throw new FileSizeException("File size for conversion cannot exceed " + (MAX_CONVERSION_FILE_SIZE / 1024 / 1024) + "MB");
                 }
-                break;
+            }
         }
     }
     
     public static void validatePageCount(int pageCount, String operation) throws PdfServiceException {
         switch (operation.toLowerCase()) {
-            case "ocr":
+            case "ocr" -> {
                 if (pageCount > MAX_OCR_PAGES) {
                     throw new UnsupportedOperationException("PDF has too many pages for OCR processing (max " + MAX_OCR_PAGES + " pages)");
                 }
-                break;
-            case "conversion":
-            case "convert":
+            }
+            case "conversion", "convert" -> {
                 if (pageCount > MAX_CONVERSION_PAGES) {
                     throw new UnsupportedOperationException("PDF has too many pages for conversion (max " + MAX_CONVERSION_PAGES + " pages)");
                 }
-                break;
-            default:
+            }
+            default -> {
                 if (pageCount > MAX_PDF_PAGES) {
                     throw new UnsupportedOperationException("PDF has too many pages to process (max " + MAX_PDF_PAGES + " pages)");
                 }
+            }
         }
     }
 }

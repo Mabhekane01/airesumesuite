@@ -3,6 +3,7 @@ package com.airesumesuite.pdfservice.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.lang.NonNull;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -31,13 +32,13 @@ public class CorsConfig implements WebMvcConfigurer {
     private long maxAge;
 
     @Override
-    public void addCorsMappings(CorsRegistry registry) {
+    public void addCorsMappings(@NonNull CorsRegistry registry) {
         List<String> origins = getAllowedOriginsList();
         String[] methods = allowedMethods.split(",");
         String[] headers = allowedHeaders.split(",");
         
         registry.addMapping("/api/**")
-                .allowedOrigins(origins.toArray(new String[0]))
+                .allowedOrigins(origins.toArray(String[]::new))
                 .allowedMethods(methods)
                 .allowedHeaders(headers)
                 .exposedHeaders("*")
@@ -46,6 +47,7 @@ public class CorsConfig implements WebMvcConfigurer {
     }
 
     @Bean
+    @NonNull
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         
@@ -72,6 +74,7 @@ public class CorsConfig implements WebMvcConfigurer {
         return source;
     }
     
+    @NonNull
     private List<String> getAllowedOriginsList() {
         if ("*".equals(allowedOrigins)) {
             return Arrays.asList("*");

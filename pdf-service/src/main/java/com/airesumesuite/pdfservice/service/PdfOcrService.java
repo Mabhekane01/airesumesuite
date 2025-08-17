@@ -1,5 +1,14 @@
 package com.airesumesuite.pdfservice.service;
 
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
@@ -8,22 +17,19 @@ import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import org.apache.pdfbox.text.PDFTextStripper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.airesumesuite.pdfservice.config.PdfErrorHandler;
-import com.airesumesuite.pdfservice.config.PdfErrorHandler.*;
+import com.airesumesuite.pdfservice.config.PdfErrorHandler.CorruptedFileException;
+import com.airesumesuite.pdfservice.config.PdfErrorHandler.InsufficientMemoryException;
+import com.airesumesuite.pdfservice.config.PdfErrorHandler.PdfServiceException;
 
 import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.TesseractException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.awt.image.BufferedImage;
-import java.io.*;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 
 @Service
 public class PdfOcrService {
