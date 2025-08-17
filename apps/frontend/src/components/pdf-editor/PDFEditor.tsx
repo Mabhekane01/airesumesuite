@@ -960,7 +960,7 @@ export default function PDFEditor() {
   ];
 
   const renderLandingPage = () => (
-    <div className="min-h-screen bg-gradient-to-br from-dark-primary via-dark-secondary to-dark-tertiary py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-dark-primary via-dark-secondary to-dark-tertiary py-8 px-4 pt-16">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-500/20 backdrop-blur-xl border border-white/20 shadow-2xl mb-6">
@@ -1228,7 +1228,7 @@ export default function PDFEditor() {
     const currentTool = pdfTools.find(tool => tool.id === selectedTool);
     
     return (
-      <div className="min-h-screen bg-gradient-to-br from-dark-primary via-dark-secondary to-dark-tertiary">
+      <div className="min-h-screen bg-gradient-to-br from-dark-primary via-dark-secondary to-dark-tertiary pt-12">
         {/* Top Header */}
         <div className="glass-dark border-b border-white/10 px-4 py-3">
           <div className="flex items-center max-w-6xl mx-auto">

@@ -23,7 +23,7 @@
 
 .spinner-dark {
   border: 2px solid rgba(255, 255, 255, 0.1);
-  border-top: 2px solid #10B981;
+  border-top: 2px solid #059669;
   border-radius: 50%;
   width: 20px;
   height: 20px;
@@ -35,17 +35,17 @@
   100% { transform: rotate(360deg); }
 }
 
-/* Enhanced glow effects with emerald/teal */
+/* Enhanced glow effects with softer emerald/teal */
 .shadow-glow-sm {
-  box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+  box-shadow: 0 0 20px rgba(5, 150, 105, 0.25);
 }
 
 .shadow-glow-lg {
-  box-shadow: 0 0 40px rgba(16, 185, 129, 0.4);
+  box-shadow: 0 0 40px rgba(5, 150, 105, 0.3);
 }
 
 .shadow-glow-xl {
-  box-shadow: 0 0 60px rgba(16, 185, 129, 0.5);
+  box-shadow: 0 0 60px rgba(5, 150, 105, 0.35);
 }
 
 /* Premium animations */
@@ -110,6 +110,116 @@
 .chat-message-hover:hover {
   transform: translateY(-1px);
   transition: all 0.2s ease-out;
+}
+
+/* Apple-style toast notifications */
+[data-sonner-toaster] {
+  --width: 356px;
+  --border-radius: 16px;
+  --toast-bg: rgba(31, 41, 55, 0.9);
+  --toast-border: rgba(255, 255, 255, 0.08);
+  --toast-text: #ffffff;
+  --toast-description: #c7c7cc;
+  --toast-close-button: #ffffff;
+  --toast-close-button-background: rgba(255, 255, 255, 0.1);
+  --toast-close-button-hover-background: rgba(255, 255, 255, 0.2);
+  --toast-success-bg: rgba(5, 150, 105, 0.9);
+  --toast-success-border: rgba(5, 150, 105, 0.3);
+  --toast-error-bg: rgba(220, 38, 38, 0.9);
+  --toast-error-border: rgba(220, 38, 38, 0.3);
+  --toast-warning-bg: rgba(245, 158, 11, 0.9);
+  --toast-warning-border: rgba(245, 158, 11, 0.3);
+  --toast-info-bg: rgba(59, 130, 246, 0.9);
+  --toast-info-border: rgba(59, 130, 246, 0.3);
+}
+
+[data-sonner-toast] {
+  background: var(--toast-bg) !important;
+  border: 1px solid var(--toast-border) !important;
+  border-radius: var(--border-radius) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+  color: var(--toast-text) !important;
+  padding: 16px !important;
+  min-height: 60px !important;
+  animation: slide-in-right 0.3s ease-out !important;
+}
+
+[data-sonner-toast][data-type="success"] {
+  background: var(--toast-success-bg) !important;
+  border-color: var(--toast-success-border) !important;
+  box-shadow: 
+    0 8px 32px rgba(5, 150, 105, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+}
+
+[data-sonner-toast][data-type="error"] {
+  background: var(--toast-error-bg) !important;
+  border-color: var(--toast-error-border) !important;
+  box-shadow: 
+    0 8px 32px rgba(220, 38, 38, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+}
+
+[data-sonner-toast][data-type="warning"] {
+  background: var(--toast-warning-bg) !important;
+  border-color: var(--toast-warning-border) !important;
+  box-shadow: 
+    0 8px 32px rgba(245, 158, 11, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+}
+
+[data-sonner-toast][data-type="info"] {
+  background: var(--toast-info-bg) !important;
+  border-color: var(--toast-info-border) !important;
+  box-shadow: 
+    0 8px 32px rgba(59, 130, 246, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+}
+
+[data-sonner-toast] [data-title] {
+  color: var(--toast-text) !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  margin-bottom: 4px !important;
+}
+
+[data-sonner-toast] [data-description] {
+  color: var(--toast-description) !important;
+  font-size: 13px !important;
+  line-height: 1.4 !important;
+  opacity: 0.9 !important;
+}
+
+[data-sonner-toast] [data-close-button] {
+  background: var(--toast-close-button-background) !important;
+  color: var(--toast-close-button) !important;
+  border: none !important;
+  border-radius: 6px !important;
+  width: 20px !important;
+  height: 20px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: background-color 0.2s ease !important;
+}
+
+[data-sonner-toast] [data-close-button]:hover {
+  background: var(--toast-close-button-hover-background) !important;
+}
+
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 @keyframes float-gentle {
   0%, 100% { transform: translateY(0px); }

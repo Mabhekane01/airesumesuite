@@ -71,7 +71,20 @@ function App() {
                   </ProtectedRoute>
                 } />
               </Routes>
-              <Toaster position="top-right" />
+              <Toaster 
+                position="top-right" 
+                theme="dark"
+                richColors
+                closeButton
+                toastOptions={{
+                  duration: 4000,
+                  style: {
+                    background: 'transparent',
+                    border: 'none',
+                    boxShadow: 'none'
+                  }
+                }}
+              />
             </Router>
           </SearchProvider>
         </NotificationProvider>

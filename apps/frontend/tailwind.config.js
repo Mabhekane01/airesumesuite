@@ -30,14 +30,14 @@ export default {
             muted: '#808080',
           }
         },
-        // Accent colors - emerald/teal theme
+        // Accent colors - slightly softer emerald/teal theme
         accent: {
-          primary: '#10b981',    // emerald-500
-          secondary: '#14b8a6',  // teal-500  
-          tertiary: '#059669',   // emerald-600
+          primary: '#059669',    // emerald-600 (slightly darker)
+          secondary: '#0d9488',  // teal-600 (slightly darker)  
+          tertiary: '#047857',   // emerald-700
           quaternary: '#f59e0b', // Amber
-          danger: '#ef4444',     // Red
-          success: '#22c55e',    // Green
+          danger: '#dc2626',     // Red-600 (softer)
+          success: '#16a34a',    // Green-600 (softer)
         },
         // Glass morphism colors - gray based
         glass: {
@@ -48,8 +48,8 @@ export default {
       },
       backgroundImage: {
         'gradient-dark': 'linear-gradient(135deg, #111827 0%, #374151 50%, #1f2937 100%)',
-        'gradient-accent': 'linear-gradient(135deg, #10b981 0%, #14b8a6 50%, #059669 100%)',
-        'gradient-glass': 'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(20, 184, 166, 0.1) 100%)',
+        'gradient-accent': 'linear-gradient(135deg, #059669 0%, #0d9488 50%, #047857 100%)',
+        'gradient-glass': 'linear-gradient(135deg, rgba(5, 150, 105, 0.1) 0%, rgba(13, 148, 136, 0.1) 100%)',
       },
       backdropBlur: {
         xs: '2px',
@@ -61,9 +61,9 @@ export default {
         'slide-up-soft': 'slide-up-soft 0.4s ease-out',
       },
       boxShadow: {
-        'glow-sm': '0 0 10px rgba(16, 185, 129, 0.3)',
-        'glow-md': '0 0 20px rgba(16, 185, 129, 0.4)',
-        'glow-lg': '0 0 30px rgba(16, 185, 129, 0.5)',
+        'glow-sm': '0 0 10px rgba(5, 150, 105, 0.25)',
+        'glow-md': '0 0 20px rgba(5, 150, 105, 0.3)',
+        'glow-lg': '0 0 30px rgba(5, 150, 105, 0.35)',
         'dark-lg': '0 10px 25px -3px rgba(17, 24, 39, 0.5), 0 4px 6px -2px rgba(17, 24, 39, 0.3)',
         'dark-xl': '0 20px 40px -4px rgba(17, 24, 39, 0.6), 0 8px 16px -4px rgba(17, 24, 39, 0.4)',
       }
