@@ -50,7 +50,7 @@ export default function ResumeDisplay({ resume }: ResumeDisplayProps) {
     return (
       <div className="w-full h-full bg-gray-200 rounded-lg flex items-center justify-center">
         <div className="flex flex-col items-center space-y-3">
-          <ArrowPathIcon className="w-8 h-8 text-blue-600 animate-spin" />
+          <ArrowPathIcon className="w-8 h-8 text-teal-600 animate-spin" />
           <span className="text-sm text-gray-600">Generating PDF...</span>
         </div>
       </div>
@@ -65,7 +65,7 @@ export default function ResumeDisplay({ resume }: ResumeDisplayProps) {
           <span className="text-sm text-gray-600">Failed to load PDF preview</span>
           <button
             onClick={generatePDFPreview}
-            className="px-3 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600"
+            className="px-3 py-1 bg-teal-500 text-white text-sm rounded hover:bg-teal-600"
           >
             Retry
           </button>

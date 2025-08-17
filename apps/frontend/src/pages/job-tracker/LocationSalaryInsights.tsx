@@ -288,9 +288,9 @@ export default function LocationSalaryInsights() {
           <h3 className="text-lg font-semibold text-dark-text-primary mb-6">Salary Comparison - South African Cities</h3>
           <div className="space-y-4">
             {locationComparison.map((location, index) => (
-              <div key={location.location} className="flex items-center justify-between p-4 rounded-lg hover:bg-dark-secondary/10">
+              <div key={location.location} className="flex items-center justify-between p-4 rounded-lg hover:bg-gray-800/10">
                 <div className="flex items-center space-x-4">
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold bg-blue-500/20 text-blue-400">
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold bg-teal-500/20 text-teal-400">
                     {index + 1}
                   </div>
                   <div>
@@ -418,7 +418,7 @@ export default function LocationSalaryInsights() {
             </div>
           )}
           {locationComparison && locationComparison.length > 0 && !userLocation && (
-            <div className="mt-2 text-sm text-blue-400 bg-blue-400/10 px-3 py-1 rounded-full inline-block">
+            <div className="mt-2 text-sm text-teal-400 bg-blue-400/10 px-3 py-1 rounded-full inline-block">
               📍 Showing global data - Login with location for personalized insights
             </div>
           )}
@@ -512,7 +512,7 @@ export default function LocationSalaryInsights() {
               className={`flex items-center justify-between p-4 rounded-lg transition-all ${
                 location.isUserLocation ? 
                   'bg-dark-accent/10 border border-dark-accent/30' : 
-                  'hover:bg-dark-secondary/10'
+                  'hover:bg-gray-800/10'
               }`}
             >
               <div className="flex items-center space-x-4">
@@ -522,7 +522,7 @@ export default function LocationSalaryInsights() {
                     index === 0 ? 'bg-yellow-500/20 text-yellow-400' :
                     index === 1 ? 'bg-gray-400/20 text-gray-400' :
                     index === 2 ? 'bg-orange-500/20 text-orange-400' :
-                    'bg-blue-500/20 text-blue-400'
+                    'bg-teal-500/20 text-teal-400'
                 }`}>
                   {location.isUserLocation ? '📍' : index + 1}
                 </div>

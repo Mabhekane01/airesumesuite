@@ -177,7 +177,7 @@ export default function DeletePagesTool({ activeFile: propActiveFile }: DeletePa
         <div className="max-w-4xl mx-auto space-y-8">
           {/* Header */}
           <div className="text-center">
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-black/40 backdrop-blur-xl border border-gray-600/30 shadow-2xl mb-6">
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gray-900/40 backdrop-blur-xl border border-gray-600/30 shadow-2xl mb-6">
               <Trash2 className="w-10 h-10 text-white" />
             </div>
             <h2 className="text-4xl font-bold text-white mb-3">Delete Pages</h2>
@@ -187,15 +187,15 @@ export default function DeletePagesTool({ activeFile: propActiveFile }: DeletePa
           </div>
 
           {/* Main Content */}
-          <div className="bg-black/20 backdrop-blur-xl border border-gray-600/20 rounded-2xl p-8">
+          <div className="bg-gray-900/20 backdrop-blur-xl border border-gray-600/20 rounded-2xl p-8">
             <div className="text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-xl bg-black/30 mb-6">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-xl bg-gray-900/30 mb-6">
                 <Trash2 className="w-8 h-8 text-white" />
               </div>
               
               {/* Drag & Drop Upload Area */}
               <div
-                className="border-2 border-dashed border-gray-600/50 rounded-xl p-8 mb-6 transition-all duration-300 hover:border-red-400/50 hover:bg-black/20"
+                className="border-2 border-dashed border-gray-600/50 rounded-xl p-8 mb-6 transition-all duration-300 hover:border-red-400/50 hover:bg-gray-900/20"
                 onDrop={(e) => {
                   e.preventDefault();
                   handleFileUpload(e.dataTransfer.files);
@@ -205,11 +205,11 @@ export default function DeletePagesTool({ activeFile: propActiveFile }: DeletePa
                 }}
                 onDragEnter={(e) => {
                   e.preventDefault();
-                  e.currentTarget.classList.add('border-red-400/70', 'bg-black/30');
+                  e.currentTarget.classList.add('border-red-400/70', 'bg-gray-900/30');
                 }}
                 onDragLeave={(e) => {
                   e.preventDefault();
-                  e.currentTarget.classList.remove('border-red-400/70', 'bg-black/30');
+                  e.currentTarget.classList.remove('border-red-400/70', 'bg-gray-900/30');
                 }}
               >
                 <div className="text-center">
@@ -241,7 +241,7 @@ export default function DeletePagesTool({ activeFile: propActiveFile }: DeletePa
                 Choose PDF File
               </label>
               
-              <div className="bg-black/30 backdrop-blur-xl border border-gray-600/30 rounded-xl p-6">
+              <div className="bg-gray-900/30 backdrop-blur-xl border border-gray-600/30 rounded-xl p-6">
                 <h3 className="text-lg font-bold text-white mb-3">How it works</h3>
                 <div className="space-y-2 text-gray-300 text-sm">
                   <p>• Upload your PDF document</p>
@@ -254,9 +254,9 @@ export default function DeletePagesTool({ activeFile: propActiveFile }: DeletePa
 
           {/* Error Display */}
           {error && (
-            <div className="bg-black/20 backdrop-blur-xl border border-red-500/30 rounded-xl p-4">
+            <div className="bg-gray-900/20 backdrop-blur-xl border border-red-500/30 rounded-xl p-4">
               <div className="flex items-center">
-                <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-black/40 mr-4">
+                <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gray-900/40 mr-4">
                   <AlertCircle className="w-5 h-5 text-red-400" />
                 </div>
                 <div className="text-red-300">{error}</div>
@@ -273,14 +273,14 @@ export default function DeletePagesTool({ activeFile: propActiveFile }: DeletePa
       <div className="max-w-4xl mx-auto space-y-8">
         {/* Header */}
         <div className="text-center">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-black/40 backdrop-blur-xl border border-gray-600/30 shadow-2xl mb-6">
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gray-900/40 backdrop-blur-xl border border-gray-600/30 shadow-2xl mb-6">
             <Trash2 className="w-10 h-10 text-white" />
           </div>
           <h2 className="text-4xl font-bold text-white mb-3">Delete Pages</h2>
           <p className="text-white/80 text-lg max-w-2xl mx-auto mb-4">
             Remove unwanted pages from your PDF document
           </p>
-          <div className="inline-flex items-center gap-6 bg-black/30 backdrop-blur-xl border border-gray-600/20 px-8 py-4 rounded-xl">
+          <div className="inline-flex items-center gap-6 bg-gray-900/30 backdrop-blur-xl border border-gray-600/20 px-8 py-4 rounded-xl">
             <span className="text-white font-medium">
               {activeFile.file.name}
             </span>
@@ -313,9 +313,9 @@ export default function DeletePagesTool({ activeFile: propActiveFile }: DeletePa
 
         {/* Status Messages */}
         {error && (
-          <div className="bg-black/20 backdrop-blur-xl border border-red-500/30 rounded-xl p-4">
+          <div className="bg-gray-900/20 backdrop-blur-xl border border-red-500/30 rounded-xl p-4">
             <div className="flex items-center">
-              <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-black/40 mr-4">
+              <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gray-900/40 mr-4">
                 <AlertCircle className="w-5 h-5 text-red-400" />
               </div>
               <div className="text-red-300">{error}</div>
@@ -324,9 +324,9 @@ export default function DeletePagesTool({ activeFile: propActiveFile }: DeletePa
         )}
 
         {success && (
-          <div className="bg-black/20 backdrop-blur-xl border border-green-500/30 rounded-xl p-4">
+          <div className="bg-gray-900/20 backdrop-blur-xl border border-green-500/30 rounded-xl p-4">
             <div className="flex items-center">
-              <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-black/40 mr-4">
+              <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gray-900/40 mr-4">
                 <CheckCircle className="w-5 h-5 text-green-400" />
               </div>
               <div className="text-green-300">{success}</div>
@@ -336,7 +336,7 @@ export default function DeletePagesTool({ activeFile: propActiveFile }: DeletePa
 
         {/* Page Selection Interface */}
         {showPageGrid && (
-          <div className="bg-black/20 backdrop-blur-xl border border-gray-600/20 rounded-2xl p-8">
+          <div className="bg-gray-900/20 backdrop-blur-xl border border-gray-600/20 rounded-2xl p-8">
             {/* Selection Controls */}
             <div className="flex flex-wrap items-center justify-between mb-8 gap-4">
               <div className="flex items-center space-x-4">
@@ -391,7 +391,7 @@ export default function DeletePagesTool({ activeFile: propActiveFile }: DeletePa
                           } rounded-xl overflow-hidden`}
                         >
                           {/* PDF Page Preview */}
-                          <div className="aspect-[3/4] bg-black/40 backdrop-blur-xl border border-gray-600/30 rounded-xl overflow-hidden relative">
+                          <div className="aspect-[3/4] bg-gray-900/40 backdrop-blur-xl border border-gray-600/30 rounded-xl overflow-hidden relative">
                             <Page
                               pageNumber={pageNum}
                               width={150}
@@ -411,7 +411,7 @@ export default function DeletePagesTool({ activeFile: propActiveFile }: DeletePa
                           </div>
                           
                           {/* Page Number Badge */}
-                          <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-sm rounded-lg px-2 py-1 text-xs text-white font-medium">
+                          <div className="absolute top-2 left-2 bg-gray-900/60 backdrop-blur-sm rounded-lg px-2 py-1 text-xs text-white font-medium">
                             {pageNum}
                           </div>
                         </div>
@@ -451,9 +451,9 @@ export default function DeletePagesTool({ activeFile: propActiveFile }: DeletePa
         )}
 
         {/* Info Footer */}
-        <div className="bg-black/20 backdrop-blur-xl border border-gray-600/20 rounded-2xl p-6">
+        <div className="bg-gray-900/20 backdrop-blur-xl border border-gray-600/20 rounded-2xl p-6">
           <div className="flex items-start space-x-4">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-black/40 flex-shrink-0">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gray-900/40 flex-shrink-0">
               <Trash2 className="w-6 h-6 text-white" />
             </div>
             <div>

@@ -173,8 +173,8 @@ export default function CreateResume() {
                 <div
                   className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium ${
                     index <= currentStep
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-dark-tertiary text-dark-text-muted'
+                      ? 'bg-teal-600 text-white'
+                      : 'bg-gray-700 text-dark-text-muted'
                   }`}
                 >
                   {index + 1}
@@ -182,7 +182,7 @@ export default function CreateResume() {
                 {index < steps.length - 1 && (
                   <div
                     className={`flex-1 h-1 mx-2 ${
-                      index < currentStep ? 'bg-blue-600' : 'bg-dark-tertiary'
+                      index < currentStep ? 'bg-teal-600' : 'bg-gray-700'
                     }`}
                   />
                 )}

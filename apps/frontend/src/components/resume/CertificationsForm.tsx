@@ -132,7 +132,7 @@ export default function CertificationsForm() {
                   handleCertificationChange(newIndex, 'name', cert);
                 }
               }}
-              className="text-sm bg-dark-secondary/20 text-dark-accent px-3 py-1 rounded-full hover:bg-dark-secondary/30 transition-colors border border-dark-border"
+              className="text-sm bg-gray-800/20 text-dark-accent px-3 py-1 rounded-full hover:bg-gray-800/30 transition-colors border border-dark-border"
             >
               + {cert}
             </button>
@@ -152,7 +152,7 @@ export default function CertificationsForm() {
                   variant="outline"
                   size="sm"
                   onClick={() => removeCertification(index)}
-                  className="accent-danger hover:bg-dark-primary/20"
+                  className="accent-danger hover:bg-gray-900/20"
                 >
                   <TrashIcon className="w-4 h-4" />
                 </Button>

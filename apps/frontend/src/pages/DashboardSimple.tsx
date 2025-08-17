@@ -21,23 +21,23 @@ const quickActions = [
     icon: DocumentTextIcon,
     href: '/resume-builder/create',
     color: 'from-blue-500 to-purple-600',
-    bgColor: 'bg-dark-tertiary'
+    bgColor: 'bg-gray-700'
   },
   {
     title: 'Generate Cover Letter',
     description: 'Create a personalized cover letter',
     icon: PencilIcon,
     href: '/cover-letter',
-    color: 'from-purple-500 to-pink-600',
-    bgColor: 'bg-dark-tertiary'
+    color: 'from-emerald-500 to-pink-600',
+    bgColor: 'bg-gray-700'
   },
   {
     title: 'Add Job Application',
     description: 'Track a new job application',
     icon: BriefcaseIcon,
     href: '/job-tracker/add',
-    color: 'from-green-500 to-blue-600',
-    bgColor: 'bg-dark-tertiary'
+    color: 'from-green-500 to-teal-600',
+    bgColor: 'bg-gray-700'
   }
 ];
 
@@ -47,7 +47,7 @@ const stats = [
     value: '3',
     change: '+1 this week',
     icon: DocumentTextIcon,
-    color: 'text-blue-600',
+    color: 'text-teal-600',
     bgColor: 'bg-accent-primary/20'
   },
   {
@@ -63,7 +63,7 @@ const stats = [
     value: '5',
     change: '+2 this week',
     icon: CalendarIcon,
-    color: 'text-purple-600',
+    color: 'text-emerald-600',
     bgColor: 'bg-accent-primary/20'
   },
   {
@@ -138,7 +138,7 @@ export default function DashboardSimple() {
       case 'pending':
         return <ClockIcon className="h-4 w-4 text-yellow-500" />;
       case 'scheduled':
-        return <CalendarIcon className="h-4 w-4 text-blue-500" />;
+        return <CalendarIcon className="h-4 w-4 text-teal-500" />;
       default:
         return <ClockIcon className="h-4 w-4 text-gray-500" />;
     }
@@ -153,7 +153,7 @@ export default function DashboardSimple() {
       case 'low':
         return 'border-accent-tertiary/30 bg-accent-tertiary/10';
       default:
-        return 'border-dark-border bg-dark-tertiary';
+        return 'border-dark-border bg-gray-700';
     }
   };
 

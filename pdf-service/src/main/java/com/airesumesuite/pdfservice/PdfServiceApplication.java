@@ -1,7 +1,6 @@
 package com.airesumesuite.pdfservice;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.web.servlet.error.ErrorMvcAutoConfiguration;
 
 @SpringBootApplication(scanBasePackages = "com.airesumesuite.pdfservice")
 public class PdfServiceApplication {

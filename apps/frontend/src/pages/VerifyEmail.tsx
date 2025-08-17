@@ -71,16 +71,16 @@ export default function VerifyEmail() {
   };
 
   return (
-    <div className="min-h-screen bg-dark-primary flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gray-900 flex items-center justify-center px-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="max-w-md w-full bg-dark-secondary rounded-xl shadow-2xl border border-dark-border p-8 text-center"
+        className="max-w-md w-full bg-gray-800 rounded-xl shadow-2xl border border-dark-border p-8 text-center"
       >
         {status === 'loading' && (
           <>
             <div className="mx-auto w-16 h-16 mb-6">
-              <ArrowPathIcon className="w-16 h-16 text-purple-400 animate-spin" />
+              <ArrowPathIcon className="w-16 h-16 text-emerald-400 animate-spin" />
             </div>
             <h1 className="text-2xl font-bold text-white mb-4">
               Verifying Your Email
@@ -106,7 +106,7 @@ export default function VerifyEmail() {
               onClick={handleGoToLogin}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:shadow-lg transition-all duration-200"
+              className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-3 px-6 rounded-lg font-semibold hover:shadow-lg transition-all duration-200"
             >
               Sign In Now
             </motion.button>
@@ -160,7 +160,7 @@ export default function VerifyEmail() {
                 onClick={handleResendVerification}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:shadow-lg transition-all duration-200"
+                className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-3 px-6 rounded-lg font-semibold hover:shadow-lg transition-all duration-200"
               >
                 Request New Verification Link
               </motion.button>

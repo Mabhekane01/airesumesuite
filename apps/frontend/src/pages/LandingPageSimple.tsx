@@ -26,13 +26,13 @@ const features = [
     icon: PencilIcon,
     title: 'Cover Letter Generator',
     description: 'Generate personalized cover letters that match your target job perfectly.',
-    color: 'from-purple-500 to-pink-600'
+    color: 'from-emerald-500 to-pink-600'
   },
   {
     icon: BriefcaseIcon,
     title: 'Job Application Tracker',
     description: 'Track applications, interviews, and follow-ups in one organized dashboard.',
-    color: 'from-green-500 to-blue-600'
+    color: 'from-green-500 to-teal-600'
   },
   {
     icon: ChartBarIcon,
@@ -100,7 +100,7 @@ export default function LandingPageSimple() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-dark">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
       {/* Hero Section */}
       <section className="relative overflow-hidden py-20 lg:py-32">
         <div className="absolute inset-0">
@@ -209,7 +209,7 @@ export default function LandingPageSimple() {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 bg-dark-secondary/50">
+      <section className="py-20 bg-gray-800/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4 text-dark-text-primary">
@@ -242,7 +242,7 @@ export default function LandingPageSimple() {
       </section>
 
       {/* AI-Powered Excellence Section */}
-      <section className="py-20 bg-dark-secondary/30 relative overflow-hidden">
+      <section className="py-20 bg-gray-800/30 relative overflow-hidden">
         {/* Dark Theme Background Effects */}
         <div className="absolute inset-0">
           {/* Neural Network Grid */}
@@ -271,7 +271,7 @@ export default function LandingPageSimple() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
           <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 bg-dark-secondary/50 backdrop-blur-sm border border-dark-border rounded-full px-6 py-3 mb-8">
+            <div className="inline-flex items-center gap-2 bg-gray-800/50 backdrop-blur-sm border border-dark-border rounded-full px-6 py-3 mb-8">
               <div className="w-2 h-2 bg-accent-primary rounded-full animate-pulse"></div>
               <span className="text-sm font-medium text-dark-text-secondary">AI-Powered Technology Stack</span>
             </div>
@@ -288,11 +288,11 @@ export default function LandingPageSimple() {
             
             {/* OpenAI */}
             <div className="group relative animate-slide-up-soft">
-              <div className="absolute inset-0 bg-gradient-to-r from-green-600/20 to-blue-600/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-green-600/20 to-teal-600/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
               <div className="relative card-glass-dark p-6 hover:shadow-glow-md transition-all duration-500 group-hover:scale-105 border border-dark-border">
                 <div className="flex flex-col items-center text-center">
                   {/* OpenAI Logo */}
-                  <div className="w-16 h-16 mb-4 bg-dark-tertiary rounded-xl flex items-center justify-center shadow-dark-lg group-hover:shadow-glow-sm transition-all duration-500">
+                  <div className="w-16 h-16 mb-4 bg-gray-700 rounded-xl flex items-center justify-center shadow-dark-lg group-hover:shadow-glow-sm transition-all duration-500">
                     <img src="/openai-color.svg" alt="OpenAI" className="w-10 h-10" />
                   </div>
                   <h3 className="text-lg font-bold text-dark-text-primary mb-2 group-hover:text-accent-primary transition-colors">OpenAI</h3>
@@ -308,7 +308,7 @@ export default function LandingPageSimple() {
               <div className="relative card-glass-dark p-6 hover:shadow-glow-md transition-all duration-500 group-hover:scale-105 border border-dark-border">
                 <div className="flex flex-col items-center text-center">
                   {/* Claude Logo */}
-                  <div className="w-16 h-16 mb-4 bg-dark-tertiary rounded-xl flex items-center justify-center shadow-dark-lg group-hover:shadow-glow-sm transition-all duration-500">
+                  <div className="w-16 h-16 mb-4 bg-gray-700 rounded-xl flex items-center justify-center shadow-dark-lg group-hover:shadow-glow-sm transition-all duration-500">
                     <img src="/claude-color.svg" alt="Claude" className="w-10 h-10" />
                   </div>
                   <h3 className="text-lg font-bold text-dark-text-primary mb-2 group-hover:text-accent-primary transition-colors">Anthropic</h3>
@@ -324,11 +324,11 @@ export default function LandingPageSimple() {
               <div className="relative card-glass-dark p-6 hover:shadow-glow-md transition-all duration-500 group-hover:scale-105 border border-dark-border">
                 <div className="flex flex-col items-center text-center">
                   {/* Gemini Logo */}
-                  <div className="w-16 h-16 mb-4 bg-dark-tertiary rounded-xl flex items-center justify-center shadow-dark-lg group-hover:shadow-glow-sm transition-all duration-500">
+                  <div className="w-16 h-16 mb-4 bg-gray-700 rounded-xl flex items-center justify-center shadow-dark-lg group-hover:shadow-glow-sm transition-all duration-500">
                     <img src="/gemini-color.svg" alt="Gemini" className="w-10 h-10" />
                   </div>
                   <h3 className="text-lg font-bold text-dark-text-primary mb-2 group-hover:text-accent-primary transition-colors">Google</h3>
-                  <div className="text-sm text-blue-400 font-semibold mb-3">Gemini Pro</div>
+                  <div className="text-sm text-teal-400 font-semibold mb-3">Gemini Pro</div>
                   <p className="text-sm text-dark-text-secondary leading-relaxed">Multimodal AI capabilities for comprehensive document analysis and optimization.</p>
                 </div>
               </div>
@@ -340,7 +340,7 @@ export default function LandingPageSimple() {
               <div className="relative card-glass-dark p-6 hover:shadow-glow-md transition-all duration-500 group-hover:scale-105 border border-dark-border">
                 <div className="flex flex-col items-center text-center">
                   {/* Qwen Logo */}
-                  <div className="w-16 h-16 mb-4 bg-dark-tertiary rounded-xl flex items-center justify-center shadow-dark-lg group-hover:shadow-glow-sm transition-all duration-500">
+                  <div className="w-16 h-16 mb-4 bg-gray-700 rounded-xl flex items-center justify-center shadow-dark-lg group-hover:shadow-glow-sm transition-all duration-500">
                     <img src="/qwen-color.svg" alt="Qwen" className="w-10 h-10" />
                   </div>
                   <h3 className="text-lg font-bold text-dark-text-primary mb-2 group-hover:text-accent-primary transition-colors">Alibaba</h3>
@@ -362,7 +362,7 @@ export default function LandingPageSimple() {
             </div>
 
             <div className="text-center group animate-slide-up-soft" style={{ animationDelay: '0.5s' }}>
-              <div className="inline-flex items-center justify-center w-14 h-14 bg-gradient-to-br from-green-500 to-blue-600 rounded-2xl mb-6 shadow-glow-sm group-hover:shadow-glow-md transition-all duration-500 group-hover:scale-110">
+              <div className="inline-flex items-center justify-center w-14 h-14 bg-gradient-to-br from-green-500 to-teal-600 rounded-2xl mb-6 shadow-glow-sm group-hover:shadow-glow-md transition-all duration-500 group-hover:scale-110">
                 <ChartBarIcon className="w-7 h-7 text-white" />
               </div>
               <h3 className="text-xl font-bold text-dark-text-primary mb-3">Predictive ATS Analysis</h3>
@@ -370,7 +370,7 @@ export default function LandingPageSimple() {
             </div>
 
             <div className="text-center group animate-slide-up-soft" style={{ animationDelay: '0.6s' }}>
-              <div className="inline-flex items-center justify-center w-14 h-14 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl mb-6 shadow-glow-sm group-hover:shadow-glow-md transition-all duration-500 group-hover:scale-110">
+              <div className="inline-flex items-center justify-center w-14 h-14 bg-gradient-to-br from-emerald-500 to-pink-600 rounded-2xl mb-6 shadow-glow-sm group-hover:shadow-glow-md transition-all duration-500 group-hover:scale-110">
                 <BriefcaseIcon className="w-7 h-7 text-white" />
               </div>
               <h3 className="text-xl font-bold text-dark-text-primary mb-3">Intelligent Job Matching</h3>

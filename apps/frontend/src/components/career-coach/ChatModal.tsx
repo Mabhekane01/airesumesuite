@@ -93,8 +93,8 @@ export default function ChatModal({ isOpen, onClose, resumeTitle }: ChatModalPro
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-dark-primary rounded-2xl shadow-2xl w-full max-w-4xl h-[80vh] flex flex-col border border-dark-border">
+    <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-gray-900 rounded-2xl shadow-2xl w-full max-w-4xl h-[80vh] flex flex-col border border-dark-border">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-dark-border bg-gradient-to-r from-dark-secondary to-dark-tertiary rounded-t-2xl">
           <div className="flex items-center gap-3">
@@ -117,7 +117,7 @@ export default function ChatModal({ isOpen, onClose, resumeTitle }: ChatModalPro
             )}
             <button
               onClick={handleClose}
-              className="p-2 hover:bg-dark-tertiary rounded-lg transition-colors text-dark-text-secondary hover:text-white"
+              className="p-2 hover:bg-gray-700 rounded-lg transition-colors text-dark-text-secondary hover:text-white"
             >
               <XMarkIcon className="w-5 h-5" />
             </button>
@@ -128,9 +128,9 @@ export default function ChatModal({ isOpen, onClose, resumeTitle }: ChatModalPro
         <div className="flex-1 flex flex-col p-6 overflow-hidden">
           {/* Welcome Message */}
           {showSuggestions && (
-            <div className="mb-6 p-4 bg-gradient-to-r from-blue-600/10 to-purple-600/10 rounded-lg border border-blue-500/20">
+            <div className="mb-6 p-4 bg-gradient-to-r from-blue-600/10 to-purple-600/10 rounded-lg border border-teal-500/20">
               <div className="flex items-center gap-2 mb-3">
-                <SparklesIcon className="w-5 h-5 text-blue-400" />
+                <SparklesIcon className="w-5 h-5 text-teal-400" />
                 <h3 className="font-semibold text-dark-text-primary">Welcome to your AI Career Coach!</h3>
               </div>
               <p className="text-sm text-dark-text-secondary mb-4">
@@ -151,9 +151,9 @@ export default function ChatModal({ isOpen, onClose, resumeTitle }: ChatModalPro
                   <button
                     key={index}
                     onClick={() => handleSuggestionClick(suggestion.text)}
-                    className="flex items-center gap-3 p-3 text-left bg-dark-secondary hover:bg-dark-tertiary rounded-lg transition-colors group border border-dark-border hover:border-blue-500/30"
+                    className="flex items-center gap-3 p-3 text-left bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors group border border-dark-border hover:border-teal-500/30"
                   >
-                    <div className="text-blue-400 group-hover:text-blue-300 flex-shrink-0">
+                    <div className="text-teal-400 group-hover:text-teal-300 flex-shrink-0">
                       {suggestion.icon}
                     </div>
                     <div className="flex-grow min-w-0">
@@ -189,10 +189,10 @@ export default function ChatModal({ isOpen, onClose, resumeTitle }: ChatModalPro
                 <div
                   className={`max-w-md lg:max-w-lg px-4 py-3 rounded-2xl ${
                     msg.sender === 'user'
-                      ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white'
+                      ? 'bg-gradient-to-r from-blue-600 to-teal-700 text-white'
                       : msg.error
                       ? 'bg-red-500/10 text-red-300 border border-red-500/20'
-                      : 'bg-dark-tertiary text-dark-text-primary border border-dark-border'
+                      : 'bg-gray-700 text-dark-text-primary border border-dark-border'
                   }`}
                 >
                   <div 
@@ -228,7 +228,7 @@ export default function ChatModal({ isOpen, onClose, resumeTitle }: ChatModalPro
                 <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center flex-shrink-0">
                   <SparklesIcon className="w-4 h-4 text-white" />
                 </div>
-                <div className="px-4 py-3 rounded-2xl bg-dark-tertiary text-dark-text-primary border border-dark-border">
+                <div className="px-4 py-3 rounded-2xl bg-gray-700 text-dark-text-primary border border-dark-border">
                   <div className="flex items-center gap-2">
                     <div className="flex space-x-1">
                       <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"></div>
@@ -260,7 +260,7 @@ export default function ChatModal({ isOpen, onClose, resumeTitle }: ChatModalPro
           </div>
 
           {/* Input Form */}
-          <form onSubmit={handleSendMessage} className="flex items-center gap-3 p-4 bg-dark-secondary rounded-xl border border-dark-border">
+          <form onSubmit={handleSendMessage} className="flex items-center gap-3 p-4 bg-gray-800 rounded-xl border border-dark-border">
             <div className="flex-grow relative">
               <Input
                 ref={inputRef}
@@ -268,11 +268,11 @@ export default function ChatModal({ isOpen, onClose, resumeTitle }: ChatModalPro
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder={selectedResume ? "Ask me anything about your career..." : "Select a resume first..."}
-                className="pr-12 bg-dark-tertiary border-dark-border focus:border-blue-500 text-white placeholder-dark-text-muted"
+                className="pr-12 bg-gray-700 border-dark-border focus:border-teal-500 text-white placeholder-dark-text-muted"
                 disabled={isLoading || !selectedResume}
               />
               <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                <SparklesIcon className="w-4 h-4 text-blue-400" />
+                <SparklesIcon className="w-4 h-4 text-teal-400" />
               </div>
             </div>
             <Button 
@@ -296,7 +296,7 @@ export default function ChatModal({ isOpen, onClose, resumeTitle }: ChatModalPro
                 <button
                   key={index}
                   onClick={() => handleSuggestionClick(action.text)}
-                  className="text-xs px-3 py-1 bg-dark-secondary hover:bg-dark-tertiary rounded-full text-dark-text-secondary hover:text-dark-text-primary transition-colors border border-dark-border hover:border-blue-500/30"
+                  className="text-xs px-3 py-1 bg-gray-800 hover:bg-gray-700 rounded-full text-dark-text-secondary hover:text-dark-text-primary transition-colors border border-dark-border hover:border-teal-500/30"
                   disabled={isLoading}
                 >
                   {action.label}

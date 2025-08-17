@@ -64,8 +64,8 @@ export default function UploadResume() {
         {!uploadedData ? (
           <Card className="card-dark p-8">
             <div className="text-center mb-8">
-              <div className="mx-auto w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mb-4">
-                <CloudArrowUpIcon className="w-8 h-8 text-blue-400" />
+              <div className="mx-auto w-16 h-16 bg-teal-500/20 rounded-full flex items-center justify-center mb-4">
+                <CloudArrowUpIcon className="w-8 h-8 text-teal-400" />
               </div>
               <h2 className="text-xl font-semibold text-dark-text-primary mb-2">
                 Upload Resume File
@@ -81,8 +81,8 @@ export default function UploadResume() {
               <h3 className="text-lg font-medium text-dark-text-primary mb-4">What happens next?</h3>
               <div className="grid md:grid-cols-3 gap-6">
                 <div className="flex items-start space-x-3">
-                  <div className="flex-shrink-0 w-8 h-8 bg-blue-500/20 rounded-full flex items-center justify-center">
-                    <span className="text-sm font-medium text-blue-400">1</span>
+                  <div className="flex-shrink-0 w-8 h-8 bg-teal-500/20 rounded-full flex items-center justify-center">
+                    <span className="text-sm font-medium text-teal-400">1</span>
                   </div>
                   <div>
                     <h4 className="font-medium text-dark-text-primary">File Analysis</h4>
@@ -91,8 +91,8 @@ export default function UploadResume() {
                 </div>
                 
                 <div className="flex items-start space-x-3">
-                  <div className="flex-shrink-0 w-8 h-8 bg-blue-500/20 rounded-full flex items-center justify-center">
-                    <span className="text-sm font-medium text-blue-400">2</span>
+                  <div className="flex-shrink-0 w-8 h-8 bg-teal-500/20 rounded-full flex items-center justify-center">
+                    <span className="text-sm font-medium text-teal-400">2</span>
                   </div>
                   <div>
                     <h4 className="font-medium text-dark-text-primary">Data Extraction</h4>
@@ -101,8 +101,8 @@ export default function UploadResume() {
                 </div>
                 
                 <div className="flex items-start space-x-3">
-                  <div className="flex-shrink-0 w-8 h-8 bg-blue-500/20 rounded-full flex items-center justify-center">
-                    <span className="text-sm font-medium text-blue-400">3</span>
+                  <div className="flex-shrink-0 w-8 h-8 bg-teal-500/20 rounded-full flex items-center justify-center">
+                    <span className="text-sm font-medium text-teal-400">3</span>
                   </div>
                   <div>
                     <h4 className="font-medium text-dark-text-primary">Review & Edit</h4>
@@ -137,7 +137,7 @@ export default function UploadResume() {
                 {/* Personal Info */}
                 <div>
                   <h4 className="font-medium text-dark-text-primary mb-2">Personal Information</h4>
-                  <div className="bg-dark-tertiary p-4 rounded-lg">
+                  <div className="bg-gray-700 p-4 rounded-lg">
                     <p className="text-dark-text-secondary"><strong className="text-dark-text-primary">Name:</strong> {uploadedData.personalInfo.firstName} {uploadedData.personalInfo.lastName}</p>
                     <p className="text-dark-text-secondary"><strong className="text-dark-text-primary">Email:</strong> {uploadedData.personalInfo.email}</p>
                     <p className="text-dark-text-secondary"><strong className="text-dark-text-primary">Phone:</strong> {uploadedData.personalInfo.phone}</p>
@@ -149,7 +149,7 @@ export default function UploadResume() {
                 {uploadedData.professionalSummary && (
                   <div>
                     <h4 className="font-medium text-dark-text-primary mb-2">Professional Summary</h4>
-                    <div className="bg-dark-tertiary p-4 rounded-lg">
+                    <div className="bg-gray-700 p-4 rounded-lg">
                       <p className="text-dark-text-secondary">{uploadedData.professionalSummary}</p>
                     </div>
                   </div>
@@ -159,7 +159,7 @@ export default function UploadResume() {
                 {uploadedData.workExperience && uploadedData.workExperience.length > 0 && (
                   <div>
                     <h4 className="font-medium text-dark-text-primary mb-2">Work Experience</h4>
-                    <div className="bg-dark-tertiary p-4 rounded-lg">
+                    <div className="bg-gray-700 p-4 rounded-lg">
                       <p className="text-dark-text-secondary">{uploadedData.workExperience.length} position(s) found</p>
                     </div>
                   </div>
@@ -169,7 +169,7 @@ export default function UploadResume() {
                 {uploadedData.education && uploadedData.education.length > 0 && (
                   <div>
                     <h4 className="font-medium text-dark-text-primary mb-2">Education</h4>
-                    <div className="bg-dark-tertiary p-4 rounded-lg">
+                    <div className="bg-gray-700 p-4 rounded-lg">
                       <p className="text-dark-text-secondary">{uploadedData.education.length} education entry(ies) found</p>
                     </div>
                   </div>
@@ -179,7 +179,7 @@ export default function UploadResume() {
                 {uploadedData.skills && uploadedData.skills.length > 0 && (
                   <div>
                     <h4 className="font-medium text-dark-text-primary mb-2">Skills</h4>
-                    <div className="bg-dark-tertiary p-4 rounded-lg">
+                    <div className="bg-gray-700 p-4 rounded-lg">
                       <p className="text-dark-text-secondary">{uploadedData.skills.length} skill(s) identified</p>
                     </div>
                   </div>

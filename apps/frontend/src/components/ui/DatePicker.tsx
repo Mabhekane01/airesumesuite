@@ -214,7 +214,7 @@ export function DatePicker({
         </button>
         
         {isOpen && !disabled && (
-          <div className="absolute z-50 mt-1 w-full max-w-xs bg-dark-secondary border border-dark-border rounded-lg shadow-lg max-h-60 overflow-y-auto">
+          <div className="absolute z-50 mt-1 w-full max-w-xs bg-gray-800 border border-dark-border rounded-lg shadow-lg max-h-60 overflow-y-auto">
             {monthOptions.length > 0 ? (
               monthOptions.map((option) => (
                 <button

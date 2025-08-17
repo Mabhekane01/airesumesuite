@@ -326,7 +326,7 @@ export default function ResumeDownloadManager({
                       {new Date(savedPdf.generatedAt).toLocaleDateString()}
                     </p>
                     {savedPdf.jobOptimized && (
-                      <p className="text-xs text-blue-400 mt-1">
+                      <p className="text-xs text-teal-400 mt-1">
                         Optimized for {savedPdf.jobOptimized.jobTitle}
                       </p>
                     )}
@@ -357,7 +357,7 @@ export default function ResumeDownloadManager({
 
       {/* Save PDF Dialog */}
       {showSaveDialog && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 p-4">
           <Card className="card-dark p-6 max-w-md w-full">
             <h3 className="text-lg font-semibold text-dark-text-primary mb-4">Save PDF to Library</h3>
             <div className="space-y-4">
@@ -370,7 +370,7 @@ export default function ResumeDownloadManager({
                   value={pdfSaveName}
                   onChange={(e) => setPdfSaveName(e.target.value)}
                   placeholder="My Resume - Software Engineer"
-                  className="w-full px-3 py-2 bg-dark-tertiary border border-dark-border rounded-lg text-dark-text-primary placeholder-dark-text-muted focus:outline-none focus:border-dark-accent"
+                  className="w-full px-3 py-2 bg-gray-700 border border-dark-border rounded-lg text-dark-text-primary placeholder-dark-text-muted focus:outline-none focus:border-dark-accent"
                 />
               </div>
               <div className="flex space-x-3">

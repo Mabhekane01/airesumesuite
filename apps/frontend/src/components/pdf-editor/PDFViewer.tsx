@@ -112,12 +112,12 @@ export default function PDFViewer({ file, onTextSelect, onSignaturePlace, annota
     <div 
       ref={viewerRef}
       className={clsx(
-        'bg-dark-secondary rounded-xl border border-dark-border',
+        'bg-gray-800 rounded-xl border border-dark-border',
         isFullscreen ? 'fixed inset-0 z-50 rounded-none' : 'h-full'
       )}
     >
       {/* Toolbar */}
-      <div className="flex items-center justify-between p-4 border-b border-dark-border bg-dark-tertiary/60 backdrop-blur-sm rounded-t-xl">
+      <div className="flex items-center justify-between p-4 border-b border-dark-border bg-gray-700/60 backdrop-blur-sm rounded-t-xl">
         <div className="flex items-center space-x-2">
           <span className="text-sm text-dark-text-secondary">
             {file.name}
@@ -230,7 +230,7 @@ export default function PDFViewer({ file, onTextSelect, onSignaturePlace, annota
                   className={clsx(
                     'absolute border-2 border-dashed',
                     annotation.type === 'text' 
-                      ? 'border-blue-400 bg-blue-50' 
+                      ? 'border-teal-400 bg-blue-50' 
                       : 'border-green-400 bg-green-50'
                 )}
                 style={{
@@ -250,8 +250,8 @@ export default function PDFViewer({ file, onTextSelect, onSignaturePlace, annota
         )}
         
         {selectedText && (
-          <div className="absolute bottom-4 right-4 p-3 bg-blue-50 border border-blue-200 rounded shadow-lg max-w-xs">
-            <p className="text-sm text-blue-800">
+          <div className="absolute bottom-4 right-4 p-3 bg-blue-50 border border-teal-200 rounded shadow-lg max-w-xs">
+            <p className="text-sm text-teal-800">
               <strong>Selected text:</strong> "{selectedText}"
             </p>
           </div>
@@ -259,7 +259,7 @@ export default function PDFViewer({ file, onTextSelect, onSignaturePlace, annota
       </div>
 
       {/* Status Bar */}
-      <div className="flex items-center justify-between p-2 bg-dark-tertiary/40 rounded-b-xl text-xs text-dark-text-secondary">
+      <div className="flex items-center justify-between p-2 bg-gray-700/40 rounded-b-xl text-xs text-dark-text-secondary">
         <span>Page {pageNumber} of {numPages || 1}</span>
         <span>Ready for editing</span>
       </div>

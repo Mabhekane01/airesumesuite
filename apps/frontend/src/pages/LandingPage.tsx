@@ -43,7 +43,7 @@ const advancedFeatures = [
     subtitle: 'Claude + GPT-4 + Gemini',
     description: 'Three AI models working together with intelligent fallbacks ensure 99.9% availability and superior content quality.',
     tech: 'Smart Consensus Engine',
-    color: 'from-purple-500 to-violet-600',
+    color: 'from-emerald-500 to-violet-600',
     highlight: '99.9% Uptime'
   },
   {
@@ -67,15 +67,15 @@ const advancedFeatures = [
 ];
 
 const techStack = [
-  { name: 'React 18', category: 'Frontend', color: 'text-blue-400' },
-  { name: 'TypeScript', category: 'Language', color: 'text-blue-300' },
+  { name: 'React 18', category: 'Frontend', color: 'text-teal-400' },
+  { name: 'TypeScript', category: 'Language', color: 'text-teal-300' },
   { name: 'Node.js', category: 'Backend', color: 'text-green-400' },
   { name: 'MongoDB', category: 'Database', color: 'text-green-300' },
   { name: 'Redis', category: 'Cache', color: 'text-red-400' },
-  { name: 'Docker', category: 'Deploy', color: 'text-blue-500' },
+  { name: 'Docker', category: 'Deploy', color: 'text-teal-500' },
   { name: 'LaTeX', category: 'Engine', color: 'text-emerald-400' },
-  { name: 'Claude AI', category: 'AI', color: 'text-purple-400' },
-  { name: 'GPT-4', category: 'AI', color: 'text-purple-300' },
+  { name: 'Claude AI', category: 'AI', color: 'text-emerald-400' },
+  { name: 'GPT-4', category: 'AI', color: 'text-emerald-300' },
   { name: 'Gemini', category: 'AI', color: 'text-indigo-400' }
 ];
 
@@ -92,7 +92,7 @@ const performanceMetrics = [
     label: 'System Uptime',
     detail: 'Last 12 Months',
     icon: ShieldCheckIcon,
-    color: 'text-blue-400'
+    color: 'text-teal-400'
   },
   { 
     metric: '< 200ms', 
@@ -308,11 +308,11 @@ export default function LandingPage() {
           >
             {/* Badge */}
             <div className="inline-flex items-center px-6 py-3 glass-card rounded-full mb-8 glow-effect">
-              <CpuChipIcon className="h-5 w-5 text-purple-400 mr-2" />
+              <CpuChipIcon className="h-5 w-5 text-emerald-400 mr-2" />
               <span className="text-sm font-medium text-white">
                 Enterprise Career Intelligence Platform
               </span>
-              <div className="ml-3 px-2 py-1 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full text-xs font-bold text-white">
+              <div className="ml-3 px-2 py-1 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full text-xs font-bold text-white">
                 LaTeX + Multi-AI
               </div>
             </div>
@@ -320,7 +320,7 @@ export default function LandingPage() {
             {/* Main Headline */}
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-8 leading-tight">
               <span className="block text-white mb-2">Where</span>
-              <span className="block bg-gradient-to-r from-purple-400 via-blue-400 to-emerald-400 bg-clip-text text-transparent mb-2">
+              <span className="block bg-gradient-to-r from-emerald-400 via-blue-400 to-emerald-400 bg-clip-text text-transparent mb-2">
                 Artificial Intelligence
               </span>
               <span className="block text-white">Meets</span>
@@ -332,8 +332,8 @@ export default function LandingPage() {
             {/* Subtitle */}
             <p className="text-xl md:text-2xl text-gray-300 mb-12 max-w-4xl mx-auto leading-relaxed">
               Revolutionary career platform powered by{' '}
-              <span className="text-purple-400 font-semibold">LaTeX document engine</span>,{' '}
-              <span className="text-blue-400 font-semibold">multi-AI intelligence</span>, and{' '}
+              <span className="text-emerald-400 font-semibold">LaTeX document engine</span>,{' '}
+              <span className="text-teal-400 font-semibold">multi-AI intelligence</span>, and{' '}
               <span className="text-emerald-400 font-semibold">enterprise architecture</span>
             </p>
 
@@ -353,7 +353,7 @@ export default function LandingPage() {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={handleGetStarted}
-                    className="group bg-gradient-to-r from-purple-600 to-blue-600 text-white px-8 py-4 rounded-2xl font-medium text-lg transition-all duration-300 shadow-2xl glow-effect flex items-center"
+                    className="group bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-8 py-4 rounded-2xl font-medium text-lg transition-all duration-300 shadow-2xl glow-effect flex items-center"
                   >
                     Experience the Future
                     <RocketLaunchIcon className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" />
@@ -407,7 +407,7 @@ export default function LandingPage() {
           >
             <h2 className="text-4xl md:text-5xl font-bold mb-6">
               <span className="text-white">Built on </span>
-              <span className="bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
                 Cutting-Edge Technology
               </span>
             </h2>
@@ -439,14 +439,14 @@ export default function LandingPage() {
                       </div>
                       <div className="text-right">
                         <div className="text-xs font-mono text-gray-400 mb-1">{feature.tech}</div>
-                        <div className="px-3 py-1 bg-gradient-to-r from-purple-500/20 to-blue-500/20 rounded-full text-xs font-semibold text-purple-300 border border-purple-500/30">
+                        <div className="px-3 py-1 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 rounded-full text-xs font-semibold text-emerald-300 border border-emerald-500/30">
                           {feature.highlight}
                         </div>
                       </div>
                     </div>
                     
                     <h3 className="text-2xl font-bold text-white mb-2">{feature.title}</h3>
-                    <div className="text-lg font-medium text-purple-300 mb-4">{feature.subtitle}</div>
+                    <div className="text-lg font-medium text-emerald-300 mb-4">{feature.subtitle}</div>
                     <p className="text-gray-300 leading-relaxed">{feature.description}</p>
                   </div>
                 </motion.div>
@@ -486,7 +486,7 @@ export default function LandingPage() {
       </section>
 
       {/* Comparison Section */}
-      <section className="py-20 bg-dark-secondary/50">
+      <section className="py-20 bg-gray-800/50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -496,7 +496,7 @@ export default function LandingPage() {
           >
             <h2 className="text-4xl md:text-5xl font-bold mb-6">
               <span className="text-white">Why We're </span>
-              <span className="bg-gradient-to-r from-emerald-400 to-blue-400 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
                 Different
               </span>
             </h2>
@@ -506,7 +506,7 @@ export default function LandingPage() {
           </motion.div>
 
           <div className="glass-card rounded-3xl overflow-hidden glow-effect">
-            <div className="grid grid-cols-3 bg-gradient-to-r from-purple-600/20 to-blue-600/20 p-6">
+            <div className="grid grid-cols-3 bg-gradient-to-r from-emerald-600/20 to-teal-600/20 p-6">
               <div className="text-gray-400 font-medium">Feature</div>
               <div className="text-center">
                 <div className="text-emerald-400 font-bold text-lg">AI Job Suite</div>
@@ -553,7 +553,7 @@ export default function LandingPage() {
           >
             <h2 className="text-4xl md:text-5xl font-bold mb-6">
               <span className="text-white">Trusted by </span>
-              <span className="bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
                 Industry Leaders
               </span>
             </h2>
@@ -571,7 +571,7 @@ export default function LandingPage() {
                 transition={{ duration: 0.8, delay: index * 0.1 }}
                 className="glass-card glass-card-hover rounded-3xl p-8 relative group"
               >
-                <div className="absolute top-4 right-4 px-3 py-1 bg-gradient-to-r from-emerald-500/20 to-blue-500/20 rounded-full text-xs font-semibold text-emerald-300 border border-emerald-500/30">
+                <div className="absolute top-4 right-4 px-3 py-1 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 rounded-full text-xs font-semibold text-emerald-300 border border-emerald-500/30">
                   {testimonial.highlight}
                 </div>
                 
@@ -586,13 +586,13 @@ export default function LandingPage() {
                 </p>
                 
                 <div className="flex items-center">
-                  <div className="w-12 h-12 bg-gradient-to-br from-purple-600 to-blue-600 rounded-2xl flex items-center justify-center text-white font-bold mr-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-emerald-600 to-teal-600 rounded-2xl flex items-center justify-center text-white font-bold mr-4">
                     {testimonial.name[0]}
                   </div>
                   <div>
                     <div className="font-bold text-white">{testimonial.name}</div>
                     <div className="text-gray-400">{testimonial.role}</div>
-                    <div className="text-purple-400 text-sm">{testimonial.company}</div>
+                    <div className="text-emerald-400 text-sm">{testimonial.company}</div>
                   </div>
                 </div>
               </motion.div>
@@ -602,7 +602,7 @@ export default function LandingPage() {
       </section>
 
       {/* Pricing Section */}
-      <section className="py-20 bg-dark-secondary/50">
+      <section className="py-20 bg-gray-800/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -612,7 +612,7 @@ export default function LandingPage() {
           >
             <h2 className="text-4xl md:text-5xl font-bold mb-6">
               <span className="text-white">Simple, </span>
-              <span className="bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
                 Transparent Pricing
               </span>
             </h2>
@@ -630,13 +630,13 @@ export default function LandingPage() {
                 transition={{ duration: 0.8, delay: index * 0.1 }}
                 className={`glass-card rounded-3xl p-8 relative group ${
                   plan.highlight 
-                    ? 'ring-2 ring-purple-500/50 glow-effect scale-105 z-10' 
+                    ? 'ring-2 ring-emerald-500/50 glow-effect scale-105 z-10' 
                     : 'glass-card-hover'
                 }`}
               >
                 {plan.highlight && (
                   <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                    <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-2 rounded-full text-sm font-bold">
+                    <div className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-6 py-2 rounded-full text-sm font-bold">
                       Most Popular
                     </div>
                   </div>
@@ -664,7 +664,7 @@ export default function LandingPage() {
                   onClick={handleGetStarted}
                   className={`w-full py-4 rounded-2xl font-semibold text-lg transition-all duration-300 ${
                     plan.highlight
-                      ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-700 hover:to-blue-700 shadow-lg'
+                      ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:from-emerald-700 hover:to-teal-700 shadow-lg'
                       : 'glass-card glass-card-hover text-white'
                   }`}
                 >
@@ -678,7 +678,7 @@ export default function LandingPage() {
 
       {/* Final CTA Section */}
       <section className="py-20 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-purple-600/20 to-blue-600/20" />
+        <div className="absolute inset-0 bg-gradient-to-r from-emerald-600/20 to-teal-600/20" />
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -688,7 +688,7 @@ export default function LandingPage() {
             <h2 className="text-4xl md:text-6xl font-bold mb-8">
               <span className="text-white">Ready to Transform</span>
               <br />
-              <span className="bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
                 Your Career?
               </span>
             </h2>
@@ -702,7 +702,7 @@ export default function LandingPage() {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={handleGetStarted}
-                  className="group bg-gradient-to-r from-purple-600 to-blue-600 text-white px-12 py-6 rounded-2xl font-bold text-xl transition-all duration-300 shadow-2xl glow-effect flex items-center justify-center"
+                  className="group bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-12 py-6 rounded-2xl font-bold text-xl transition-all duration-300 shadow-2xl glow-effect flex items-center justify-center"
                 >
                   Start Free Trial
                   <RocketLaunchIcon className="h-6 w-6 ml-3 group-hover:translate-x-1 transition-transform" />

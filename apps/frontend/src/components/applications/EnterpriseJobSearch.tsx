@@ -21,9 +21,9 @@ interface EnterpriseJobSearchProps {
 }
 
 const STATUS_OPTIONS = [
-  { value: 'applied', label: 'Applied', color: 'bg-blue-500' },
+  { value: 'applied', label: 'Applied', color: 'bg-teal-500' },
   { value: 'under_review', label: 'Under Review', color: 'bg-yellow-500' },
-  { value: 'phone_screen', label: 'Phone Screen', color: 'bg-purple-500' },
+  { value: 'phone_screen', label: 'Phone Screen', color: 'bg-emerald-500' },
   { value: 'technical_assessment', label: 'Technical Assessment', color: 'bg-orange-500' },
   { value: 'first_interview', label: 'First Interview', color: 'bg-indigo-500' },
   { value: 'second_interview', label: 'Second Interview', color: 'bg-pink-500' },
@@ -138,7 +138,7 @@ export default function EnterpriseJobSearch({
               className={`p-2 rounded-md transition-all duration-200 ${
                 showFilters || activeFilterCount > 0
                   ? 'bg-accent-primary/20 text-accent-primary'
-                  : 'text-dark-text-secondary hover:text-dark-text-primary hover:bg-dark-tertiary/60'
+                  : 'text-dark-text-secondary hover:text-dark-text-primary hover:bg-gray-700/60'
               }`}
             >
               <FunnelIcon className="h-4 w-4" />
@@ -154,22 +154,22 @@ export default function EnterpriseJobSearch({
 
       {/* Quick Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-dark-tertiary/60 rounded-lg p-3">
+        <div className="bg-gray-700/60 rounded-lg p-3">
           <p className="text-xs text-dark-text-secondary">Total Applications</p>
           <p className="text-lg font-semibold text-dark-text-primary">{stats.totalApplications}</p>
         </div>
-        <div className="bg-dark-tertiary/60 rounded-lg p-3">
+        <div className="bg-gray-700/60 rounded-lg p-3">
           <p className="text-xs text-dark-text-secondary">Recent (30 days)</p>
           <p className="text-lg font-semibold text-accent-primary">{stats.recentApplications}</p>
         </div>
-        <div className="bg-dark-tertiary/60 rounded-lg p-3">
+        <div className="bg-gray-700/60 rounded-lg p-3">
           <p className="text-xs text-dark-text-secondary">Active Processes</p>
           <p className="text-lg font-semibold text-yellow-400">
             {(stats.statusCounts.under_review || 0) + (stats.statusCounts.phone_screen || 0) + 
              (stats.statusCounts.first_interview || 0) + (stats.statusCounts.second_interview || 0)}
           </p>
         </div>
-        <div className="bg-dark-tertiary/60 rounded-lg p-3">
+        <div className="bg-gray-700/60 rounded-lg p-3">
           <p className="text-xs text-dark-text-secondary">Offers</p>
           <p className="text-lg font-semibold text-green-400">
             {(stats.statusCounts.offer_received || 0) + (stats.statusCounts.offer_accepted || 0)}
@@ -184,7 +184,7 @@ export default function EnterpriseJobSearch({
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="bg-dark-tertiary/40 backdrop-blur-sm rounded-lg border border-dark-border overflow-hidden"
+            className="bg-gray-700/40 backdrop-blur-sm rounded-lg border border-dark-border overflow-hidden"
           >
             <div className="p-6 space-y-6">
               <div className="flex items-center justify-between">
@@ -217,7 +217,7 @@ export default function EnterpriseJobSearch({
                       className={`flex items-center space-x-2 p-3 rounded-lg cursor-pointer transition-all ${
                         filters.status?.includes(status.value)
                           ? 'bg-accent-primary/20 border border-accent-primary/30'
-                          : 'bg-dark-secondary/60 hover:bg-dark-secondary/80 border border-transparent'
+                          : 'bg-gray-800/60 hover:bg-gray-800/80 border border-transparent'
                       }`}
                     >
                       <input
@@ -246,7 +246,7 @@ export default function EnterpriseJobSearch({
                       className={`flex items-center space-x-2 p-3 rounded-lg cursor-pointer transition-all ${
                         filters.priority?.includes(priority.value)
                           ? 'bg-accent-primary/20 border border-accent-primary/30'
-                          : 'bg-dark-secondary/60 hover:bg-dark-secondary/80 border border-transparent'
+                          : 'bg-gray-800/60 hover:bg-gray-800/80 border border-transparent'
                       }`}
                     >
                       <input
@@ -321,7 +321,7 @@ export default function EnterpriseJobSearch({
                       type="checkbox"
                       checked={filters.remote || false}
                       onChange={(e) => handleFilterChange('remote', e.target.checked ? true : undefined)}
-                      className="rounded border-dark-border bg-dark-secondary text-accent-primary focus:ring-accent-primary focus:ring-offset-dark-secondary"
+                      className="rounded border-dark-border bg-gray-800 text-accent-primary focus:ring-accent-primary focus:ring-offset-dark-secondary"
                     />
                     <span className="text-sm text-dark-text-primary">Remote positions only</span>
                   </label>

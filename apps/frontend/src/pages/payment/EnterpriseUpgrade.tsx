@@ -272,7 +272,7 @@ export default function EnterpriseUpgrade() {
       <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
         <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-accent-primary/20 rounded-full blur-2xl animate-pulse"></div>
         <div className="absolute bottom-1/4 right-1/4 w-48 h-48 bg-accent-secondary/20 rounded-full blur-2xl animate-pulse delay-1000"></div>
-        <div className="absolute top-3/4 left-1/2 w-32 h-32 bg-purple-500/20 rounded-full blur-2xl animate-pulse delay-2000"></div>
+        <div className="absolute top-3/4 left-1/2 w-32 h-32 bg-emerald-500/20 rounded-full blur-2xl animate-pulse delay-2000"></div>
       </div>
 
       <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -310,7 +310,7 @@ export default function EnterpriseUpgrade() {
           <div className="glass-dark rounded-xl border border-dark-border p-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center text-center md:text-left">
               <div className="flex items-center justify-center md:justify-start space-x-2">
-                <MapPinIcon className={`w-4 h-4 ${locationDetecting ? 'text-accent-primary animate-pulse' : 'text-blue-400'}`} />
+                <MapPinIcon className={`w-4 h-4 ${locationDetecting ? 'text-accent-primary animate-pulse' : 'text-teal-400'}`} />
                 <div>
                   <p className="text-dark-text-primary text-sm font-medium">
                     {locationDetecting ? 'Detecting...' : pricing.location.country}
@@ -466,7 +466,7 @@ export default function EnterpriseUpgrade() {
             <div className="mt-4 flex justify-center">
               <button
                 onClick={() => setShowComparison(!showComparison)}
-                className="inline-flex items-center space-x-2 bg-dark-secondary/50 hover:bg-dark-secondary text-dark-text-primary px-4 py-2 rounded-lg transition-all duration-200 text-sm border border-dark-border hover:border-accent-primary/50"
+                className="inline-flex items-center space-x-2 bg-gray-800/50 hover:bg-gray-800 text-dark-text-primary px-4 py-2 rounded-lg transition-all duration-200 text-sm border border-dark-border hover:border-accent-primary/50"
               >
                 <span>{showComparison ? 'Hide' : 'Show'} Feature Comparison</span>
                 <ArrowRightIcon className={`w-3 h-3 transition-transform duration-200 ${showComparison ? 'rotate-90' : ''}`} />
@@ -486,7 +486,7 @@ export default function EnterpriseUpgrade() {
                   <div className={`p-2 rounded-lg ${
                     feature.highlight 
                       ? 'bg-accent-primary/20' 
-                      : 'bg-dark-secondary/50'
+                      : 'bg-gray-800/50'
                   }`}>
                     <div className="text-accent-primary">
                       {feature.icon}
@@ -529,7 +529,7 @@ export default function EnterpriseUpgrade() {
                   </thead>
                   <tbody>
                     {enterpriseFeatures.map((feature, index) => (
-                      <tr key={index} className="border-b border-dark-border/50 hover:bg-dark-secondary/30 transition-colors">
+                      <tr key={index} className="border-b border-dark-border/50 hover:bg-gray-800/30 transition-colors">
                         <td className="py-3 px-2">
                           <div className="flex items-center space-x-2">
                             <div className="text-accent-primary">
@@ -575,7 +575,7 @@ export default function EnterpriseUpgrade() {
                 className={`cursor-pointer p-4 rounded-lg border transition-all duration-200 ${
                   selectedPayment === method.id
                     ? 'border-accent-primary bg-accent-primary/10 shadow-glow-sm'
-                    : 'border-dark-border bg-dark-secondary/30 hover:border-accent-primary/50'
+                    : 'border-dark-border bg-gray-800/30 hover:border-accent-primary/50'
                 }`}
               >
                 <div className="flex items-center space-x-3">
@@ -600,7 +600,7 @@ export default function EnterpriseUpgrade() {
           </div>
 
           {/* Security Notice */}
-          <div className="flex items-center justify-center space-x-2 text-xs text-dark-text-muted bg-dark-secondary/20 rounded-lg p-3 mb-6">
+          <div className="flex items-center justify-center space-x-2 text-xs text-dark-text-muted bg-gray-800/20 rounded-lg p-3 mb-6">
             <ShieldCheckIcon className="w-4 h-4 text-green-400" />
             <span>256-bit SSL • PCI compliant • No payment details stored</span>
           </div>

@@ -85,10 +85,10 @@ export function ProfessionalSummaryForm() {
         description="Generate multiple professional summary options tailored to your experience using advanced AI technology."
         requiresEnterprise={true}
       >
-        <Card className="card-dark p-6 bg-gradient-to-r from-purple-500/10 to-indigo-500/10 border border-purple-500/30">
+        <Card className="card-dark p-6 bg-gradient-to-r from-emerald-500/10 to-indigo-500/10 border border-emerald-500/30">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center">
-            <SparklesIcon className="w-6 h-6 text-purple-400 mr-2" />
+            <SparklesIcon className="w-6 h-6 text-emerald-400 mr-2" />
             <div>
               <h3 className="font-semibold text-dark-text-primary">AI-Generated Summary</h3>
               <p className="text-sm text-dark-text-secondary">Let AI create multiple professional summary options based on your experience</p>
@@ -97,7 +97,7 @@ export function ProfessionalSummaryForm() {
           <Button
             onClick={generateAISummary}
             disabled={aiProgress.isLoading}
-            className="btn-primary-dark bg-purple-600 hover:bg-purple-700"
+            className="btn-primary-dark bg-emerald-600 hover:bg-purple-700"
           >
             {aiProgress.isLoading ? (
               <>
@@ -129,7 +129,7 @@ export function ProfessionalSummaryForm() {
             {generatedOptions.map((option, index) => (
               <div
                 key={index}
-                className="group p-4 bg-dark-secondary/50 border border-dark-border rounded-lg cursor-pointer hover:border-purple-400 hover:bg-dark-secondary hover:shadow-lg transition-all duration-200"
+                className="group p-4 bg-gray-800/50 border border-dark-border rounded-lg cursor-pointer hover:border-emerald-400 hover:bg-gray-800 hover:shadow-lg transition-all duration-200"
                 onClick={() => selectAIOption(option)}
               >
                 <div className="flex items-start justify-between">
@@ -139,7 +139,7 @@ export function ProfessionalSummaryForm() {
                   <Button 
                     size="sm" 
                     variant="outline" 
-                    className="btn-secondary-dark group-hover:border-purple-400 group-hover:text-purple-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="btn-secondary-dark group-hover:border-emerald-400 group-hover:text-emerald-400 opacity-0 group-hover:opacity-100 transition-opacity"
                   >
                     <CheckCircleIcon className="w-4 h-4 mr-1" />
                     Use This
@@ -219,11 +219,11 @@ export function ProfessionalSummaryForm() {
       <Card className="card-dark p-4">
         <h4 className="font-medium text-dark-text-primary mb-3">💡 Example Professional Summaries</h4>
         <div className="space-y-3 text-sm">
-          <div className="p-3 bg-dark-tertiary rounded-lg">
+          <div className="p-3 bg-gray-700 rounded-lg">
             <p className="font-medium text-dark-text-primary mb-1">Software Engineer:</p>
             <p className="text-dark-text-secondary">"Results-driven software engineer with 5+ years developing scalable web applications using React and Node.js. Led 3 cross-functional teams to deliver products serving 100K+ users, increasing system performance by 40%. Passionate about clean code and mentoring junior developers."</p>
           </div>
-          <div className="p-3 bg-dark-tertiary rounded-lg">
+          <div className="p-3 bg-gray-700 rounded-lg">
             <p className="font-medium text-dark-text-primary mb-1">Marketing Manager:</p>
             <p className="text-dark-text-secondary">"Strategic marketing manager with 7+ years driving growth for B2B SaaS companies. Developed campaigns that generated $2M+ in pipeline and increased lead conversion by 35%. Expert in marketing automation, content strategy, and data-driven decision making."</p>
           </div>

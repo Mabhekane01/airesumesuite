@@ -53,7 +53,7 @@ const categoryConfig = {
   academic: {
     name: 'Academic',
     icon: DocumentTextIcon,
-    gradient: 'from-indigo-500 to-blue-600',
+    gradient: 'from-indigo-500 to-teal-600',
     description: 'Research-focused layouts for academic positions'
   },
   minimalist: {
@@ -174,17 +174,17 @@ export default function OverleafTemplateGallery({
 
         {/* Production Notice */}
         {isProduction && (
-          <div className="mt-6 p-4 bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 rounded-xl">
+          <div className="mt-6 p-4 bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-teal-500/20 rounded-xl">
             <div className="flex items-start space-x-3">
-              <div className="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
-                <SparklesIcon className="h-5 w-5 text-blue-400" />
+              <div className="w-8 h-8 bg-teal-500/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                <SparklesIcon className="h-5 w-5 text-teal-400" />
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-dark-text-primary mb-1">
                   🚀 More Templates Coming Soon!
                 </h3>
                 <p className="text-dark-text-secondary text-sm leading-relaxed">
-                  We're currently perfecting our template collection. The <span className="text-blue-400 font-medium">ASU Sparky Sundevil template</span> is ready for use, 
+                  We're currently perfecting our template collection. The <span className="text-teal-400 font-medium">ASU Sparky Sundevil template</span> is ready for use, 
                   while other templates are being fine-tuned for the best experience. Stay tuned for updates!
                 </p>
                 <div className="mt-2 text-xs text-dark-text-tertiary">
@@ -204,7 +204,7 @@ export default function OverleafTemplateGallery({
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
               selectedCategory === 'all'
                 ? 'bg-accent-primary text-white shadow-glow-sm'
-                : 'bg-dark-tertiary text-dark-text-secondary hover:bg-dark-quaternary'
+                : 'bg-gray-700 text-dark-text-secondary hover:bg-dark-quaternary'
             }`}
           >
             All Templates ({templates.length})
@@ -226,7 +226,7 @@ export default function OverleafTemplateGallery({
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center space-x-2 ${
                   selectedCategory === category
                     ? 'bg-accent-primary text-white shadow-glow-sm'
-                    : 'bg-dark-tertiary text-dark-text-secondary hover:bg-dark-quaternary'
+                    : 'bg-gray-700 text-dark-text-secondary hover:bg-dark-quaternary'
                 }`}
               >
                 <config.icon className="h-4 w-4" />
@@ -284,7 +284,7 @@ export default function OverleafTemplateGallery({
                 </div>
                 
                 {/* Overlay Actions */}
-                <div className={`absolute inset-0 bg-black/50 opacity-0 transition-opacity duration-200 flex items-center justify-center ${
+                <div className={`absolute inset-0 bg-gray-900/50 opacity-0 transition-opacity duration-200 flex items-center justify-center ${
                   isAvailable ? 'group-hover:opacity-100' : ''
                 }`}>
                   {isAvailable ? (
@@ -312,7 +312,7 @@ export default function OverleafTemplateGallery({
                 
                 {/* Disabled Overlay for unavailable templates */}
                 {!isAvailable && (
-                  <div className="absolute inset-0 bg-black/30 opacity-100 flex items-center justify-center">
+                  <div className="absolute inset-0 bg-gray-900/30 opacity-100 flex items-center justify-center">
                     <div className="text-center">
                       <div className="bg-orange-500/90 text-white px-3 py-1.5 rounded-lg font-medium text-sm shadow-lg">
                         🚧 Coming Soon

@@ -628,7 +628,7 @@ ${selectedTone.signature}`;
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+          className="absolute inset-0 bg-gray-900/80 backdrop-blur-sm"
           onClick={handleClose}
         />
 
@@ -640,7 +640,7 @@ ${selectedTone.signature}`;
           transition={{ type: 'spring', duration: 0.3 }}
           className="relative w-full max-w-6xl mx-auto my-2 sm:my-4 rounded-none sm:rounded-2xl overflow-hidden h-screen sm:h-auto"
         >
-          <div className="bg-dark-secondary/95 backdrop-blur-xl border-0 sm:border border-dark-border/50 shadow-2xl flex flex-col h-full sm:min-h-[calc(100vh-2rem)]">
+          <div className="bg-gray-800/95 backdrop-blur-xl border-0 sm:border border-dark-border/50 shadow-2xl flex flex-col h-full sm:min-h-[calc(100vh-2rem)]">
             {/* Header */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 sm:p-4 border-b border-dark-border/50 gap-3 sm:gap-0">
               <div className="flex items-center space-x-3 flex-1 min-w-0">
@@ -668,7 +668,7 @@ ${selectedTone.signature}`;
                   disabled={loading}
                   className={`hidden sm:flex px-3 lg:px-4 py-2 border rounded-lg transition-all duration-200 items-center space-x-1 lg:space-x-2 disabled:opacity-50 text-sm ${
                     hasEnterpriseAccess 
-                      ? 'bg-purple-600/20 text-purple-400 border-purple-600/30 hover:bg-purple-600/30' 
+                      ? 'bg-emerald-600/20 text-emerald-400 border-emerald-600/30 hover:bg-emerald-600/30' 
                       : 'bg-yellow-600/20 text-yellow-400 border-yellow-600/30 hover:bg-yellow-600/30'
                   }`}
                   title={hasEnterpriseAccess ? 'Generate AI content' : 'Upgrade to Enterprise for AI features'}
@@ -696,7 +696,7 @@ ${selectedTone.signature}`;
                 {/* Close Button */}
                 <button
                   onClick={handleClose}
-                  className="p-2 text-dark-text-muted hover:text-dark-text-primary rounded-lg hover:bg-dark-tertiary/50 transition-all duration-200"
+                  className="p-2 text-dark-text-muted hover:text-dark-text-primary rounded-lg hover:bg-gray-700/50 transition-all duration-200"
                 >
                   <XMarkIcon className="w-5 h-5" />
                 </button>
@@ -710,7 +710,7 @@ ${selectedTone.signature}`;
                 className={`flex-1 min-w-0 py-3 px-3 sm:px-6 text-xs sm:text-sm font-medium transition-all duration-200 whitespace-nowrap ${
                   activeTab === 'edit'
                     ? 'bg-accent-primary/10 text-accent-primary border-b-2 border-accent-primary'
-                    : 'text-dark-text-secondary hover:text-dark-text-primary hover:bg-dark-tertiary/30'
+                    : 'text-dark-text-secondary hover:text-dark-text-primary hover:bg-gray-700/30'
                 }`}
               >
                 <span className="flex items-center justify-center space-x-1">
@@ -723,7 +723,7 @@ ${selectedTone.signature}`;
                 className={`flex-1 min-w-0 py-3 px-3 sm:px-6 text-xs sm:text-sm font-medium transition-all duration-200 whitespace-nowrap ${
                   activeTab === 'preview'
                     ? 'bg-accent-primary/10 text-accent-primary border-b-2 border-accent-primary'
-                    : 'text-dark-text-secondary hover:text-dark-text-primary hover:bg-dark-tertiary/30'
+                    : 'text-dark-text-secondary hover:text-dark-text-primary hover:bg-gray-700/30'
                 }`}
               >
                 <span className="flex items-center justify-center space-x-1">
@@ -736,7 +736,7 @@ ${selectedTone.signature}`;
                 className={`flex-1 min-w-0 py-3 px-3 sm:px-6 text-xs sm:text-sm font-medium transition-all duration-200 whitespace-nowrap ${
                   activeTab === 'ai-enhance'
                     ? 'bg-green-500/10 text-green-400 border-b-2 border-green-400'
-                    : 'text-dark-text-secondary hover:text-dark-text-primary hover:bg-dark-tertiary/30'
+                    : 'text-dark-text-secondary hover:text-dark-text-primary hover:bg-gray-700/30'
                 }`}
               >
                 <span className="flex items-center justify-center space-x-1">
@@ -893,7 +893,7 @@ ${selectedTone.signature}`;
                             disabled={loading}
                             className={`sm:hidden px-3 py-2 border rounded-lg transition-all duration-200 flex items-center space-x-1 disabled:opacity-50 text-sm ${
                               hasEnterpriseAccess 
-                                ? 'bg-purple-600/20 text-purple-400 border-purple-600/30 hover:bg-purple-600/30' 
+                                ? 'bg-emerald-600/20 text-emerald-400 border-emerald-600/30 hover:bg-emerald-600/30' 
                                 : 'bg-yellow-600/20 text-yellow-400 border-yellow-600/30 hover:bg-yellow-600/30'
                             }`}
                             title={hasEnterpriseAccess ? 'Generate AI content' : 'Upgrade to Enterprise for AI features'}
@@ -920,11 +920,11 @@ ${selectedTone.signature}`;
                             type="button"
                             onClick={() => downloadCoverLetter('pdf')}
                             disabled={!formData.content.trim() || downloadingFormat === 'pdf'}
-                            className="px-3 py-1 text-xs bg-purple-500/10 text-purple-400 border border-purple-500/30 rounded hover:bg-purple-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1 min-h-[36px]"
+                            className="px-3 py-1 text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded hover:bg-emerald-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1 min-h-[36px]"
                           >
                             {downloadingFormat === 'pdf' ? (
                               <>
-                                <div className="w-3 h-3 border border-purple-400 border-t-transparent rounded-full animate-spin" />
+                                <div className="w-3 h-3 border border-emerald-400 border-t-transparent rounded-full animate-spin" />
                                 <span>PDF</span>
                               </>
                             ) : (
@@ -1108,7 +1108,7 @@ ${selectedTone.signature}`;
                             <button
                               onClick={handleAutoSave}
                               disabled={!isDirty || saving}
-                              className="px-3 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="px-3 py-1 bg-teal-500 text-white text-xs rounded hover:bg-teal-600 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                               {saving ? 'Saving...' : 'Save Now'}
                             </button>
@@ -1208,18 +1208,18 @@ ${selectedTone.signature}`;
                           disabled={isAnalyzing || !formData.content.trim()}
                           className={`p-4 sm:p-6 border rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-h-[80px] sm:min-h-auto ${
                             hasEnterpriseAccess 
-                              ? 'bg-blue-500/10 border-blue-500/30 hover:bg-blue-500/20' 
+                              ? 'bg-teal-500/10 border-teal-500/30 hover:bg-teal-500/20' 
                               : 'bg-yellow-500/10 border-yellow-500/30 hover:bg-yellow-500/20'
                           }`}
                         >
                           <div className="flex flex-row sm:flex-col items-center space-x-3 sm:space-x-0 sm:space-y-3">
-                            <ChartBarIcon className={`w-6 h-6 sm:w-8 sm:h-8 flex-shrink-0 ${hasEnterpriseAccess ? 'text-blue-400' : 'text-yellow-400'}`} />
+                            <ChartBarIcon className={`w-6 h-6 sm:w-8 sm:h-8 flex-shrink-0 ${hasEnterpriseAccess ? 'text-teal-400' : 'text-yellow-400'}`} />
                             <div className="text-left sm:text-center">
-                              <h4 className={`font-semibold text-sm sm:text-base ${hasEnterpriseAccess ? 'text-blue-400' : 'text-yellow-400'}`}>
+                              <h4 className={`font-semibold text-sm sm:text-base ${hasEnterpriseAccess ? 'text-teal-400' : 'text-yellow-400'}`}>
                                 {isAnalyzing ? 'Analyzing...' : 'Analyze Content'}
                                 {!hasEnterpriseAccess && ' ⭐'}
                               </h4>
-                              <p className={`text-xs sm:text-sm ${hasEnterpriseAccess ? 'text-blue-300' : 'text-yellow-300'}`}>
+                              <p className={`text-xs sm:text-sm ${hasEnterpriseAccess ? 'text-teal-300' : 'text-yellow-300'}`}>
                                 {hasEnterpriseAccess ? 'Get match score and suggestions' : 'Premium AI feature - Upgrade to unlock'}
                               </p>
                             </div>
@@ -1228,8 +1228,8 @@ ${selectedTone.signature}`;
                       </div>
 
                       {/* Download Section - Mobile Optimized */}
-                      <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-4 sm:p-6">
-                        <h4 className="font-semibold text-purple-400 mb-3 sm:mb-4 flex items-center text-sm sm:text-base">
+                      <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-4 sm:p-6">
+                        <h4 className="font-semibold text-emerald-400 mb-3 sm:mb-4 flex items-center text-sm sm:text-base">
                           <ArrowDownTrayIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                           Professional Downloads
                         </h4>
@@ -1253,15 +1253,15 @@ ${selectedTone.signature}`;
                           <button
                             onClick={() => downloadCoverLetter('docx')}
                             disabled={!formData.content.trim() || downloadingFormat === 'docx'}
-                            className="p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg hover:bg-blue-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-h-[72px]"
+                            className="p-3 bg-teal-500/10 border border-teal-500/30 rounded-lg hover:bg-teal-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-h-[72px]"
                           >
                             <div className="text-center">
                               {downloadingFormat === 'docx' ? (
-                                <div className="w-5 h-5 sm:w-6 sm:h-6 border-2 border-blue-400 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                                <div className="w-5 h-5 sm:w-6 sm:h-6 border-2 border-teal-400 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
                               ) : (
-                                <DocumentTextIcon className="w-5 h-5 sm:w-6 sm:h-6 text-blue-400 mx-auto mb-2" />
+                                <DocumentTextIcon className="w-5 h-5 sm:w-6 sm:h-6 text-teal-400 mx-auto mb-2" />
                               )}
-                              <span className="text-xs sm:text-sm text-blue-400">
+                              <span className="text-xs sm:text-sm text-teal-400">
                                 {downloadingFormat === 'docx' ? 'Generating...' : 'DOCX'}
                               </span>
                             </div>
@@ -1321,7 +1321,7 @@ ${selectedTone.signature}`;
                               <p className="text-sm text-dark-text-muted">Match Score</p>
                             </div>
                             <div className="text-center">
-                              <div className="text-3xl font-bold text-blue-400 mb-2">
+                              <div className="text-3xl font-bold text-teal-400 mb-2">
                                 {analysisResults.wordCount}
                               </div>
                               <p className="text-sm text-dark-text-muted">Words</p>

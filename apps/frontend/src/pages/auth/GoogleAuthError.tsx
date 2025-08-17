@@ -110,7 +110,7 @@ export default function GoogleAuthError() {
         </div>
 
         {/* Help text */}
-        <div className="mt-6 p-3 rounded-lg bg-dark-tertiary/50 border border-dark-border/50 backdrop-blur-sm">
+        <div className="mt-6 p-3 rounded-lg bg-gray-700/50 border border-dark-border/50 backdrop-blur-sm">
           <p className="text-xs text-dark-text-muted">
             If you continue to experience issues, try clearing your browser cookies or using a different browser.
           </p>

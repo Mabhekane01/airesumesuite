@@ -40,7 +40,7 @@ const conversionOptions: ConversionOption[] = [
     label: 'Microsoft Word',
     description: 'Convert to editable DOCX document',
     icon: FileText,
-    color: 'from-blue-500 to-blue-600',
+    color: 'from-blue-500 to-teal-600',
     endpoint: buildPdfServiceUrl('/api/pdf/advanced/convert-to-word'),
     mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     fileExtension: 'docx'
@@ -80,7 +80,7 @@ const conversionOptions: ConversionOption[] = [
     label: 'HTML Web Page',
     description: 'Convert to HTML with formatting',
     icon: Globe,
-    color: 'from-purple-500 to-purple-600',
+    color: 'from-emerald-500 to-purple-600',
     endpoint: buildPdfServiceUrl('/api/pdf/advanced/convert-to-html'),
     mimeType: 'text/html',
     fileExtension: 'html'
@@ -222,7 +222,7 @@ export default function ConvertPDFTool({ activeFile, onFileUpload }: ConvertPDFT
         <div className="max-w-4xl mx-auto space-y-8">
           {/* Header */}
           <div className="text-center">
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-black/40 backdrop-blur-xl border border-gray-600/30 shadow-2xl mb-6">
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gray-900/40 backdrop-blur-xl border border-gray-600/30 shadow-2xl mb-6">
               <Zap className="w-10 h-10 text-white" />
             </div>
             <h2 className="text-4xl font-bold text-white mb-3">Convert PDF</h2>
@@ -232,9 +232,9 @@ export default function ConvertPDFTool({ activeFile, onFileUpload }: ConvertPDFT
           </div>
 
           {/* Main Content */}
-          <div className="bg-black/20 backdrop-blur-xl border border-gray-600/20 rounded-2xl p-8">
+          <div className="bg-gray-900/20 backdrop-blur-xl border border-gray-600/20 rounded-2xl p-8">
             <div className="text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-xl bg-black/30 mb-6">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-xl bg-gray-900/30 mb-6">
                 <Zap className="w-8 h-8 text-white" />
               </div>
               
@@ -253,7 +253,7 @@ export default function ConvertPDFTool({ activeFile, onFileUpload }: ConvertPDFT
                 Choose PDF File
               </label>
               
-              <div className="bg-black/30 backdrop-blur-xl border border-gray-600/30 rounded-xl p-6">
+              <div className="bg-gray-900/30 backdrop-blur-xl border border-gray-600/30 rounded-xl p-6">
                 <h3 className="text-lg font-bold text-white mb-3">Conversion Formats</h3>
                 <div className="space-y-2 text-gray-300 text-sm">
                   <p>• Microsoft Word (.docx)</p>
@@ -275,7 +275,7 @@ export default function ConvertPDFTool({ activeFile, onFileUpload }: ConvertPDFT
       <div className="max-w-5xl mx-auto space-y-8">
         {/* Header */}
         <div className="text-center">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-black/40 backdrop-blur-xl border border-gray-600/30 shadow-2xl mb-6">
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gray-900/40 backdrop-blur-xl border border-gray-600/30 shadow-2xl mb-6">
             <Zap className="w-10 h-10 text-white" />
           </div>
           <h2 className="text-4xl font-bold text-white mb-3">Convert PDF</h2>
@@ -307,9 +307,9 @@ export default function ConvertPDFTool({ activeFile, onFileUpload }: ConvertPDFT
         )}
 
         {success && (
-          <div className="bg-black/20 backdrop-blur-xl border border-green-500/30 rounded-xl p-4">
+          <div className="bg-gray-900/20 backdrop-blur-xl border border-green-500/30 rounded-xl p-4">
             <div className="flex items-center">
-              <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-black/40 mr-4">
+              <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gray-900/40 mr-4">
                 <CheckCircle className="w-5 h-5 text-green-400" />
               </div>
               <div className="text-green-300">{success}</div>
@@ -329,8 +329,8 @@ export default function ConvertPDFTool({ activeFile, onFileUpload }: ConvertPDFT
                 key={option.id}
                 className={clsx(
                   'group relative cursor-pointer transition-all duration-300',
-                  'bg-black/20 backdrop-blur-xl border border-gray-600/20 rounded-2xl',
-                  'hover:bg-black/40 hover:border-gray-500/40 hover:scale-105 hover:shadow-2xl',
+                  'bg-gray-900/20 backdrop-blur-xl border border-gray-600/20 rounded-2xl',
+                  'hover:bg-gray-900/40 hover:border-gray-500/40 hover:scale-105 hover:shadow-2xl',
                   isSelected && isConverting && 'ring-2 ring-gray-400/50 bg-gray-800/30 border-gray-500/50'
                 )}
                 onClick={() => !isConverting && handleConvert(option.id)}
@@ -364,7 +364,7 @@ export default function ConvertPDFTool({ activeFile, onFileUpload }: ConvertPDFT
                         'inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300',
                         isCurrentlyConverting 
                           ? 'bg-gray-700/40 text-gray-200 border border-gray-500/50' 
-                          : 'bg-black/30 text-gray-300 hover:bg-black/50 hover:text-white border border-gray-600/30 hover:border-gray-500/50'
+                          : 'bg-gray-900/30 text-gray-300 hover:bg-gray-900/50 hover:text-white border border-gray-600/30 hover:border-gray-500/50'
                       )}>
                         {isCurrentlyConverting ? (
                           <>
@@ -390,9 +390,9 @@ export default function ConvertPDFTool({ activeFile, onFileUpload }: ConvertPDFT
         </div>
 
         {/* Info Footer */}
-        <div className="bg-black/20 backdrop-blur-xl border border-gray-600/20 rounded-2xl p-6">
+        <div className="bg-gray-900/20 backdrop-blur-xl border border-gray-600/20 rounded-2xl p-6">
           <div className="flex items-start space-x-4">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-black/40 flex-shrink-0">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gray-900/40 flex-shrink-0">
               <Zap className="w-6 h-6 text-white" />
             </div>
             <div>

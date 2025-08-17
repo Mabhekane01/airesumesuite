@@ -65,7 +65,7 @@ export default function HobbiesForm() {
               onClick={() => removeHobby(index)}
               variant="outline"
               size="sm"
-              className="accent-danger hover:bg-dark-primary/20"
+              className="accent-danger hover:bg-gray-900/20"
             >
               <TrashIcon className="w-4 h-4" />
             </Button>

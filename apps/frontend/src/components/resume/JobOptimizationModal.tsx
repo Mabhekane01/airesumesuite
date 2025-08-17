@@ -493,13 +493,13 @@ export default function JobOptimizationModal({
               <div className="flex items-center justify-between mb-3">
                 <h4 className="font-semibold text-dark-text-primary">ATS Compatibility</h4>
                 <div className="flex items-center">
-                  <ChartBarIcon className="w-4 h-4 text-blue-400 mr-1" />
-                  <span className="text-lg font-bold text-blue-400">
+                  <ChartBarIcon className="w-4 h-4 text-teal-400 mr-1" />
+                  <span className="text-lg font-bold text-teal-400">
                     {optimizationResult.atsAnalysis.score}%
                   </span>
                 </div>
               </div>
-              <div className="w-full bg-dark-secondary rounded-full h-2">
+              <div className="w-full bg-gray-800 rounded-full h-2">
                 <div
                   className="bg-blue-400 h-2 rounded-full transition-all duration-500"
                   style={{ width: `${optimizationResult.atsAnalysis.score}%` }}

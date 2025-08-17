@@ -166,7 +166,7 @@ const PDFFromBlob = ({ blobUrl, pdfBlob, title, isFullscreenMode, onFullscreen, 
     return (
       <div className="flex items-center justify-center w-full h-full min-h-96 bg-white">
         <div className="text-center">
-          <ArrowPathIcon className="h-8 w-8 animate-spin text-blue-500 mx-auto mb-4" />
+          <ArrowPathIcon className="h-8 w-8 animate-spin text-teal-500 mx-auto mb-4" />
           <p className="text-gray-600">Converting PDF for display...</p>
         </div>
       </div>
@@ -224,7 +224,7 @@ const PDFFromBlob = ({ blobUrl, pdfBlob, title, isFullscreenMode, onFullscreen, 
       />
       
       {/* Hover Overlay - shows on hover */}
-      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer pointer-events-none">
+      <div className="absolute inset-0 bg-gray-900/0 group-hover:bg-gray-900/10 transition-all duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer pointer-events-none">
         <div 
           className="bg-white/90 backdrop-blur-sm rounded-lg px-4 py-2 shadow-lg flex items-center space-x-2 pointer-events-auto"
           onClick={(e) => {
@@ -818,7 +818,7 @@ export default function PDFPreview({
 
     if (loading) {
       return (
-        <div className="flex items-center justify-center h-full min-h-96 bg-dark-tertiary rounded-lg">
+        <div className="flex items-center justify-center h-full min-h-96 bg-gray-700 rounded-lg">
           <div className="text-center">
             <ArrowPathIcon className="h-8 w-8 animate-spin text-accent-primary mx-auto mb-4" />
             <p className="text-dark-text-secondary">Generating LaTeX PDF preview...</p>
@@ -830,7 +830,7 @@ export default function PDFPreview({
 
     if (error) {
       return (
-        <div className="flex items-center justify-center h-full min-h-96 bg-dark-tertiary rounded-lg border border-accent-danger/30">
+        <div className="flex items-center justify-center h-full min-h-96 bg-gray-700 rounded-lg border border-accent-danger/30">
           <div className="text-center">
             <DocumentTextIcon className="h-12 w-12 text-accent-danger mx-auto mb-4" />
             <p className="text-accent-danger mb-2">Failed to load PDF preview</p>
@@ -851,7 +851,7 @@ export default function PDFPreview({
 
     if (!actualPdfUrl) {
       return (
-        <div className="flex items-center justify-center h-full min-h-96 bg-dark-tertiary rounded-lg">
+        <div className="flex items-center justify-center h-full min-h-96 bg-gray-700 rounded-lg">
           <div className="text-center">
             <DocumentTextIcon className="h-12 w-12 text-dark-text-muted mx-auto mb-4" />
             <p className="text-dark-text-secondary">No PDF available</p>
@@ -1025,7 +1025,7 @@ export default function PDFPreview({
 
       {/* Fullscreen Modal */}
       {isFullscreen && (
-        <div className="fixed inset-0 z-50 bg-dark-primary">
+        <div className="fixed inset-0 z-50 bg-gray-900">
           <div className="absolute top-4 right-4 z-10">
             <Button
               onClick={handleCloseFullscreen}

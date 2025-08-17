@@ -425,7 +425,7 @@ export default function AdvancedPDFCanvas({ file, onSave, onTextChange }: Advanc
       <Card>
         <div className="flex items-center justify-center h-96">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-500 mx-auto mb-4"></div>
             <p className="text-gray-600">Loading PDF for advanced editing...</p>
           </div>
         </div>
@@ -571,7 +571,7 @@ export default function AdvancedPDFCanvas({ file, onSave, onTextChange }: Advanc
             <Button size="sm" variant="outline" onClick={() => setZoom(prev => Math.min(prev + 0.25, 3))}>
               <ZoomIn size={16} />
             </Button>
-            <Button onClick={handleSave} className="bg-blue-600 hover:bg-blue-700">
+            <Button onClick={handleSave} className="bg-teal-600 hover:bg-blue-700">
               <Save size={16} />
               Save Changes
             </Button>
@@ -634,7 +634,7 @@ export default function AdvancedPDFCanvas({ file, onSave, onTextChange }: Advanc
                     }
                   }}
                   autoFocus
-                  className="w-full h-full bg-transparent border-2 border-blue-500 resize-none outline-none"
+                  className="w-full h-full bg-transparent border-2 border-teal-500 resize-none outline-none"
                   style={{
                     fontSize: element.fontSize * zoom,
                     fontFamily: element.fontFamily,

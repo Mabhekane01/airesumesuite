@@ -93,13 +93,13 @@ const quickActions = [
     name: "New Application",
     href: "/dashboard/applications/new",
     icon: PlusIcon,
-    color: "bg-purple-600",
+    color: "bg-emerald-600",
   },
   {
     name: "Build AI Resume",
     href: "/dashboard/resume/templates",
     icon: DocumentTextIcon,
-    color: "bg-blue-600",
+    color: "bg-teal-600",
   },
 ];
 
@@ -199,7 +199,7 @@ export default function DashboardLayout() {
       {/* Sidebar */}
       <div
         className={`
-        fixed inset-y-0 left-0 z-50 w-64 bg-dark-secondary/95 backdrop-blur-lg shadow-dark-xl border-r border-dark-border transform transition-transform duration-300 ease-in-out lg:relative lg:transform-none lg:translate-x-0 lg:flex-shrink-0
+        fixed inset-y-0 left-0 z-50 w-64 bg-gray-800/95 backdrop-blur-lg shadow-dark-xl border-r border-dark-border transform transition-transform duration-300 ease-in-out lg:relative lg:transform-none lg:translate-x-0 lg:flex-shrink-0
         ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
       `}
       >
@@ -279,7 +279,7 @@ export default function DashboardLayout() {
       {/* Main content */}
       <div className="flex-1 flex flex-col lg:ml-0 min-w-0">
         {/* Top header */}
-        <header className="bg-dark-secondary/95 backdrop-blur-lg shadow-dark-lg border-b border-dark-border overflow-visible relative z-50">
+        <header className="bg-gray-800/95 backdrop-blur-lg shadow-dark-lg border-b border-dark-border overflow-visible relative z-50">
           <div className="flex items-center justify-between h-16 px-4 sm:px-6 overflow-visible relative">
             <div className="flex items-center space-x-2 sm:space-x-4 flex-1">
               <button
@@ -302,7 +302,7 @@ export default function DashboardLayout() {
                     <span className="group-hover:text-dark-text-primary transition-colors">
                       Search resumes, applications, cover letters...
                     </span>
-                    <span className="float-right text-xs bg-dark-tertiary group-hover:bg-dark-quaternary px-2 py-1 rounded transition-colors">
+                    <span className="float-right text-xs bg-gray-700 group-hover:bg-dark-quaternary px-2 py-1 rounded transition-colors">
                       ⌘K
                     </span>
                   </button>
@@ -313,7 +313,7 @@ export default function DashboardLayout() {
               <div className="md:hidden flex-1 max-w-[200px] min-w-0">
                 <button 
                   onClick={() => setSearchModalOpen(true)}
-                  className="w-full flex items-center justify-start px-2 sm:px-3 py-2 bg-dark-tertiary/50 hover:bg-dark-tertiary/70 border border-dark-border hover:border-dark-border/80 rounded-lg transition-all duration-200 text-left group active:scale-[0.98]"
+                  className="w-full flex items-center justify-start px-2 sm:px-3 py-2 bg-gray-700/50 hover:bg-gray-700/70 border border-dark-border hover:border-dark-border/80 rounded-lg transition-all duration-200 text-left group active:scale-[0.98]"
                 >
                   <MagnifyingGlassIcon className="w-4 h-4 text-dark-text-muted group-hover:text-dark-text-primary mr-2 flex-shrink-0 transition-colors" />
                   <span className="text-sm text-dark-text-muted group-hover:text-dark-text-primary truncate transition-colors hidden xs:inline">
@@ -334,7 +334,7 @@ export default function DashboardLayout() {
               <div className="relative notifications-container z-50">
                 <button
                   onClick={() => setShowNotifications(!showNotifications)}
-                  className="p-1.5 sm:p-2 text-dark-text-muted hover:text-dark-text-primary relative focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-offset-2 focus:ring-offset-dark-secondary rounded-lg transition-all duration-300 hover:bg-dark-tertiary/50"
+                  className="p-1.5 sm:p-2 text-dark-text-muted hover:text-dark-text-primary relative focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-offset-2 focus:ring-offset-dark-secondary rounded-lg transition-all duration-300 hover:bg-gray-700/50"
                 >
                   <BellIcon className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />
                   {unreadCount > 0 && (
@@ -399,7 +399,7 @@ export default function DashboardLayout() {
                           {notifications.map((notification) => (
                             <div
                               key={notification._id}
-                              className={`px-4 py-3 hover:bg-dark-tertiary/60 transition-all duration-200 cursor-pointer border-l-2 ${
+                              className={`px-4 py-3 hover:bg-gray-700/60 transition-all duration-200 cursor-pointer border-l-2 ${
                                 notification.read 
                                   ? 'border-transparent' 
                                   : 'border-accent-primary bg-accent-primary/5'
@@ -418,7 +418,7 @@ export default function DashboardLayout() {
                                     <div className="h-2 w-2 bg-red-500 rounded-full"></div>
                                   )}
                                   {notification.type === 'info' && (
-                                    <div className="h-2 w-2 bg-blue-500 rounded-full"></div>
+                                    <div className="h-2 w-2 bg-teal-500 rounded-full"></div>
                                   )}
                                 </div>
                                 <div className="flex-1 min-w-0">

@@ -141,13 +141,13 @@ export default function ApplicationAnalytics() {
   if (loading) {
     return (
       <div className="animate-pulse space-y-6">
-        <div className="h-8 bg-dark-secondary/20 rounded w-1/4"></div>
+        <div className="h-8 bg-gray-800/20 rounded w-1/4"></div>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-24 bg-dark-secondary/20 rounded-lg"></div>
+            <div key={i} className="h-24 bg-gray-800/20 rounded-lg"></div>
           ))}
         </div>
-        <div className="h-64 bg-dark-secondary/20 rounded-lg"></div>
+        <div className="h-64 bg-gray-800/20 rounded-lg"></div>
       </div>
     );
   }
@@ -189,7 +189,7 @@ export default function ApplicationAnalytics() {
               <option value="all">All</option>
             </select>
           </div>
-          <div className="px-3 py-2 bg-purple-600/20 text-purple-400 rounded-lg text-xs sm:text-sm flex items-center justify-center space-x-2 min-w-0">
+          <div className="px-3 py-2 bg-emerald-600/20 text-emerald-400 rounded-lg text-xs sm:text-sm flex items-center justify-center space-x-2 min-w-0">
             <span>🐉</span>
             <span className="hidden sm:inline whitespace-nowrap">Dragon Game Below!</span>
             <span className="sm:hidden">Game Below!</span>
@@ -206,8 +206,8 @@ export default function ApplicationAnalytics() {
               <p className="text-xs sm:text-sm font-medium text-dark-text-secondary truncate">Total Applications</p>
               <p className="text-xl sm:text-2xl font-bold text-dark-text-primary">{overview.totalApplications}</p>
             </div>
-            <div className="p-2 sm:p-3 bg-blue-500/20 rounded-lg flex-shrink-0">
-              <BuildingOfficeIcon className="w-5 h-5 sm:w-6 sm:h-6 text-blue-400" />
+            <div className="p-2 sm:p-3 bg-teal-500/20 rounded-lg flex-shrink-0">
+              <BuildingOfficeIcon className="w-5 h-5 sm:w-6 sm:h-6 text-teal-400" />
             </div>
           </div>
           {analyticsData.trends?.applicationsTrend && (
@@ -268,8 +268,8 @@ export default function ApplicationAnalytics() {
               <p className="text-xs sm:text-sm font-medium text-dark-text-secondary truncate">Interview Rate</p>
               <p className="text-xl sm:text-2xl font-bold text-dark-text-primary">{overview.interviewRate.toFixed(1)}%</p>
             </div>
-            <div className="p-2 sm:p-3 bg-purple-500/20 rounded-lg flex-shrink-0">
-              <UserGroupIcon className="w-5 h-5 sm:w-6 sm:h-6 text-purple-400" />
+            <div className="p-2 sm:p-3 bg-emerald-500/20 rounded-lg flex-shrink-0">
+              <UserGroupIcon className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-400" />
             </div>
           </div>
           {analyticsData.trends?.interviewRateTrend && (
@@ -353,7 +353,7 @@ export default function ApplicationAnalytics() {
           </div>
           
           {/* Metric explanation */}
-          <div className="mb-4 p-3 bg-dark-secondary/30 rounded-lg overflow-hidden">
+          <div className="mb-4 p-3 bg-gray-800/30 rounded-lg overflow-hidden">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-sm">
               <span className="text-dark-text-secondary text-xs sm:text-sm">
                 {selectedTrendMetric === 'applications' && 'Total job applications you submitted'}
@@ -433,7 +433,7 @@ export default function ApplicationAnalytics() {
           </div>
           
           {/* Performance insight */}
-          <div className="mb-4 p-3 bg-dark-secondary/30 rounded-lg overflow-hidden">
+          <div className="mb-4 p-3 bg-gray-800/30 rounded-lg overflow-hidden">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-sm">
               <span className="text-dark-text-secondary text-xs sm:text-sm">
                 {selectedMonthlyMetric === 'applications' && 'Monthly application volume shows your activity level'}
@@ -474,7 +474,7 @@ export default function ApplicationAnalytics() {
                     {stage.count} ({stage.percentage}%)
                   </span>
                 </div>
-                <div className="w-full bg-dark-secondary/20 rounded-full h-3">
+                <div className="w-full bg-gray-800/20 rounded-full h-3">
                   <div
                     className="bg-gradient-to-r from-blue-500 to-purple-500 h-3 rounded-full transition-all duration-300"
                     style={{ width: `${stage.percentage}%` }}
@@ -515,14 +515,14 @@ export default function ApplicationAnalytics() {
                 const progressWidth = Math.max((company.applications / Math.max(...insights.topCompanies.map(c => c.applications))) * 100, 5);
                 
                 return (
-                  <div key={company.company} className="group hover:bg-dark-secondary/20 rounded-lg p-3 transition-colors">
+                  <div key={company.company} className="group hover:bg-gray-800/20 rounded-lg p-3 transition-colors">
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center space-x-3">
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
                           index === 0 ? 'bg-yellow-500/20 text-yellow-400' :
                           index === 1 ? 'bg-gray-400/20 text-gray-400' :
                           index === 2 ? 'bg-orange-500/20 text-orange-400' :
-                          'bg-blue-500/20 text-blue-400'
+                          'bg-teal-500/20 text-teal-400'
                         }`}>
                           {index + 1}
                         </div>
@@ -547,7 +547,7 @@ export default function ApplicationAnalytics() {
                     </div>
                     
                     {/* Progress bar showing relative application volume */}
-                    <div className="w-full bg-dark-secondary/30 rounded-full h-2 mt-2">
+                    <div className="w-full bg-gray-800/30 rounded-full h-2 mt-2">
                       <div
                         className="bg-dark-accent rounded-full h-2 transition-all duration-500"
                         style={{ width: `${progressWidth}%` }}
@@ -603,10 +603,10 @@ export default function ApplicationAnalytics() {
                 const volumeWidth = (source.count / maxApplications) * 100;
                 
                 return (
-                  <div key={source.source} className="group hover:bg-dark-secondary/20 rounded-lg p-3 transition-colors">
+                  <div key={source.source} className="group hover:bg-gray-800/20 rounded-lg p-3 transition-colors">
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
-                        <div className="w-8 h-8 sm:w-10 sm:h-10 bg-dark-secondary/30 rounded-lg flex items-center justify-center text-base sm:text-lg flex-shrink-0">
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gray-800/30 rounded-lg flex items-center justify-center text-base sm:text-lg flex-shrink-0">
                           {icon}
                         </div>
                         <div className="min-w-0">
@@ -616,7 +616,7 @@ export default function ApplicationAnalytics() {
                           <p className="text-xs text-dark-text-muted">
                             {source.count} application{source.count !== 1 ? 's' : ''}
                           </p>
-                          <p className="text-xs text-blue-400 mt-1 opacity-75 hidden sm:block">
+                          <p className="text-xs text-teal-400 mt-1 opacity-75 hidden sm:block">
                             {sourceInfo.tip}
                           </p>
                         </div>
@@ -638,9 +638,9 @@ export default function ApplicationAnalytics() {
                         <span>Volume</span>
                         <span>{((source.count / insights.applicationsBySource.reduce((sum, s) => sum + s.count, 0)) * 100).toFixed(0)}% of total</span>
                       </div>
-                      <div className="w-full bg-dark-secondary/30 rounded-full h-2">
+                      <div className="w-full bg-gray-800/30 rounded-full h-2">
                         <div
-                          className="bg-blue-500 rounded-full h-2 transition-all duration-500"
+                          className="bg-teal-500 rounded-full h-2 transition-all duration-500"
                           style={{ width: `${volumeWidth}%` }}
                         />
                       </div>
@@ -652,7 +652,7 @@ export default function ApplicationAnalytics() {
                         <span>Success Rate</span>
                         <span>{source.conversionRate?.toFixed(1) || 0}%</span>
                       </div>
-                      <div className="w-full bg-dark-secondary/30 rounded-full h-2">
+                      <div className="w-full bg-gray-800/30 rounded-full h-2">
                         <div
                           className={`rounded-full h-2 transition-all duration-500 ${
                             source.conversionRate >= 20 ? 'bg-green-500' :
@@ -668,7 +668,7 @@ export default function ApplicationAnalytics() {
             </div>
           ) : (
             <div className="text-center py-8">
-              <div className="w-12 h-12 bg-dark-secondary/30 rounded-lg flex items-center justify-center text-2xl mx-auto mb-3">
+              <div className="w-12 h-12 bg-gray-800/30 rounded-lg flex items-center justify-center text-2xl mx-auto mb-3">
                 📊
               </div>
               <p className="text-dark-text-secondary">No application sources data</p>
@@ -696,7 +696,7 @@ export default function ApplicationAnalytics() {
           <p className="text-xs text-dark-text-muted">
             Need a mental break from job searching? Guide your dragon to collect gems and grow stronger! 
             <br />
-            <span className="text-purple-400">💎 Collect gems to grow</span> • 
+            <span className="text-emerald-400">💎 Collect gems to grow</span> • 
             <span className="text-red-400 ml-2">🔥 Fire power-ups</span> • 
             <span className="text-yellow-400 ml-2">⚡ Speed boosts</span>
           </p>

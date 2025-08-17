@@ -20,10 +20,10 @@ export function Button({
   const baseClasses = 'inline-flex items-center justify-center font-medium rounded-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-dark-primary disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105';
   
   const variantClasses = {
-    primary: 'bg-gradient-to-r from-accent-primary to-accent-secondary text-white hover:from-purple-600 hover:to-cyan-500 focus:ring-accent-primary shadow-glow-sm hover:shadow-glow-md',
-    secondary: 'bg-dark-tertiary text-dark-text-primary hover:bg-dark-quaternary focus:ring-accent-primary border border-dark-border hover:border-accent-primary/50',
+    primary: 'bg-gradient-to-r from-accent-primary to-accent-secondary text-white hover:from-emerald-600 hover:to-cyan-500 focus:ring-accent-primary shadow-glow-sm hover:shadow-glow-md',
+    secondary: 'bg-gray-700 text-dark-text-primary hover:bg-dark-quaternary focus:ring-accent-primary border border-dark-border hover:border-accent-primary/50',
     outline: 'border border-accent-primary bg-transparent text-accent-primary hover:bg-accent-primary/10 focus:ring-accent-primary hover:shadow-glow-sm',
-    ghost: 'text-dark-text-secondary hover:bg-dark-tertiary/60 hover:text-accent-primary focus:ring-accent-primary',
+    ghost: 'text-dark-text-secondary hover:bg-gray-700/60 hover:text-accent-primary focus:ring-accent-primary',
     danger: 'bg-accent-danger text-white hover:bg-red-700 focus:ring-accent-danger shadow-glow-sm hover:shadow-red-500/50'
   };
 

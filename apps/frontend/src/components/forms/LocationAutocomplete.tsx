@@ -233,7 +233,7 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
           required={required}
           className={`
             w-full px-4 py-3 pr-10 border rounded-lg shadow-sm 
-            focus:ring-2 focus:ring-blue-500 focus:border-blue-500 
+            focus:ring-2 focus:ring-teal-500 focus:border-teal-500 
             disabled:bg-gray-50 disabled:text-gray-500
             ${error ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-gray-300'}
           `}
@@ -241,7 +241,7 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
         
         <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
           {isLoading ? (
-            <div className="animate-spin h-4 w-4 border-2 border-blue-500 border-t-transparent rounded-full" />
+            <div className="animate-spin h-4 w-4 border-2 border-teal-500 border-t-transparent rounded-full" />
           ) : (
             <ChevronDownIcon className={`h-4 w-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
           )}
@@ -261,7 +261,7 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
                   key={option.id}
                   className={`
                     px-4 py-3 cursor-pointer flex items-center space-x-3 hover:bg-gray-50
-                    ${index === selectedIndex ? 'bg-blue-50 border-l-4 border-blue-500' : ''}
+                    ${index === selectedIndex ? 'bg-blue-50 border-l-4 border-teal-500' : ''}
                   `}
                   onClick={() => handleOptionSelect(option)}
                 >

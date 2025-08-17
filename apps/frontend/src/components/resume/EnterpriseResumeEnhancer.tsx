@@ -1108,7 +1108,7 @@ export default function EnterpriseResumeEnhancer({
     icon: any;
     color: string;
   }) => (
-    <div className="bg-dark-secondary rounded-lg p-4 border border-dark-border">
+    <div className="bg-gray-800 rounded-lg p-4 border border-dark-border">
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
           <Icon className={`w-5 h-5 ${color}`} />
@@ -1118,7 +1118,7 @@ export default function EnterpriseResumeEnhancer({
         </div>
         <span className={`text-lg font-bold ${color}`}>{score}%</span>
       </div>
-      <div className="w-full bg-dark-tertiary rounded-full h-2">
+      <div className="w-full bg-gray-700 rounded-full h-2">
         <div
           className={`h-2 rounded-full transition-all duration-500 ${
             score >= 80
@@ -1153,7 +1153,7 @@ export default function EnterpriseResumeEnhancer({
   return (
     <div className="space-y-6">
       {/* Tab Navigation - Clean Horizontal Scroll */}
-      <div className="bg-dark-secondary rounded-lg p-1 overflow-x-auto">
+      <div className="bg-gray-800 rounded-lg p-1 overflow-x-auto">
         <div className="flex space-x-1 min-w-max">
           {[
             { id: "preview", label: "Preview", icon: EyeIcon, free: true },
@@ -1181,8 +1181,8 @@ export default function EnterpriseResumeEnhancer({
               onClick={() => setActiveTab(tab.id as any)}
               className={`flex items-center gap-2 px-3 md:px-4 py-2.5 rounded-md text-sm font-medium transition-all duration-200 whitespace-nowrap ${
                 activeTab === tab.id
-                  ? "bg-blue-600 text-white shadow-lg"
-                  : "text-dark-text-secondary hover:text-dark-text-primary hover:bg-dark-tertiary"
+                  ? "bg-teal-600 text-white shadow-lg"
+                  : "text-dark-text-secondary hover:text-dark-text-primary hover:bg-gray-700"
               }`}
             >
               <tab.icon className="w-4 h-4 flex-shrink-0" />
@@ -1295,7 +1295,7 @@ export default function EnterpriseResumeEnhancer({
             {loadingTemplate ? (
               <div className="flex items-center justify-center h-full bg-gray-100">
                 <div className="text-center">
-                  <ArrowPathIcon className="h-8 w-8 animate-spin text-blue-600 mx-auto mb-4" />
+                  <ArrowPathIcon className="h-8 w-8 animate-spin text-teal-600 mx-auto mb-4" />
                   <p className="text-gray-600">Loading template...</p>
                 </div>
               </div>
@@ -1340,7 +1340,7 @@ export default function EnterpriseResumeEnhancer({
                 title="Overall Quality"
                 score={aiAnalysis.overallScore}
                 icon={SparklesIcon}
-                color="text-blue-400"
+                color="text-teal-400"
               />
               <ScoreCard
                 title="ATS Compatibility"
@@ -1352,14 +1352,14 @@ export default function EnterpriseResumeEnhancer({
                 title="Keyword Density"
                 score={aiAnalysis.keywordDensity}
                 icon={MagnifyingGlassIcon}
-                color="text-purple-400"
+                color="text-emerald-400"
               />
             </div>
             {resume.isLatexTemplate && (
-              <div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 rounded-lg">
+              <div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-teal-500/20 rounded-lg">
                 <div className="flex items-center gap-2 mb-2">
-                  <DocumentTextIcon className="w-4 h-4 text-blue-400 flex-shrink-0" />
-                  <span className="text-sm font-medium text-blue-400">
+                  <DocumentTextIcon className="w-4 h-4 text-teal-400 flex-shrink-0" />
+                  <span className="text-sm font-medium text-teal-400">
                     LaTeX Enhanced
                   </span>
                 </div>
@@ -1382,7 +1382,7 @@ export default function EnterpriseResumeEnhancer({
                     <Button
                       onClick={runComprehensiveAnalysis}
                       disabled={analysisProgress.isLoading}
-                      className="w-full bg-blue-600 hover:bg-blue-700 py-3 sm:py-3 text-sm sm:text-base"
+                      className="w-full bg-teal-600 hover:bg-blue-700 py-3 sm:py-3 text-sm sm:text-base"
                     >
                       {analysisProgress.isLoading
                         ? "Analyzing..."
@@ -1394,7 +1394,7 @@ export default function EnterpriseResumeEnhancer({
                       disabled={
                         analysisProgress.isLoading || aiEnhancementLoading
                       }
-                      className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 py-3 sm:py-3 text-sm sm:text-base"
+                      className="w-full bg-gradient-to-r from-emerald-600 to-pink-600 hover:from-emerald-700 hover:to-pink-700 py-3 sm:py-3 text-sm sm:text-base"
                     >
                       <EyeIcon className="w-4 h-4 mr-2 flex-shrink-0" />
                       <span className="truncate">
@@ -1417,8 +1417,8 @@ export default function EnterpriseResumeEnhancer({
               ) : (
                 <div className="space-y-3 sm:space-y-4">
                   {/* Main CTA Card - Mobile Optimized */}
-                  <div className="text-center p-4 sm:p-6 bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 rounded-lg">
-                    <SparklesIcon className="w-8 h-8 sm:w-10 sm:h-10 text-blue-400 mx-auto mb-3 sm:mb-4" />
+                  <div className="text-center p-4 sm:p-6 bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-teal-500/20 rounded-lg">
+                    <SparklesIcon className="w-8 h-8 sm:w-10 sm:h-10 text-teal-400 mx-auto mb-3 sm:mb-4" />
                     <h4 className="text-base sm:text-lg font-semibold text-dark-text-primary mb-2 sm:mb-3">
                       Unlock AI-Powered Analysis
                     </h4>
@@ -1441,7 +1441,7 @@ export default function EnterpriseResumeEnhancer({
                       onClick={startAIEnhancementReview}
                       disabled={aiEnhancementLoading}
                       variant="outline"
-                      className="w-full border-purple-500/30 text-purple-400 hover:bg-purple-500/10 py-3 sm:py-3 text-sm sm:text-base"
+                      className="w-full border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 py-3 sm:py-3 text-sm sm:text-base"
                     >
                       <EyeIcon className="w-4 h-4 mr-2 flex-shrink-0" />
                       <span className="truncate">
@@ -1482,7 +1482,7 @@ export default function EnterpriseResumeEnhancer({
                       title="Overall Score"
                       score={aiAnalysis.overallScore}
                       icon={SparklesIcon}
-                      color="text-blue-400"
+                      color="text-teal-400"
                     />
                     <ScoreCard
                       title="ATS Score"
@@ -1494,7 +1494,7 @@ export default function EnterpriseResumeEnhancer({
                       title="Content Quality"
                       score={aiAnalysis.contentQuality}
                       icon={DocumentTextIcon}
-                      color="text-purple-400"
+                      color="text-emerald-400"
                     />
                     <ScoreCard
                       title="Industry Alignment"
@@ -1542,7 +1542,7 @@ export default function EnterpriseResumeEnhancer({
                             ? "border-red-500/30 bg-red-500/10"
                             : improvement.priority === "medium"
                               ? "border-yellow-500/30 bg-yellow-500/10"
-                              : "border-blue-500/30 bg-blue-500/10"
+                              : "border-teal-500/30 bg-teal-500/10"
                         }`}
                       >
                         <div className="flex items-center justify-between mb-2">
@@ -1555,7 +1555,7 @@ export default function EnterpriseResumeEnhancer({
                                 ? "bg-red-500/20 text-red-400"
                                 : improvement.priority === "medium"
                                   ? "bg-yellow-500/20 text-yellow-400"
-                                  : "bg-blue-500/20 text-blue-400"
+                                  : "bg-teal-500/20 text-teal-400"
                             }`}
                           >
                             {improvement.priority.toUpperCase()}
@@ -1601,7 +1601,7 @@ export default function EnterpriseResumeEnhancer({
 
                 {analysisProgress.isLoading ? (
                   <div className="space-y-4">
-                    <div className="w-full bg-dark-tertiary rounded-full h-2">
+                    <div className="w-full bg-gray-700 rounded-full h-2">
                       <div
                         className="h-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 transition-all duration-500"
                         style={{ width: `${analysisProgress.progress}%` }}
@@ -1626,7 +1626,7 @@ export default function EnterpriseResumeEnhancer({
                       onClick={startAIEnhancementReview}
                       disabled={aiEnhancementLoading}
                       variant="outline"
-                      className="w-full border-purple-500/30 text-purple-400 hover:bg-purple-500/10"
+                      className="w-full border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10"
                     >
                       <EyeIcon className="w-4 h-4 mr-2" />
                       {aiEnhancementLoading
@@ -1704,7 +1704,7 @@ export default function EnterpriseResumeEnhancer({
                       toast.info("Please use the job optimization modal for the best experience");
                     }
                   }}
-                  className="bg-blue-600 hover:bg-blue-700 flex items-center gap-2 w-full justify-center"
+                  className="bg-teal-600 hover:bg-blue-700 flex items-center gap-2 w-full justify-center"
                 >
                     {jobOptimizationProgress.isLoading ? (
                       <>
@@ -1733,7 +1733,7 @@ export default function EnterpriseResumeEnhancer({
                         title="Overall Match"
                         score={jobMatchAnalysis.matchScore}
                         icon={BriefcaseIcon}
-                        color="text-blue-400"
+                        color="text-teal-400"
                       />
                       <ScoreCard
                         title="Skills Alignment"
@@ -1745,7 +1745,7 @@ export default function EnterpriseResumeEnhancer({
                         title="Experience Match"
                         score={jobMatchAnalysis.experienceMatch}
                         icon={ChartBarIcon}
-                        color="text-purple-400"
+                        color="text-emerald-400"
                       />
                     </div>
                   </div>
@@ -1781,7 +1781,7 @@ export default function EnterpriseResumeEnhancer({
                               key={index}
                               className="text-sm text-dark-text-secondary flex items-start gap-2"
                             >
-                              <SparklesIcon className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" />
+                              <SparklesIcon className="w-4 h-4 text-teal-400 mt-0.5 flex-shrink-0" />
                               {improvement}
                             </li>
                           ))}
@@ -1801,7 +1801,7 @@ export default function EnterpriseResumeEnhancer({
                 {optimizationHistory.slice(0, 5).map((optimization, index) => (
                   <div
                     key={index}
-                    className="flex items-center justify-between p-3 bg-dark-secondary rounded-lg"
+                    className="flex items-center justify-between p-3 bg-gray-800 rounded-lg"
                   >
                     <div>
                       <p className="font-medium text-dark-text-primary">
@@ -1832,8 +1832,8 @@ export default function EnterpriseResumeEnhancer({
         <div className="space-y-6">
           {/* Premium Feature Banner - Only show for free users */}
           {!canUseAI && (
-            <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-lg p-6 text-center">
-              <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="bg-gradient-to-r from-emerald-500/10 to-pink-500/10 border border-emerald-500/20 rounded-lg p-6 text-center">
+              <div className="w-16 h-16 bg-gradient-to-r from-emerald-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4">
                 <ChartBarIcon className="h-8 w-8 text-white" />
               </div>
               <h3 className="text-xl font-semibold text-dark-text-primary mb-2">
@@ -1856,7 +1856,7 @@ export default function EnterpriseResumeEnhancer({
                   <span>Competitive Insights</span>
                 </div>
               </div>
-              <Button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600">
+              <Button className="bg-gradient-to-r from-emerald-500 to-pink-500 hover:from-emerald-600 hover:to-pink-600">
                 Upgrade to Enterprise
               </Button>
             </div>
@@ -1865,8 +1865,8 @@ export default function EnterpriseResumeEnhancer({
           {/* Header for subscribed users */}
           {canUseAI && !aiAnalysis && (
             <div className="card-glass-dark p-8 border border-dark-border rounded-lg text-center mb-6">
-              <div className="w-20 h-20 bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-500/30 rounded-full flex items-center justify-center mx-auto mb-6">
-                <ChartBarIcon className="h-10 w-10 text-purple-400" />
+              <div className="w-20 h-20 bg-gradient-to-br from-emerald-500/20 to-pink-500/20 border border-emerald-500/30 rounded-full flex items-center justify-center mx-auto mb-6">
+                <ChartBarIcon className="h-10 w-10 text-emerald-400" />
               </div>
               <h3 className="text-2xl font-semibold text-dark-text-primary mb-3">
                 Industry Benchmarking
@@ -1877,7 +1877,7 @@ export default function EnterpriseResumeEnhancer({
               <Button 
                 onClick={runComprehensiveAnalysis}
                 disabled={analysisProgress.isLoading}
-                className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-6 py-3 rounded-lg font-medium transition-all duration-300 hover:shadow-glow-sm disabled:opacity-50"
+                className="bg-gradient-to-r from-emerald-500 to-pink-500 hover:from-emerald-600 hover:to-pink-600 text-white px-6 py-3 rounded-lg font-medium transition-all duration-300 hover:shadow-glow-sm disabled:opacity-50"
               >
                 {analysisProgress.isLoading ? (
                   <>
@@ -1907,11 +1907,11 @@ export default function EnterpriseResumeEnhancer({
                       Your Position in{" "}
                       {aiAnalysis.competitorComparison.industry}
                     </span>
-                    <span className="text-2xl font-bold text-blue-400">
+                    <span className="text-2xl font-bold text-teal-400">
                       {aiAnalysis.competitorComparison.percentile}th percentile
                     </span>
                   </div>
-                  <div className="w-full bg-dark-tertiary rounded-full h-3">
+                  <div className="w-full bg-gray-700 rounded-full h-3">
                     <div
                       className="h-3 rounded-full bg-gradient-to-r from-blue-500 to-green-500 transition-all duration-1000"
                       style={{
@@ -1950,14 +1950,14 @@ export default function EnterpriseResumeEnhancer({
 
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="text-center p-3 bg-dark-secondary rounded-lg">
+                    <div className="text-center p-3 bg-gray-800 rounded-lg">
                       <p className="text-2xl font-bold text-green-400">
                         {aiAnalysis.overallScore}%
                       </p>
                       <p className="text-xs text-dark-text-muted">Your Score</p>
                     </div>
-                    <div className="text-center p-3 bg-dark-secondary rounded-lg">
-                      <p className="text-2xl font-bold text-blue-400">78%</p>
+                    <div className="text-center p-3 bg-gray-800 rounded-lg">
+                      <p className="text-2xl font-bold text-teal-400">78%</p>
                       <p className="text-xs text-dark-text-muted">
                         Industry Average
                       </p>

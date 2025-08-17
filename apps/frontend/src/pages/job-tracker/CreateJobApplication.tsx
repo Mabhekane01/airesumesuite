@@ -97,7 +97,7 @@ const APPLICATION_METHODS = [
 ];
 
 const PRIORITY_LEVELS = [
-  { value: 'dream_job', label: 'Dream Job', color: 'text-purple-400' },
+  { value: 'dream_job', label: 'Dream Job', color: 'text-emerald-400' },
   { value: 'high', label: 'High Priority', color: 'text-red-400' },
   { value: 'medium', label: 'Medium Priority', color: 'text-yellow-400' },
   { value: 'low', label: 'Low Priority', color: 'text-green-400' },
@@ -471,7 +471,7 @@ export default function CreateJobApplication() {
             />
           </div>
           
-          <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-6 p-3 bg-dark-secondary/10 rounded-lg border border-dark-border/50">
+          <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-6 p-3 bg-gray-800/10 rounded-lg border border-dark-border/50">
             <label className="flex items-center cursor-pointer">
               <input
                 type="checkbox"
@@ -589,7 +589,7 @@ export default function CreateJobApplication() {
         
         {/* Referral Information */}
         {(formData.jobSource === 'referral' || formData.applicationMethod === 'referral') && (
-          <div className="mt-6 p-4 bg-dark-secondary/20 rounded-lg border border-dark-border">
+          <div className="mt-6 p-4 bg-gray-800/20 rounded-lg border border-dark-border">
             <h4 className="text-md font-medium text-dark-text-secondary mb-3">Referral Contact</h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
@@ -695,7 +695,7 @@ export default function CreateJobApplication() {
               {formData.applicationStrategy.keySellingPoints.map((point, index) => (
                 <div
                   key={index}
-                  className="flex items-center justify-between p-3 bg-dark-secondary/20 rounded border border-dark-border"
+                  className="flex items-center justify-between p-3 bg-gray-800/20 rounded border border-dark-border"
                 >
                   <div className="flex items-center space-x-2">
                     <StarIcon className="w-4 h-4 text-yellow-400" />
@@ -734,11 +734,11 @@ export default function CreateJobApplication() {
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4 sm:space-y-6 animate-slide-up-soft">
       {/* Restore Dialog */}
       {showRestoreDialog && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-30">
+        <div className="fixed inset-0 bg-gray-900/50 flex items-center justify-center z-30">
           <div className="card-dark rounded-lg border border-dark-border p-6 w-full max-w-md mx-4">
             <div className="flex items-center space-x-3 mb-4">
-              <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
-                <DocumentTextIcon className="w-5 h-5 text-blue-400" />
+              <div className="w-10 h-10 bg-teal-500/20 rounded-lg flex items-center justify-center">
+                <DocumentTextIcon className="w-5 h-5 text-teal-400" />
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-dark-text-primary">Restore Draft</h3>
@@ -776,7 +776,7 @@ export default function CreateJobApplication() {
         <div className="flex items-start space-x-3 sm:space-x-4 min-w-0 flex-1">
           <button
             onClick={() => navigate('/dashboard/applications')}
-            className="p-2 text-dark-text-muted hover:text-dark-text-primary rounded-lg hover:bg-dark-secondary/20 transition-all flex-shrink-0 mt-1"
+            className="p-2 text-dark-text-muted hover:text-dark-text-primary rounded-lg hover:bg-gray-800/20 transition-all flex-shrink-0 mt-1"
           >
             <ArrowLeftIcon className="w-5 h-5" />
           </button>
@@ -790,7 +790,7 @@ export default function CreateJobApplication() {
               />
             </div>
             {isRestored && (
-              <div className="flex items-center space-x-2 text-xs text-blue-400 bg-blue-500/10 px-2 py-1 rounded mt-2 w-fit">
+              <div className="flex items-center space-x-2 text-xs text-teal-400 bg-teal-500/10 px-2 py-1 rounded mt-2 w-fit">
                 <DocumentTextIcon className="w-3 h-3 flex-shrink-0" />
                 <span>Draft restored</span>
                 <button
@@ -798,7 +798,7 @@ export default function CreateJobApplication() {
                     clearSavedData();
                     setFormData(initialFormData);
                   }}
-                  className="text-blue-400 hover:text-blue-300 underline whitespace-nowrap"
+                  className="text-teal-400 hover:text-teal-300 underline whitespace-nowrap"
                 >
                   Clear
                 </button>
@@ -814,7 +814,7 @@ export default function CreateJobApplication() {
           <h3 className="text-base sm:text-lg font-semibold text-dark-text-primary">Step {currentStep} of {totalSteps}</h3>
           <span className="text-sm text-dark-text-secondary">{Math.round((currentStep / totalSteps) * 100)}% Complete</span>
         </div>
-        <div className="w-full bg-dark-secondary/20 rounded-full h-2 sm:h-3">
+        <div className="w-full bg-gray-800/20 rounded-full h-2 sm:h-3">
           <div
             className="bg-dark-accent h-2 sm:h-3 rounded-full transition-all duration-300"
             style={{ width: `${(currentStep / totalSteps) * 100}%` }}
@@ -831,7 +831,7 @@ export default function CreateJobApplication() {
                     ? 'bg-dark-accent text-white'
                     : step === currentStep + 1
                     ? 'bg-dark-accent/30 text-dark-accent border-2 border-dark-accent/50'
-                    : 'bg-dark-secondary/20 text-dark-text-muted'
+                    : 'bg-gray-800/20 text-dark-text-muted'
                 }`}
               >
                 {step}
@@ -869,8 +869,8 @@ export default function CreateJobApplication() {
             disabled={currentStep === 1}
             className={`w-full sm:w-auto px-4 sm:px-6 py-2.5 rounded-lg text-sm sm:text-base transition-all ${
               currentStep === 1
-                ? 'text-dark-text-muted cursor-not-allowed bg-dark-secondary/10'
-                : 'btn-secondary-dark hover:bg-dark-secondary/40'
+                ? 'text-dark-text-muted cursor-not-allowed bg-gray-800/10'
+                : 'btn-secondary-dark hover:bg-gray-800/40'
             }`}
           >
             Previous

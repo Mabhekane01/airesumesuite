@@ -169,7 +169,7 @@ const DragonSnakeGame: React.FC = () => {
           duration: 100,
           position: null,
         };
-        createParticles(newHead.x, newHead.y, "#8b5cf6", 8);
+        createParticles(newHead.x, newHead.y, "#10b981", 8);
         newScore += 20;
       }
 
@@ -353,7 +353,7 @@ const DragonSnakeGame: React.FC = () => {
       case "star":
         return {
           icon: <StarIcon className="w-4 h-4" />,
-          color: "text-purple-400",
+          color: "text-emerald-400",
         };
     }
   };
@@ -361,10 +361,10 @@ const DragonSnakeGame: React.FC = () => {
   return (
     <div className="w-full max-w-4xl mx-auto">
       {/* Game Header */}
-      <div className="bg-dark-secondary/30 backdrop-blur-md border-2 border-dark-border rounded-t-xl p-4">
+      <div className="bg-gray-800/30 backdrop-blur-md border-2 border-dark-border rounded-t-xl p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-purple-500/20 to-blue-500/20 rounded-lg flex items-center justify-center backdrop-blur-sm border border-purple-500/30">
+            <div className="w-10 h-10 bg-gradient-to-br from-emerald-500/20 to-teal-500/20 rounded-lg flex items-center justify-center backdrop-blur-sm border border-emerald-500/30">
               <span className="text-xl">🐲</span>
             </div>
             <div>
@@ -378,26 +378,26 @@ const DragonSnakeGame: React.FC = () => {
           </div>
           {/* Game Stats */}
           <div className="flex items-center space-x-4">
-            <div className="bg-dark-primary/50 backdrop-blur-sm border-2 border-dark-border/80 rounded-lg px-3 py-1.5">
+            <div className="bg-gray-900/50 backdrop-blur-sm border-2 border-dark-border/80 rounded-lg px-3 py-1.5">
               <div className="text-xs text-dark-text-secondary">Score</div>
               <div className="text-sm font-bold text-yellow-400">
                 {gameState.score}
               </div>
             </div>
-            <div className="bg-dark-primary/50 backdrop-blur-sm border-2 border-dark-border/80 rounded-lg px-3 py-1.5">
+            <div className="bg-gray-900/50 backdrop-blur-sm border-2 border-dark-border/80 rounded-lg px-3 py-1.5">
               <div className="text-xs text-dark-text-secondary">Level</div>
               <div className="text-sm font-bold text-green-400">
                 {gameState.level}
               </div>
             </div>
-            <div className="bg-dark-primary/50 backdrop-blur-sm border-2 border-dark-border/80 rounded-lg px-3 py-1.5">
+            <div className="bg-gray-900/50 backdrop-blur-sm border-2 border-dark-border/80 rounded-lg px-3 py-1.5">
               <div className="text-xs text-dark-text-secondary">Length</div>
-              <div className="text-sm font-bold text-blue-400">
+              <div className="text-sm font-bold text-teal-400">
                 {gameState.dragon.length}
               </div>
             </div>
             {gameState.powerUp.active && (
-              <div className="bg-purple-500/20 backdrop-blur-sm border border-purple-500/30 rounded-lg px-3 py-1.5 flex items-center space-x-2">
+              <div className="bg-emerald-500/20 backdrop-blur-sm border border-emerald-500/30 rounded-lg px-3 py-1.5 flex items-center space-x-2">
                 <div
                   className={getPowerUpDisplay(gameState.powerUp.type!).color}
                 >
@@ -412,10 +412,10 @@ const DragonSnakeGame: React.FC = () => {
         </div>
       </div>
       {/* Game Board */}
-      <div className="relative bg-dark-secondary/20 backdrop-blur-xl border-x-2 border-dark-border">
+      <div className="relative bg-gray-800/20 backdrop-blur-xl border-x-2 border-dark-border">
         <div className="p-6">
           <div
-            className="relative bg-dark-secondary/20 backdrop-blur-md border-2 border-dark-border/60 rounded-xl p-4 shadow-2xl"
+            className="relative bg-gray-800/20 backdrop-blur-md border-2 border-dark-border/60 rounded-xl p-4 shadow-2xl"
             style={{
               width: `${BOARD_SIZE * 24 + 16}px`,
               height: `${BOARD_SIZE * 24 + 16}px`,
@@ -594,7 +594,7 @@ const DragonSnakeGame: React.FC = () => {
                   top: gameState.powerUp.position.y * 24 + 8,
                 }}
               >
-                <div className="w-4 h-4 bg-gradient-to-br from-purple-400/80 to-pink-500/80 backdrop-blur-sm border-2 border-purple-400/70 rounded-lg animate-bounce shadow-lg flex items-center justify-center">
+                <div className="w-4 h-4 bg-gradient-to-br from-emerald-400/80 to-pink-500/80 backdrop-blur-sm border-2 border-emerald-400/70 rounded-lg animate-bounce shadow-lg flex items-center justify-center">
                   <div
                     className={`text-xs ${getPowerUpDisplay(gameState.powerUp.type!).color}`}
                   >
@@ -625,12 +625,12 @@ const DragonSnakeGame: React.FC = () => {
         </div>
       </div>
       {/* Game Controls */}
-      <div className="bg-dark-secondary/30 backdrop-blur-md border-2 border-dark-border rounded-b-xl p-4">
+      <div className="bg-gray-800/30 backdrop-blur-md border-2 border-dark-border rounded-b-xl p-4">
         {!gameState.gameStarted ? (
           <div className="text-center">
             <button
               onClick={startGame}
-              className="px-6 py-3 bg-gradient-to-r from-emerald-500/80 to-blue-500/80 backdrop-blur-sm border-2 border-emerald-400/60 text-white font-semibold rounded-lg hover:from-emerald-600/80 hover:to-blue-600/80 transition-all duration-200 transform hover:scale-105 shadow-xl"
+              className="px-6 py-3 bg-gradient-to-r from-emerald-500/80 to-teal-500/80 backdrop-blur-sm border-2 border-emerald-400/60 text-white font-semibold rounded-lg hover:from-emerald-600/80 hover:to-teal-600/80 transition-all duration-200 transform hover:scale-105 shadow-xl"
             >
               <span className="flex items-center space-x-2">
                 <span>🐲</span>
@@ -639,11 +639,11 @@ const DragonSnakeGame: React.FC = () => {
             </button>
             <div className="mt-3 flex items-center justify-center space-x-4 text-xs text-dark-text-secondary">
               <div className="flex items-center space-x-1">
-                <kbd className="px-2 py-1 bg-dark-primary/50 border border-dark-border/50 rounded text-xs">
+                <kbd className="px-2 py-1 bg-gray-900/50 border border-dark-border/50 rounded text-xs">
                   WASD
                 </kbd>
                 <span>or</span>
-                <kbd className="px-2 py-1 bg-dark-primary/50 border border-dark-border/50 rounded text-xs">
+                <kbd className="px-2 py-1 bg-gray-900/50 border border-dark-border/50 rounded text-xs">
                   ←↑↓→
                 </kbd>
                 <span>to move</span>
@@ -657,7 +657,7 @@ const DragonSnakeGame: React.FC = () => {
                 <span>💀</span>
                 <span>Game Over!</span>
               </div>
-              <div className="bg-dark-primary/50 backdrop-blur-sm border border-dark-border/50 rounded-lg p-3 inline-block">
+              <div className="bg-gray-900/50 backdrop-blur-sm border border-dark-border/50 rounded-lg p-3 inline-block">
                 <div className="text-dark-text-secondary text-sm mb-1">
                   Final Score
                 </div>
@@ -668,7 +668,7 @@ const DragonSnakeGame: React.FC = () => {
             </div>
             <button
               onClick={startGame}
-              className="px-6 py-3 bg-gradient-to-r from-purple-500/80 to-pink-500/80 backdrop-blur-sm border border-purple-400/30 text-white font-semibold rounded-lg hover:from-purple-600/80 hover:to-pink-600/80 transition-all duration-200 transform hover:scale-105 shadow-xl"
+              className="px-6 py-3 bg-gradient-to-r from-emerald-500/80 to-pink-500/80 backdrop-blur-sm border border-emerald-400/30 text-white font-semibold rounded-lg hover:from-emerald-600/80 hover:to-pink-600/80 transition-all duration-200 transform hover:scale-105 shadow-xl"
             >
               <span className="flex items-center space-x-2">
                 <span>🔄</span>
@@ -690,8 +690,8 @@ const DragonSnakeGame: React.FC = () => {
               </div>
               <div className="text-xs text-dark-text-muted">2x faster</div>
             </div>
-            <div className="bg-purple-500/10 backdrop-blur-sm border border-purple-500/20 rounded-lg p-2">
-              <div className="text-purple-400 text-lg mb-1">⭐</div>
+            <div className="bg-emerald-500/10 backdrop-blur-sm border border-emerald-500/20 rounded-lg p-2">
+              <div className="text-emerald-400 text-lg mb-1">⭐</div>
               <div className="text-xs text-dark-text-secondary">Star Power</div>
               <div className="text-xs text-dark-text-muted">Bonus points</div>
             </div>

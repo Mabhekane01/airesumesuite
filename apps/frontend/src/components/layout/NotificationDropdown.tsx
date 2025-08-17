@@ -39,7 +39,7 @@ const getNotificationIcon = (type: NavNotification['type']) => {
     case 'deadline':
       return <ClockIcon className="h-5 w-5 text-red-500" />;
     default:
-      return <InformationCircleIcon className="h-5 w-5 text-blue-500" />;
+      return <InformationCircleIcon className="h-5 w-5 text-teal-500" />;
   }
 };
 
@@ -69,7 +69,7 @@ export default function NotificationDropdown({
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
-      className="absolute right-0 mt-2 w-80 bg-dark-tertiary/95 backdrop-blur-lg rounded-lg shadow-dark-xl border border-dark-border focus:outline-none z-50"
+      className="absolute right-0 mt-2 w-80 bg-gray-700/95 backdrop-blur-lg rounded-lg shadow-dark-xl border border-dark-border focus:outline-none z-50"
     >
       {/* Header */}
       <div className="p-4 border-b border-dark-border">
@@ -121,7 +121,7 @@ export default function NotificationDropdown({
                 key={notification.id}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                className={`px-4 py-3 hover:bg-dark-tertiary/60 transition-all duration-200 cursor-pointer border-l-2 ${
+                className={`px-4 py-3 hover:bg-gray-700/60 transition-all duration-200 cursor-pointer border-l-2 ${
                   notification.read 
                     ? 'border-transparent' 
                     : 'border-accent-primary bg-accent-primary/5'

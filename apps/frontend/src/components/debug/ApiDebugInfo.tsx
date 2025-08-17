@@ -32,7 +32,7 @@ export default function ApiDebugInfo() {
 
       {diagnostics && (
         <div className="space-y-4">
-          <div className="bg-dark-secondary/20 rounded p-4">
+          <div className="bg-gray-800/20 rounded p-4">
             <h3 className="font-medium text-dark-text-primary mb-2">Summary</h3>
             <pre className="text-sm text-dark-text-secondary whitespace-pre-wrap">
               {diagnostics.summary}
@@ -40,7 +40,7 @@ export default function ApiDebugInfo() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-dark-secondary/20 rounded p-4">
+            <div className="bg-gray-800/20 rounded p-4">
               <h4 className="font-medium text-dark-text-primary mb-2">Server Health</h4>
               <div className="text-sm">
                 <div className="flex items-center space-x-2">
@@ -50,7 +50,7 @@ export default function ApiDebugInfo() {
               </div>
             </div>
 
-            <div className="bg-dark-secondary/20 rounded p-4">
+            <div className="bg-gray-800/20 rounded p-4">
               <h4 className="font-medium text-dark-text-primary mb-2">Authentication</h4>
               <div className="text-sm">
                 <div className="flex items-center space-x-2">
@@ -67,7 +67,7 @@ export default function ApiDebugInfo() {
               </div>
             </div>
 
-            <div className="bg-dark-secondary/20 rounded p-4">
+            <div className="bg-gray-800/20 rounded p-4">
               <h4 className="font-medium text-dark-text-primary mb-2">Job Applications API</h4>
               <div className="text-sm">
                 <div className="flex items-center space-x-2">
@@ -77,7 +77,7 @@ export default function ApiDebugInfo() {
               </div>
             </div>
 
-            <div className="bg-dark-secondary/20 rounded p-4">
+            <div className="bg-gray-800/20 rounded p-4">
               <h4 className="font-medium text-dark-text-primary mb-2">Authenticated Request</h4>
               <div className="text-sm">
                 <div className="flex items-center space-x-2">
@@ -93,7 +93,7 @@ export default function ApiDebugInfo() {
       <div className="mt-6 text-sm text-dark-text-muted">
         <p>
           💡 You can also run diagnostics from the browser console by typing: <br />
-          <code className="bg-dark-secondary/20 px-2 py-1 rounded">window.debugAPI.runDiagnostics()</code>
+          <code className="bg-gray-800/20 px-2 py-1 rounded">window.debugAPI.runDiagnostics()</code>
         </p>
       </div>
     </div>

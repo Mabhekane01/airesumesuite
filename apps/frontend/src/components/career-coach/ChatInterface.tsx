@@ -66,9 +66,9 @@ export default function ChatInterface() {
     <div className="flex flex-col h-full">
       {/* Welcome Message */}
       {showSuggestions && (
-        <div className="mb-4 p-4 bg-gradient-to-r from-blue-600/10 to-purple-600/10 rounded-lg border border-blue-500/20">
+        <div className="mb-4 p-4 bg-gradient-to-r from-blue-600/10 to-purple-600/10 rounded-lg border border-teal-500/20">
           <div className="flex items-center gap-2 mb-2">
-            <SparklesIcon className="w-5 h-5 text-blue-400" />
+            <SparklesIcon className="w-5 h-5 text-teal-400" />
             <h3 className="font-semibold text-dark-text-primary">AI Career Coach Ready!</h3>
           </div>
           <p className="text-sm text-dark-text-secondary">
@@ -85,9 +85,9 @@ export default function ChatInterface() {
               <button
                 key={index}
                 onClick={() => handleSuggestionClick(suggestion.text)}
-                className="flex items-center gap-3 p-3 text-left bg-dark-secondary hover:bg-dark-tertiary rounded-lg transition-colors group border border-dark-border hover:border-blue-500/30"
+                className="flex items-center gap-3 p-3 text-left bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors group border border-dark-border hover:border-teal-500/30"
               >
-                <div className="text-blue-400 group-hover:text-blue-300">
+                <div className="text-teal-400 group-hover:text-teal-300">
                   {suggestion.icon}
                 </div>
                 <div className="flex-grow">
@@ -123,10 +123,10 @@ export default function ChatInterface() {
             <div
               className={`max-w-xs lg:max-w-md px-4 py-3 rounded-2xl ${
                 msg.sender === 'user'
-                  ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white ml-8'
+                  ? 'bg-gradient-to-r from-blue-600 to-teal-700 text-white ml-8'
                   : msg.error
                   ? 'bg-red-500/10 text-red-300 border border-red-500/20'
-                  : 'bg-dark-tertiary text-dark-text-primary border border-dark-border'
+                  : 'bg-gray-700 text-dark-text-primary border border-dark-border'
               }`}
             >
               <div 
@@ -167,7 +167,7 @@ export default function ChatInterface() {
             <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center flex-shrink-0">
               <SparklesIcon className="w-4 h-4 text-white" />
             </div>
-            <div className="px-4 py-3 rounded-2xl bg-dark-tertiary text-dark-text-primary border border-dark-border">
+            <div className="px-4 py-3 rounded-2xl bg-gray-700 text-dark-text-primary border border-dark-border">
               <div className="flex items-center gap-2">
                 <div className="flex space-x-1">
                   <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"></div>
@@ -206,11 +206,11 @@ export default function ChatInterface() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder={selectedResume ? "Ask me anything about your resume..." : "Select a resume first..."}
-            className="pr-12 bg-dark-secondary border-dark-border focus:border-blue-500"
+            className="pr-12 bg-gray-800 border-dark-border focus:border-teal-500"
             disabled={isLoading || !selectedResume}
           />
           <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-            <SparklesIcon className="w-4 h-4 text-blue-400" />
+            <SparklesIcon className="w-4 h-4 text-teal-400" />
           </div>
         </div>
         <Button 
@@ -229,7 +229,7 @@ export default function ChatInterface() {
             <button
               key={index}
               onClick={() => handleSuggestionClick(suggestion.text)}
-              className="text-xs px-3 py-1 bg-dark-secondary hover:bg-dark-tertiary rounded-full text-dark-text-secondary hover:text-dark-text-primary transition-colors border border-dark-border hover:border-blue-500/30"
+              className="text-xs px-3 py-1 bg-gray-800 hover:bg-gray-700 rounded-full text-dark-text-secondary hover:text-dark-text-primary transition-colors border border-dark-border hover:border-teal-500/30"
               disabled={isLoading}
             >
               {suggestion.category}

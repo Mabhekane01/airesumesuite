@@ -150,7 +150,7 @@ export default function ResumePDFPreviewSimple({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+          className="absolute inset-0 bg-gray-900/80 backdrop-blur-sm"
           onClick={onClose}
         />
 
@@ -161,7 +161,7 @@ export default function ResumePDFPreviewSimple({
           transition={{ type: 'spring', duration: 0.5 }}
           className="relative w-full h-full flex flex-col"
         >
-          <div className="bg-dark-secondary/95 backdrop-blur-xl h-full flex flex-col">
+          <div className="bg-gray-800/95 backdrop-blur-xl h-full flex flex-col">
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-dark-border/50">
               <div className="flex items-center space-x-3">
@@ -178,7 +178,7 @@ export default function ResumePDFPreviewSimple({
 
               <div className="flex items-center space-x-2">
                 {/* Zoom Controls */}
-                <div className="flex items-center space-x-1 bg-dark-tertiary/50 rounded-lg p-1">
+                <div className="flex items-center space-x-1 bg-gray-700/50 rounded-lg p-1">
                   <button
                     onClick={() => adjustZoom(-10)}
                     disabled={zoomLevel <= 50}
@@ -203,7 +203,7 @@ export default function ResumePDFPreviewSimple({
                 {/* Action Buttons */}
                 <button
                   onClick={handleDownload}
-                  className="p-2 text-dark-text-muted hover:text-purple-400 hover:bg-purple-500/10 rounded-lg transition-all duration-200"
+                  className="p-2 text-dark-text-muted hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg transition-all duration-200"
                   title="Download PDF"
                 >
                   <ArrowDownTrayIcon className="w-5 h-5" />
@@ -227,7 +227,7 @@ export default function ResumePDFPreviewSimple({
 
                 <button
                   onClick={onEdit}
-                  className="p-2 text-dark-text-muted hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-all duration-200"
+                  className="p-2 text-dark-text-muted hover:text-teal-400 hover:bg-teal-500/10 rounded-lg transition-all duration-200"
                   title="Edit Resume"
                 >
                   <PencilIcon className="w-5 h-5" />
@@ -271,7 +271,7 @@ export default function ResumePDFPreviewSimple({
                             <p className="text-gray-600">Failed to load PDF preview</p>
                             <button
                               onClick={() => generatePDFPreview(resume)}
-                              className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                              className="mt-2 px-4 py-2 bg-teal-500 text-white rounded hover:bg-teal-600"
                             >
                               Retry
                             </button>

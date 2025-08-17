@@ -58,8 +58,8 @@ export default function ResumeSelector({ onSelectResume }: ResumeSelectorProps) 
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="p-1.5 bg-blue-500/20 rounded-md">
-            <DocumentTextIcon className="w-4 h-4 text-blue-400" />
+          <div className="p-1.5 bg-teal-500/20 rounded-md">
+            <DocumentTextIcon className="w-4 h-4 text-teal-400" />
           </div>
           <div>
             <span className="text-sm font-semibold text-dark-text-primary">
@@ -81,7 +81,7 @@ export default function ResumeSelector({ onSelectResume }: ResumeSelectorProps) 
             onClick={async () => {
               await fetchResumes();
             }}
-            className="p-1.5 bg-blue-600/20 hover:bg-blue-600/30 rounded-md text-blue-400 hover:text-blue-300 transition-colors"
+            className="p-1.5 bg-teal-600/20 hover:bg-teal-600/30 rounded-md text-teal-400 hover:text-teal-300 transition-colors"
             disabled={isLoading}
             title="Refresh resumes"
           >
@@ -94,7 +94,7 @@ export default function ResumeSelector({ onSelectResume }: ResumeSelectorProps) 
       {isLoading && (
         <div className="space-y-3">
           {[1, 2].map((i) => (
-            <div key={i} className="p-4 rounded-lg bg-dark-secondary border border-dark-border animate-pulse">
+            <div key={i} className="p-4 rounded-lg bg-gray-800 border border-dark-border animate-pulse">
               <div className="flex justify-between items-start mb-3">
                 <div className="flex-grow">
                   <div className="h-4 bg-dark-border rounded w-3/4 mb-2"></div>
@@ -129,8 +129,8 @@ export default function ResumeSelector({ onSelectResume }: ResumeSelectorProps) 
               onClick={() => handleSelect(resume)}
               className={`group p-4 rounded-lg cursor-pointer transition-all duration-200 border-2 hover:shadow-lg ${
                 isSelected
-                  ? 'bg-gradient-to-r from-blue-600/20 to-purple-600/20 border-blue-500 shadow-md'
-                  : 'bg-dark-secondary hover:bg-dark-tertiary border-dark-border hover:border-blue-500/30'
+                  ? 'bg-gradient-to-r from-blue-600/20 to-purple-600/20 border-teal-500 shadow-md'
+                  : 'bg-gray-800 hover:bg-gray-700 border-dark-border hover:border-teal-500/30'
               }`}
             >
               {/* Resume Header */}
@@ -145,7 +145,7 @@ export default function ResumeSelector({ onSelectResume }: ResumeSelectorProps) 
                 </div>
                 {isSelected && (
                   <div className="flex items-center gap-1">
-                    <SparklesIcon className="w-4 h-4 text-blue-400" />
+                    <SparklesIcon className="w-4 h-4 text-teal-400" />
                   </div>
                 )}
               </div>
@@ -153,19 +153,19 @@ export default function ResumeSelector({ onSelectResume }: ResumeSelectorProps) 
               {/* Resume Stats */}
               <div className="grid grid-cols-3 gap-3 mb-3">
                 <div className="text-center">
-                  <div className={`text-sm font-semibold ${isSelected ? 'text-blue-300' : 'text-dark-text-primary'}`}>
+                  <div className={`text-sm font-semibold ${isSelected ? 'text-teal-300' : 'text-dark-text-primary'}`}>
                     {stats.workExpCount}
                   </div>
                   <div className="text-xs text-dark-text-muted">Jobs</div>
                 </div>
                 <div className="text-center">
-                  <div className={`text-sm font-semibold ${isSelected ? 'text-blue-300' : 'text-dark-text-primary'}`}>
+                  <div className={`text-sm font-semibold ${isSelected ? 'text-teal-300' : 'text-dark-text-primary'}`}>
                     {stats.skillsCount}
                   </div>
                   <div className="text-xs text-dark-text-muted">Skills</div>
                 </div>
                 <div className="text-center">
-                  <div className={`text-sm font-semibold ${isSelected ? 'text-blue-300' : 'text-dark-text-primary'}`}>
+                  <div className={`text-sm font-semibold ${isSelected ? 'text-teal-300' : 'text-dark-text-primary'}`}>
                     {stats.educationCount}
                   </div>
                   <div className="text-xs text-dark-text-muted">Education</div>
@@ -203,7 +203,7 @@ export default function ResumeSelector({ onSelectResume }: ResumeSelectorProps) 
                   Updated {resume.updatedAt ? new Date(resume.updatedAt).toLocaleDateString() : 'recently'}
                 </span>
                 {isSelected && (
-                  <div className="ml-auto flex items-center gap-1 text-blue-400">
+                  <div className="ml-auto flex items-center gap-1 text-teal-400">
                     <EyeIcon className="w-3 h-3" />
                     <span>In Preview</span>
                   </div>
@@ -241,7 +241,7 @@ export default function ResumeSelector({ onSelectResume }: ResumeSelectorProps) 
         <div className="space-y-6">
           <div className="text-center py-8">
             <div className="p-4 bg-gradient-to-br from-blue-600/10 to-purple-600/10 rounded-full w-20 h-20 mx-auto mb-4 flex items-center justify-center">
-              <DocumentTextIcon className="w-10 h-10 text-blue-400" />
+              <DocumentTextIcon className="w-10 h-10 text-teal-400" />
             </div>
             <h3 className="font-semibold text-dark-text-primary mb-2">No Resumes Found</h3>
             <p className="text-sm text-dark-text-secondary mb-6 max-w-sm mx-auto">
@@ -289,7 +289,7 @@ export default function ResumeSelector({ onSelectResume }: ResumeSelectorProps) 
               </button>
               <button 
                 onClick={() => navigate('/dashboard/resume/templates')}
-                className="text-xs px-3 py-1 bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 rounded transition-colors"
+                className="text-xs px-3 py-1 bg-teal-500/20 hover:bg-teal-500/30 text-teal-300 rounded transition-colors"
               >
                 Create Resume
               </button>

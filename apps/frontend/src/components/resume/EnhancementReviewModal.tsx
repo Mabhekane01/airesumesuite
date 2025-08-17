@@ -277,7 +277,7 @@ export const EnhancementReviewModal: React.FC<EnhancementReviewModalProps> = ({
                 <Button
                   variant="outline"
                   onClick={onClose}
-                  className="w-full border-dark-border hover:bg-dark-tertiary text-dark-text-primary py-2.5 sm:py-3 text-sm sm:text-base"
+                  className="w-full border-dark-border hover:bg-gray-700 text-dark-text-primary py-2.5 sm:py-3 text-sm sm:text-base"
                 >
                   Cancel
                 </Button>
@@ -310,7 +310,7 @@ export const EnhancementReviewModal: React.FC<EnhancementReviewModalProps> = ({
                     variant="ghost"
                     size="sm"
                     onClick={deselectAllSuggestions}
-                    className="text-dark-text-muted hover:bg-dark-tertiary text-xs sm:text-sm"
+                    className="text-dark-text-muted hover:bg-gray-700 text-xs sm:text-sm"
                   >
                     Deselect All
                   </Button>
@@ -359,7 +359,7 @@ export const EnhancementReviewModal: React.FC<EnhancementReviewModalProps> = ({
                               className={`p-3 sm:p-4 rounded-lg border transition-all duration-200 ${
                                 isSelected
                                   ? 'bg-accent-primary/10 border-accent-primary/30 shadow-glow-sm'
-                                  : 'bg-dark-tertiary/50 border-dark-border/30 hover:border-accent-primary/20'
+                                  : 'bg-gray-700/50 border-dark-border/30 hover:border-accent-primary/20'
                               }`}
                             >
                               <div className="flex items-start gap-3">

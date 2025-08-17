@@ -366,7 +366,7 @@ export default function AICoverLetterGenerator() {
                             ? 'bg-green-500/20 border-green-500/40'
                             : hasError
                             ? 'bg-red-500/20 border-red-500/40'
-                            : 'bg-dark-secondary/50 border-dark-secondary'
+                            : 'bg-gray-800/50 border-dark-secondary'
                         }`}
                       >
                         <Icon 

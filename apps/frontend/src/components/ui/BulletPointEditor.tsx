@@ -105,7 +105,7 @@ export function BulletPointEditor({
       <div className={clsx(
         "space-y-2 p-3 border rounded-lg",
         error ? "border-accent-danger" : "border-dark-border",
-        "bg-dark-secondary"
+        "bg-gray-800"
       )}>
         {safeValue.length === 0 && !editingIndex && (
           <div className="text-dark-text-muted text-sm italic py-2">

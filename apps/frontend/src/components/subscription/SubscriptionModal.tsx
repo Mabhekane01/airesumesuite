@@ -88,7 +88,7 @@ export default function SubscriptionModal({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
+            className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-50"
             onClick={onClose}
           />
           
@@ -98,13 +98,13 @@ export default function SubscriptionModal({
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-dark-tertiary/95 backdrop-blur-lg rounded-2xl shadow-dark-2xl border border-dark-border max-w-md w-full mx-4 overflow-hidden"
+              className="bg-gray-700/95 backdrop-blur-lg rounded-2xl shadow-dark-2xl border border-dark-border max-w-md w-full mx-4 overflow-hidden"
             >
               {/* Header */}
               <div className="relative bg-gradient-to-r from-accent-primary/20 to-accent-secondary/20 p-6 border-b border-dark-border">
                 <button
                   onClick={onClose}
-                  className="absolute top-4 right-4 p-2 rounded-full hover:bg-dark-primary/50 transition-colors"
+                  className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-900/50 transition-colors"
                 >
                   <XMarkIcon className="h-5 w-5 text-dark-text-secondary" />
                 </button>
@@ -142,7 +142,7 @@ export default function SubscriptionModal({
                 </div>
 
                 {/* Pricing Preview */}
-                <div className="bg-dark-primary/50 rounded-lg p-4 mb-6">
+                <div className="bg-gray-900/50 rounded-lg p-4 mb-6">
                   {loadingPricing ? (
                     <div className="flex items-center justify-center py-4">
                       <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-accent-primary"></div>
@@ -189,7 +189,7 @@ export default function SubscriptionModal({
                 <div className="flex space-x-3">
                   <button
                     onClick={onClose}
-                    className="flex-1 px-4 py-2 border border-dark-border rounded-lg text-dark-text-secondary hover:bg-dark-primary/50 transition-colors"
+                    className="flex-1 px-4 py-2 border border-dark-border rounded-lg text-dark-text-secondary hover:bg-gray-900/50 transition-colors"
                   >
                     Maybe Later
                   </button>

@@ -154,7 +154,7 @@ export default function RegistrationOTPForm({ email, onBack, onSuccess }: Regist
                 value={digit}
                 onChange={(e) => handleChange(index, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(index, e)}
-                className="w-12 h-12 text-center text-xl font-bold bg-dark-tertiary border border-dark-border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                className="w-12 h-12 text-center text-xl font-bold bg-gray-700 border border-dark-border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200"
                 disabled={isLoading}
               />
             ))}
@@ -196,7 +196,7 @@ export default function RegistrationOTPForm({ email, onBack, onSuccess }: Regist
           disabled={isLoading}
           whileHover={{ scale: isLoading ? 1 : 1.02 }}
           whileTap={{ scale: isLoading ? 1 : 0.98 }}
-          className="w-full flex items-center justify-center px-4 py-2 border border-dark-border text-gray-300 bg-transparent rounded-lg hover:bg-dark-tertiary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full flex items-center justify-center px-4 py-2 border border-dark-border text-gray-300 bg-transparent rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <ArrowLeftIcon className="w-4 h-4 mr-2" />
           Cancel & Back to Login
@@ -214,7 +214,7 @@ export default function RegistrationOTPForm({ email, onBack, onSuccess }: Regist
               <button
                 onClick={handleResend}
                 disabled={isLoading}
-                className="text-purple-400 hover:text-purple-300 font-medium transition-colors disabled:opacity-50"
+                className="text-emerald-400 hover:text-emerald-300 font-medium transition-colors disabled:opacity-50"
               >
                 Send New Code
               </button>
@@ -226,7 +226,7 @@ export default function RegistrationOTPForm({ email, onBack, onSuccess }: Regist
           </div>
         </div>
 
-        <div className="bg-dark-tertiary border border-dark-border rounded-lg p-4">
+        <div className="bg-gray-700 border border-dark-border rounded-lg p-4">
           <h3 className="text-sm font-semibold text-green-400 mb-2">
             ✨ Almost there!
           </h3>

@@ -1,0 +1,152 @@
+version: '3.8'
+
+services:
+  # Database
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: document_sharing
+      POSTGRES_USER: docshare_user
+      POSTGRES_PASSWORD: docshare_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infrastructure/docker/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5434:5432"  # Different port to avoid conflicts
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U docshare_user -d document_sharing"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Cache & Session Store
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6381:6379"  # Different port to avoid conflicts
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # API Gateway - Main entry point
+  api-gateway:
+    build: ./packages/api-gateway
+    ports:
+      - "4000:4000"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://docshare_user:docshare_password@postgres:5432/document_sharing
+      - REDIS_URL=redis://redis:6379
+      - ANALYTICS_SERVICE_URL=http://analytics-engine:4001
+      - FILE_PROCESSOR_URL=http://file-processor:4002
+      - NOTIFICATION_SERVICE_URL=http://notification-service:4003
+      - JWT_SECRET=your-dev-jwt-secret
+      - ENCRYPTION_KEY=your-dev-encryption-key
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    volumes:
+      - ./uploads:/app/uploads  # Local file storage for development
+
+  # Analytics Engine - View tracking and metrics
+  analytics-engine:
+    build: ./packages/analytics-engine
+    ports:
+      - "4001:4001"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://docshare_user:docshare_password@postgres:5432/document_sharing
+      - REDIS_URL=redis://redis:6379
+      - NOTIFICATION_SERVICE_URL=http://notification-service:4003
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # File Processor - Document handling and conversion
+  file-processor:
+    build: ./packages/file-processor
+    ports:
+      - "4002:4002"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://docshare_user:docshare_password@postgres:5432/document_sharing
+      - REDIS_URL=redis://redis:6379
+      - AWS_S3_BUCKET=dev-documents-bucket
+      - AWS_ACCESS_KEY_ID=your-dev-access-key
+      - AWS_SECRET_ACCESS_KEY=your-dev-secret-key
+      - AWS_REGION=us-east-1
+      - STORAGE_TYPE=local  # Use local storage for development
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    volumes:
+      - ./uploads:/app/uploads  # Local file storage
+      - ./temp:/app/temp        # Temporary processing files
+
+  # Notification Service - Email, webhooks, real-time
+  notification-service:
+    build: ./packages/notification-service
+    ports:
+      - "4003:4003"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://docshare_user:docshare_password@postgres:5432/document_sharing
+      - REDIS_URL=redis://redis:6379
+      - SMTP_HOST=smtp.mailtrap.io
+      - SMTP_PORT=2525
+      - SMTP_USER=your-mailtrap-user
+      - SMTP_PASSWORD=your-mailtrap-password
+      - WEBHOOK_SECRET=your-webhook-secret
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Simple monitoring with Redis Commander
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+    ports:
+      - "8082:8081"  # Different port to avoid conflicts
+    depends_on:
+      - redis
+
+  # MinIO for S3-compatible local storage (optional)
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"   # S3 API
+      - "9001:9001"   # Console
+    environment:
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin123
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+volumes:
+  postgres_data:
+  redis_data:
+  minio_data:

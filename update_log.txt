@@ -1,0 +1,215 @@
+Updating all remaining files with old color patterns...
+Found files needing updates:
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/debug/ApiDebugInfo.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/documents/CoverLetterEditor.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/documents/DocumentActions.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/documents/DocumentLoadingSkeleton.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/documents/ResumePDFPreviewSimple.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/forms/AutocompleteInput.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/forms/EnhancedSalaryInput.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/games/DragonSnakeGame.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/layout/NotificationDropdown.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/location/LocationPermissionModal.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/pdf-editor/AdvancedPDFEditor.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/pdf-editor/AdvancedToolbar.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/pdf-editor/FormFieldEditor.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/pdf-editor/ImageEditor.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/pdf-editor/PageThumbnails.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/pdf-editor/PDFViewer.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/pdf-editor/SecurityOptimization.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/pdf-editor/SeJdaStyleEditor.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/pdf-editor/WatermarkEditor.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/resume/ATSCompatibilityChecker.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/resume/AwardsForm.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/resume/CertificationsForm.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/resume/EnhancedResumePreview.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/resume/EnhancementFeedbackModal.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/resume/EnhancementReviewModal.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/resume/EnterpriseResumeEnhancer.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/resume/FileUpload.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/resume/HobbiesForm.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/resume/JobOptimizationModal.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/resume/JobOptimizationReviewModal.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/resume/LanguagesForm.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/resume/OverleafTemplateGallery.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/resume/PDFPreview.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/resume/ProfessionalSummaryForm.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/resume/ProjectsForm.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/resume/ResumeDownloadManager.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/resume/VolunteerExperienceForm.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/resume/WorkExperienceForm.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/search/SearchModal.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/settings/NotificationPreferences.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/subscription/SubscriptionGate.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/subscription/SubscriptionModal.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/ui/AIAnalysisModal.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/ui/AILoadingOverlay.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/ui/BulletPointEditor.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/ui/Button.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/ui/DatePicker.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/ui/Modal.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/ui/Select.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/upload/FileUpload.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/pages/admin/SubscriptionDashboard.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/pages/auth/GoogleAuthError.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/pages/career-coach/CareerCoachPage.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/pages/cover-letter/AICoverLetterGenerator.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/pages/cover-letter/ConversationalCoverLetterPage.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/pages/cover-letter/CoverLetterDashboard.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/pages/cover-letter/CoverLetterGenerator.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/pages/Dashboard.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/pages/DashboardSimple.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/pages/DocumentManager.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/pages/job-tracker/ApplicationAnalytics.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/pages/job-tracker/CreateJobApplication.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/pages/job-tracker/EditJobApplication.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/pages/job-tracker/InterviewScheduler.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/pages/job-tracker/JobApplicationDetail.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/pages/job-tracker/LocationSalaryInsights.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/pages/LandingPage.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/pages/NotificationTestPage.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/pages/payment/EnterpriseUpgrade.tsx
+C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/pages/PublicTemplatesPage.tsx
+
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/debug/ApiDebugInfo.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/debug/ApiDebugInfo.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/documents/CoverLetterEditor.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/documents/CoverLetterEditor.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/documents/DocumentActions.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/documents/DocumentActions.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/documents/DocumentLoadingSkeleton.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/documents/DocumentLoadingSkeleton.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/documents/ResumePDFPreviewSimple.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/documents/ResumePDFPreviewSimple.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/forms/AutocompleteInput.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/forms/AutocompleteInput.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/forms/EnhancedSalaryInput.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/forms/EnhancedSalaryInput.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/games/DragonSnakeGame.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/games/DragonSnakeGame.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/layout/NotificationDropdown.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/layout/NotificationDropdown.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/location/LocationPermissionModal.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/location/LocationPermissionModal.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/pdf-editor/AdvancedPDFEditor.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/pdf-editor/AdvancedPDFEditor.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/pdf-editor/AdvancedToolbar.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/pdf-editor/AdvancedToolbar.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/pdf-editor/FormFieldEditor.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/pdf-editor/FormFieldEditor.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/pdf-editor/ImageEditor.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/pdf-editor/ImageEditor.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/pdf-editor/PageThumbnails.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/pdf-editor/PageThumbnails.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/pdf-editor/PDFViewer.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/pdf-editor/PDFViewer.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/pdf-editor/SecurityOptimization.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/pdf-editor/SecurityOptimization.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/pdf-editor/SeJdaStyleEditor.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/pdf-editor/SeJdaStyleEditor.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/pdf-editor/WatermarkEditor.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/pdf-editor/WatermarkEditor.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/resume/ATSCompatibilityChecker.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/resume/ATSCompatibilityChecker.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/resume/AwardsForm.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/resume/AwardsForm.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/resume/CertificationsForm.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/resume/CertificationsForm.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/resume/EnhancedResumePreview.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/resume/EnhancedResumePreview.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/resume/EnhancementFeedbackModal.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/resume/EnhancementFeedbackModal.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/resume/EnhancementReviewModal.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/resume/EnhancementReviewModal.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/resume/EnterpriseResumeEnhancer.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/resume/EnterpriseResumeEnhancer.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/resume/FileUpload.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/resume/FileUpload.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/resume/HobbiesForm.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/resume/HobbiesForm.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/resume/JobOptimizationModal.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/resume/JobOptimizationModal.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/resume/JobOptimizationReviewModal.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/resume/JobOptimizationReviewModal.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/resume/LanguagesForm.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/resume/LanguagesForm.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/resume/OverleafTemplateGallery.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/resume/OverleafTemplateGallery.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/resume/PDFPreview.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/resume/PDFPreview.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/resume/ProfessionalSummaryForm.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/resume/ProfessionalSummaryForm.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/resume/ProjectsForm.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/resume/ProjectsForm.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/resume/ResumeDownloadManager.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/resume/ResumeDownloadManager.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/resume/VolunteerExperienceForm.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/resume/VolunteerExperienceForm.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/resume/WorkExperienceForm.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/resume/WorkExperienceForm.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/search/SearchModal.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/search/SearchModal.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/settings/NotificationPreferences.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/settings/NotificationPreferences.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/subscription/SubscriptionGate.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/subscription/SubscriptionGate.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/subscription/SubscriptionModal.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/subscription/SubscriptionModal.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/ui/AIAnalysisModal.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/ui/AIAnalysisModal.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/ui/AILoadingOverlay.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/ui/AILoadingOverlay.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/ui/BulletPointEditor.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/ui/BulletPointEditor.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/ui/Button.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/ui/Button.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/ui/DatePicker.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/ui/DatePicker.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/ui/Modal.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/ui/Modal.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/ui/Select.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/ui/Select.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/upload/FileUpload.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/components/upload/FileUpload.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/pages/admin/SubscriptionDashboard.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/pages/admin/SubscriptionDashboard.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/pages/auth/GoogleAuthError.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/pages/auth/GoogleAuthError.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/pages/career-coach/CareerCoachPage.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/pages/career-coach/CareerCoachPage.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/pages/cover-letter/AICoverLetterGenerator.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/pages/cover-letter/AICoverLetterGenerator.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/pages/cover-letter/ConversationalCoverLetterPage.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/pages/cover-letter/ConversationalCoverLetterPage.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/pages/cover-letter/CoverLetterDashboard.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/pages/cover-letter/CoverLetterDashboard.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/pages/cover-letter/CoverLetterGenerator.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/pages/cover-letter/CoverLetterGenerator.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/pages/Dashboard.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/pages/Dashboard.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/pages/DashboardSimple.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/pages/DashboardSimple.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/pages/DocumentManager.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/pages/DocumentManager.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/pages/job-tracker/ApplicationAnalytics.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/pages/job-tracker/ApplicationAnalytics.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/pages/job-tracker/CreateJobApplication.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/pages/job-tracker/CreateJobApplication.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/pages/job-tracker/EditJobApplication.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/pages/job-tracker/EditJobApplication.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/pages/job-tracker/InterviewScheduler.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/pages/job-tracker/InterviewScheduler.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/pages/job-tracker/JobApplicationDetail.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/pages/job-tracker/JobApplicationDetail.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/pages/job-tracker/LocationSalaryInsights.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/pages/job-tracker/LocationSalaryInsights.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/pages/LandingPage.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/pages/LandingPage.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/pages/NotificationTestPage.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/pages/NotificationTestPage.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/pages/payment/EnterpriseUpgrade.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/pages/payment/EnterpriseUpgrade.tsx
+Processing: C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/pages/PublicTemplatesPage.tsx
+  ✓ Updated C:/Users/ngwen/MyProjects/ai-job-suite/apps/frontend/src/pages/PublicTemplatesPage.tsx
+
+All remaining files updated successfully!

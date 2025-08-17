@@ -46,7 +46,7 @@ const categories = [
     name: 'Technical & Functional',
     description: 'Skills-focused layouts for engineers and technical roles',
     icon: ShieldCheckIcon,
-    gradient: 'from-cyan-500 to-blue-600',
+    gradient: 'from-cyan-500 to-teal-600',
     count: '2',
     features: ['Technical skills emphasis', 'Project showcase', 'Code-friendly']
   },
@@ -299,16 +299,16 @@ export default function TemplateSelection() {
           </div>
           {/* Quick Stats */}
           <div className="flex items-center justify-center space-x-6 mt-6 text-sm">
-            <div className="flex items-center px-3 py-1 bg-dark-tertiary rounded-full border border-dark-border">
+            <div className="flex items-center px-3 py-1 bg-gray-700 rounded-full border border-dark-border">
               <ShieldCheckIcon className="w-4 h-4 mr-1 text-green-500" />
               <span className="text-dark-text-primary font-medium">ATS Optimized</span>
             </div>
-            <div className="flex items-center px-3 py-1 bg-dark-tertiary rounded-full border border-dark-border">
+            <div className="flex items-center px-3 py-1 bg-gray-700 rounded-full border border-dark-border">
               <TrophyIcon className="w-4 h-4 mr-1 text-yellow-500" />
               <span className="text-dark-text-primary font-medium">Industry Tested</span>
             </div>
-            <div className="flex items-center px-3 py-1 bg-dark-tertiary rounded-full border border-dark-border">
-              <SparklesIcon className="w-4 h-4 mr-1 text-purple-500" />
+            <div className="flex items-center px-3 py-1 bg-gray-700 rounded-full border border-dark-border">
+              <SparklesIcon className="w-4 h-4 mr-1 text-emerald-500" />
               <span className="text-dark-text-primary font-medium">AI Enhanced</span>
             </div>
           </div>
@@ -327,19 +327,19 @@ export default function TemplateSelection() {
               >
                 <div className="relative">
                   {/* Main Card */}
-                  <div className="card-dark rounded-2xl p-6 h-full group-hover:bg-dark-secondary transition-all duration-500 group-hover:border-dark-border">
+                  <div className="card-dark rounded-2xl p-6 h-full group-hover:bg-gray-800 transition-all duration-500 group-hover:border-dark-border">
                     {/* Icon & Badge */}
                     <div className="flex items-start justify-between mb-4">
                       <div className={`w-12 h-12 bg-gradient-to-br ${category.gradient} rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
                         <IconComponent className="w-6 h-6 text-white" />
                       </div>
-                      <div className="bg-dark-tertiary text-dark-text-primary text-xs px-2 py-1 rounded-full font-bold border border-dark-border">
+                      <div className="bg-gray-700 text-dark-text-primary text-xs px-2 py-1 rounded-full font-bold border border-dark-border">
                         {category.count}
                       </div>
                     </div>
                     
                     {/* Content */}
-                    <h3 className="text-lg font-bold text-dark-text-primary mb-2 group-hover:text-blue-400 transition-all duration-300">
+                    <h3 className="text-lg font-bold text-dark-text-primary mb-2 group-hover:text-teal-400 transition-all duration-300">
                       {category.name}
                     </h3>
                     <p className="text-dark-text-secondary text-sm leading-relaxed mb-4 line-clamp-2">
@@ -350,7 +350,7 @@ export default function TemplateSelection() {
                     <div className="space-y-1 mb-4">
                       {category.features.map((feature, idx) => (
                         <div key={idx} className="flex items-center text-xs text-dark-text-muted">
-                          <div className="w-1 h-1 bg-blue-500 rounded-full mr-2"></div>
+                          <div className="w-1 h-1 bg-teal-500 rounded-full mr-2"></div>
                           {feature}
                         </div>
                       ))}
@@ -358,10 +358,10 @@ export default function TemplateSelection() {
                     
                     {/* CTA */}
                     <div className="flex items-center justify-between pt-2 border-t border-dark-border">
-                      <span className="text-xs text-dark-text-muted group-hover:text-blue-400 transition-colors">
+                      <span className="text-xs text-dark-text-muted group-hover:text-teal-400 transition-colors">
                         Explore templates
                       </span>
-                      <ArrowRightIcon className="w-4 h-4 text-blue-500 group-hover:text-blue-400 group-hover:translate-x-1 transition-all" />
+                      <ArrowRightIcon className="w-4 h-4 text-teal-500 group-hover:text-teal-400 group-hover:translate-x-1 transition-all" />
                     </div>
                   </div>
                 </div>
@@ -418,7 +418,7 @@ export default function TemplateSelection() {
         <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-12">
           {filteredTemplates.map((template, index) => {
             const category = categories.find(c => c.id === template.category);
-            const selectedClasses = 'border-blue-500 shadow-2xl shadow-blue-500 scale-105';
+            const selectedClasses = 'border-teal-500 shadow-2xl shadow-blue-500 scale-105';
             return (
               <div
                 key={template.id}
@@ -435,7 +435,7 @@ export default function TemplateSelection() {
                   <div className={`card-dark rounded-2xl overflow-hidden shadow-xl transition-all duration-500 border-2 ${
                     selectedTemplate === template.id
                       ? selectedClasses
-                      : 'border-dark-border group-hover:border-blue-400 group-hover:shadow-2xl'
+                      : 'border-dark-border group-hover:border-teal-400 group-hover:shadow-2xl'
                   }`}>
                     
                     {/* Full-Size PDF-like Template Preview - Fixed Aspect Ratio */}
@@ -446,8 +446,8 @@ export default function TemplateSelection() {
                       
                       {/* Hover Overlay */}
                       {isHovering === template.id && (
-                        <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center backdrop-blur-sm transition-all duration-300 z-10">
-                          <div className="bg-dark-primary text-dark-text-primary px-8 py-4 rounded-2xl font-bold shadow-2xl transform scale-110 text-xl">
+                        <div className="absolute inset-0 bg-gray-900 bg-opacity-60 flex items-center justify-center backdrop-blur-sm transition-all duration-300 z-10">
+                          <div className="bg-gray-900 text-dark-text-primary px-8 py-4 rounded-2xl font-bold shadow-2xl transform scale-110 text-xl">
                             Click to Select
                           </div>
                         </div>
@@ -457,10 +457,10 @@ export default function TemplateSelection() {
                     {/* Template Info - Enhanced for visibility */}
                     <div className="p-6">
                       <div className="flex items-start justify-between mb-3">
-                        <h3 className="font-bold text-dark-text-primary text-xl leading-tight group-hover:text-blue-400 transition-colors">
+                        <h3 className="font-bold text-dark-text-primary text-xl leading-tight group-hover:text-teal-400 transition-colors">
                           {template.name}
                         </h3>
-                        <div className="text-sm font-bold px-3 py-1 rounded-xl bg-dark-tertiary text-dark-text-primary border border-dark-border">
+                        <div className="text-sm font-bold px-3 py-1 rounded-xl bg-gray-700 text-dark-text-primary border border-dark-border">
                           {template.layout ? template.layout.replace('-', ' ') : 'Standard'}
                         </div>
                       </div>
@@ -490,7 +490,7 @@ export default function TemplateSelection() {
                         {template.industry.slice(0, 3).map((industry) => (
                           <span
                             key={industry}
-                            className="text-sm bg-dark-tertiary text-blue-400 px-3 py-1 rounded-lg font-medium border border-dark-border"
+                            className="text-sm bg-gray-700 text-teal-400 px-3 py-1 rounded-lg font-medium border border-dark-border"
                           >
                             {industry}
                           </span>
@@ -507,7 +507,7 @@ export default function TemplateSelection() {
                         <div className="text-sm font-semibold text-dark-text-primary mb-2">Key Features:</div>
                         <div className="flex flex-wrap gap-1">
                           {template.features.slice(0, 3).map((feature, idx) => (
-                            <span key={idx} className="text-xs text-dark-text-muted bg-dark-secondary px-2 py-1 rounded">
+                            <span key={idx} className="text-xs text-dark-text-muted bg-gray-800 px-2 py-1 rounded">
                               {feature}
                             </span>
                           ))}
@@ -540,7 +540,7 @@ export default function TemplateSelection() {
 
                   {/* Selection Badge */}
                   {selectedTemplate === template.id && (
-                    <div className="absolute top-4 right-4 w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center shadow-xl border-4 border-dark-primary animate-bounce">
+                    <div className="absolute top-4 right-4 w-12 h-12 bg-teal-600 rounded-full flex items-center justify-center shadow-xl border-4 border-dark-primary animate-bounce">
                       <CheckIconSolid className="w-6 h-6 text-white" />
                     </div>
                   )}
@@ -559,7 +559,7 @@ export default function TemplateSelection() {
                       </div>
                     )}
                     {template.isPremium && (
-                      <div className="bg-purple-500 text-white text-sm px-3 py-1 rounded-full font-bold shadow-lg">
+                      <div className="bg-emerald-500 text-white text-sm px-3 py-1 rounded-full font-bold shadow-lg">
                         👑 Pro
                       </div>
                     )}
@@ -587,7 +587,7 @@ export default function TemplateSelection() {
                 return (
                   <>
                     <div 
-                      className="w-10 h-12 rounded border-2 border-blue-300 shadow-sm"
+                      className="w-10 h-12 rounded border-2 border-teal-300 shadow-sm"
                       style={{
                         background: `linear-gradient(135deg, ${template.colors.primary}, ${template.colors.secondary})`
                       }}

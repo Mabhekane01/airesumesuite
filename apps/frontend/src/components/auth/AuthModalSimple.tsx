@@ -45,7 +45,7 @@ export default function AuthModalSimple({ isOpen, onClose, initialMode = 'login'
       {/* Backdrop */}
       <div
         onClick={onClose}
-        className="absolute inset-0 bg-black/70 backdrop-blur-md"
+        className="absolute inset-0 bg-gray-900/70 backdrop-blur-md"
       />
       
       {/* Modal */}

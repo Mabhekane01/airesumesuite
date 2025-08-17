@@ -31,7 +31,7 @@ function App() {
   const { isAuthenticated } = useAuthStore()
 
   return (
-    <div className="dark bg-dark-primary min-h-screen">
+    <div className="dark bg-gray-900 min-h-screen">
       <QueryClientProvider client={queryClient}>
         <NotificationProvider>
           <SearchProvider>

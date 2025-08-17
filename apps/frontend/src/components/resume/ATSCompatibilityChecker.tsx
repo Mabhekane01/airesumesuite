@@ -306,9 +306,9 @@ export default function ATSCompatibilityChecker({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-dark-tertiary rounded-lg max-w-6xl w-full max-h-[90vh] overflow-y-auto border border-dark-border">
-        <div className="sticky top-0 bg-dark-tertiary border-b border-dark-border p-6 flex items-center justify-between">
+    <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-gray-700 rounded-lg max-w-6xl w-full max-h-[90vh] overflow-y-auto border border-dark-border">
+        <div className="sticky top-0 bg-gray-700 border-b border-dark-border p-6 flex items-center justify-between">
           <div className="flex items-center">
             <ShieldCheckIcon className="w-6 h-6 text-dark-accent mr-2" />
             <h2 className="text-xl font-semibold text-dark-text-primary">ATS Compatibility Analysis</h2>
@@ -447,7 +447,7 @@ export default function ATSCompatibilityChecker({
 
                 <Card className="card-dark p-6">
                   <div className="flex items-center mb-3">
-                    <ShieldCheckIcon className="w-5 h-5 text-purple-400 mr-2" />
+                    <ShieldCheckIcon className="w-5 h-5 text-emerald-400 mr-2" />
                     <h4 className="font-medium text-dark-text-primary">Keyword Match</h4>
                   </div>
                   <div className="text-3xl font-bold text-dark-text-primary mb-2">
@@ -477,7 +477,7 @@ export default function ATSCompatibilityChecker({
                   <div className="flex-1">
                     <h4 className="font-semibold text-dark-text-primary mb-2">Job Alignment Assessment</h4>
                     <p className="text-dark-text-secondary mb-3">{analysisResult.verdict.message}</p>
-                    <p className="text-sm text-dark-text-secondary bg-dark-secondary/20 p-3 rounded-lg border border-dark-border">
+                    <p className="text-sm text-dark-text-secondary bg-gray-800/20 p-3 rounded-lg border border-dark-border">
                       <strong className="text-dark-text-primary">Recommendation:</strong> {analysisResult.verdict.recommendation}
                     </p>
                   </div>

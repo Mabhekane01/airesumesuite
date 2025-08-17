@@ -42,7 +42,7 @@ export default function DocumentActions({
       label: 'View', 
       icon: EyeIcon, 
       onClick: onPreview,
-      color: 'text-blue-400 hover:text-blue-300'
+      color: 'text-teal-400 hover:text-teal-300'
     }] : []),
     { 
       label: 'Edit', 
@@ -54,7 +54,7 @@ export default function DocumentActions({
       label: 'Download PDF', 
       icon: ArrowDownTrayIcon, 
       onClick: onDownload,
-      color: 'text-purple-400 hover:text-purple-300'
+      color: 'text-emerald-400 hover:text-emerald-300'
     }] : []),
     ...(onPrint ? [{ 
       label: 'Print', 
@@ -108,7 +108,7 @@ export default function DocumentActions({
               transition={{ type: 'spring', duration: 0.2 }}
               className="absolute right-0 top-full mt-2 w-48 z-20"
             >
-              <div className="card-dark rounded-lg shadow-dark-xl border border-dark-border/50 backdrop-blur-lg bg-dark-secondary/95 overflow-hidden">
+              <div className="card-dark rounded-lg shadow-dark-xl border border-dark-border/50 backdrop-blur-lg bg-gray-800/95 overflow-hidden">
                 {actions.map((action, index) => {
                   const Icon = action.icon;
                   return (

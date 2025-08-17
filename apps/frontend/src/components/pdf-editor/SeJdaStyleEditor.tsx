@@ -245,12 +245,12 @@ const SeJdaStyleEditor: React.FC = () => {
       <div className="max-w-7xl mx-auto space-y-6">
         
         {/* Header */}
-        <div className="bg-black/20 backdrop-blur-xl border border-gray-600/20 rounded-2xl p-6">
+        <div className="bg-gray-900/20 backdrop-blur-xl border border-gray-600/20 rounded-2xl p-6">
           <h1 className="text-3xl font-bold text-white mb-2">SeJda-Style PDF Editor</h1>
           <p className="text-gray-300">
-            <span className="text-blue-400 font-semibold">Step 1:</span> Upload Once → 
+            <span className="text-teal-400 font-semibold">Step 1:</span> Upload Once → 
             <span className="text-green-400 font-semibold"> Step 2:</span> Edit with live preview → 
-            <span className="text-purple-400 font-semibold"> Step 3:</span> Apply changes on server
+            <span className="text-emerald-400 font-semibold"> Step 3:</span> Apply changes on server
           </p>
         </div>
 
@@ -282,14 +282,14 @@ const SeJdaStyleEditor: React.FC = () => {
 
         {/* Step 1: Upload Section */}
         {!uploadedPDF && (
-          <div className="bg-black/20 backdrop-blur-xl border border-gray-600/20 rounded-2xl p-8">
+          <div className="bg-gray-900/20 backdrop-blur-xl border border-gray-600/20 rounded-2xl p-8">
             <div className="text-center">
-              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-blue-500/20 backdrop-blur-xl border border-blue-400/30 shadow-2xl mb-6">
-                <Upload className="w-10 h-10 text-blue-400" />
+              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-teal-500/20 backdrop-blur-xl border border-teal-400/30 shadow-2xl mb-6">
+                <Upload className="w-10 h-10 text-teal-400" />
               </div>
               
               <h2 className="text-2xl font-bold text-white mb-4">
-                <span className="text-blue-400">Step 1:</span> Upload Your PDF
+                <span className="text-teal-400">Step 1:</span> Upload Your PDF
               </h2>
               <p className="text-gray-300 mb-8">
                 PDF will be stored on server and you'll get a preview for editing
@@ -309,7 +309,7 @@ const SeJdaStyleEditor: React.FC = () => {
                 className={`inline-flex items-center px-8 py-4 rounded-xl text-white font-medium transition-all duration-300 ${
                   isUploading 
                     ? 'bg-gray-600 cursor-not-allowed' 
-                    : 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 cursor-pointer hover:scale-105'
+                    : 'bg-gradient-to-r from-blue-600 to-teal-700 hover:from-blue-500 hover:to-teal-600 cursor-pointer hover:scale-105'
                 } shadow-xl hover:shadow-2xl`}
               >
                 {isUploading ? (
@@ -329,7 +329,7 @@ const SeJdaStyleEditor: React.FC = () => {
                 <h3 className="text-white font-semibold mb-3">How It Works:</h3>
                 <div className="space-y-2 text-sm text-gray-300">
                   <div className="flex items-center gap-2">
-                    <span className="text-blue-400">1.</span>
+                    <span className="text-teal-400">1.</span>
                     <span>Upload generates file ID (e.g., file_12345)</span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -337,7 +337,7 @@ const SeJdaStyleEditor: React.FC = () => {
                     <span>Live editing with transparent overlay</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-purple-400">3.</span>
+                    <span className="text-emerald-400">3.</span>
                     <span>Changes applied with PDF library</span>
                   </div>
                 </div>
@@ -352,7 +352,7 @@ const SeJdaStyleEditor: React.FC = () => {
             
             {/* Toolbar */}
             <div className="lg:col-span-1">
-              <div className="bg-black/20 backdrop-blur-xl border border-gray-600/20 rounded-2xl p-6 space-y-4">
+              <div className="bg-gray-900/20 backdrop-blur-xl border border-gray-600/20 rounded-2xl p-6 space-y-4">
                 <h3 className="text-lg font-bold text-white mb-4">
                   <span className="text-green-400">Step 2:</span> Live Editing
                 </h3>
@@ -361,7 +361,7 @@ const SeJdaStyleEditor: React.FC = () => {
                 <div className="space-y-2">
                   <Button
                     onClick={() => setEditingState(prev => ({ ...prev, tool: 'select' }))}
-                    className={`w-full justify-start ${editingState.tool === 'select' ? 'bg-blue-600' : 'bg-gray-700'}`}
+                    className={`w-full justify-start ${editingState.tool === 'select' ? 'bg-teal-600' : 'bg-gray-700'}`}
                   >
                     <MousePointer className="w-4 h-4 mr-2" />
                     Select Tool
@@ -369,7 +369,7 @@ const SeJdaStyleEditor: React.FC = () => {
                   
                   <Button
                     onClick={() => setEditingState(prev => ({ ...prev, tool: 'text' }))}
-                    className={`w-full justify-start ${editingState.tool === 'text' ? 'bg-blue-600' : 'bg-gray-700'}`}
+                    className={`w-full justify-start ${editingState.tool === 'text' ? 'bg-teal-600' : 'bg-gray-700'}`}
                   >
                     <Type className="w-4 h-4 mr-2" />
                     Add Text
@@ -377,7 +377,7 @@ const SeJdaStyleEditor: React.FC = () => {
                   
                   <Button
                     onClick={() => setEditingState(prev => ({ ...prev, tool: 'highlight' }))}
-                    className={`w-full justify-start ${editingState.tool === 'highlight' ? 'bg-blue-600' : 'bg-gray-700'}`}
+                    className={`w-full justify-start ${editingState.tool === 'highlight' ? 'bg-teal-600' : 'bg-gray-700'}`}
                   >
                     <Highlighter className="w-4 h-4 mr-2" />
                     Highlight
@@ -491,7 +491,7 @@ const SeJdaStyleEditor: React.FC = () => {
                   <Button
                     onClick={applyChanges}
                     disabled={changes.length === 0 || isApplying}
-                    className="w-full bg-purple-600 hover:bg-purple-500"
+                    className="w-full bg-emerald-600 hover:bg-emerald-500"
                   >
                     {isApplying ? (
                       <>
@@ -518,12 +518,12 @@ const SeJdaStyleEditor: React.FC = () => {
 
             {/* PDF Preview with Transparent Overlay (Sejda-style) */}
             <div className="lg:col-span-3">
-              <div className="bg-black/20 backdrop-blur-xl border border-gray-600/20 rounded-2xl p-6">
+              <div className="bg-gray-900/20 backdrop-blur-xl border border-gray-600/20 rounded-2xl p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-bold text-white">{uploadedPDF.fileName}</h3>
                   <div className="flex items-center gap-4 text-sm">
                     <div className="text-gray-300">
-                      Tool: <span className="capitalize text-blue-400">{editingState.tool}</span>
+                      Tool: <span className="capitalize text-teal-400">{editingState.tool}</span>
                     </div>
                     <div className="text-gray-400">
                       {editingState.tool === 'text' && 'Click to add text'}
@@ -570,8 +570,8 @@ const SeJdaStyleEditor: React.FC = () => {
                           <div
                             key={change.id}
                             className={`absolute pointer-events-auto cursor-pointer transition-all
-                              ${editingState.activeChange === change.id ? 'ring-2 ring-blue-400 ring-opacity-75' : 'hover:ring-1 hover:ring-gray-400'}
-                              ${change.action === 'add_text' ? 'bg-blue-50/10 border border-blue-200/30' : ''}
+                              ${editingState.activeChange === change.id ? 'ring-2 ring-teal-400 ring-opacity-75' : 'hover:ring-1 hover:ring-gray-400'}
+                              ${change.action === 'add_text' ? 'bg-blue-50/10 border border-teal-200/30' : ''}
                               ${change.action === 'highlight' ? 'bg-yellow-300/50 border border-yellow-400/50' : ''}
                             `}
                             style={{

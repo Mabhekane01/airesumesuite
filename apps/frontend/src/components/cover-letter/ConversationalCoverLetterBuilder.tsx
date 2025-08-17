@@ -761,7 +761,7 @@ export default function ConversationalCoverLetterBuilder() {
                           ? 'bg-accent-primary text-white'
                           : message.type === 'system'
                           ? 'bg-accent-tertiary/20 border border-accent-tertiary/30 text-accent-tertiary'
-                          : 'bg-dark-secondary text-dark-text-primary'
+                          : 'bg-gray-800 text-dark-text-primary'
                       }`}
                     >
                       <div className="whitespace-pre-wrap">{message.content}</div>
@@ -803,7 +803,7 @@ export default function ConversationalCoverLetterBuilder() {
                 {/* Typing Indicator */}
                 {isTyping && (
                   <div className="flex justify-start">
-                    <div className="bg-dark-secondary rounded-lg p-4">
+                    <div className="bg-gray-800 rounded-lg p-4">
                       <div className="flex space-x-1">
                         <div className="w-2 h-2 bg-accent-primary rounded-full animate-bounce"></div>
                         <div className="w-2 h-2 bg-accent-primary rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
@@ -1014,7 +1014,7 @@ export default function ConversationalCoverLetterBuilder() {
 
         {/* Cover Letter Preview Modal */}
         {coverLetterData.content && currentStep === 'review' && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="fixed inset-0 bg-gray-900/50 flex items-center justify-center z-50 p-4">
             <Card className="card-dark max-w-4xl w-full max-h-[90vh] overflow-y-auto">
               <div className="p-6">
                 <div className="flex items-center justify-between mb-6">

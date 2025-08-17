@@ -74,10 +74,10 @@ export default function DashboardHome() {
   if (isLoading) {
     return (
       <div className="animate-pulse space-y-4 sm:space-y-6">
-        <div className="h-6 sm:h-8 bg-dark-tertiary rounded w-1/4 mb-4 sm:mb-6"></div>
+        <div className="h-6 sm:h-8 bg-gray-700 rounded w-1/4 mb-4 sm:mb-6"></div>
         <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-24 sm:h-28 lg:h-32 bg-dark-tertiary rounded-lg"></div>
+            <div key={i} className="h-24 sm:h-28 lg:h-32 bg-gray-700 rounded-lg"></div>
           ))}
         </div>
       </div>
@@ -108,7 +108,7 @@ export default function DashboardHome() {
       title: 'Total Applications',
       value: stats.totalApplications,
       icon: BriefcaseIcon,
-      color: 'bg-blue-500',
+      color: 'bg-teal-500',
       change: `+${stats.weeklyGrowth}% this week`,
       changeType: stats.weeklyGrowth > 0 ? 'positive' : 'neutral',
     },
@@ -124,7 +124,7 @@ export default function DashboardHome() {
       title: 'Response Rate',
       value: `${stats.responseRate}%`,
       icon: ChartBarIcon,
-      color: 'bg-purple-500',
+      color: 'bg-emerald-500',
       change: '+5% from last month',
       changeType: 'positive',
     },
@@ -144,14 +144,14 @@ export default function DashboardHome() {
       description: 'Add a new job application',
       icon: PlusIcon,
       href: '/dashboard/applications/new',
-      color: 'bg-purple-600',
+      color: 'bg-emerald-600',
     },
     {
       title: 'Build Resume',
       description: 'Create or update your resume',
       icon: DocumentTextIcon,
       href: '/dashboard/resume/builder',
-      color: 'bg-blue-600',
+      color: 'bg-teal-600',
     },
     {
       title: 'AI Career Coach',

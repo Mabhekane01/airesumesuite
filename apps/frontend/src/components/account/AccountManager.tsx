@@ -302,13 +302,13 @@ export default function AccountManager() {
                 </span>
               </div>
               <div className="flex items-center space-x-1">
-                <ShieldCheckIcon className="w-4 h-4 text-blue-400" />
+                <ShieldCheckIcon className="w-4 h-4 text-teal-400" />
                 <span className="text-xs text-dark-text-secondary capitalize">
                   {userData.provider} Account
                 </span>
               </div>
               <div className="flex items-center space-x-1">
-                <CalendarDaysIcon className="w-4 h-4 text-purple-400" />
+                <CalendarDaysIcon className="w-4 h-4 text-emerald-400" />
                 <span className="text-xs text-dark-text-secondary">
                   Member since {new Date(userData.createdAt).toLocaleDateString()}
                 </span>
@@ -516,7 +516,7 @@ export default function AccountManager() {
               </div>
             ) : (
               <div className="text-center py-8">
-                <ShieldCheckIcon className="w-12 h-12 text-blue-400 mx-auto mb-4" />
+                <ShieldCheckIcon className="w-12 h-12 text-teal-400 mx-auto mb-4" />
                 <h3 className="text-lg font-semibold text-dark-text-primary mb-2">Social Login Account</h3>
                 <p className="text-dark-text-secondary">
                   You're signed in with {userData.provider}. Password changes are managed through your {userData.provider} account.
@@ -537,7 +537,7 @@ export default function AccountManager() {
               {sessions.length > 0 ? (
                 <div className="space-y-3">
                   {sessions.map((session) => (
-                    <div key={session.id} className="flex items-center justify-between p-4 bg-dark-secondary rounded-lg border border-dark-border">
+                    <div key={session.id} className="flex items-center justify-between p-4 bg-gray-800 rounded-lg border border-dark-border">
                       <div className="flex items-center space-x-3">
                         <ComputerDesktopIcon className="w-5 h-5 text-dark-text-muted" />
                         <div>

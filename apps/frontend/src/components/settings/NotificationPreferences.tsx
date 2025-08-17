@@ -202,7 +202,7 @@ export default function NotificationPreferences({ onClose }: NotificationPrefere
                 className="sr-only peer"
                 disabled={saving}
               />
-              <div className="w-11 h-6 bg-dark-tertiary peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-accent-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent-primary"></div>
+              <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-accent-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent-primary"></div>
             </label>
           </div>
 
@@ -220,7 +220,7 @@ export default function NotificationPreferences({ onClose }: NotificationPrefere
                     className={`flex items-center space-x-3 p-3 rounded-lg border transition-colors cursor-pointer ${
                       enabled && !isComingSoon
                         ? 'border-accent-primary bg-accent-primary/10'
-                        : 'border-dark-border bg-dark-secondary/30'
+                        : 'border-dark-border bg-gray-800/30'
                     } ${isComingSoon ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     <input
@@ -271,7 +271,7 @@ export default function NotificationPreferences({ onClose }: NotificationPrefere
                   className="sr-only peer"
                   disabled={saving}
                 />
-                <div className="w-11 h-6 bg-dark-tertiary peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-accent-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent-primary"></div>
+                <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-accent-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent-primary"></div>
               </label>
             </div>
             
@@ -349,7 +349,7 @@ export default function NotificationPreferences({ onClose }: NotificationPrefere
                     className="sr-only peer"
                     disabled={saving}
                   />
-                  <div className="w-11 h-6 bg-dark-tertiary peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-accent-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent-primary"></div>
+                  <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-accent-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent-primary"></div>
                 </label>
               </div>
 
@@ -398,7 +398,7 @@ export default function NotificationPreferences({ onClose }: NotificationPrefere
                             className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
                               isEnabled && isChannelAvailable && !isComingSoon
                                 ? 'bg-accent-primary text-white'
-                                : 'bg-dark-secondary text-dark-text-secondary border border-dark-border'
+                                : 'bg-gray-800 text-dark-text-secondary border border-dark-border'
                             } ${(!isChannelAvailable || isComingSoon) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-accent-primary/80'}`}
                           >
                             {channelLabels[channel as keyof typeof channelLabels]}

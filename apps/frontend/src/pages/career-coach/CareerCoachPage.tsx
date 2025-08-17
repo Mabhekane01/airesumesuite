@@ -28,7 +28,7 @@ export default function CareerCoachPage() {
     >
       <div className="min-h-screen bg-gradient-to-br from-dark-primary via-dark-secondary to-dark-primary">
       {/* Header */}
-      <div className="bg-dark-secondary/50 border-b border-dark-border backdrop-blur-sm">
+      <div className="bg-gray-800/50 border-b border-dark-border backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-3 xs:px-4 sm:px-6 py-4 xs:py-5 sm:py-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
             <div className="flex items-center gap-2 xs:gap-3">
@@ -65,7 +65,7 @@ export default function CareerCoachPage() {
       </div>
 
       {/* Mobile Actions */}
-      <div className="sm:hidden bg-dark-secondary border-b border-dark-border p-3 xs:p-4">
+      <div className="sm:hidden bg-gray-800 border-b border-dark-border p-3 xs:p-4">
         <div className="flex items-center justify-between">
           <div className="text-xs xs:text-sm text-dark-text-secondary truncate mr-3">
             {selectedResume ? `Selected: ${selectedResume.title}` : 'Select a resume to start'}
@@ -89,8 +89,8 @@ export default function CareerCoachPage() {
             <Card className="card-dark h-full lg:h-full overflow-hidden">
               <div className="p-3 xs:p-4 border-b border-dark-border bg-gradient-to-r from-dark-secondary to-dark-tertiary">
                 <div className="flex items-center gap-2 xs:gap-3">
-                  <div className="p-1.5 bg-blue-500/20 rounded-md flex-shrink-0">
-                    <DocumentTextIcon className="w-4 h-4 xs:w-5 xs:h-5 text-blue-400" />
+                  <div className="p-1.5 bg-teal-500/20 rounded-md flex-shrink-0">
+                    <DocumentTextIcon className="w-4 h-4 xs:w-5 xs:h-5 text-teal-400" />
                   </div>
                   <div className="flex-grow min-w-0">
                     <h2 className="text-base xs:text-lg font-bold text-white">Select Resume</h2>
@@ -105,25 +105,25 @@ export default function CareerCoachPage() {
                 
                 {/* Quick Start Guide */}
                 {!selectedResume && (
-                  <div className="mt-3 xs:mt-4 p-3 xs:p-4 bg-blue-600/10 border border-blue-500/20 rounded-lg">
-                    <h3 className="text-sm font-semibold text-blue-400 mb-2 xs:mb-3">Quick Start</h3>
+                  <div className="mt-3 xs:mt-4 p-3 xs:p-4 bg-teal-600/10 border border-teal-500/20 rounded-lg">
+                    <h3 className="text-sm font-semibold text-teal-400 mb-2 xs:mb-3">Quick Start</h3>
                     <ol className="text-xs text-dark-text-secondary space-y-1.5 xs:space-y-2">
                       <li className="flex items-start gap-2">
-                        <span className="text-blue-400 font-semibold min-w-[16px]">1.</span>
+                        <span className="text-teal-400 font-semibold min-w-[16px]">1.</span>
                         Select a resume from above
                       </li>
                       <li className="flex items-start gap-2">
-                        <span className="text-blue-400 font-semibold min-w-[16px]">2.</span>
+                        <span className="text-teal-400 font-semibold min-w-[16px]">2.</span>
                         <span className="hidden lg:inline">Review it in the preview panel</span>
                         <span className="lg:hidden">Tap to preview</span>
                       </li>
                       <li className="flex items-start gap-2">
-                        <span className="text-blue-400 font-semibold min-w-[16px]">3.</span>
+                        <span className="text-teal-400 font-semibold min-w-[16px]">3.</span>
                         <span className="hidden xs:inline">Click "Start Coaching Chat"</span>
                         <span className="xs:hidden">Start chat</span>
                       </li>
                       <li className="flex items-start gap-2">
-                        <span className="text-blue-400 font-semibold min-w-[16px]">4.</span>
+                        <span className="text-teal-400 font-semibold min-w-[16px]">4.</span>
                         Ask any career question!
                       </li>
                     </ol>
@@ -181,7 +181,7 @@ export default function CareerCoachPage() {
               <div className="p-3 xs:p-4 sm:p-6 border-b border-dark-border bg-gradient-to-r from-dark-secondary to-dark-tertiary">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
                   <div className="flex items-center gap-2 xs:gap-3">
-                    <EyeIcon className="w-4 h-4 xs:w-5 xs:h-5 text-purple-400" />
+                    <EyeIcon className="w-4 h-4 xs:w-5 xs:h-5 text-emerald-400" />
                     <div className="min-w-0">
                       <h2 className="text-base xs:text-lg font-bold text-white">Resume Preview</h2>
                       <p className="text-xs xs:text-sm text-dark-text-secondary truncate">
@@ -213,7 +213,7 @@ export default function CareerCoachPage() {
                   </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center h-full text-center p-4 xs:p-6 sm:p-8">
-                    <div className="p-4 xs:p-6 bg-dark-secondary rounded-full mb-4 xs:mb-6">
+                    <div className="p-4 xs:p-6 bg-gray-800 rounded-full mb-4 xs:mb-6">
                       <DocumentTextIcon className="w-8 h-8 xs:w-12 xs:h-12 text-dark-text-muted" />
                     </div>
                     <h3 className="text-lg xs:text-xl font-semibold text-dark-text-primary mb-2 xs:mb-3">

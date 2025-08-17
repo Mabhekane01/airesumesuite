@@ -87,7 +87,7 @@ export default function PublicTemplatesPage() {
 
         {/* Call to Action */}
         {!isAuthenticated && (
-          <div className="bg-dark-secondary/30 backdrop-blur-sm rounded-xl p-6 mb-12 border border-dark-border">
+          <div className="bg-gray-800/30 backdrop-blur-sm rounded-xl p-6 mb-12 border border-dark-border">
             <div className="text-center">
               <h2 className="text-2xl font-bold text-dark-text-primary mb-2">
                 Ready to Create Your Perfect Resume?
@@ -131,7 +131,7 @@ export default function PublicTemplatesPage() {
         )}
 
         {/* Templates Gallery */}
-        <div className="bg-dark-secondary/20 backdrop-blur-sm rounded-xl p-8 border border-dark-border">
+        <div className="bg-gray-800/20 backdrop-blur-sm rounded-xl p-8 border border-dark-border">
           <OverleafTemplateGallery
             selectedTemplateId={selectedTemplate}
             onTemplateSelect={handleTemplateSelect}

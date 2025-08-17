@@ -89,7 +89,7 @@ export default function VolunteerExperienceForm() {
               onClick={() => removeVolunteerExperience(index)}
               variant="outline"
               size="sm"
-              className="accent-danger hover:bg-dark-primary/20"
+              className="accent-danger hover:bg-gray-900/20"
             >
               <TrashIcon className="w-4 h-4" />
             </Button>
@@ -152,7 +152,7 @@ export default function VolunteerExperienceForm() {
                   updateVolunteerExperience(index, 'endDate', '');
                 }
               }}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-dark-border bg-dark-secondary rounded"
+              className="h-4 w-4 text-teal-600 focus:ring-teal-500 border-dark-border bg-gray-800 rounded"
             />
             <label htmlFor={`currentRole-${experience.id}`} className="ml-2 block text-sm text-dark-text-primary">
               I currently volunteer here

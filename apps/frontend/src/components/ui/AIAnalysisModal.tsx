@@ -82,7 +82,7 @@ const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({
     <div className="fixed inset-0 z-40 flex items-center justify-center p-4">
       {/* Backdrop */}
       <div 
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300"
+        className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity duration-300"
         onClick={analysisStep !== 'analyzing' ? onClose : undefined}
       />
       
@@ -99,7 +99,7 @@ const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({
         {analysisStep !== 'analyzing' && (
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 p-2 rounded-full bg-dark-tertiary/80 hover:bg-dark-tertiary transition-colors"
+            className="absolute top-4 right-4 p-2 rounded-full bg-gray-700/80 hover:bg-gray-700 transition-colors"
           >
             <XMarkIcon className="w-5 h-5 text-dark-text-secondary" />
           </button>
@@ -120,8 +120,8 @@ const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({
               </div>
               
               {/* Pulsing rings */}
-              <div className="absolute inset-0 rounded-full border-2 border-blue-400/30 animate-ping" />
-              <div className="absolute inset-0 rounded-full border-2 border-purple-400/20 animate-ping" style={{ animationDelay: '0.5s' }} />
+              <div className="absolute inset-0 rounded-full border-2 border-teal-400/30 animate-ping" />
+              <div className="absolute inset-0 rounded-full border-2 border-emerald-400/20 animate-ping" style={{ animationDelay: '0.5s' }} />
             </div>
             
             <div>
@@ -139,7 +139,7 @@ const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({
               <span>Analysis Progress</span>
               <span>{Math.min(((currentMessageIndex + 1) / messages.length) * 100, 100).toFixed(0)}%</span>
             </div>
-            <div className="w-full bg-dark-tertiary rounded-full h-2">
+            <div className="w-full bg-gray-700 rounded-full h-2">
               <div 
                 className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-1000 ease-out"
                 style={{ 
@@ -151,7 +151,7 @@ const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({
 
           {/* AI Message with typewriter effect */}
           <div className="
-            bg-dark-tertiary/50 rounded-xl p-4 min-h-[80px]
+            bg-gray-700/50 rounded-xl p-4 min-h-[80px]
             border border-dark-accent/20
           ">
             <div className="flex items-start space-x-3">
@@ -173,11 +173,11 @@ const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({
           <div className="mt-4 flex items-center justify-center space-x-6 text-sm">
             {analysisStep === 'analyzing' && (
               <>
-                <div className="flex items-center space-x-2 text-blue-400">
+                <div className="flex items-center space-x-2 text-teal-400">
                   <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" />
                   <span>Reading resume</span>
                 </div>
-                <div className="flex items-center space-x-2 text-purple-400">
+                <div className="flex items-center space-x-2 text-emerald-400">
                   <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse" style={{ animationDelay: '0.3s' }} />
                   <span>Matching skills</span>
                 </div>
@@ -189,7 +189,7 @@ const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({
             )}
             
             {analysisStep === 'complete' && matchScore && (
-              <div className="bg-gradient-to-r from-green-500/20 to-blue-500/20 rounded-lg px-4 py-2 border border-green-400/30">
+              <div className="bg-gradient-to-r from-green-500/20 to-teal-500/20 rounded-lg px-4 py-2 border border-green-400/30">
                 <div className="flex items-center space-x-2">
                   <SparklesIcon className="w-5 h-5 text-green-400" />
                   <span className="text-green-400 font-semibold">Analysis Complete!</span>

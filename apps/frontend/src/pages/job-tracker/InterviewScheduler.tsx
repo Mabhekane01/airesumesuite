@@ -73,7 +73,7 @@ const INTERVIEW_TYPES = [
 ];
 
 const STATUS_CONFIG = {
-  scheduled: { label: 'Scheduled', color: 'bg-blue-500/20 text-blue-400 border-blue-400/30' },
+  scheduled: { label: 'Scheduled', color: 'bg-teal-500/20 text-teal-400 border-teal-400/30' },
   completed: { label: 'Completed', color: 'bg-green-500/20 text-green-400 border-green-400/30' },
   cancelled: { label: 'Cancelled', color: 'bg-red-500/20 text-red-400 border-red-400/30' },
   rescheduled: { label: 'Rescheduled', color: 'bg-yellow-500/20 text-yellow-400 border-yellow-400/30' },
@@ -169,13 +169,13 @@ export default function InterviewScheduler() {
   if (loading) {
     return (
       <div className="animate-pulse space-y-6">
-        <div className="h-8 bg-dark-secondary/20 rounded w-1/4"></div>
+        <div className="h-8 bg-gray-800/20 rounded w-1/4"></div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="h-24 bg-dark-secondary/20 rounded-lg"></div>
+            <div key={i} className="h-24 bg-gray-800/20 rounded-lg"></div>
           ))}
         </div>
-        <div className="h-96 bg-dark-secondary/20 rounded-lg"></div>
+        <div className="h-96 bg-gray-800/20 rounded-lg"></div>
       </div>
     );
   }
@@ -204,7 +204,7 @@ export default function InterviewScheduler() {
       <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 xs:gap-3 sm:gap-4">
         <div className="card-dark rounded-lg border border-dark-border p-3 xs:p-4">
           <div className="flex items-center">
-            <CalendarIcon className="w-6 h-6 xs:w-8 xs:h-8 text-blue-400 flex-shrink-0" />
+            <CalendarIcon className="w-6 h-6 xs:w-8 xs:h-8 text-teal-400 flex-shrink-0" />
             <div className="ml-2 xs:ml-3 min-w-0">
               <p className="text-xs xs:text-sm font-medium text-dark-text-secondary truncate">Today's Interviews</p>
               <p className="text-base xs:text-lg font-semibold text-dark-text-primary">{todayInterviews.length}</p>
@@ -243,7 +243,7 @@ export default function InterviewScheduler() {
         
         <div className="card-dark rounded-lg border border-dark-border p-3 xs:p-4">
           <div className="flex items-center">
-            <UserGroupIcon className="w-6 h-6 xs:w-8 xs:h-8 text-purple-400 flex-shrink-0" />
+            <UserGroupIcon className="w-6 h-6 xs:w-8 xs:h-8 text-emerald-400 flex-shrink-0" />
             <div className="ml-2 xs:ml-3 min-w-0">
               <p className="text-xs xs:text-sm font-medium text-dark-text-secondary truncate">Total</p>
               <p className="text-base xs:text-lg font-semibold text-dark-text-primary">{interviews.length}</p>
@@ -267,7 +267,7 @@ export default function InterviewScheduler() {
           </select>
         </div>
 
-        <div className="flex items-center space-x-1 bg-dark-secondary/20 rounded-lg p-1 border border-dark-border w-full xs:w-auto">
+        <div className="flex items-center space-x-1 bg-gray-800/20 rounded-lg p-1 border border-dark-border w-full xs:w-auto">
           <button
             onClick={() => setViewMode('list')}
             className={`flex-1 xs:flex-none px-3 py-1 text-sm font-medium rounded transition-colors ${
@@ -314,12 +314,12 @@ export default function InterviewScheduler() {
               <div
                 key={interview.id}
                 className={`card-dark rounded-lg border border-dark-border p-4 xs:p-5 sm:p-6 ${
-                  isToday ? 'ring-2 ring-blue-500/50' : ''
+                  isToday ? 'ring-2 ring-teal-500/50' : ''
                 }`}
               >
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between space-y-3 sm:space-y-0 mb-4">
                   <div className="flex items-start space-x-3 xs:space-x-4 flex-1 min-w-0">
-                    <div className="p-2 bg-dark-secondary/20 rounded-lg flex-shrink-0">
+                    <div className="p-2 bg-gray-800/20 rounded-lg flex-shrink-0">
                       {interviewType && <interviewType.icon className="w-4 h-4 xs:w-5 xs:h-5 text-dark-accent" />}
                     </div>
                     <div className="min-w-0 flex-1">
@@ -349,7 +349,7 @@ export default function InterviewScheduler() {
                       {statusConfig.label}
                     </span>
                     {isToday && (
-                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-500/20 text-blue-400 border border-blue-400/30">
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-teal-500/20 text-teal-400 border border-teal-400/30">
                         Today
                       </span>
                     )}
@@ -402,7 +402,7 @@ export default function InterviewScheduler() {
                 {interview.preparationNotes && (
                   <div className="mb-4">
                     <h4 className="text-sm font-medium text-dark-text-secondary mb-2">Preparation Notes</h4>
-                    <p className="text-sm text-dark-text-primary bg-dark-secondary/20 rounded p-3">
+                    <p className="text-sm text-dark-text-primary bg-gray-800/20 rounded p-3">
                       {interview.preparationNotes}
                     </p>
                   </div>
@@ -497,7 +497,7 @@ function CreateInterviewModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-gray-900/50 flex items-center justify-center z-50">
       <div className="card-dark rounded-lg border border-dark-border p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-semibold text-dark-text-primary">Schedule Interview</h2>
@@ -661,7 +661,7 @@ function InterviewDetailModal({
   onUpdate: () => void;
 }) {
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-gray-900/50 flex items-center justify-center z-50">
       <div className="card-dark rounded-lg border border-dark-border p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-semibold text-dark-text-primary">Interview Details</h2>
@@ -697,7 +697,7 @@ function InterviewDetailModal({
           {interview.feedback && (
             <div>
               <h4 className="text-sm font-medium text-dark-text-secondary mb-2">Feedback</h4>
-              <p className="text-dark-text-primary bg-dark-secondary/20 rounded p-3">
+              <p className="text-dark-text-primary bg-gray-800/20 rounded p-3">
                 {interview.feedback}
               </p>
             </div>

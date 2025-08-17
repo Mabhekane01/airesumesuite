@@ -21,11 +21,11 @@ interface SearchModalProps {
 const getResultIcon = (type: SearchResult['type']) => {
   switch (type) {
     case 'resume':
-      return <DocumentTextIcon className="h-5 w-5 text-blue-500" />;
+      return <DocumentTextIcon className="h-5 w-5 text-teal-500" />;
     case 'job_application':
       return <BriefcaseIcon className="h-5 w-5 text-green-500" />;
     case 'cover_letter':
-      return <PencilIcon className="h-5 w-5 text-purple-500" />;
+      return <PencilIcon className="h-5 w-5 text-emerald-500" />;
     case 'skill':
       return <SparklesIcon className="h-5 w-5 text-accent-primary" />;
     default:
@@ -134,7 +134,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+          className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm"
           onClick={handleClose}
         />
 
@@ -143,7 +143,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
           initial={{ opacity: 0, scale: 0.95, y: -20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: -20 }}
-          className="relative w-full max-w-2xl bg-dark-tertiary/95 backdrop-blur-lg rounded-xl shadow-dark-xl border border-dark-border overflow-hidden max-h-[90vh] sm:max-h-[85vh] flex flex-col"
+          className="relative w-full max-w-2xl bg-gray-700/95 backdrop-blur-lg rounded-xl shadow-dark-xl border border-dark-border overflow-hidden max-h-[90vh] sm:max-h-[85vh] flex flex-col"
         >
           {/* Search Input */}
           <div className="flex items-center p-3 sm:p-4 border-b border-dark-border flex-shrink-0">
@@ -201,7 +201,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                     className={`flex items-center p-3 sm:p-4 cursor-pointer transition-all duration-200 active:scale-[0.98] ${
                       index === selectedIndex
                         ? 'bg-accent-primary/10 border-l-2 border-accent-primary'
-                        : 'hover:bg-dark-tertiary/60 active:bg-dark-tertiary/80 touch-manipulation'
+                        : 'hover:bg-gray-700/60 active:bg-gray-700/80 touch-manipulation'
                     }`}
                     onClick={() => handleResultClick(result)}
                   >
@@ -213,7 +213,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                         <h3 className="text-sm font-medium text-dark-text-primary truncate">
                           {result.title}
                         </h3>
-                        <span className="flex-shrink-0 px-2 py-1 text-xs bg-dark-secondary/60 text-dark-text-secondary rounded-full">
+                        <span className="flex-shrink-0 px-2 py-1 text-xs bg-gray-800/60 text-dark-text-secondary rounded-full">
                           {getResultTypeLabel(result.type)}
                         </span>
                       </div>
@@ -236,21 +236,21 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
           </div>
 
           {/* Footer */}
-          <div className="px-3 sm:px-4 py-2 sm:py-3 border-t border-dark-border bg-dark-secondary/30 flex-shrink-0">
+          <div className="px-3 sm:px-4 py-2 sm:py-3 border-t border-dark-border bg-gray-800/30 flex-shrink-0">
             <div className="flex items-center justify-between text-xs text-dark-text-secondary">
               <div className="flex items-center space-x-2 sm:space-x-4">
                 {/* Desktop keyboard shortcuts */}
                 <div className="hidden sm:flex items-center space-x-4">
                   <span className="flex items-center">
-                    <kbd className="px-2 py-1 bg-dark-tertiary rounded text-xs">↑↓</kbd>
+                    <kbd className="px-2 py-1 bg-gray-700 rounded text-xs">↑↓</kbd>
                     <span className="ml-1">Navigate</span>
                   </span>
                   <span className="flex items-center">
-                    <kbd className="px-2 py-1 bg-dark-tertiary rounded text-xs">Enter</kbd>
+                    <kbd className="px-2 py-1 bg-gray-700 rounded text-xs">Enter</kbd>
                     <span className="ml-1">Select</span>
                   </span>
                   <span className="flex items-center">
-                    <kbd className="px-2 py-1 bg-dark-tertiary rounded text-xs">Esc</kbd>
+                    <kbd className="px-2 py-1 bg-gray-700 rounded text-xs">Esc</kbd>
                     <span className="ml-1">Close</span>
                   </span>
                 </div>

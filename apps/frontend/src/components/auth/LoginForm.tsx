@@ -288,7 +288,7 @@ export default function LoginForm({ onToggleMode, onClose, onSuccess, recaptchaS
             <div className="w-full border-t border-dark-border"></div>
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-dark-tertiary dark-text-muted">Or continue with</span>
+            <span className="px-2 bg-gray-700 dark-text-muted">Or continue with</span>
           </div>
         </div>
 
@@ -314,7 +314,7 @@ export default function LoginForm({ onToggleMode, onClose, onSuccess, recaptchaS
           Don't have an account?{' '}
           <button
             onClick={onToggleMode}
-            className="text-purple-400 hover:text-purple-300 font-medium transition-colors"
+            className="text-emerald-400 hover:text-emerald-300 font-medium transition-colors"
           >
             Sign up
           </button>

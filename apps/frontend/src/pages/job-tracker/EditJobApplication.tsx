@@ -103,7 +103,7 @@ const APPLICATION_METHODS = [
 ];
 
 const PRIORITY_LEVELS = [
-  { value: 'dream_job', label: 'Dream Job', color: 'text-purple-400' },
+  { value: 'dream_job', label: 'Dream Job', color: 'text-emerald-400' },
   { value: 'high', label: 'High Priority', color: 'text-red-400' },
   { value: 'medium', label: 'Medium Priority', color: 'text-yellow-400' },
   { value: 'low', label: 'Low Priority', color: 'text-green-400' },
@@ -572,17 +572,17 @@ export default function EditJobApplication() {
         
         {/* Current Resume Status */}
         {formData.documentsUsed?.selectedResume && (
-          <div className="mb-6 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+          <div className="mb-6 p-4 bg-teal-500/10 border border-teal-500/30 rounded-lg">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
-                  <DocumentTextIcon className="w-5 h-5 text-blue-400" />
+                <div className="w-10 h-10 bg-teal-500/20 rounded-lg flex items-center justify-center">
+                  <DocumentTextIcon className="w-5 h-5 text-teal-400" />
                 </div>
                 <div>
-                  <h4 className="text-blue-400 font-medium">
+                  <h4 className="text-teal-400 font-medium">
                     Current Resume: {formData.documentsUsed.selectedResume.title || 'Untitled Resume'}
                   </h4>
-                  <p className="text-blue-300 text-sm">
+                  <p className="text-teal-300 text-sm">
                     {formData.documentsUsed.selectedResume.updatedAt 
                       ? `Updated ${new Date(formData.documentsUsed.selectedResume.updatedAt).toLocaleDateString()}`
                       : 'Resume attached to application'
@@ -612,7 +612,7 @@ export default function EditJobApplication() {
               >
                 {matchScoreRecalculating ? (
                   <>
-                    <div className="w-3 h-3 border border-blue-400 border-t-transparent rounded-full animate-spin"></div>
+                    <div className="w-3 h-3 border border-teal-400 border-t-transparent rounded-full animate-spin"></div>
                     <span>Recalculating...</span>
                   </>
                 ) : (
@@ -630,28 +630,28 @@ export default function EditJobApplication() {
         
         {/* Resume Comparison View */}
         {resumeChanged && originalResumeId && formData.documentsUsed?.selectedResume && (
-          <div className="p-4 bg-purple-500/10 border border-purple-500/30 rounded-lg">
+          <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
             <div className="flex items-center space-x-2 mb-3">
-              <SparklesIcon className="w-4 h-4 text-purple-400" />
-              <span className="text-purple-400 text-sm font-medium">Resume Change Detected</span>
+              <SparklesIcon className="w-4 h-4 text-emerald-400" />
+              <span className="text-emerald-400 text-sm font-medium">Resume Change Detected</span>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
               <div>
-                <h5 className="text-purple-300 font-medium mb-2">Previous Resume</h5>
-                <p className="text-purple-200">Resume ID: {originalResumeId.slice(-8)}</p>
+                <h5 className="text-emerald-300 font-medium mb-2">Previous Resume</h5>
+                <p className="text-emerald-200">Resume ID: {originalResumeId.slice(-8)}</p>
               </div>
               <div>
-                <h5 className="text-purple-300 font-medium mb-2">New Resume</h5>
-                <p className="text-purple-200">
+                <h5 className="text-emerald-300 font-medium mb-2">New Resume</h5>
+                <p className="text-emerald-200">
                   {formData.documentsUsed.selectedResume.title || 'Untitled Resume'}
                 </p>
-                <p className="text-purple-200 text-xs">
+                <p className="text-emerald-200 text-xs">
                   Resume ID: {formData.documentsUsed.selectedResume._id?.slice(-8)}
                 </p>
               </div>
             </div>
-            <div className="mt-3 pt-3 border-t border-purple-500/20">
-              <p className="text-purple-300 text-xs">
+            <div className="mt-3 pt-3 border-t border-emerald-500/20">
+              <p className="text-emerald-300 text-xs">
                 💡 The AI match score will be recalculated based on the new resume when you save the application.
               </p>
             </div>
@@ -851,7 +851,7 @@ export default function EditJobApplication() {
         
         {/* Referral Information */}
         {(formData.jobSource === 'referral' || formData.applicationMethod === 'referral') && (
-          <div className="mt-6 p-4 bg-dark-secondary/20 rounded-lg border border-dark-border">
+          <div className="mt-6 p-4 bg-gray-800/20 rounded-lg border border-dark-border">
             <h4 className="text-md font-medium text-dark-text-secondary mb-3">Referral Contact</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -957,7 +957,7 @@ export default function EditJobApplication() {
               {formData.applicationStrategy.keySellingPoints.map((point, index) => (
                 <div
                   key={index}
-                  className="flex items-center justify-between p-3 bg-dark-secondary/20 rounded border border-dark-border"
+                  className="flex items-center justify-between p-3 bg-gray-800/20 rounded border border-dark-border"
                 >
                   <div className="flex items-center space-x-2">
                     <StarIcon className="w-4 h-4 text-yellow-400" />
@@ -995,10 +995,10 @@ export default function EditJobApplication() {
   if (initialLoading) {
     return (
       <div className="animate-pulse">
-        <div className="h-8 bg-dark-secondary/20 rounded w-1/4 mb-6"></div>
+        <div className="h-8 bg-gray-800/20 rounded w-1/4 mb-6"></div>
         <div className="space-y-4">
-          <div className="h-64 bg-dark-secondary/20 rounded-lg"></div>
-          <div className="h-48 bg-dark-secondary/20 rounded-lg"></div>
+          <div className="h-64 bg-gray-800/20 rounded-lg"></div>
+          <div className="h-48 bg-gray-800/20 rounded-lg"></div>
         </div>
       </div>
     );
@@ -1011,7 +1011,7 @@ export default function EditJobApplication() {
         <div className="flex items-center space-x-4">
           <button
             onClick={() => navigate(`/dashboard/applications/${applicationId}`)}
-            className="p-2 text-dark-text-muted hover:text-dark-text-primary rounded-lg hover:bg-dark-secondary/20"
+            className="p-2 text-dark-text-muted hover:text-dark-text-primary rounded-lg hover:bg-gray-800/20"
           >
             <ArrowLeftIcon className="w-5 h-5" />
           </button>
@@ -1034,7 +1034,7 @@ export default function EditJobApplication() {
           <h3 className="text-lg font-semibold text-dark-text-primary">Step {currentStep} of {totalSteps}</h3>
           <span className="text-sm text-dark-text-secondary">{Math.round((currentStep / totalSteps) * 100)}% Complete</span>
         </div>
-        <div className="w-full bg-dark-secondary/20 rounded-full h-2">
+        <div className="w-full bg-gray-800/20 rounded-full h-2">
           <div
             className="bg-dark-accent h-2 rounded-full transition-all duration-300"
             style={{ width: `${(currentStep / totalSteps) * 100}%` }}

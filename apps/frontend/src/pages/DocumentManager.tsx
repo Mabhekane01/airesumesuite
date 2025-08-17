@@ -674,12 +674,12 @@ export default function DocumentManager() {
         {/* Header Skeleton */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <div className="h-8 bg-dark-tertiary rounded w-64 mb-2 animate-pulse"></div>
-            <div className="h-4 bg-dark-tertiary rounded w-48 animate-pulse"></div>
+            <div className="h-8 bg-gray-700 rounded w-64 mb-2 animate-pulse"></div>
+            <div className="h-4 bg-gray-700 rounded w-48 animate-pulse"></div>
           </div>
           <div className="flex items-center space-x-3">
-            <div className="h-10 bg-dark-tertiary rounded w-32 animate-pulse"></div>
-            <div className="h-10 bg-dark-tertiary rounded w-40 animate-pulse"></div>
+            <div className="h-10 bg-gray-700 rounded w-32 animate-pulse"></div>
+            <div className="h-10 bg-gray-700 rounded w-40 animate-pulse"></div>
           </div>
         </div>
 
@@ -689,10 +689,10 @@ export default function DocumentManager() {
             <div key={index} className="card-dark rounded-xl p-6 shadow-dark-lg animate-pulse">
               <div className="flex items-center justify-between">
                 <div className="flex-1">
-                  <div className="h-4 bg-dark-tertiary rounded w-24 mb-2"></div>
-                  <div className="h-6 bg-dark-tertiary rounded w-12"></div>
+                  <div className="h-4 bg-gray-700 rounded w-24 mb-2"></div>
+                  <div className="h-6 bg-gray-700 rounded w-12"></div>
                 </div>
-                <div className="w-12 h-12 bg-dark-tertiary rounded-lg"></div>
+                <div className="w-12 h-12 bg-gray-700 rounded-lg"></div>
               </div>
             </div>
           ))}
@@ -701,15 +701,15 @@ export default function DocumentManager() {
         {/* Search and Filters Skeleton */}
         <div className="card-dark rounded-xl p-6 shadow-dark-lg">
           <div className="flex flex-col sm:flex-row gap-4 mb-6">
-            <div className="flex-1 h-10 bg-dark-tertiary rounded animate-pulse"></div>
+            <div className="flex-1 h-10 bg-gray-700 rounded animate-pulse"></div>
             <div className="flex items-center space-x-2">
-              <div className="w-10 h-10 bg-dark-tertiary rounded animate-pulse"></div>
-              <div className="w-10 h-10 bg-dark-tertiary rounded animate-pulse"></div>
+              <div className="w-10 h-10 bg-gray-700 rounded animate-pulse"></div>
+              <div className="w-10 h-10 bg-gray-700 rounded animate-pulse"></div>
             </div>
           </div>
           <div className="flex space-x-1 bg-dark-quaternary/30 p-1 rounded-lg">
-            <div className="flex-1 h-8 bg-dark-tertiary rounded animate-pulse"></div>
-            <div className="flex-1 h-8 bg-dark-tertiary rounded animate-pulse"></div>
+            <div className="flex-1 h-8 bg-gray-700 rounded animate-pulse"></div>
+            <div className="flex-1 h-8 bg-gray-700 rounded animate-pulse"></div>
           </div>
         </div>
 
@@ -1056,7 +1056,7 @@ function ResumePreviewThumbnail({ resume }: ResumePreviewThumbnailProps) {
     return (
       <div className="w-full h-full bg-gray-200 flex items-center justify-center" style={{ margin: 0, padding: 0 }}>
         <div className="flex flex-col items-center space-y-3">
-          <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+          <div className="w-8 h-8 border-2 border-teal-600 border-t-transparent rounded-full animate-spin"></div>
           <span className="text-sm text-gray-600">Generating PDF...</span>
         </div>
       </div>
@@ -1250,14 +1250,14 @@ function ResumeCard({ resume, viewMode, actionLoading, onPreview, onEdit, onDele
     <motion.div
       layout
       whileHover={{ y: -6, scale: 1.02 }}
-      className="bg-dark-secondary rounded-xl overflow-hidden shadow-lg hover:shadow-2xl hover:shadow-blue-500/20 transition-all duration-300 group border border-dark-border/50 hover:border-blue-500/50 w-full max-w-sm mx-auto"
+      className="bg-gray-800 rounded-xl overflow-hidden shadow-lg hover:shadow-2xl hover:shadow-blue-500/20 transition-all duration-300 group border border-dark-border/50 hover:border-teal-500/50 w-full max-w-sm mx-auto"
     >
       {/* Resume Preview */}
       <div className="relative overflow-hidden w-full h-96 rounded-t-xl" style={{ margin: 0, padding: 0 }}>
         <ResumePreviewThumbnail resume={resume} />
         
         {/* Hover Actions Overlay */}
-        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center gap-4">
+        <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center gap-4">
           <button
             onClick={onPreview}
             className="p-4 bg-white/20 hover:bg-white/30 rounded-full backdrop-blur-sm transition-all duration-200 text-white hover:scale-110"
@@ -1267,7 +1267,7 @@ function ResumeCard({ resume, viewMode, actionLoading, onPreview, onEdit, onDele
           </button>
           <button
             onClick={onEdit}
-            className="p-4 bg-blue-500/80 hover:bg-blue-500 rounded-full backdrop-blur-sm transition-all duration-200 text-white hover:scale-110"
+            className="p-4 bg-teal-500/80 hover:bg-teal-500 rounded-full backdrop-blur-sm transition-all duration-200 text-white hover:scale-110"
             title="Edit"
           >
             <PencilIcon className="w-7 h-7" />
@@ -1278,7 +1278,7 @@ function ResumeCard({ resume, viewMode, actionLoading, onPreview, onEdit, onDele
       {/* Resume Info Section */}
       <div className="p-5">
         <div className="flex items-start justify-between mb-2">
-          <h3 className="text-lg font-bold text-dark-text-primary group-hover:text-blue-400 transition-colors truncate flex-1">
+          <h3 className="text-lg font-bold text-dark-text-primary group-hover:text-teal-400 transition-colors truncate flex-1">
             {resume.title}
           </h3>
           {pdfInfo?.hasSavedPDF && (
@@ -1303,7 +1303,7 @@ function ResumeCard({ resume, viewMode, actionLoading, onPreview, onEdit, onDele
             <button
               onClick={onDownload}
               disabled={actionLoading === `download-${resume._id}`}
-              className="p-2 text-dark-text-muted hover:text-purple-400 hover:bg-purple-500/10 rounded-lg transition-all duration-200 disabled:opacity-50"
+              className="p-2 text-dark-text-muted hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg transition-all duration-200 disabled:opacity-50"
               title="Download PDF"
             >
               <ArrowDownTrayIcon className="w-5 h-5" />
@@ -1444,7 +1444,7 @@ function CoverLetterCard({ coverLetter, viewMode, onView, onEdit, onDelete, onSh
         </div>
         
         {/* Hover Actions */}
-        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center space-x-3">
+        <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center space-x-3">
           <button
             onClick={onView}
             className="p-3 bg-white/10 hover:bg-white/20 rounded-lg backdrop-blur-sm transition-all duration-200"

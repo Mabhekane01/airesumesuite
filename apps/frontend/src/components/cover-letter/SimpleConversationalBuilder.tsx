@@ -35,9 +35,9 @@ export default function SimpleConversationalBuilder() {
               </ul>
             </div>
 
-            <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
-              <h3 className="text-blue-400 font-semibold mb-2">🎯 How to Use:</h3>
-              <ol className="text-blue-300 space-y-1 text-sm">
+            <div className="bg-teal-500/10 border border-teal-500/30 rounded-lg p-4">
+              <h3 className="text-teal-400 font-semibold mb-2">🎯 How to Use:</h3>
+              <ol className="text-teal-300 space-y-1 text-sm">
                 <li>1. Navigate to Dashboard → Cover Letters</li>
                 <li>2. Click "AI Assistant" to start chatting</li>
                 <li>3. Tell the AI about your job application</li>
@@ -46,9 +46,9 @@ export default function SimpleConversationalBuilder() {
               </ol>
             </div>
 
-            <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-4">
-              <h3 className="text-purple-400 font-semibold mb-2">🏢 Enterprise Features:</h3>
-              <ul className="text-purple-300 space-y-1 text-sm">
+            <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-4">
+              <h3 className="text-emerald-400 font-semibold mb-2">🏢 Enterprise Features:</h3>
+              <ul className="text-emerald-300 space-y-1 text-sm">
                 <li>• Production-ready PDF generation</li>
                 <li>• ATS optimization</li>
                 <li>• Keyword matching analysis</li>

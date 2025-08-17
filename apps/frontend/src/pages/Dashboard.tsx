@@ -29,7 +29,7 @@ const quickActions = [
     description: 'Create a personalized cover letter',
     icon: PencilIcon,
     href: '/cover-letter',
-    color: 'from-purple-500 to-pink-600',
+    color: 'from-emerald-500 to-pink-600',
     bgColor: 'bg-purple-50'
   },
   {
@@ -37,7 +37,7 @@ const quickActions = [
     description: 'Track a new job application',
     icon: BriefcaseIcon,
     href: '/job-tracker/add',
-    color: 'from-green-500 to-blue-600',
+    color: 'from-green-500 to-teal-600',
     bgColor: 'bg-green-50'
   }
 ];
@@ -48,7 +48,7 @@ const stats = [
     value: '3',
     change: '+1 this week',
     icon: DocumentTextIcon,
-    color: 'text-blue-600',
+    color: 'text-teal-600',
     bgColor: 'bg-blue-100'
   },
   {
@@ -64,7 +64,7 @@ const stats = [
     value: '5',
     change: '+2 this week',
     icon: CalendarIcon,
-    color: 'text-purple-600',
+    color: 'text-emerald-600',
     bgColor: 'bg-purple-100'
   },
   {
@@ -154,7 +154,7 @@ export default function Dashboard() {
       case 'low':
         return 'border-accent-success bg-accent-success/10';
       default:
-        return 'border-dark-border bg-dark-tertiary/30';
+        return 'border-dark-border bg-gray-700/30';
     }
   };
 

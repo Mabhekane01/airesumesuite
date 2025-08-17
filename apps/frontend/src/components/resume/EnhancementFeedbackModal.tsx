@@ -58,26 +58,26 @@ const EnhancementFeedbackModal: React.FC<EnhancementFeedbackModalProps> = ({
   const getTypeIcon = (type: string) => {
     switch (type) {
       case 'ats':
-        return <ShieldCheckIcon className="w-8 h-8 text-blue-400" />;
+        return <ShieldCheckIcon className="w-8 h-8 text-teal-400" />;
       case 'ai-enhance':
-        return <SparklesIcon className="w-8 h-8 text-purple-400" />;
+        return <SparklesIcon className="w-8 h-8 text-emerald-400" />;
       case 'job-optimization':
         return <DocumentTextIcon className="w-8 h-8 text-green-400" />;
       default:
-        return <SparklesIcon className="w-8 h-8 text-blue-400" />;
+        return <SparklesIcon className="w-8 h-8 text-teal-400" />;
     }
   };
 
   const getTypeColor = (type: string) => {
     switch (type) {
       case 'ats':
-        return 'from-blue-500/20 to-blue-600/20 border-blue-400/30';
+        return 'from-blue-500/20 to-teal-600/20 border-teal-400/30';
       case 'ai-enhance':
-        return 'from-purple-500/20 to-purple-600/20 border-purple-400/30';
+        return 'from-emerald-500/20 to-purple-600/20 border-emerald-400/30';
       case 'job-optimization':
         return 'from-green-500/20 to-green-600/20 border-green-400/30';
       default:
-        return 'from-blue-500/20 to-blue-600/20 border-blue-400/30';
+        return 'from-blue-500/20 to-teal-600/20 border-teal-400/30';
     }
   };
 
@@ -88,7 +88,7 @@ const EnhancementFeedbackModal: React.FC<EnhancementFeedbackModalProps> = ({
       case 'medium':
         return 'bg-yellow-500/20 text-yellow-400 border-yellow-400/30';
       case 'low':
-        return 'bg-blue-500/20 text-blue-400 border-blue-400/30';
+        return 'bg-teal-500/20 text-teal-400 border-teal-400/30';
       default:
         return 'bg-gray-500/20 text-gray-400 border-gray-400/30';
     }
@@ -113,7 +113,7 @@ const EnhancementFeedbackModal: React.FC<EnhancementFeedbackModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
       <div 
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm transition-opacity duration-300"
+        className="absolute inset-0 bg-gray-900/70 backdrop-blur-sm transition-opacity duration-300"
         onClick={onClose}
       />
       
@@ -126,10 +126,10 @@ const EnhancementFeedbackModal: React.FC<EnhancementFeedbackModalProps> = ({
         animate-scale-in
       `}>
         {/* Header */}
-        <div className="sticky top-0 bg-dark-secondary/95 backdrop-blur-sm border-b border-dark-border p-6">
+        <div className="sticky top-0 bg-gray-800/95 backdrop-blur-sm border-b border-dark-border p-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <div className="p-3 rounded-full bg-dark-tertiary">
+              <div className="p-3 rounded-full bg-gray-700">
                 {getTypeIcon(result.type)}
               </div>
               <div>
@@ -139,7 +139,7 @@ const EnhancementFeedbackModal: React.FC<EnhancementFeedbackModalProps> = ({
             </div>
             <button
               onClick={onClose}
-              className="p-2 rounded-full bg-dark-tertiary/80 hover:bg-dark-tertiary transition-colors"
+              className="p-2 rounded-full bg-gray-700/80 hover:bg-gray-700 transition-colors"
             >
               <XMarkIcon className="w-6 h-6 text-dark-text-secondary" />
             </button>
@@ -149,10 +149,10 @@ const EnhancementFeedbackModal: React.FC<EnhancementFeedbackModalProps> = ({
         {/* Content */}
         <div className="p-6 space-y-6">
           {/* Score Improvement */}
-          <div className="bg-dark-secondary/50 rounded-xl p-6 border border-dark-border">
+          <div className="bg-gray-800/50 rounded-xl p-6 border border-dark-border">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-white flex items-center">
-                <ChartBarIcon className="w-5 h-5 mr-2 text-blue-400" />
+                <ChartBarIcon className="w-5 h-5 mr-2 text-teal-400" />
                 Performance Improvement
               </h3>
               <div className="flex items-center space-x-2">
@@ -167,7 +167,7 @@ const EnhancementFeedbackModal: React.FC<EnhancementFeedbackModalProps> = ({
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {(result.keyMetrics || []).map((metric, index) => (
-                <div key={index} className="bg-dark-tertiary/50 rounded-lg p-4">
+                <div key={index} className="bg-gray-700/50 rounded-lg p-4">
                   <div className="text-sm text-dark-text-secondary mb-1">{metric.label}</div>
                   <div className="text-xl font-bold text-white">{metric.value}</div>
                   {metric.improvement && (
@@ -187,7 +187,7 @@ const EnhancementFeedbackModal: React.FC<EnhancementFeedbackModalProps> = ({
               </h3>
               <button
                 onClick={() => setShowDetails(!showDetails)}
-                className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
+                className="text-sm text-teal-400 hover:text-teal-300 transition-colors"
               >
                 {showDetails ? 'Hide Details' : 'Show Details'}
               </button>
@@ -197,7 +197,7 @@ const EnhancementFeedbackModal: React.FC<EnhancementFeedbackModalProps> = ({
               {result.improvements.map((improvement, index) => (
                 <div 
                   key={index} 
-                  className="bg-dark-secondary/50 rounded-lg p-4 border border-dark-border"
+                  className="bg-gray-800/50 rounded-lg p-4 border border-dark-border"
                 >
                   <div className="flex items-center justify-between mb-2">
                     <h4 className="font-medium text-white">{improvement.category}</h4>
@@ -234,7 +234,7 @@ const EnhancementFeedbackModal: React.FC<EnhancementFeedbackModalProps> = ({
             {onViewComparison && (
               <button
                 onClick={onViewComparison}
-                className="flex-1 bg-dark-secondary hover:bg-dark-tertiary text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 flex items-center justify-center space-x-2 border border-dark-border"
+                className="flex-1 bg-gray-800 hover:bg-gray-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 flex items-center justify-center space-x-2 border border-dark-border"
               >
                 <DocumentTextIcon className="w-5 h-5" />
                 <span>View Comparison</span>
@@ -250,9 +250,9 @@ const EnhancementFeedbackModal: React.FC<EnhancementFeedbackModalProps> = ({
           </div>
 
           {/* Quick Tips */}
-          <div className="bg-blue-500/10 border border-blue-400/30 rounded-lg p-4">
+          <div className="bg-teal-500/10 border border-teal-400/30 rounded-lg p-4">
             <div className="flex items-start space-x-3">
-              <LightBulbIcon className="w-5 h-5 text-blue-400 mt-0.5" />
+              <LightBulbIcon className="w-5 h-5 text-teal-400 mt-0.5" />
               <div>
                 <h4 className="font-medium text-white mb-1">Pro Tip</h4>
                 <p className="text-sm text-dark-text-secondary">

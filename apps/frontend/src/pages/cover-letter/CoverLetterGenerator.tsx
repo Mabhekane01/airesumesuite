@@ -681,9 +681,9 @@ export default function CoverLetterGenerator() {
 
           {/* AI Chat Interface (for ai-chat method) */}
           {method === 'ai-chat' && (
-            <Card className="p-6 backdrop-blur-xl bg-dark-secondary/20 border border-white/10 shadow-2xl">
+            <Card className="p-6 backdrop-blur-xl bg-gray-800/20 border border-white/10 shadow-2xl">
               <div className="flex items-center space-x-3 mb-6">
-                <div className="p-2 rounded-full bg-gradient-to-r from-green-400/20 to-blue-400/20 backdrop-blur-sm">
+                <div className="p-2 rounded-full bg-gradient-to-r from-green-400/20 to-teal-400/20 backdrop-blur-sm">
                   <ChatBubbleLeftRightIcon className="w-6 h-6 text-green-400" />
                 </div>
                 <div>
@@ -694,7 +694,7 @@ export default function CoverLetterGenerator() {
               
               <div className="space-y-4">
                 {/* Chat Interface */}
-                <div className="bg-dark-primary/40 backdrop-blur-sm rounded-xl border border-white/5 p-6 max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
+                <div className="bg-gray-900/40 backdrop-blur-sm rounded-xl border border-white/5 p-6 max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
                   {!showAIAssistant ? (
                     <div className="text-center py-12">
                       <div className="relative mb-6">
@@ -703,7 +703,7 @@ export default function CoverLetterGenerator() {
                         </div>
                         <SparklesIcon className="w-16 h-16 text-green-400 mx-auto relative z-10" />
                       </div>
-                      <h4 className="text-2xl font-bold text-white mb-3 bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent">
+                      <h4 className="text-2xl font-bold text-white mb-3 bg-gradient-to-r from-green-400 to-teal-400 bg-clip-text text-transparent">
                         Ready to create your perfect cover letter?
                       </h4>
                       <p className="text-dark-text-secondary mb-8 max-w-md mx-auto leading-relaxed">
@@ -825,7 +825,7 @@ export default function CoverLetterGenerator() {
                             value={chatInput}
                             onChange={(e) => setChatInput(e.target.value)}
                             placeholder="Ask me anything about your cover letter..."
-                            className="w-full bg-dark-primary/60 backdrop-blur-sm border border-white/20 rounded-xl px-5 py-4 pr-12 text-white placeholder-dark-text-muted focus:border-green-400/50 focus:outline-none focus:ring-2 focus:ring-green-400/20 transition-all duration-300 shadow-lg"
+                            className="w-full bg-gray-900/60 backdrop-blur-sm border border-white/20 rounded-xl px-5 py-4 pr-12 text-white placeholder-dark-text-muted focus:border-green-400/50 focus:outline-none focus:ring-2 focus:ring-green-400/20 transition-all duration-300 shadow-lg"
                             onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleChatSubmit()}
                             disabled={isGeneratingAI}
                           />
@@ -886,7 +886,7 @@ export default function CoverLetterGenerator() {
             <Card className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-dark-text-primary flex items-center">
-                  <BeakerIcon className="w-5 h-5 mr-2 text-blue-400" />
+                  <BeakerIcon className="w-5 h-5 mr-2 text-teal-400" />
                   AI Generated Cover Letter
                 </h3>
                 {analysisResults && (
@@ -904,7 +904,7 @@ export default function CoverLetterGenerator() {
                 )}
               </div>
               
-              <div className="bg-dark-secondary/50 p-4 rounded-lg mb-4">
+              <div className="bg-gray-800/50 p-4 rounded-lg mb-4">
                 <textarea
                   value={generatedContent}
                   onChange={(e) => setGeneratedContent(e.target.value)}

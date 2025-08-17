@@ -244,7 +244,7 @@ export default function AdvancedPDFEditor() {
       name: 'Professional Editor',
       description: 'Advanced editing with professional tools',
       icon: Crown,
-      color: 'from-purple-500 to-pink-500',
+      color: 'from-emerald-500 to-pink-500',
       features: ['Word-level editing', 'Advanced formatting', 'Real-time preview', 'Professional tools']
     },
     {
@@ -258,10 +258,10 @@ export default function AdvancedPDFEditor() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-emerald-900 to-violet-900 relative overflow-hidden">
       {/* Animated Background */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-emerald-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-cyan-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
         <div className="absolute top-40 left-40 w-80 h-80 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
       </div>
@@ -272,11 +272,11 @@ export default function AdvancedPDFEditor() {
           <div className="min-h-screen flex flex-col items-center justify-center p-8">
             {/* Header */}
             <div className="text-center mb-12">
-              <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gradient-to-r from-purple-500 to-cyan-500 shadow-2xl shadow-purple-500/25 mb-8 animate-float">
+              <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 shadow-2xl shadow-purple-500/25 mb-8 animate-float">
                 <Sparkles className="w-12 h-12 text-white" />
               </div>
               <h1 className="text-7xl font-bold mb-6">
-                <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent animate-gradient-x">
+                <span className="bg-gradient-to-r from-emerald-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent animate-gradient-x">
                   Enterprise PDF Studio
                 </span>
               </h1>
@@ -288,8 +288,8 @@ export default function AdvancedPDFEditor() {
               {/* Feature Highlights */}
               <div className="flex justify-center space-x-8 mb-12">
                 <div className="text-center">
-                  <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mb-3 mx-auto">
-                    <Zap className="w-8 h-8 text-blue-400" />
+                  <div className="w-16 h-16 bg-teal-500/20 rounded-full flex items-center justify-center mb-3 mx-auto">
+                    <Zap className="w-8 h-8 text-teal-400" />
                   </div>
                   <p className="text-white font-medium">Real-time Editing</p>
                 </div>
@@ -300,8 +300,8 @@ export default function AdvancedPDFEditor() {
                   <p className="text-white font-medium">Collaboration</p>
                 </div>
                 <div className="text-center">
-                  <div className="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mb-3 mx-auto">
-                    <Shield className="w-8 h-8 text-purple-400" />
+                  <div className="w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center mb-3 mx-auto">
+                    <Shield className="w-8 h-8 text-emerald-400" />
                   </div>
                   <p className="text-white font-medium">Enterprise Security</p>
                 </div>
@@ -325,7 +325,7 @@ export default function AdvancedPDFEditor() {
                       'p-6 cursor-pointer transform transition-all duration-300 hover:scale-105 hover:-translate-y-2',
                       editorMode === mode.id 
                         ? `bg-gradient-to-br ${mode.color} text-white shadow-2xl border-2 border-white/30` 
-                        : 'bg-black/20 backdrop-blur-xl border border-white/10 text-gray-300 hover:bg-white/10'
+                        : 'bg-gray-900/20 backdrop-blur-xl border border-white/10 text-gray-300 hover:bg-white/10'
                     )}
                     onClick={() => setEditorMode(mode.id as any)}
                   >
@@ -408,7 +408,7 @@ export default function AdvancedPDFEditor() {
                   {files.slice(-6).map((file, index) => (
                     <Card 
                       key={index} 
-                      className="p-4 bg-black/20 backdrop-blur-xl border border-white/10 hover:bg-white/10 cursor-pointer transform transition-all duration-300 hover:scale-105"
+                      className="p-4 bg-gray-900/20 backdrop-blur-xl border border-white/10 hover:bg-white/10 cursor-pointer transform transition-all duration-300 hover:scale-105"
                       onClick={() => setActiveFile(file)}
                     >
                       <div className="flex items-center space-x-3">

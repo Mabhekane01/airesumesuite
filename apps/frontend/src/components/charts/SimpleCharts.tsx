@@ -56,7 +56,7 @@ export const SimpleLineChart: React.FC<LineChartProps> = ({
     .join(" ");
 
   return (
-    <div className="w-full h-full bg-white dark:bg-dark-primary rounded-lg overflow-hidden p-2 sm:p-4">
+    <div className="w-full h-full bg-white dark:bg-gray-900 rounded-lg overflow-hidden p-2 sm:p-4">
       <svg
         viewBox={`0 0 ${width} ${height}`}
         className="w-full h-auto min-h-[180px] sm:min-h-[220px] max-w-full"
@@ -188,7 +188,7 @@ export const SimpleBarChart: React.FC<BarChartProps> = ({
   const maxValue = Math.max(...data.map((d) => d[dataKey] || 0));
 
   return (
-    <div className="w-full h-full bg-white dark:bg-dark-primary rounded-lg px-3 py-2 sm:px-6 sm:py-4 overflow-x-auto">
+    <div className="w-full h-full bg-white dark:bg-gray-900 rounded-lg px-3 py-2 sm:px-6 sm:py-4 overflow-x-auto">
       <div className="relative h-full flex items-end justify-start min-h-[200px]">
         {[0.2, 0.4, 0.6, 0.8, 1].map((ratio, i) => (
           <div

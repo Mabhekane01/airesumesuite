@@ -70,11 +70,11 @@ export default function ResendVerification() {
 
   if (isSuccess) {
     return (
-      <div className="min-h-screen bg-dark-primary flex items-center justify-center px-4">
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="max-w-md w-full bg-dark-secondary rounded-xl shadow-2xl border border-dark-border p-8 text-center"
+          className="max-w-md w-full bg-gray-800 rounded-xl shadow-2xl border border-dark-border p-8 text-center"
         >
           <div className="mx-auto w-16 h-16 mb-6">
             <EnvelopeIcon className="w-16 h-16 text-green-400" />
@@ -87,8 +87,8 @@ export default function ResendVerification() {
             Please check your inbox and click the verification link.
           </p>
           
-          <div className="bg-dark-tertiary border border-dark-border rounded-lg p-4 mb-6">
-            <h3 className="text-sm font-semibold text-purple-400 mb-2">
+          <div className="bg-gray-700 border border-dark-border rounded-lg p-4 mb-6">
+            <h3 className="text-sm font-semibold text-emerald-400 mb-2">
               Can't find the email?
             </h3>
             <ul className="text-xs text-gray-400 space-y-1 text-left">
@@ -103,7 +103,7 @@ export default function ResendVerification() {
               onClick={handleGoToLogin}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:shadow-lg transition-all duration-200"
+              className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-3 px-6 rounded-lg font-semibold hover:shadow-lg transition-all duration-200"
             >
               Go to Login
             </motion.button>
@@ -120,11 +120,11 @@ export default function ResendVerification() {
   }
 
   return (
-    <div className="min-h-screen bg-dark-primary flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gray-900 flex items-center justify-center px-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="max-w-md w-full bg-dark-secondary rounded-xl shadow-2xl border border-dark-border p-8"
+        className="max-w-md w-full bg-gray-800 rounded-xl shadow-2xl border border-dark-border p-8"
       >
         <button
           onClick={handleGoBack}
@@ -136,7 +136,7 @@ export default function ResendVerification() {
 
         <div className="text-center mb-8">
           <div className="mx-auto w-16 h-16 mb-4">
-            <EnvelopeIcon className="w-16 h-16 text-purple-400" />
+            <EnvelopeIcon className="w-16 h-16 text-emerald-400" />
           </div>
           <h1 className="text-2xl font-bold text-white mb-2">
             Resend Verification Email
@@ -157,7 +157,7 @@ export default function ResendVerification() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-4 py-3 bg-dark-tertiary border border-dark-border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+              className="w-full px-4 py-3 bg-gray-700 border border-dark-border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200"
               placeholder="Enter your email address"
             />
           </div>
@@ -167,7 +167,7 @@ export default function ResendVerification() {
             disabled={isLoading}
             whileHover={{ scale: isLoading ? 1 : 1.02 }}
             whileTap={{ scale: isLoading ? 1 : 0.98 }}
-            className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-3 px-6 rounded-lg font-semibold hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? (
               <div className="flex items-center justify-center">
@@ -186,13 +186,13 @@ export default function ResendVerification() {
           </p>
           <button
             onClick={handleGoToLogin}
-            className="text-purple-400 hover:text-purple-300 font-medium transition-colors"
+            className="text-emerald-400 hover:text-emerald-300 font-medium transition-colors"
           >
             Sign in to your account
           </button>
         </div>
 
-        <div className="mt-6 bg-dark-tertiary border border-dark-border rounded-lg p-4">
+        <div className="mt-6 bg-gray-700 border border-dark-border rounded-lg p-4">
           <h3 className="text-sm font-semibold text-yellow-400 mb-2">
             ⚠️ Rate Limiting
           </h3>

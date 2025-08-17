@@ -66,7 +66,7 @@ export default function PageThumbnails({
   const selectedPages = pages.filter(p => p.selected);
 
   return (
-    <div className="bg-black/20 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl overflow-hidden">
+    <div className="bg-gray-900/20 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl overflow-hidden">
       {/* Header */}
       <div className="p-4 border-b border-white/10">
         <div className="flex items-center justify-between mb-3">
@@ -87,7 +87,7 @@ export default function PageThumbnails({
 
         {/* Bulk Actions */}
         {selectedPages.length > 0 && (
-          <div className="flex items-center gap-2 p-3 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-lg border border-cyan-500/30">
+          <div className="flex items-center gap-2 p-3 bg-gradient-to-r from-cyan-500/20 to-teal-500/20 rounded-lg border border-cyan-500/30">
             <span className="text-cyan-300 text-sm font-medium">
               {selectedPages.length} selected
             </span>
@@ -220,7 +220,7 @@ export default function PageThumbnails({
 
             {/* Drag Handle */}
             <div className="absolute top-1 left-1 opacity-0 group-hover:opacity-100 transition-opacity">
-              <div className="p-1 bg-black/50 rounded-full">
+              <div className="p-1 bg-gray-900/50 rounded-full">
                 <Move size={12} className="text-white" />
               </div>
             </div>

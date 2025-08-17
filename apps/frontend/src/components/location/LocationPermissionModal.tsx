@@ -46,8 +46,8 @@ export default function LocationPermissionModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-dark-primary rounded-lg shadow-xl max-w-md w-full mx-4 border border-dark-border">
+    <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-gray-900 rounded-lg shadow-xl max-w-md w-full mx-4 border border-dark-border">
         <div className="p-6">
           {/* Header */}
           <div className="flex items-center justify-center mb-4">
@@ -101,7 +101,7 @@ export default function LocationPermissionModal({
           )}
 
           {/* Privacy Note */}
-          <div className="bg-dark-secondary/50 rounded-lg p-3 mb-6">
+          <div className="bg-gray-800/50 rounded-lg p-3 mb-6">
             <p className="text-dark-text-muted text-xs">
               🔒 Your location data is only used to provide relevant insights and is not shared with third parties. 
               You can disable this at any time in your settings.

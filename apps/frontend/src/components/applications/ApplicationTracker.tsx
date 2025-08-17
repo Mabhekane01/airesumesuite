@@ -94,7 +94,7 @@ interface JobApplication {
 const STATUS_CONFIG = {
   applied: {
     label: "Applied",
-    color: "bg-blue-500/20 text-blue-400 border-blue-400/30",
+    color: "bg-teal-500/20 text-teal-400 border-teal-400/30",
     icon: ClockIcon,
   },
   screening: {
@@ -104,7 +104,7 @@ const STATUS_CONFIG = {
   },
   interview: {
     label: "Interview",
-    color: "bg-purple-500/20 text-purple-400 border-purple-400/30",
+    color: "bg-emerald-500/20 text-emerald-400 border-emerald-400/30",
     icon: CalendarIcon,
   },
   offer: {
@@ -439,7 +439,7 @@ export default function ApplicationTracker() {
         />
         <div className="flex items-center space-x-1 sm:space-x-2 min-w-0">
           {application.interviews.length > 0 && (
-            <span className="text-xs text-purple-400 font-medium truncate">
+            <span className="text-xs text-emerald-400 font-medium truncate">
               {application.interviews.length} interview
               {application.interviews.length > 1 ? "s" : ""}
             </span>
@@ -459,7 +459,7 @@ export default function ApplicationTracker() {
         return (
           <div
             key={column.id}
-            className="bg-dark-secondary/20 rounded-lg p-3 sm:p-4 border border-dark-border min-h-[200px]"
+            className="bg-gray-800/20 rounded-lg p-3 sm:p-4 border border-dark-border min-h-[200px]"
           >
             <div className="flex items-center justify-between mb-3 sm:mb-4">
               <h3 className="text-sm sm:text-base font-semibold text-dark-text-primary truncate pr-2">
@@ -483,7 +483,7 @@ export default function ApplicationTracker() {
       {/* Mobile-first responsive table */}
       <div className="hidden lg:block">
         <table className="min-w-full divide-y divide-dark-border">
-          <thead className="bg-dark-secondary/20">
+          <thead className="bg-gray-800/20">
             <tr>
               <th className="px-4 xl:px-6 py-3 text-left text-xs font-medium text-dark-text-muted uppercase tracking-wider">
                 Position
@@ -508,9 +508,9 @@ export default function ApplicationTracker() {
               </th>
             </tr>
           </thead>
-          <tbody className="bg-dark-tertiary divide-y divide-dark-border">
+          <tbody className="bg-gray-700 divide-y divide-dark-border">
             {filteredApplications.map((application) => (
-              <tr key={application._id} className="hover:bg-dark-secondary/20">
+              <tr key={application._id} className="hover:bg-gray-800/20">
                 <td className="px-4 xl:px-6 py-4 whitespace-nowrap">
                   <div>
                     <div className="text-sm font-medium text-dark-text-primary">
@@ -636,7 +636,7 @@ export default function ApplicationTracker() {
                             });
                           }
                         }}
-                        className="inline-flex items-center p-1 text-xs text-dark-text-muted hover:text-blue-400 transition-colors"
+                        className="inline-flex items-center p-1 text-xs text-dark-text-muted hover:text-teal-400 transition-colors"
                         title="Recalculate score"
                       >
                         <ArrowPathIcon className="w-3 h-3" />
@@ -694,7 +694,7 @@ export default function ApplicationTracker() {
                           });
                         }
                       }}
-                      className="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-400 hover:text-blue-300 bg-blue-500/10 hover:bg-blue-500/20 rounded border border-blue-500/30 transition-colors"
+                      className="inline-flex items-center px-2 py-1 text-xs font-medium text-teal-400 hover:text-teal-300 bg-teal-500/10 hover:bg-teal-500/20 rounded border border-teal-500/30 transition-colors"
                     >
                       <SparklesIcon className="w-3 h-3 mr-1" />
                       Calculate
@@ -734,7 +734,7 @@ export default function ApplicationTracker() {
         {filteredApplications.map((application) => (
           <div
             key={application._id}
-            className="bg-dark-tertiary/50 rounded-lg border border-dark-border p-4"
+            className="bg-gray-700/50 rounded-lg border border-dark-border p-4"
           >
             <div className="flex items-start justify-between mb-3">
               <div className="flex-1 min-w-0">
@@ -838,10 +838,10 @@ export default function ApplicationTracker() {
   if (loading) {
     return (
       <div className="animate-pulse">
-        <div className="h-8 bg-dark-secondary/20 rounded w-1/4 mb-6"></div>
+        <div className="h-8 bg-gray-800/20 rounded w-1/4 mb-6"></div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-64 bg-dark-secondary/20 rounded-lg"></div>
+            <div key={i} className="h-64 bg-gray-800/20 rounded-lg"></div>
           ))}
         </div>
       </div>
@@ -892,7 +892,7 @@ export default function ApplicationTracker() {
                 });
               }
             }}
-            className="btn-secondary-dark flex items-center justify-center px-2 sm:px-3 py-2 rounded-lg text-xs sm:text-sm whitespace-nowrap hover:bg-dark-secondary/40 transition-all"
+            className="btn-secondary-dark flex items-center justify-center px-2 sm:px-3 py-2 rounded-lg text-xs sm:text-sm whitespace-nowrap hover:bg-gray-800/40 transition-all"
           >
             <ArrowPathIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 flex-shrink-0" />
             <span className="hidden sm:inline">Reset Scores</span>
@@ -941,7 +941,7 @@ export default function ApplicationTracker() {
                 });
               }
             }}
-            className="btn-secondary-dark flex items-center justify-center px-2 sm:px-3 py-2 rounded-lg text-xs sm:text-sm whitespace-nowrap hover:bg-dark-secondary/40 transition-all"
+            className="btn-secondary-dark flex items-center justify-center px-2 sm:px-3 py-2 rounded-lg text-xs sm:text-sm whitespace-nowrap hover:bg-gray-800/40 transition-all"
           >
             <SparklesIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 flex-shrink-0" />
             <span className="hidden md:inline">Fix Missing Scores</span>
@@ -964,7 +964,7 @@ export default function ApplicationTracker() {
           <h2 className="text-lg font-semibold text-dark-text-primary">Filter Applications</h2>
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className={`p-2 rounded-md transition-all duration-200 ${showFilters ? 'bg-accent-primary/20 text-accent-primary' : 'text-dark-text-secondary hover:text-dark-text-primary hover:bg-dark-tertiary/60'}`}
+            className={`p-2 rounded-md transition-all duration-200 ${showFilters ? 'bg-accent-primary/20 text-accent-primary' : 'text-dark-text-secondary hover:text-dark-text-primary hover:bg-gray-700/60'}`}
           >
             <FunnelIcon className="h-5 w-5" />
           </button>
@@ -972,22 +972,22 @@ export default function ApplicationTracker() {
         
         {/* Quick Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-dark-tertiary/60 rounded-lg p-3">
+          <div className="bg-gray-700/60 rounded-lg p-3">
             <p className="text-xs text-dark-text-secondary">Total Applications</p>
             <p className="text-lg font-semibold text-dark-text-primary">{stats.totalApplications}</p>
           </div>
-          <div className="bg-dark-tertiary/60 rounded-lg p-3">
+          <div className="bg-gray-700/60 rounded-lg p-3">
             <p className="text-xs text-dark-text-secondary">Recent (30 days)</p>
             <p className="text-lg font-semibold text-accent-primary">{stats.recentApplications}</p>
           </div>
-          <div className="bg-dark-tertiary/60 rounded-lg p-3">
+          <div className="bg-gray-700/60 rounded-lg p-3">
             <p className="text-xs text-dark-text-secondary">Active Processes</p>
             <p className="text-lg font-semibold text-yellow-400">
               {(stats.statusCounts.under_review || 0) + (stats.statusCounts.phone_screen || 0) + 
                (stats.statusCounts.first_interview || 0) + (stats.statusCounts.second_interview || 0)}
             </p>
           </div>
-          <div className="bg-dark-tertiary/60 rounded-lg p-3">
+          <div className="bg-gray-700/60 rounded-lg p-3">
             <p className="text-xs text-dark-text-secondary">Offers</p>
             <p className="text-lg font-semibold text-green-400">
               {(stats.statusCounts.offer_received || 0) + (stats.statusCounts.offer_accepted || 0)}
@@ -996,7 +996,7 @@ export default function ApplicationTracker() {
         </div>
         
         {showFilters && (
-          <div className="bg-dark-tertiary/40 backdrop-blur-sm rounded-lg border border-dark-border p-6 space-y-6">
+          <div className="bg-gray-700/40 backdrop-blur-sm rounded-lg border border-dark-border p-6 space-y-6">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold text-dark-text-primary">Filters & Sorting</h3>
               <button
@@ -1015,9 +1015,9 @@ export default function ApplicationTracker() {
               <h4 className="text-sm font-medium text-dark-text-primary mb-3">Status</h4>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
                 {[
-                  { value: 'applied', label: 'Applied', color: 'bg-blue-500' },
+                  { value: 'applied', label: 'Applied', color: 'bg-teal-500' },
                   { value: 'under_review', label: 'Under Review', color: 'bg-yellow-500' },
-                  { value: 'phone_screen', label: 'Phone Screen', color: 'bg-purple-500' },
+                  { value: 'phone_screen', label: 'Phone Screen', color: 'bg-emerald-500' },
                   { value: 'technical_assessment', label: 'Technical Assessment', color: 'bg-orange-500' },
                   { value: 'first_interview', label: 'First Interview', color: 'bg-indigo-500' },
                   { value: 'second_interview', label: 'Second Interview', color: 'bg-pink-500' },
@@ -1032,7 +1032,7 @@ export default function ApplicationTracker() {
                     className={`flex items-center space-x-2 p-3 rounded-lg cursor-pointer transition-all ${
                       activeFilters.status?.includes(status.value)
                         ? 'bg-accent-primary/20 border border-accent-primary/30'
-                        : 'bg-dark-secondary/60 hover:bg-dark-secondary/80 border border-transparent'
+                        : 'bg-gray-800/60 hover:bg-gray-800/80 border border-transparent'
                     }`}
                   >
                     <input
@@ -1074,7 +1074,7 @@ export default function ApplicationTracker() {
                     className={`flex items-center space-x-2 p-3 rounded-lg cursor-pointer transition-all ${
                       activeFilters.priority?.includes(priority.value)
                         ? 'bg-accent-primary/20 border border-accent-primary/30'
-                        : 'bg-dark-secondary/60 hover:bg-dark-secondary/80 border border-transparent'
+                        : 'bg-gray-800/60 hover:bg-gray-800/80 border border-transparent'
                     }`}
                   >
                     <input
@@ -1152,7 +1152,7 @@ export default function ApplicationTracker() {
                     type="checkbox"
                     checked={activeFilters.remote || false}
                     onChange={(e) => setActiveFilters(prev => ({ ...prev, remote: e.target.checked ? true : undefined }))}
-                    className="rounded border-dark-border bg-dark-secondary text-accent-primary focus:ring-accent-primary focus:ring-offset-dark-secondary"
+                    className="rounded border-dark-border bg-gray-800 text-accent-primary focus:ring-accent-primary focus:ring-offset-dark-secondary"
                   />
                   <span className="text-sm text-dark-text-primary">Remote positions only</span>
                 </label>
@@ -1164,13 +1164,13 @@ export default function ApplicationTracker() {
 
       {/* View Mode Toggle */}
       <div className="flex justify-end">
-        <div className="flex items-center space-x-1 bg-dark-secondary/20 rounded-lg p-1 border border-dark-border">
+        <div className="flex items-center space-x-1 bg-gray-800/20 rounded-lg p-1 border border-dark-border">
           <button
             onClick={() => updatePreferences({ viewMode: "kanban" })}
             className={`px-2 sm:px-3 py-1.5 text-xs sm:text-sm font-medium rounded transition-all duration-200 ${
               viewMode === "kanban"
                 ? "bg-dark-accent text-white shadow-sm transform scale-[0.98]"
-                : "text-dark-text-secondary hover:text-dark-text-primary hover:bg-dark-secondary/30"
+                : "text-dark-text-secondary hover:text-dark-text-primary hover:bg-gray-800/30"
             }`}
           >
             Kanban
@@ -1180,7 +1180,7 @@ export default function ApplicationTracker() {
             className={`px-2 sm:px-3 py-1.5 text-xs sm:text-sm font-medium rounded transition-all duration-200 ${
               viewMode === "list"
                 ? "bg-dark-accent text-white shadow-sm transform scale-[0.98]"
-                : "text-dark-text-secondary hover:text-dark-text-primary hover:bg-dark-secondary/30"
+                : "text-dark-text-secondary hover:text-dark-text-primary hover:bg-gray-800/30"
             }`}
           >
             List
@@ -1221,7 +1221,7 @@ export default function ApplicationTracker() {
 
       {/* Debug Info */}
       {import.meta.env.DEV && (
-        <div className="bg-dark-secondary/20 p-3 rounded text-xs text-dark-text-secondary space-y-1">
+        <div className="bg-gray-800/20 p-3 rounded text-xs text-dark-text-secondary space-y-1">
           <div><strong>Debug:</strong> Total Apps: {applications.length} | Filtered: {filteredApplications.length} | Loading: {loading ? 'Yes' : 'No'}</div>
           <div><strong>Active Filters:</strong> {Object.keys(activeFilters).length > 0 ? JSON.stringify(activeFilters) : 'None'}</div>
           <div><strong>Sort:</strong> {sortOptions.field} ({sortOptions.direction})</div>
@@ -1231,10 +1231,10 @@ export default function ApplicationTracker() {
       {/* Main Content */}
       {loading ? (
         <div className="animate-pulse">
-          <div className="h-8 bg-dark-secondary/20 rounded w-1/4 mb-6"></div>
+          <div className="h-8 bg-gray-800/20 rounded w-1/4 mb-6"></div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="h-64 bg-dark-secondary/20 rounded-lg"></div>
+              <div key={i} className="h-64 bg-gray-800/20 rounded-lg"></div>
             ))}
           </div>
         </div>

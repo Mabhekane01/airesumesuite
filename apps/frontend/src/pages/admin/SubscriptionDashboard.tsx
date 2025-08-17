@@ -198,7 +198,7 @@ const SubscriptionDashboard: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-emerald-900 to-slate-900 p-6">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-4xl font-bold text-white mb-2">Subscription Management</h1>
@@ -210,10 +210,10 @@ const SubscriptionDashboard: React.FC = () => {
         {analytics && (
           <>
             {/* Total Users */}
-            <div className="bg-black/20 backdrop-blur-lg border border-white/10 rounded-2xl p-6 shadow-2xl">
+            <div className="bg-gray-900/20 backdrop-blur-lg border border-white/10 rounded-2xl p-6 shadow-2xl">
               <div className="flex items-center justify-between mb-4">
-                <div className="bg-blue-500/20 p-3 rounded-xl">
-                  <UsersIcon className="w-6 h-6 text-blue-400" />
+                <div className="bg-teal-500/20 p-3 rounded-xl">
+                  <UsersIcon className="w-6 h-6 text-teal-400" />
                 </div>
                 <div className="text-right">
                   <p className="text-3xl font-bold text-white">{analytics.totalUsers.toLocaleString()}</p>
@@ -227,7 +227,7 @@ const SubscriptionDashboard: React.FC = () => {
             </div>
 
             {/* Active Subscriptions */}
-            <div className="bg-black/20 backdrop-blur-lg border border-white/10 rounded-2xl p-6 shadow-2xl">
+            <div className="bg-gray-900/20 backdrop-blur-lg border border-white/10 rounded-2xl p-6 shadow-2xl">
               <div className="flex items-center justify-between mb-4">
                 <div className="bg-green-500/20 p-3 rounded-xl">
                   <CheckCircleIcon className="w-6 h-6 text-green-400" />
@@ -244,7 +244,7 @@ const SubscriptionDashboard: React.FC = () => {
             </div>
 
             {/* Upcoming Renewals */}
-            <div className="bg-black/20 backdrop-blur-lg border border-white/10 rounded-2xl p-6 shadow-2xl">
+            <div className="bg-gray-900/20 backdrop-blur-lg border border-white/10 rounded-2xl p-6 shadow-2xl">
               <div className="flex items-center justify-between mb-4">
                 <div className="bg-yellow-500/20 p-3 rounded-xl">
                   <ClockIcon className="w-6 h-6 text-yellow-400" />
@@ -260,7 +260,7 @@ const SubscriptionDashboard: React.FC = () => {
             </div>
 
             {/* Past Due */}
-            <div className="bg-black/20 backdrop-blur-lg border border-white/10 rounded-2xl p-6 shadow-2xl">
+            <div className="bg-gray-900/20 backdrop-blur-lg border border-white/10 rounded-2xl p-6 shadow-2xl">
               <div className="flex items-center justify-between mb-4">
                 <div className="bg-red-500/20 p-3 rounded-xl">
                   <ExclamationTriangleIcon className="w-6 h-6 text-red-400" />
@@ -280,13 +280,13 @@ const SubscriptionDashboard: React.FC = () => {
 
       {/* Revenue Analytics */}
       <div className="mb-8">
-        <div className="bg-black/20 backdrop-blur-lg border border-white/10 rounded-2xl p-6 shadow-2xl">
+        <div className="bg-gray-900/20 backdrop-blur-lg border border-white/10 rounded-2xl p-6 shadow-2xl">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-white">Revenue Analytics</h2>
             <select
               value={revenuePeriod}
               onChange={(e) => setRevenuePeriod(e.target.value)}
-              className="bg-black/40 border border-white/20 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="bg-gray-900/40 border border-white/20 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
             >
               <option value="7d">Last 7 days</option>
               <option value="30d">Last 30 days</option>
@@ -304,13 +304,13 @@ const SubscriptionDashboard: React.FC = () => {
                 <p className="text-gray-400">Total Revenue</p>
               </div>
               <div className="text-center">
-                <p className="text-4xl font-bold text-purple-400 mb-2">
+                <p className="text-4xl font-bold text-emerald-400 mb-2">
                   {formatCurrency(revenueData.projectedMRR)}
                 </p>
                 <p className="text-gray-400">Projected MRR</p>
               </div>
               <div className="text-center">
-                <p className="text-4xl font-bold text-blue-400 mb-2">
+                <p className="text-4xl font-bold text-teal-400 mb-2">
                   {formatCurrency(revenueData.averageRevenuePerUser)}
                 </p>
                 <p className="text-gray-400">Avg Revenue/User</p>
@@ -323,7 +323,7 @@ const SubscriptionDashboard: React.FC = () => {
       {/* Plan Type Breakdown */}
       {analytics && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <div className="bg-black/20 backdrop-blur-lg border border-white/10 rounded-2xl p-6 shadow-2xl">
+          <div className="bg-gray-900/20 backdrop-blur-lg border border-white/10 rounded-2xl p-6 shadow-2xl">
             <h3 className="text-xl font-bold text-white mb-4">Plan Distribution</h3>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
@@ -331,7 +331,7 @@ const SubscriptionDashboard: React.FC = () => {
                 <div className="flex items-center gap-2">
                   <div className="w-24 h-2 bg-gray-700 rounded-full overflow-hidden">
                     <div 
-                      className="h-full bg-blue-500 transition-all duration-500"
+                      className="h-full bg-teal-500 transition-all duration-500"
                       style={{ 
                         width: `${(analytics.planTypeBreakdown.monthly / (analytics.planTypeBreakdown.monthly + analytics.planTypeBreakdown.yearly)) * 100}%` 
                       }}
@@ -345,7 +345,7 @@ const SubscriptionDashboard: React.FC = () => {
                 <div className="flex items-center gap-2">
                   <div className="w-24 h-2 bg-gray-700 rounded-full overflow-hidden">
                     <div 
-                      className="h-full bg-purple-500 transition-all duration-500"
+                      className="h-full bg-emerald-500 transition-all duration-500"
                       style={{ 
                         width: `${(analytics.planTypeBreakdown.yearly / (analytics.planTypeBreakdown.monthly + analytics.planTypeBreakdown.yearly)) * 100}%` 
                       }}
@@ -357,7 +357,7 @@ const SubscriptionDashboard: React.FC = () => {
             </div>
           </div>
           
-          <div className="bg-black/20 backdrop-blur-lg border border-white/10 rounded-2xl p-6 shadow-2xl">
+          <div className="bg-gray-900/20 backdrop-blur-lg border border-white/10 rounded-2xl p-6 shadow-2xl">
             <h3 className="text-xl font-bold text-white mb-4">Quick Stats</h3>
             <div className="space-y-3">
               <div className="flex justify-between">
@@ -378,7 +378,7 @@ const SubscriptionDashboard: React.FC = () => {
       )}
 
       {/* Subscription Table */}
-      <div className="bg-black/20 backdrop-blur-lg border border-white/10 rounded-2xl p-6 shadow-2xl">
+      <div className="bg-gray-900/20 backdrop-blur-lg border border-white/10 rounded-2xl p-6 shadow-2xl">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
           <h2 className="text-2xl font-bold text-white">Subscription Management</h2>
           
@@ -391,14 +391,14 @@ const SubscriptionDashboard: React.FC = () => {
                 placeholder="Search users..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 bg-black/40 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="pl-10 pr-4 py-2 bg-gray-900/40 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
             </div>
             
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="px-4 py-2 bg-black/40 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="px-4 py-2 bg-gray-900/40 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
             >
               <option value="all">All Status</option>
               <option value="active">Active</option>
@@ -410,7 +410,7 @@ const SubscriptionDashboard: React.FC = () => {
             <select
               value={filterTier}
               onChange={(e) => setFilterTier(e.target.value)}
-              className="px-4 py-2 bg-black/40 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="px-4 py-2 bg-gray-900/40 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
             >
               <option value="all">All Tiers</option>
               <option value="free">Free</option>
@@ -446,7 +446,7 @@ const SubscriptionDashboard: React.FC = () => {
                   <td className="py-4 px-4">
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                       subscription.tier === 'enterprise' 
-                        ? 'bg-purple-500/20 text-purple-300' 
+                        ? 'bg-emerald-500/20 text-emerald-300' 
                         : 'bg-gray-500/20 text-gray-300'
                     }`}>
                       {subscription.tier}
@@ -507,8 +507,8 @@ const SubscriptionDashboard: React.FC = () => {
                   onClick={() => setCurrentPage(page)}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                     currentPage === page
-                      ? 'bg-purple-500 text-white'
-                      : 'bg-black/40 text-gray-300 hover:bg-white/10'
+                      ? 'bg-emerald-500 text-white'
+                      : 'bg-gray-900/40 text-gray-300 hover:bg-white/10'
                   }`}
                 >
                   {page}

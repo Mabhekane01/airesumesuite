@@ -208,8 +208,8 @@ export default function RegisterForm({ onToggleMode, onClose, onSuccess, recaptc
         </div>
         
         <div className="text-center mb-8">
-          <div className="mx-auto w-16 h-16 mb-4 bg-purple-600/20 rounded-full flex items-center justify-center">
-            <EnvelopeIcon className="w-8 h-8 text-purple-400" />
+          <div className="mx-auto w-16 h-16 mb-4 bg-emerald-600/20 rounded-full flex items-center justify-center">
+            <EnvelopeIcon className="w-8 h-8 text-emerald-400" />
           </div>
           <h2 className="text-3xl font-bold gradient-text-dark mb-2">
             Verify Your Email
@@ -217,7 +217,7 @@ export default function RegisterForm({ onToggleMode, onClose, onSuccess, recaptc
           <p className="dark-text-secondary">
             We've sent a 6-digit code to
           </p>
-          <p className="text-purple-400 font-medium">{emailToUse}</p>
+          <p className="text-emerald-400 font-medium">{emailToUse}</p>
         </div>
 
         <RegistrationOTPForm
@@ -417,7 +417,7 @@ export default function RegisterForm({ onToggleMode, onClose, onSuccess, recaptc
             <div className="w-full border-t border-dark-border"></div>
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-dark-tertiary dark-text-muted">Or continue with</span>
+            <span className="px-2 bg-gray-700 dark-text-muted">Or continue with</span>
           </div>
         </div>
 
@@ -438,11 +438,11 @@ export default function RegisterForm({ onToggleMode, onClose, onSuccess, recaptc
         </motion.button>
 
         {/* Enterprise Security Notice */}
-        <div className="bg-dark-tertiary border border-dark-border rounded-lg p-4 mt-6">
+        <div className="bg-gray-700 border border-dark-border rounded-lg p-4 mt-6">
           <div className="flex items-start space-x-3">
-            <ShieldCheckIcon className="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" />
+            <ShieldCheckIcon className="w-5 h-5 text-teal-400 mt-0.5 flex-shrink-0" />
             <div>
-              <h3 className="text-sm font-semibold text-blue-400 mb-1">
+              <h3 className="text-sm font-semibold text-teal-400 mb-1">
                 Enterprise Security
               </h3>
               <ul className="text-xs text-gray-400 space-y-1">
@@ -469,11 +469,11 @@ export default function RegisterForm({ onToggleMode, onClose, onSuccess, recaptc
         
         <p className="text-xs text-gray-500 mt-3">
           Protected by reCAPTCHA and subject to the Google{' '}
-          <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:text-purple-300">
+          <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="text-emerald-400 hover:text-emerald-300">
             Privacy Policy
           </a>{' '}
           and{' '}
-          <a href="https://policies.google.com/terms" target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:text-purple-300">
+          <a href="https://policies.google.com/terms" target="_blank" rel="noopener noreferrer" className="text-emerald-400 hover:text-emerald-300">
             Terms of Service
           </a>
         </p>

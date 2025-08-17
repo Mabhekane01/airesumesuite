@@ -392,7 +392,7 @@ export default function LoginFormSimple({ onToggleMode, onClose, onSuccess }: Lo
             <div className="w-full border-t border-dark-border"></div>
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-dark-primary text-dark-text-muted">Or continue with</span>
+            <span className="px-2 bg-gray-900 text-dark-text-muted">Or continue with</span>
           </div>
         </div>
 

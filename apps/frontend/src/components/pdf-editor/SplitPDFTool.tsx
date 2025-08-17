@@ -114,7 +114,7 @@ const SplitPDFTool: React.FC<SplitPDFToolProps> = ({ activeFile }) => {
         <div className="max-w-4xl mx-auto space-y-8">
           {/* Header */}
           <div className="text-center">
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-black/40 backdrop-blur-xl border border-gray-600/30 shadow-2xl mb-6">
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gray-900/40 backdrop-blur-xl border border-gray-600/30 shadow-2xl mb-6">
               <Split className="w-10 h-10 text-white" />
             </div>
             <h2 className="text-4xl font-bold text-white mb-3">Split PDF</h2>
@@ -124,9 +124,9 @@ const SplitPDFTool: React.FC<SplitPDFToolProps> = ({ activeFile }) => {
           </div>
 
           {/* Main Content */}
-          <div className="bg-black/20 backdrop-blur-xl border border-gray-600/20 rounded-2xl p-8">
+          <div className="bg-gray-900/20 backdrop-blur-xl border border-gray-600/20 rounded-2xl p-8">
             <div className="text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-xl bg-black/30 mb-6">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-xl bg-gray-900/30 mb-6">
                 <Split className="w-8 h-8 text-white" />
               </div>
               
@@ -145,7 +145,7 @@ const SplitPDFTool: React.FC<SplitPDFToolProps> = ({ activeFile }) => {
                 Choose PDF File
               </label>
               
-              <div className="bg-black/30 backdrop-blur-xl border border-gray-600/30 rounded-xl p-6">
+              <div className="bg-gray-900/30 backdrop-blur-xl border border-gray-600/30 rounded-xl p-6">
                 <h3 className="text-lg font-bold text-white mb-3">How it works</h3>
                 <div className="space-y-2 text-gray-300 text-sm">
                   <p>• Select your PDF document</p>
@@ -179,15 +179,15 @@ const SplitPDFTool: React.FC<SplitPDFToolProps> = ({ activeFile }) => {
         {/* Progress Steps */}
         <div className="flex items-center justify-center">
           <div className="flex items-center space-x-4">
-            <div className={`flex items-center justify-center w-10 h-10 rounded-full ${step >= 1 ? 'bg-slate-600' : 'bg-black/20'} border ${step >= 1 ? 'border-slate-500' : 'border-gray-600/30'} text-white font-bold backdrop-blur-xl`}>
+            <div className={`flex items-center justify-center w-10 h-10 rounded-full ${step >= 1 ? 'bg-slate-600' : 'bg-gray-900/20'} border ${step >= 1 ? 'border-slate-500' : 'border-gray-600/30'} text-white font-bold backdrop-blur-xl`}>
               {step > 1 ? <Check className="w-5 h-5" /> : '1'}
             </div>
             <div className={`w-16 h-1 ${step >= 2 ? 'bg-slate-600' : 'bg-gray-600/30'} rounded`}></div>
-            <div className={`flex items-center justify-center w-10 h-10 rounded-full ${step >= 2 ? 'bg-slate-600' : 'bg-black/20'} border ${step >= 2 ? 'border-slate-500' : 'border-gray-600/30'} text-white font-bold backdrop-blur-xl`}>
+            <div className={`flex items-center justify-center w-10 h-10 rounded-full ${step >= 2 ? 'bg-slate-600' : 'bg-gray-900/20'} border ${step >= 2 ? 'border-slate-500' : 'border-gray-600/30'} text-white font-bold backdrop-blur-xl`}>
               {step > 2 ? <Check className="w-5 h-5" /> : '2'}
             </div>
             <div className={`w-16 h-1 ${step >= 3 ? 'bg-slate-600' : 'bg-gray-600/30'} rounded`}></div>
-            <div className={`flex items-center justify-center w-10 h-10 rounded-full ${step >= 3 ? 'bg-slate-600' : 'bg-black/20'} border ${step >= 3 ? 'border-slate-500' : 'border-gray-600/30'} text-white font-bold backdrop-blur-xl`}>
+            <div className={`flex items-center justify-center w-10 h-10 rounded-full ${step >= 3 ? 'bg-slate-600' : 'bg-gray-900/20'} border ${step >= 3 ? 'border-slate-500' : 'border-gray-600/30'} text-white font-bold backdrop-blur-xl`}>
               {step > 3 ? <Check className="w-5 h-5" /> : '3'}
             </div>
           </div>
@@ -195,7 +195,7 @@ const SplitPDFTool: React.FC<SplitPDFToolProps> = ({ activeFile }) => {
 
         {/* Step Content */}
         {step === 1 && loading && (
-          <div className="bg-black/20 backdrop-blur-xl border border-gray-600/20 rounded-2xl p-12 text-center">
+          <div className="bg-gray-900/20 backdrop-blur-xl border border-gray-600/20 rounded-2xl p-12 text-center">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-white mb-4"></div>
             <h2 className="text-2xl font-bold text-white mb-2">Loading PDF...</h2>
             <p className="text-gray-400">Please wait while we process your document</p>
@@ -204,7 +204,7 @@ const SplitPDFTool: React.FC<SplitPDFToolProps> = ({ activeFile }) => {
 
         {step === 2 && (
           <div className="space-y-8">
-            <div className="bg-black/20 backdrop-blur-xl border border-gray-600/20 rounded-2xl p-8">
+            <div className="bg-gray-900/20 backdrop-blur-xl border border-gray-600/20 rounded-2xl p-8">
               <div className="text-center mb-8">
                 <h2 className="text-3xl font-bold text-white mb-3">
                   Select Pages
@@ -212,7 +212,7 @@ const SplitPDFTool: React.FC<SplitPDFToolProps> = ({ activeFile }) => {
                 <p className="text-white/80 text-lg">
                   Choose which pages to extract into a new document
                 </p>
-                <div className="mt-6 inline-flex items-center gap-6 bg-black/30 backdrop-blur-xl border border-gray-600/20 px-8 py-4 rounded-xl">
+                <div className="mt-6 inline-flex items-center gap-6 bg-gray-900/30 backdrop-blur-xl border border-gray-600/20 px-8 py-4 rounded-xl">
                   <span className="text-white font-medium">
                     {file.name}
                   </span>
@@ -244,13 +244,13 @@ const SplitPDFTool: React.FC<SplitPDFToolProps> = ({ activeFile }) => {
               <div className="flex justify-center gap-4 mb-8">
                 <button 
                   onClick={() => setSelectedPages(new Set(Array.from({length: numPages}, (_, i) => i + 1)))}
-                  className="px-6 py-3 rounded-lg bg-black/30 text-white hover:bg-black/50 border border-gray-600/30 hover:border-gray-500/50 transition-all duration-200"
+                  className="px-6 py-3 rounded-lg bg-gray-900/30 text-white hover:bg-gray-900/50 border border-gray-600/30 hover:border-gray-500/50 transition-all duration-200"
                 >
                   Select All
                 </button>
                 <button 
                   onClick={() => setSelectedPages(new Set())}
-                  className="px-6 py-3 rounded-lg bg-black/30 text-white hover:bg-black/50 border border-gray-600/30 hover:border-gray-500/50 transition-all duration-200"
+                  className="px-6 py-3 rounded-lg bg-gray-900/30 text-white hover:bg-gray-900/50 border border-gray-600/30 hover:border-gray-500/50 transition-all duration-200"
                 >
                   Clear All
                 </button>
@@ -270,7 +270,7 @@ const SplitPDFTool: React.FC<SplitPDFToolProps> = ({ activeFile }) => {
             </div>
 
             {/* Page Grid */}
-            <div className="bg-black/20 backdrop-blur-xl border border-gray-600/20 rounded-2xl p-8">
+            <div className="bg-gray-900/20 backdrop-blur-xl border border-gray-600/20 rounded-2xl p-8">
               <h3 className="text-2xl font-bold text-center text-white mb-8">Select Pages</h3>
               <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 2xl:grid-cols-8 gap-4">
                 {Array.from({ length: numPages }, (_, i) => i + 1).map((pageNum) => {
@@ -298,7 +298,7 @@ const SplitPDFTool: React.FC<SplitPDFToolProps> = ({ activeFile }) => {
                             />
                           </Document>
                         ) : (
-                          <div className="w-full h-full bg-black/10 flex items-center justify-center">
+                          <div className="w-full h-full bg-gray-900/10 flex items-center justify-center">
                             <FileText className="w-8 h-8 text-gray-400" />
                           </div>
                         )}
@@ -307,7 +307,7 @@ const SplitPDFTool: React.FC<SplitPDFToolProps> = ({ activeFile }) => {
                       {/* Page Number */}
                       <div className={`
                         absolute bottom-0 left-0 right-0 text-white text-sm p-2 text-center font-bold backdrop-blur-sm
-                        ${isSelected ? 'bg-slate-600/80' : 'bg-black/60'}
+                        ${isSelected ? 'bg-slate-600/80' : 'bg-gray-900/60'}
                       `}>
                         Page {pageNum}
                       </div>
@@ -327,7 +327,7 @@ const SplitPDFTool: React.FC<SplitPDFToolProps> = ({ activeFile }) => {
       )}
 
         {step === 3 && (
-          <div className="bg-black/20 backdrop-blur-xl border border-gray-600/20 rounded-2xl p-12 text-center">
+          <div className="bg-gray-900/20 backdrop-blur-xl border border-gray-600/20 rounded-2xl p-12 text-center">
             <div className="inline-block animate-spin rounded-full h-16 w-16 border-b-4 border-white mb-6"></div>
             <h2 className="text-3xl font-bold text-white mb-4">Processing...</h2>
             <p className="text-xl text-gray-400">
@@ -337,7 +337,7 @@ const SplitPDFTool: React.FC<SplitPDFToolProps> = ({ activeFile }) => {
         )}
 
         {step === 4 && (
-          <div className="bg-black/20 backdrop-blur-xl border border-gray-600/20 rounded-2xl p-12 text-center">
+          <div className="bg-gray-900/20 backdrop-blur-xl border border-gray-600/20 rounded-2xl p-12 text-center">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-600 text-white mb-6">
               <Check className="w-8 h-8" />
             </div>
@@ -358,7 +358,7 @@ const SplitPDFTool: React.FC<SplitPDFToolProps> = ({ activeFile }) => {
               </button>
               <button 
                 onClick={() => window.location.reload()}
-                className="px-8 py-3 rounded-xl bg-black/30 text-white hover:bg-black/50 border border-gray-600/30 hover:border-gray-500/50 transition-all duration-200"
+                className="px-8 py-3 rounded-xl bg-gray-900/30 text-white hover:bg-gray-900/50 border border-gray-600/30 hover:border-gray-500/50 transition-all duration-200"
               >
                 Start Over
               </button>

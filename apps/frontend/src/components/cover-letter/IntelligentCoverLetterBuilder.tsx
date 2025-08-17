@@ -289,7 +289,7 @@ export default function IntelligentCoverLetterBuilder() {
       {/* Resume Selection */}
       <Card className="card-dark p-6">
         <h3 className="text-lg font-semibold text-dark-text-primary mb-4 flex items-center">
-          <DocumentTextIcon className="w-5 h-5 mr-2 text-blue-400" />
+          <DocumentTextIcon className="w-5 h-5 mr-2 text-teal-400" />
           Resume Integration
         </h3>
         
@@ -309,13 +309,13 @@ export default function IntelligentCoverLetterBuilder() {
           </Select>
 
           {resumeData && (
-            <div className="p-4 bg-blue-500/10 border border-blue-400/30 rounded-lg">
+            <div className="p-4 bg-teal-500/10 border border-teal-400/30 rounded-lg">
               <div className="flex items-center mb-2">
-                <CheckCircleIcon className="w-5 h-5 text-blue-400 mr-2" />
-                <span className="font-medium text-blue-400">Resume Loaded</span>
+                <CheckCircleIcon className="w-5 h-5 text-teal-400 mr-2" />
+                <span className="font-medium text-teal-400">Resume Loaded</span>
               </div>
-              <p className="text-sm text-blue-300">{resumeData.title}</p>
-              <p className="text-xs text-blue-300/70">{resumeData.personalInfo?.firstName} {resumeData.personalInfo?.lastName}</p>
+              <p className="text-sm text-teal-300">{resumeData.title}</p>
+              <p className="text-xs text-teal-300/70">{resumeData.personalInfo?.firstName} {resumeData.personalInfo?.lastName}</p>
             </div>
           )}
         </div>
@@ -406,12 +406,12 @@ export default function IntelligentCoverLetterBuilder() {
       </Card>
 
       {/* Generation Tips */}
-      <Card className="card-dark p-6 bg-gradient-to-r from-purple-500/10 to-indigo-500/10 border border-purple-500/30">
+      <Card className="card-dark p-6 bg-gradient-to-r from-emerald-500/10 to-indigo-500/10 border border-emerald-500/30">
         <div className="flex items-start space-x-3">
-          <SparklesIcon className="w-6 h-6 text-purple-400 mt-0.5" />
+          <SparklesIcon className="w-6 h-6 text-emerald-400 mt-0.5" />
           <div>
-            <h3 className="font-semibold text-purple-400 mb-2">AI Enhancement Features</h3>
-            <ul className="text-sm text-purple-300 space-y-1">
+            <h3 className="font-semibold text-emerald-400 mb-2">AI Enhancement Features</h3>
+            <ul className="text-sm text-emerald-300 space-y-1">
               <li>• Intelligent resume-job matching with keyword optimization</li>
               <li>• Multiple tone variations to match company culture</li>
               <li>• ATS compatibility analysis and optimization</li>
@@ -438,7 +438,7 @@ export default function IntelligentCoverLetterBuilder() {
   const renderPreviewStep = () => (
     <div className="space-y-6">
       {/* Tab Navigation */}
-      <div className="flex space-x-1 bg-dark-secondary/20 p-1 rounded-lg border border-dark-border">
+      <div className="flex space-x-1 bg-gray-800/20 p-1 rounded-lg border border-dark-border">
         {[
           { id: 'write', label: 'Edit', icon: PencilSquareIcon },
           { id: 'preview', label: 'Preview', icon: EyeIcon },
@@ -467,7 +467,7 @@ export default function IntelligentCoverLetterBuilder() {
           <div className="lg:col-span-1">
             <Card className="card-dark p-4 sticky top-8">
               <h4 className="font-semibold text-dark-text-primary mb-4 flex items-center">
-                <BeakerIcon className="w-5 h-5 mr-2 text-purple-400" />
+                <BeakerIcon className="w-5 h-5 mr-2 text-emerald-400" />
                 AI Variations
               </h4>
               
@@ -481,8 +481,8 @@ export default function IntelligentCoverLetterBuilder() {
                     }}
                     className={`w-full p-3 text-left rounded-lg border transition-colors ${
                       selectedVariation === index
-                        ? 'border-purple-400 bg-purple-500/10'
-                        : 'border-dark-border hover:border-purple-400/50'
+                        ? 'border-emerald-400 bg-emerald-500/10'
+                        : 'border-dark-border hover:border-emerald-400/50'
                     }`}
                   >
                     <div className="font-medium text-sm mb-1 capitalize">{variation.tone} Tone</div>
@@ -629,7 +629,7 @@ export default function IntelligentCoverLetterBuilder() {
 
           {/* Keywords */}
           <Card className="card-dark p-6">
-            <h4 className="font-semibold text-blue-400 mb-4 flex items-center">
+            <h4 className="font-semibold text-teal-400 mb-4 flex items-center">
               <ClipboardDocumentListIcon className="w-5 h-5 mr-2" />
               Keyword Alignment ({analysisResult.keywordAlignment?.length || 0} matches)
             </h4>
@@ -637,7 +637,7 @@ export default function IntelligentCoverLetterBuilder() {
               {analysisResult.keywordAlignment?.map((keyword: string, index: number) => (
                 <span
                   key={index}
-                  className="px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-sm border border-blue-400/30"
+                  className="px-3 py-1 bg-teal-500/20 text-teal-400 rounded-full text-sm border border-teal-400/30"
                 >
                   {keyword}
                 </span>
@@ -752,7 +752,7 @@ export default function IntelligentCoverLetterBuilder() {
                 <div className={`flex items-center justify-center w-10 h-10 rounded-full ${
                   currentStep === item.step ? 'bg-dark-accent text-white' :
                   ['input', 'generate', 'preview'].indexOf(currentStep) > index ? 'bg-green-500 text-white' :
-                  'bg-dark-secondary text-dark-text-muted'
+                  'bg-gray-800 text-dark-text-muted'
                 }`}>
                   <item.icon className="w-5 h-5" />
                 </div>
@@ -770,7 +770,7 @@ export default function IntelligentCoverLetterBuilder() {
         {/* Loading State */}
         {isGenerating && currentStep === 'generate' && (
           <Card className="card-dark p-8 text-center">
-            <div className="animate-spin w-12 h-12 border-4 border-purple-400 border-t-transparent rounded-full mx-auto mb-4"></div>
+            <div className="animate-spin w-12 h-12 border-4 border-emerald-400 border-t-transparent rounded-full mx-auto mb-4"></div>
             <h3 className="text-lg font-semibold text-dark-text-primary mb-2">Generating Your Cover Letter</h3>
             <p className="text-dark-text-secondary">Our AI is analyzing your resume and the job requirements to create the perfect cover letter...</p>
           </Card>

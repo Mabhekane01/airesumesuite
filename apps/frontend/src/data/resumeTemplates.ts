@@ -121,9 +121,9 @@ export const resumeTemplates: ResumeTemplate[] = [
     industry: ['Graphic Design', 'Marketing', 'Advertising', 'Media & Entertainment'],
     previewImage: '/templates/modern-creative-2.png',
     colors: {
-      primary: '#7c3aed',
-      secondary: '#8b5cf6',
-      accent: '#a78bfa',
+      primary: '#059669',
+      secondary: '#10b981',
+      accent: '#34d399',
       text: '#1f2937',
       background: '#ffffff'
     },
@@ -204,9 +204,9 @@ export const resumeTemplates: ResumeTemplate[] = [
     industry: ['Data Science', 'Machine Learning', 'Analytics', 'Research'],
     previewImage: '/templates/technical-functional-2.png',
     colors: {
-      primary: '#0891b2',
-      secondary: '#0e7490',
-      accent: '#06b6d4',
+      primary: '#0d9488',
+      secondary: '#0f766e',
+      accent: '#14b8a6',
       text: '#1f2937',
       background: '#ffffff'
     },
@@ -262,14 +262,14 @@ export const resumeTemplates: ResumeTemplate[] = [
   {
     id: 'altacv-marissa-mayer',
     name: 'AltaCV Executive',
-    description: 'Executive CV template inspired by Marissa Mayer with vivid purple accents and professional layout',
+    description: 'Executive CV template inspired by Marissa Mayer with vivid emerald accents and professional layout',
     category: 'professional-corporate',
     industry: ['Technology', 'Executive', 'Management', 'Startups', 'Leadership'],
     previewImage: '/templates/altacv-marissa-mayer.png',
     colors: {
-      primary: '#3E0097',   // VividPurple
-      secondary: '#3E0097', // VividPurple
-      accent: '#3E0097',    // VividPurple
+      primary: '#059669',   // VividEmerald
+      secondary: '#059669', // VividEmerald
+      accent: '#059669',    // VividEmerald
       text: '#2E2E2E',      // SlateGrey
       background: '#ffffff'
     },

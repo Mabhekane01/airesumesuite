@@ -100,7 +100,7 @@ export function FileUpload({ onUpload }: FileUploadProps) {
           isDragActive
             ? 'border-dark-accent bg-dark-accent/10'
             : isUploading
-            ? 'border-dark-border bg-dark-secondary/20 cursor-not-allowed'
+            ? 'border-dark-border bg-gray-800/20 cursor-not-allowed'
             : 'border-dark-border hover:border-dark-accent hover:bg-dark-accent/10'
         }`}
       >
@@ -115,7 +115,7 @@ export function FileUpload({ onUpload }: FileUploadProps) {
               <p className="text-lg font-medium text-dark-text-primary">Uploading and parsing...</p>
               <p className="text-sm text-dark-text-secondary">This may take a few moments</p>
             </div>
-            <div className="w-full bg-dark-secondary/20 rounded-full h-2">
+            <div className="w-full bg-gray-800/20 rounded-full h-2">
               <div
                 className="bg-dark-accent h-2 rounded-full transition-all duration-300"
                 style={{ width: `${uploadProgress}%` }}
@@ -125,7 +125,7 @@ export function FileUpload({ onUpload }: FileUploadProps) {
           </div>
         ) : (
           <div className="space-y-4">
-            <div className="mx-auto w-12 h-12 bg-dark-secondary/20 rounded-full flex items-center justify-center">
+            <div className="mx-auto w-12 h-12 bg-gray-800/20 rounded-full flex items-center justify-center">
               {isDragActive ? (
                 <CloudArrowUpIcon className="w-6 h-6 text-dark-accent" />
               ) : (

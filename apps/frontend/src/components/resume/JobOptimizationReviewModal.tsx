@@ -206,15 +206,15 @@ export const JobOptimizationReviewModal: React.FC<JobOptimizationReviewModalProp
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
       {/* Backdrop */}
       <div 
-        className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+        className="absolute inset-0 bg-gray-900/80 backdrop-blur-sm"
         onClick={onClose}
       />
       
       {/* Modal */}
-      <div className="relative w-full max-w-6xl max-h-[95vh] bg-dark-primary rounded-xl shadow-2xl border border-dark-border overflow-hidden">
+      <div className="relative w-full max-w-6xl max-h-[95vh] bg-gray-900 rounded-xl shadow-2xl border border-dark-border overflow-hidden">
         <div className="w-full overflow-x-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-dark-border bg-dark-secondary/50">
+        <div className="flex items-center justify-between p-4 border-b border-dark-border bg-gray-800/50">
           <h2 className="text-xl font-bold text-dark-text-primary">Job Optimization Review</h2>
           <button
             onClick={onClose}
@@ -230,17 +230,17 @@ export const JobOptimizationReviewModal: React.FC<JobOptimizationReviewModalProp
         <div className="border-b border-dark-border/30 pb-4 mb-6">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div className="flex items-start gap-3">
-              <div className="p-2 rounded-lg bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-500/30 shrink-0">
-                <BriefcaseIcon className="h-6 w-6 text-blue-400" />
+              <div className="p-2 rounded-lg bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-teal-500/30 shrink-0">
+                <BriefcaseIcon className="h-6 w-6 text-teal-400" />
               </div>
               <div className="min-w-0 flex-1">
                 <h2 className="text-xl font-bold text-dark-text-primary truncate">
                   Job Optimization Review
                 </h2>
                 <p className="text-sm text-dark-text-muted mt-1 leading-relaxed">
-                  Review optimizations for: <span className="text-blue-400 font-medium">{optimizationData.jobContext.jobTitle}</span>
+                  Review optimizations for: <span className="text-teal-400 font-medium">{optimizationData.jobContext.jobTitle}</span>
                   {optimizationData.jobContext.companyName && (
-                    <span> at <span className="text-purple-400 font-medium">{optimizationData.jobContext.companyName}</span></span>
+                    <span> at <span className="text-emerald-400 font-medium">{optimizationData.jobContext.companyName}</span></span>
                   )}
                 </p>
               </div>
@@ -254,7 +254,7 @@ export const JobOptimizationReviewModal: React.FC<JobOptimizationReviewModalProp
                   {optimizationData.jobMatchScore}/100
                 </div>
               </div>
-              <Badge variant="success" className="bg-blue-500/20 text-blue-300 border-blue-500/30 whitespace-nowrap">
+              <Badge variant="success" className="bg-teal-500/20 text-teal-300 border-teal-500/30 whitespace-nowrap">
                 {optimizationData.addedKeywords.length} Keywords Added
               </Badge>
             </div>
@@ -280,7 +280,7 @@ export const JobOptimizationReviewModal: React.FC<JobOptimizationReviewModalProp
                     variant="ghost"
                     size="sm"
                     onClick={selectAllSuggestions}
-                    className="text-blue-400 hover:bg-blue-500/10 text-xs sm:text-sm"
+                    className="text-teal-400 hover:bg-teal-500/10 text-xs sm:text-sm"
                   >
                     Select All
                   </Button>
@@ -288,7 +288,7 @@ export const JobOptimizationReviewModal: React.FC<JobOptimizationReviewModalProp
                     variant="ghost"
                     size="sm"
                     onClick={deselectAllSuggestions}
-                    className="text-dark-text-muted hover:bg-dark-tertiary text-xs sm:text-sm"
+                    className="text-dark-text-muted hover:bg-gray-700 text-xs sm:text-sm"
                   >
                     Deselect All
                   </Button>
@@ -310,7 +310,7 @@ export const JobOptimizationReviewModal: React.FC<JobOptimizationReviewModalProp
                             {getSectionTitle(sectionName)}
                           </h3>
                         </div>
-                        <Badge variant="secondary" className="bg-blue-500/20 text-blue-300 border-blue-500/30 w-fit text-xs">
+                        <Badge variant="secondary" className="bg-teal-500/20 text-teal-300 border-teal-500/30 w-fit text-xs">
                           {sectionData.suggestions.length} optimizations
                         </Badge>
                       </div>
@@ -336,15 +336,15 @@ export const JobOptimizationReviewModal: React.FC<JobOptimizationReviewModalProp
                               key={index}
                               className={`p-3 sm:p-4 rounded-lg border transition-all duration-200 ${
                                 isSelected
-                                  ? 'bg-blue-500/10 border-blue-500/30 shadow-glow-sm'
-                                  : 'bg-dark-tertiary/50 border-dark-border/30 hover:border-blue-500/20'
+                                  ? 'bg-teal-500/10 border-teal-500/30 shadow-glow-sm'
+                                  : 'bg-gray-700/50 border-dark-border/30 hover:border-teal-500/20'
                               }`}
                             >
                               <div className="flex items-start gap-3">
                                 <div 
                                   className={`mt-1 p-1 rounded-full transition-colors shrink-0 cursor-pointer ${
                                     isSelected 
-                                      ? 'bg-blue-500 text-white' 
+                                      ? 'bg-teal-500 text-white' 
                                       : 'bg-dark-border text-dark-text-muted'
                                   }`}
                                   onClick={() => toggleSuggestion(sectionName, index)}
@@ -376,10 +376,10 @@ export const JobOptimizationReviewModal: React.FC<JobOptimizationReviewModalProp
                                     {/* After */}
                                     <div>
                                       <div className="text-dark-text-muted mb-1 font-medium flex items-center gap-1">
-                                        <CheckIcon className="h-3 w-3 text-blue-400" />
+                                        <CheckIcon className="h-3 w-3 text-teal-400" />
                                         Optimized:
                                       </div>
-                                      <div className="p-2 bg-blue-500/10 border border-blue-500/20 rounded text-blue-300 font-mono break-words">
+                                      <div className="p-2 bg-teal-500/10 border border-teal-500/20 rounded text-teal-300 font-mono break-words">
                                         {isExpanded ? getFullContent(suggestion.suggested) : getContentPreview(suggestion.suggested)}
                                       </div>
                                     </div>
@@ -390,7 +390,7 @@ export const JobOptimizationReviewModal: React.FC<JobOptimizationReviewModalProp
                                     getContentPreview(suggestion.suggested, 100).includes('...')) && (
                                     <button
                                       onClick={() => toggleSuggestionExpansion(suggestionId)}
-                                      className="text-xs text-blue-400 hover:text-blue-300 mt-2 transition-colors"
+                                      className="text-xs text-teal-400 hover:text-teal-300 mt-2 transition-colors"
                                     >
                                       {isExpanded ? 'Show Less' : 'Show Full Content'}
                                     </button>
@@ -447,7 +447,7 @@ export const JobOptimizationReviewModal: React.FC<JobOptimizationReviewModalProp
                           {optimizationData.keywordAlignment.length > 3 && (
                             <button
                               onClick={() => setShowAllAlignedKeywords(!showAllAlignedKeywords)}
-                              className="text-xs text-blue-400 hover:text-blue-300 mt-2 transition-colors"
+                              className="text-xs text-teal-400 hover:text-teal-300 mt-2 transition-colors"
                             >
                               {showAllAlignedKeywords 
                                 ? 'Show Less' 
@@ -489,7 +489,7 @@ export const JobOptimizationReviewModal: React.FC<JobOptimizationReviewModalProp
                           ).map((keyword, index) => (
                             <span 
                               key={index}
-                              className="text-xs text-blue-300 bg-blue-500/10 px-2 py-1 rounded border border-blue-500/20"
+                              className="text-xs text-teal-300 bg-teal-500/10 px-2 py-1 rounded border border-teal-500/20"
                             >
                               {keyword}
                             </span>
@@ -498,7 +498,7 @@ export const JobOptimizationReviewModal: React.FC<JobOptimizationReviewModalProp
                         {optimizationData.addedKeywords.length > 4 && (
                           <button
                             onClick={() => setShowAllAddedKeywords(!showAllAddedKeywords)}
-                            className="text-xs text-blue-400 hover:text-blue-300 mt-2 transition-colors"
+                            className="text-xs text-teal-400 hover:text-teal-300 mt-2 transition-colors"
                           >
                             {showAllAddedKeywords 
                               ? 'Show Less' 
@@ -534,7 +534,7 @@ export const JobOptimizationReviewModal: React.FC<JobOptimizationReviewModalProp
                         {optimizationData.missingKeywords.length > 3 && (
                           <button
                             onClick={() => setShowAllMissingKeywords(!showAllMissingKeywords)}
-                            className="text-xs text-blue-400 hover:text-blue-300 mt-2 transition-colors"
+                            className="text-xs text-teal-400 hover:text-teal-300 mt-2 transition-colors"
                           >
                             {showAllMissingKeywords 
                               ? 'Show Less' 
@@ -563,7 +563,7 @@ export const JobOptimizationReviewModal: React.FC<JobOptimizationReviewModalProp
                 <Button
                   variant="outline"
                   onClick={onClose}
-                  className="w-full border-dark-border hover:bg-dark-tertiary text-dark-text-primary py-2.5 sm:py-3 text-sm sm:text-base"
+                  className="w-full border-dark-border hover:bg-gray-700 text-dark-text-primary py-2.5 sm:py-3 text-sm sm:text-base"
                 >
                   Cancel
                 </Button>

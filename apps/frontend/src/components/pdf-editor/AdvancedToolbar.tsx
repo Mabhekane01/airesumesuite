@@ -43,7 +43,7 @@ export default function AdvancedToolbar({
     { id: 'select', icon: MousePointer, label: 'Select', color: 'from-blue-500 to-indigo-600' },
     { id: 'text', icon: Type, label: 'Text', color: 'from-green-500 to-emerald-600' },
     { id: 'draw', icon: Highlighter, label: 'Draw', color: 'from-yellow-500 to-orange-600' },
-    { id: 'shape', icon: Square, label: 'Shapes', color: 'from-purple-500 to-violet-600' },
+    { id: 'shape', icon: Square, label: 'Shapes', color: 'from-emerald-500 to-violet-600' },
     { id: 'move', icon: Move, label: 'Move', color: 'from-pink-500 to-rose-600' },
     { id: 'erase', icon: Eraser, label: 'Erase', color: 'from-red-500 to-red-600' },
   ];
@@ -51,7 +51,7 @@ export default function AdvancedToolbar({
   return (
     <div className="space-y-6">
       {/* Tool Selection */}
-      <div className="bg-black/20 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl p-4">
+      <div className="bg-gray-900/20 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl p-4">
         <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
           <MousePointer size={18} className="text-cyan-400" />
           Tools
@@ -77,7 +77,7 @@ export default function AdvancedToolbar({
 
       {/* Text Styling */}
       {selectedTool === 'text' && (
-        <div className="bg-black/20 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl p-4">
+        <div className="bg-gray-900/20 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl p-4">
           <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
             <Type size={18} className="text-green-400" />
             Text Style
@@ -125,7 +125,7 @@ export default function AdvancedToolbar({
                 onClick={() => onTextStyleChange({ ...textStyle, bold: !textStyle.bold })}
                 className={clsx(
                   'p-2 rounded-lg transition-all duration-300',
-                  textStyle.bold ? 'bg-blue-500 text-white' : 'bg-white/10 hover:bg-white/20 text-gray-300'
+                  textStyle.bold ? 'bg-teal-500 text-white' : 'bg-white/10 hover:bg-white/20 text-gray-300'
                 )}
               >
                 <Bold size={16} />
@@ -134,7 +134,7 @@ export default function AdvancedToolbar({
                 onClick={() => onTextStyleChange({ ...textStyle, italic: !textStyle.italic })}
                 className={clsx(
                   'p-2 rounded-lg transition-all duration-300',
-                  textStyle.italic ? 'bg-blue-500 text-white' : 'bg-white/10 hover:bg-white/20 text-gray-300'
+                  textStyle.italic ? 'bg-teal-500 text-white' : 'bg-white/10 hover:bg-white/20 text-gray-300'
                 )}
               >
                 <Italic size={16} />
@@ -143,7 +143,7 @@ export default function AdvancedToolbar({
                 onClick={() => onTextStyleChange({ ...textStyle, underline: !textStyle.underline })}
                 className={clsx(
                   'p-2 rounded-lg transition-all duration-300',
-                  textStyle.underline ? 'bg-blue-500 text-white' : 'bg-white/10 hover:bg-white/20 text-gray-300'
+                  textStyle.underline ? 'bg-teal-500 text-white' : 'bg-white/10 hover:bg-white/20 text-gray-300'
                 )}
               >
                 <Underline size={16} />
@@ -168,7 +168,7 @@ export default function AdvancedToolbar({
               </button>
               
               {showColorPicker && (
-                <div className="absolute top-full left-0 mt-2 p-3 bg-black/90 backdrop-blur-xl rounded-xl border border-white/20 shadow-2xl z-50">
+                <div className="absolute top-full left-0 mt-2 p-3 bg-gray-900/90 backdrop-blur-xl rounded-xl border border-white/20 shadow-2xl z-50">
                   <div className="grid grid-cols-4 gap-2">
                     {colors.map(color => (
                       <button
@@ -210,9 +210,9 @@ export default function AdvancedToolbar({
 
       {/* Shape Tools */}
       {selectedTool === 'shape' && (
-        <div className="bg-black/20 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl p-4">
+        <div className="bg-gray-900/20 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl p-4">
           <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
-            <Square size={18} className="text-purple-400" />
+            <Square size={18} className="text-emerald-400" />
             Shapes
           </h3>
           <div className="grid grid-cols-2 gap-2">

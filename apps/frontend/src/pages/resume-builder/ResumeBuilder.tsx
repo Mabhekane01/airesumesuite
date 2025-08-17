@@ -41,14 +41,14 @@ export default function ResumeBuilder() {
           <Card 
             className={`card-dark p-4 xs:p-6 sm:p-8 cursor-pointer transition-all duration-200 hover:shadow-lg border-2 ${
               selectedOption === 'create' 
-                ? 'border-blue-500 bg-dark-secondary' 
-                : 'border-dark-border hover:border-blue-400'
+                ? 'border-teal-500 bg-gray-800' 
+                : 'border-dark-border hover:border-teal-400'
             }`}
             onClick={() => handleOptionSelect('create')}
           >
             <div className="text-center">
-              <div className="mx-auto w-12 h-12 xs:w-14 xs:h-14 sm:w-16 sm:h-16 bg-blue-500/20 rounded-full flex items-center justify-center mb-4 xs:mb-5 sm:mb-6">
-                <PlusIcon className="w-6 h-6 xs:w-7 xs:h-7 sm:w-8 sm:h-8 text-blue-400" />
+              <div className="mx-auto w-12 h-12 xs:w-14 xs:h-14 sm:w-16 sm:h-16 bg-teal-500/20 rounded-full flex items-center justify-center mb-4 xs:mb-5 sm:mb-6">
+                <PlusIcon className="w-6 h-6 xs:w-7 xs:h-7 sm:w-8 sm:h-8 text-teal-400" />
               </div>
               <h3 className="text-lg xs:text-xl sm:text-2xl font-semibold text-dark-text-primary mb-3 xs:mb-4">
                 Create New Resume
@@ -69,7 +69,7 @@ export default function ResumeBuilder() {
           <Card 
             className={`card-dark p-4 xs:p-6 sm:p-8 cursor-pointer transition-all duration-200 hover:shadow-lg border-2 ${
               selectedOption === 'upload' 
-                ? 'border-green-500 bg-dark-secondary' 
+                ? 'border-green-500 bg-gray-800' 
                 : 'border-dark-border hover:border-green-400'
             }`}
             onClick={() => handleOptionSelect('upload')}
@@ -97,14 +97,14 @@ export default function ResumeBuilder() {
           <Card 
             className={`card-dark p-4 xs:p-6 sm:p-8 cursor-pointer transition-all duration-200 hover:shadow-lg border-2 ${
               selectedOption === 'templates' 
-                ? 'border-purple-500 bg-dark-secondary' 
-                : 'border-dark-border hover:border-purple-400'
+                ? 'border-emerald-500 bg-gray-800' 
+                : 'border-dark-border hover:border-emerald-400'
             }`}
             onClick={() => handleOptionSelect('templates')}
           >
             <div className="text-center">
-              <div className="mx-auto w-12 h-12 xs:w-14 xs:h-14 sm:w-16 sm:h-16 bg-purple-500/20 rounded-full flex items-center justify-center mb-4 xs:mb-5 sm:mb-6">
-                <SwatchIcon className="w-6 h-6 xs:w-7 xs:h-7 sm:w-8 sm:h-8 text-purple-400" />
+              <div className="mx-auto w-12 h-12 xs:w-14 xs:h-14 sm:w-16 sm:h-16 bg-emerald-500/20 rounded-full flex items-center justify-center mb-4 xs:mb-5 sm:mb-6">
+                <SwatchIcon className="w-6 h-6 xs:w-7 xs:h-7 sm:w-8 sm:h-8 text-emerald-400" />
               </div>
               <h3 className="text-lg xs:text-xl sm:text-2xl font-semibold text-dark-text-primary mb-3 xs:mb-4">
                 Browse Templates
@@ -137,7 +137,7 @@ export default function ResumeBuilder() {
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 xs:gap-4">
             {/* Placeholder for recent resumes */}
-            <div className="p-3 xs:p-4 border border-dark-border rounded-lg hover:bg-dark-secondary cursor-pointer transition-all duration-200">
+            <div className="p-3 xs:p-4 border border-dark-border rounded-lg hover:bg-gray-800 cursor-pointer transition-all duration-200">
               <div className="flex items-center space-x-2 xs:space-x-3">
                 <DocumentTextIcon className="w-6 h-6 xs:w-8 xs:h-8 text-dark-text-muted flex-shrink-0" />
                 <div className="min-w-0">
@@ -147,7 +147,7 @@ export default function ResumeBuilder() {
               </div>
             </div>
             
-            <div className="p-3 xs:p-4 border border-dark-border rounded-lg hover:bg-dark-secondary cursor-pointer transition-all duration-200">
+            <div className="p-3 xs:p-4 border border-dark-border rounded-lg hover:bg-gray-800 cursor-pointer transition-all duration-200">
               <div className="flex items-center space-x-2 xs:space-x-3">
                 <DocumentTextIcon className="w-6 h-6 xs:w-8 xs:h-8 text-dark-text-muted flex-shrink-0" />
                 <div className="min-w-0">
@@ -157,7 +157,7 @@ export default function ResumeBuilder() {
               </div>
             </div>
             
-            <div className="p-3 xs:p-4 border border-dark-border rounded-lg hover:bg-dark-secondary cursor-pointer transition-all duration-200">
+            <div className="p-3 xs:p-4 border border-dark-border rounded-lg hover:bg-gray-800 cursor-pointer transition-all duration-200">
               <div className="flex items-center space-x-2 xs:space-x-3">
                 <DocumentTextIcon className="w-6 h-6 xs:w-8 xs:h-8 text-dark-text-muted flex-shrink-0" />
                 <div className="min-w-0">

@@ -866,9 +866,9 @@ const ComprehensiveResumeBuilderContent: React.FC = () => {
               <span className="text-sm text-dark-text-muted">
                 Step {currentStep + 1} of {steps.length}
               </span>
-              <div className="w-32 bg-dark-tertiary rounded-full h-2">
+              <div className="w-32 bg-gray-700 rounded-full h-2">
                 <div 
-                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                  className="bg-teal-600 h-2 rounded-full transition-all duration-300"
                   style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
                 />
               </div>
@@ -895,10 +895,10 @@ const ComprehensiveResumeBuilderContent: React.FC = () => {
                         onClick={() => handleStepClick(index)}
                         className={`w-full flex items-center px-3 py-2 text-sm rounded-md transition-colors ${
                           status === 'current'
-                            ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+                            ? 'bg-teal-500/20 text-teal-400 border border-teal-500/30'
                             : status === 'completed'
                             ? 'bg-green-500/20 text-green-400 hover:bg-green-500/30'
-                            : 'text-dark-text-muted hover:bg-dark-secondary'
+                            : 'text-dark-text-muted hover:bg-gray-800'
                         }`}
                       >
                         <div className="flex items-center flex-1">
@@ -927,7 +927,7 @@ const ComprehensiveResumeBuilderContent: React.FC = () => {
                   <div className="mb-6">
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center">
-                        <StepIcon className="w-6 h-6 text-blue-400 mr-2" />
+                        <StepIcon className="w-6 h-6 text-teal-400 mr-2" />
                         <h2 className="text-2xl font-bold gradient-text-dark">
                           {currentStepData.title}
                         </h2>

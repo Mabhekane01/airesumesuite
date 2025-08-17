@@ -64,7 +64,7 @@ export default function ProjectsForm() {
                   variant="outline"
                   size="sm"
                   onClick={() => removeProject(index)}
-                  className="accent-danger hover:bg-dark-primary/20"
+                  className="accent-danger hover:bg-gray-900/20"
                 >
                   <TrashIcon className="w-4 h-4" />
                 </Button>
@@ -156,7 +156,7 @@ export default function ProjectsForm() {
                   className="w-full"
                 />
                 <p className="text-xs text-dark-text-muted mt-1">
-                  Press <kbd className="px-1 py-0.5 bg-dark-tertiary rounded text-xs">Enter</kbd>, <kbd className="px-1 py-0.5 bg-dark-tertiary rounded text-xs">Tab</kbd>, or <kbd className="px-1 py-0.5 bg-dark-tertiary rounded text-xs">,</kbd> to add • Click × on chips to remove
+                  Press <kbd className="px-1 py-0.5 bg-gray-700 rounded text-xs">Enter</kbd>, <kbd className="px-1 py-0.5 bg-gray-700 rounded text-xs">Tab</kbd>, or <kbd className="px-1 py-0.5 bg-gray-700 rounded text-xs">,</kbd> to add • Click × on chips to remove
                 </p>
               </div>
             </div>

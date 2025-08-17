@@ -102,13 +102,13 @@ interface Task {
 }
 
 const STATUS_CONFIG = {
-  applied: { label: 'Applied', color: 'bg-blue-500/20 text-blue-400 border-blue-400/30', icon: ClockIcon },
+  applied: { label: 'Applied', color: 'bg-teal-500/20 text-teal-400 border-teal-400/30', icon: ClockIcon },
   under_review: { label: 'Under Review', color: 'bg-yellow-500/20 text-yellow-400 border-yellow-400/30', icon: ExclamationTriangleIcon },
-  phone_screen: { label: 'Phone Screen', color: 'bg-purple-500/20 text-purple-400 border-purple-400/30', icon: PhoneIcon },
+  phone_screen: { label: 'Phone Screen', color: 'bg-emerald-500/20 text-emerald-400 border-emerald-400/30', icon: PhoneIcon },
   technical_assessment: { label: 'Technical Assessment', color: 'bg-indigo-500/20 text-indigo-400 border-indigo-400/30', icon: DocumentTextIcon },
-  first_interview: { label: 'First Interview', color: 'bg-purple-500/20 text-purple-400 border-purple-400/30', icon: CalendarIcon },
-  second_interview: { label: 'Second Interview', color: 'bg-purple-600/20 text-purple-300 border-purple-300/30', icon: CalendarIcon },
-  final_interview: { label: 'Final Interview', color: 'bg-purple-700/20 text-purple-200 border-purple-200/30', icon: CalendarIcon },
+  first_interview: { label: 'First Interview', color: 'bg-emerald-500/20 text-emerald-400 border-emerald-400/30', icon: CalendarIcon },
+  second_interview: { label: 'Second Interview', color: 'bg-emerald-600/20 text-emerald-300 border-emerald-300/30', icon: CalendarIcon },
+  final_interview: { label: 'Final Interview', color: 'bg-purple-700/20 text-emerald-200 border-emerald-200/30', icon: CalendarIcon },
   offer_received: { label: 'Offer Received', color: 'bg-green-500/20 text-green-400 border-green-400/30', icon: CheckCircleIcon },
   offer_accepted: { label: 'Offer Accepted', color: 'bg-green-600/20 text-green-300 border-green-300/30', icon: CheckCircleIcon },
   rejected: { label: 'Rejected', color: 'bg-red-500/20 text-red-400 border-red-400/30', icon: XCircleIcon },
@@ -353,10 +353,10 @@ export default function JobApplicationDetail() {
   if (loading) {
     return (
       <div className="animate-pulse">
-        <div className="h-8 bg-dark-secondary/20 rounded w-1/4 mb-6"></div>
+        <div className="h-8 bg-gray-800/20 rounded w-1/4 mb-6"></div>
         <div className="space-y-4">
-          <div className="h-64 bg-dark-secondary/20 rounded-lg"></div>
-          <div className="h-48 bg-dark-secondary/20 rounded-lg"></div>
+          <div className="h-64 bg-gray-800/20 rounded-lg"></div>
+          <div className="h-48 bg-gray-800/20 rounded-lg"></div>
         </div>
       </div>
     );
@@ -386,7 +386,7 @@ export default function JobApplicationDetail() {
         <div className="flex items-center space-x-4">
           <button
             onClick={() => navigate('/dashboard/applications')}
-            className="p-2 text-dark-text-muted hover:text-dark-text-primary rounded-lg hover:bg-dark-secondary/20"
+            className="p-2 text-dark-text-muted hover:text-dark-text-primary rounded-lg hover:bg-gray-800/20"
           >
             <ArrowLeftIcon className="w-5 h-5" />
           </button>
@@ -430,7 +430,7 @@ export default function JobApplicationDetail() {
         </div>
         <div className="card-dark rounded-lg border border-dark-border p-4">
           <div className="flex items-center">
-            <CalendarIcon className="w-8 h-8 text-purple-400" />
+            <CalendarIcon className="w-8 h-8 text-emerald-400" />
             <div className="ml-3">
               <p className="text-sm font-medium text-dark-text-secondary">Interviews</p>
               <p className="text-lg font-semibold text-dark-text-primary">{application.interviews.length}</p>
@@ -439,7 +439,7 @@ export default function JobApplicationDetail() {
         </div>
         <div className="card-dark rounded-lg border border-dark-border p-4">
           <div className="flex items-center">
-            <EnvelopeIcon className="w-8 h-8 text-blue-400" />
+            <EnvelopeIcon className="w-8 h-8 text-teal-400" />
             <div className="ml-3">
               <p className="text-sm font-medium text-dark-text-secondary">Communications</p>
               <p className="text-lg font-semibold text-dark-text-primary">{application.communications.length}</p>
@@ -608,7 +608,7 @@ export default function JobApplicationDetail() {
                         <span className={`
                           inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
                           ${interview.status === 'completed' ? 'bg-green-500/20 text-green-400' :
-                            interview.status === 'confirmed' ? 'bg-blue-500/20 text-blue-400' :
+                            interview.status === 'confirmed' ? 'bg-teal-500/20 text-teal-400' :
                             interview.status === 'scheduled' ? 'bg-yellow-500/20 text-yellow-400' :
                             'bg-gray-500/20 text-gray-400'}
                         `}>
@@ -689,7 +689,7 @@ export default function JobApplicationDetail() {
                         <h5 className="text-sm font-medium text-dark-text-secondary mb-2">Recent Messages</h5>
                         <div className="space-y-1">
                           {interviewMessages[interview._id].slice(0, 2).map((message: any) => (
-                            <div key={message._id} className="text-sm text-dark-text-primary bg-dark-secondary/20 rounded p-2">
+                            <div key={message._id} className="text-sm text-dark-text-primary bg-gray-800/20 rounded p-2">
                               <div className="flex items-center justify-between mb-1">
                                 <span className="font-medium">{message.subject || 'Message'}</span>
                                 <span className="text-xs text-dark-text-muted">
@@ -711,7 +711,7 @@ export default function JobApplicationDetail() {
                     {interview.feedback && (
                       <div>
                         <h5 className="text-sm font-medium text-dark-text-secondary mb-2">Feedback</h5>
-                        <p className="text-sm text-dark-text-primary bg-dark-secondary/20 rounded p-3">
+                        <p className="text-sm text-dark-text-primary bg-gray-800/20 rounded p-3">
                           {interview.feedback.notes || 'No feedback provided'}
                         </p>
                         {interview.feedback.overallRating && (
@@ -774,7 +774,7 @@ export default function JobApplicationDetail() {
                       <div key={message._id} className="card-dark rounded-lg border border-dark-border p-6">
                         <div className="flex items-start justify-between mb-3">
                           <div className="flex items-center space-x-3">
-                            {message.type === 'email' && <EnvelopeIcon className="w-5 h-5 text-blue-400" />}
+                            {message.type === 'email' && <EnvelopeIcon className="w-5 h-5 text-teal-400" />}
                             {message.type === 'message' && <EnvelopeIcon className="w-5 h-5 text-green-400" />}
                             <div>
                               <h4 className="text-sm font-medium text-dark-text-primary">
@@ -811,7 +811,7 @@ export default function JobApplicationDetail() {
                             <span className="text-xs text-dark-text-muted">To:</span>
                             <div className="flex flex-wrap gap-1">
                               {message.to.map((recipient: any, index: number) => (
-                                <span key={index} className="text-xs bg-dark-secondary/20 px-2 py-1 rounded">
+                                <span key={index} className="text-xs bg-gray-800/20 px-2 py-1 rounded">
                                   {recipient.name} ({recipient.email})
                                 </span>
                               ))}
@@ -896,8 +896,8 @@ export default function JobApplicationDetail() {
                               </span>
                               <span className={`
                                 inline-flex items-center px-2 py-1 rounded text-xs font-medium
-                                ${task.type === 'preparation' ? 'bg-blue-500/20 text-blue-400' :
-                                  task.type === 'research' ? 'bg-purple-500/20 text-purple-400' :
+                                ${task.type === 'preparation' ? 'bg-teal-500/20 text-teal-400' :
+                                  task.type === 'research' ? 'bg-emerald-500/20 text-emerald-400' :
                                   task.type === 'practice' ? 'bg-green-500/20 text-green-400' :
                                   'bg-gray-500/20 text-gray-400'}
                               `}>
@@ -917,7 +917,7 @@ export default function JobApplicationDetail() {
                                   <span>Progress</span>
                                   <span>{task.progress}%</span>
                                 </div>
-                                <div className="w-full bg-dark-secondary/20 rounded-full h-1.5">
+                                <div className="w-full bg-gray-800/20 rounded-full h-1.5">
                                   <div 
                                     className="bg-dark-accent h-1.5 rounded-full transition-all duration-300"
                                     style={{ width: `${task.progress}%` }}
@@ -1000,7 +1000,7 @@ export default function JobApplicationDetail() {
               <div className="space-y-6">
                 <div>
                   <h4 className="text-sm font-medium text-dark-text-secondary mb-2">Why I'm Interested</h4>
-                  <p className="text-dark-text-primary bg-dark-secondary/20 rounded p-3">
+                  <p className="text-dark-text-primary bg-gray-800/20 rounded p-3">
                     {application.applicationStrategy.whyInterested || 'Not specified'}
                   </p>
                 </div>
@@ -1023,7 +1023,7 @@ export default function JobApplicationDetail() {
 
                 <div>
                   <h4 className="text-sm font-medium text-dark-text-secondary mb-2">Unique Value Proposition</h4>
-                  <p className="text-dark-text-primary bg-dark-secondary/20 rounded p-3">
+                  <p className="text-dark-text-primary bg-gray-800/20 rounded p-3">
                     {application.applicationStrategy.uniqueValueProposition || 'Not specified'}
                   </p>
                 </div>
@@ -1093,8 +1093,8 @@ function CreateInterviewModal({ onClose, onSubmit }: { onClose: () => void; onSu
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-dark-secondary rounded-lg border border-dark-border p-6 w-full max-w-md">
+    <div className="fixed inset-0 bg-gray-900/50 flex items-center justify-center z-50">
+      <div className="bg-gray-800 rounded-lg border border-dark-border p-6 w-full max-w-md">
         <h3 className="text-lg font-semibold text-dark-text-primary mb-4">Schedule Interview</h3>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -1103,7 +1103,7 @@ function CreateInterviewModal({ onClose, onSubmit }: { onClose: () => void; onSu
               type="text"
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              className="w-full px-3 py-2 bg-dark-primary border border-dark-border rounded-lg text-dark-text-primary"
+              className="w-full px-3 py-2 bg-gray-900 border border-dark-border rounded-lg text-dark-text-primary"
               placeholder="Interview title"
             />
           </div>
@@ -1112,7 +1112,7 @@ function CreateInterviewModal({ onClose, onSubmit }: { onClose: () => void; onSu
             <select
               value={formData.type}
               onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-              className="w-full px-3 py-2 bg-dark-primary border border-dark-border rounded-lg text-dark-text-primary"
+              className="w-full px-3 py-2 bg-gray-900 border border-dark-border rounded-lg text-dark-text-primary"
             >
               <option value="technical">Technical</option>
               <option value="behavioral">Behavioral</option>
@@ -1129,7 +1129,7 @@ function CreateInterviewModal({ onClose, onSubmit }: { onClose: () => void; onSu
               min="1"
               value={formData.round}
               onChange={(e) => setFormData({ ...formData, round: parseInt(e.target.value) })}
-              className="w-full px-3 py-2 bg-dark-primary border border-dark-border rounded-lg text-dark-text-primary"
+              className="w-full px-3 py-2 bg-gray-900 border border-dark-border rounded-lg text-dark-text-primary"
             />
           </div>
           <div>
@@ -1139,7 +1139,7 @@ function CreateInterviewModal({ onClose, onSubmit }: { onClose: () => void; onSu
               required
               value={formData.scheduledDate}
               onChange={(e) => setFormData({ ...formData, scheduledDate: e.target.value })}
-              className="w-full px-3 py-2 bg-dark-primary border border-dark-border rounded-lg text-dark-text-primary"
+              className="w-full px-3 py-2 bg-gray-900 border border-dark-border rounded-lg text-dark-text-primary"
             />
           </div>
           <div>
@@ -1150,7 +1150,7 @@ function CreateInterviewModal({ onClose, onSubmit }: { onClose: () => void; onSu
               max="480"
               value={formData.duration}
               onChange={(e) => setFormData({ ...formData, duration: parseInt(e.target.value) })}
-              className="w-full px-3 py-2 bg-dark-primary border border-dark-border rounded-lg text-dark-text-primary"
+              className="w-full px-3 py-2 bg-gray-900 border border-dark-border rounded-lg text-dark-text-primary"
             />
           </div>
           <div className="flex justify-end space-x-3 pt-4">
@@ -1199,8 +1199,8 @@ function CreateTaskModal({ onClose, onSubmit, interviews, selectedInterviewId }:
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-dark-secondary rounded-lg border border-dark-border p-6 w-full max-w-md">
+    <div className="fixed inset-0 bg-gray-900/50 flex items-center justify-center z-50">
+      <div className="bg-gray-800 rounded-lg border border-dark-border p-6 w-full max-w-md">
         <h3 className="text-lg font-semibold text-dark-text-primary mb-4">Create Task</h3>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -1208,7 +1208,7 @@ function CreateTaskModal({ onClose, onSubmit, interviews, selectedInterviewId }:
             <select
               value={formData.interviewId}
               onChange={(e) => setFormData({ ...formData, interviewId: e.target.value })}
-              className="w-full px-3 py-2 bg-dark-primary border border-dark-border rounded-lg text-dark-text-primary"
+              className="w-full px-3 py-2 bg-gray-900 border border-dark-border rounded-lg text-dark-text-primary"
               required
             >
               <option value="">Select an interview</option>
@@ -1226,7 +1226,7 @@ function CreateTaskModal({ onClose, onSubmit, interviews, selectedInterviewId }:
               required
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              className="w-full px-3 py-2 bg-dark-primary border border-dark-border rounded-lg text-dark-text-primary"
+              className="w-full px-3 py-2 bg-gray-900 border border-dark-border rounded-lg text-dark-text-primary"
               placeholder="Task title"
             />
           </div>
@@ -1235,7 +1235,7 @@ function CreateTaskModal({ onClose, onSubmit, interviews, selectedInterviewId }:
             <textarea
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              className="w-full px-3 py-2 bg-dark-primary border border-dark-border rounded-lg text-dark-text-primary"
+              className="w-full px-3 py-2 bg-gray-900 border border-dark-border rounded-lg text-dark-text-primary"
               placeholder="Task description"
               rows={3}
             />
@@ -1246,7 +1246,7 @@ function CreateTaskModal({ onClose, onSubmit, interviews, selectedInterviewId }:
               <select
                 value={formData.type}
                 onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                className="w-full px-3 py-2 bg-dark-primary border border-dark-border rounded-lg text-dark-text-primary"
+                className="w-full px-3 py-2 bg-gray-900 border border-dark-border rounded-lg text-dark-text-primary"
               >
                 <option value="preparation">Preparation</option>
                 <option value="research">Research</option>
@@ -1260,7 +1260,7 @@ function CreateTaskModal({ onClose, onSubmit, interviews, selectedInterviewId }:
               <select
                 value={formData.priority}
                 onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                className="w-full px-3 py-2 bg-dark-primary border border-dark-border rounded-lg text-dark-text-primary"
+                className="w-full px-3 py-2 bg-gray-900 border border-dark-border rounded-lg text-dark-text-primary"
               >
                 <option value="low">Low</option>
                 <option value="medium">Medium</option>
@@ -1275,7 +1275,7 @@ function CreateTaskModal({ onClose, onSubmit, interviews, selectedInterviewId }:
               type="datetime-local"
               value={formData.dueDate}
               onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
-              className="w-full px-3 py-2 bg-dark-primary border border-dark-border rounded-lg text-dark-text-primary"
+              className="w-full px-3 py-2 bg-gray-900 border border-dark-border rounded-lg text-dark-text-primary"
             />
           </div>
           <div className="flex justify-end space-x-3 pt-4">
@@ -1326,8 +1326,8 @@ function SendMessageModal({ onClose, onSubmit, interviews, selectedInterviewId }
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-dark-secondary rounded-lg border border-dark-border p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-gray-900/50 flex items-center justify-center z-50">
+      <div className="bg-gray-800 rounded-lg border border-dark-border p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
         <h3 className="text-lg font-semibold text-dark-text-primary mb-4">Send Message</h3>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -1335,7 +1335,7 @@ function SendMessageModal({ onClose, onSubmit, interviews, selectedInterviewId }
             <select
               value={formData.interviewId}
               onChange={(e) => setFormData({ ...formData, interviewId: e.target.value })}
-              className="w-full px-3 py-2 bg-dark-primary border border-dark-border rounded-lg text-dark-text-primary"
+              className="w-full px-3 py-2 bg-gray-900 border border-dark-border rounded-lg text-dark-text-primary"
               required
             >
               <option value="">Select an interview</option>
@@ -1356,7 +1356,7 @@ function SendMessageModal({ onClose, onSubmit, interviews, selectedInterviewId }
                 ...formData, 
                 to: [{ ...formData.to[0], name: e.target.value }]
               })}
-              className="w-full px-3 py-2 bg-dark-primary border border-dark-border rounded-lg text-dark-text-primary"
+              className="w-full px-3 py-2 bg-gray-900 border border-dark-border rounded-lg text-dark-text-primary"
               placeholder="Recipient name"
             />
           </div>
@@ -1370,7 +1370,7 @@ function SendMessageModal({ onClose, onSubmit, interviews, selectedInterviewId }
                 ...formData, 
                 to: [{ ...formData.to[0], email: e.target.value }]
               })}
-              className="w-full px-3 py-2 bg-dark-primary border border-dark-border rounded-lg text-dark-text-primary"
+              className="w-full px-3 py-2 bg-gray-900 border border-dark-border rounded-lg text-dark-text-primary"
               placeholder="recipient@company.com"
             />
           </div>
@@ -1380,7 +1380,7 @@ function SendMessageModal({ onClose, onSubmit, interviews, selectedInterviewId }
               type="text"
               value={formData.subject}
               onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-              className="w-full px-3 py-2 bg-dark-primary border border-dark-border rounded-lg text-dark-text-primary"
+              className="w-full px-3 py-2 bg-gray-900 border border-dark-border rounded-lg text-dark-text-primary"
               placeholder="Message subject"
             />
           </div>
@@ -1390,7 +1390,7 @@ function SendMessageModal({ onClose, onSubmit, interviews, selectedInterviewId }
               required
               value={formData.body}
               onChange={(e) => setFormData({ ...formData, body: e.target.value })}
-              className="w-full px-3 py-2 bg-dark-primary border border-dark-border rounded-lg text-dark-text-primary"
+              className="w-full px-3 py-2 bg-gray-900 border border-dark-border rounded-lg text-dark-text-primary"
               placeholder="Your message"
               rows={5}
             />

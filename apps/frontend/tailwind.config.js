@@ -16,13 +16,13 @@ export default {
     },
     extend: {
       colors: {
-        // Dark theme colors
+        // Dark theme colors - Apple-style gray glassmorphism
         dark: {
-          primary: '#000000',
-          secondary: '#0a0a0a', 
-          tertiary: '#1a1a1a',
-          quaternary: '#2a2a2a',
-          border: '#333333',
+          primary: '#111827',    // gray-900
+          secondary: '#1f2937',  // gray-800
+          tertiary: '#374151',   // gray-700
+          quaternary: '#4b5563', // gray-600
+          border: '#6b7280',     // gray-500
           text: {
             primary: '#ffffff',
             secondary: '#e5e5e5',
@@ -30,26 +30,26 @@ export default {
             muted: '#808080',
           }
         },
-        // Accent colors that work with dark theme
+        // Accent colors - emerald/teal theme
         accent: {
-          primary: '#8b5cf6',    // Purple
-          secondary: '#06b6d4',  // Cyan  
-          tertiary: '#10b981',   // Emerald
+          primary: '#10b981',    // emerald-500
+          secondary: '#14b8a6',  // teal-500  
+          tertiary: '#059669',   // emerald-600
           quaternary: '#f59e0b', // Amber
           danger: '#ef4444',     // Red
           success: '#22c55e',    // Green
         },
-        // Glass morphism colors
+        // Glass morphism colors - gray based
         glass: {
-          light: 'rgba(255, 255, 255, 0.1)',
-          medium: 'rgba(255, 255, 255, 0.15)',
-          heavy: 'rgba(255, 255, 255, 0.2)',
+          light: 'rgba(156, 163, 175, 0.1)',   // gray-400 with opacity
+          medium: 'rgba(156, 163, 175, 0.15)', // gray-400 with opacity
+          heavy: 'rgba(156, 163, 175, 0.2)',   // gray-400 with opacity
         }
       },
       backgroundImage: {
-        'gradient-dark': 'linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #0a0a0a 100%)',
-        'gradient-accent': 'linear-gradient(135deg, #8b5cf6 0%, #06b6d4 50%, #10b981 100%)',
-        'gradient-glass': 'linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(6, 182, 212, 0.1) 100%)',
+        'gradient-dark': 'linear-gradient(135deg, #111827 0%, #374151 50%, #1f2937 100%)',
+        'gradient-accent': 'linear-gradient(135deg, #10b981 0%, #14b8a6 50%, #059669 100%)',
+        'gradient-glass': 'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(20, 184, 166, 0.1) 100%)',
       },
       backdropBlur: {
         xs: '2px',
@@ -61,11 +61,11 @@ export default {
         'slide-up-soft': 'slide-up-soft 0.4s ease-out',
       },
       boxShadow: {
-        'glow-sm': '0 0 10px rgba(139, 92, 246, 0.3)',
-        'glow-md': '0 0 20px rgba(139, 92, 246, 0.4)',
-        'glow-lg': '0 0 30px rgba(139, 92, 246, 0.5)',
-        'dark-lg': '0 10px 25px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3)',
-        'dark-xl': '0 20px 40px -4px rgba(0, 0, 0, 0.6), 0 8px 16px -4px rgba(0, 0, 0, 0.4)',
+        'glow-sm': '0 0 10px rgba(16, 185, 129, 0.3)',
+        'glow-md': '0 0 20px rgba(16, 185, 129, 0.4)',
+        'glow-lg': '0 0 30px rgba(16, 185, 129, 0.5)',
+        'dark-lg': '0 10px 25px -3px rgba(17, 24, 39, 0.5), 0 4px 6px -2px rgba(17, 24, 39, 0.3)',
+        'dark-xl': '0 20px 40px -4px rgba(17, 24, 39, 0.6), 0 8px 16px -4px rgba(17, 24, 39, 0.4)',
       }
     },
   },

@@ -11,7 +11,7 @@ export default function ConversationalCoverLetterPage() {
   return (
     <div className="min-h-screen bg-gradient-dark">
       {/* Navigation Header */}
-      <div className="bg-dark-primary/50 border-b border-dark-border">
+      <div className="bg-gray-900/50 border-b border-dark-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
@@ -57,7 +57,7 @@ export default function ConversationalCoverLetterPage() {
       <ConversationalCoverLetterBuilder />
       
       {/* Footer */}
-      <div className="bg-dark-primary/30 border-t border-dark-border mt-12">
+      <div className="bg-gray-900/30 border-t border-dark-border mt-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="text-center text-dark-text-muted text-sm">
             <p>Powered by Advanced AI • Enterprise-Grade Security • Professional Results</p>

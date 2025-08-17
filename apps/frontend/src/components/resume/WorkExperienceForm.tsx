@@ -141,7 +141,7 @@ export function WorkExperienceForm() {
               )}
             </div>
             {hasWarnings && (
-              <div className="text-blue-400 text-xs">
+              <div className="text-teal-400 text-xs">
                 Some suggestions available
               </div>
             )}
@@ -207,7 +207,7 @@ export function WorkExperienceForm() {
               name="isCurrentJob"
               checked={exp.isCurrentJob}
               onChange={(e) => handleCheckboxChange(exp.id, e)}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-dark-border bg-dark-secondary rounded"
+              className="h-4 w-4 text-teal-600 focus:ring-teal-500 border-dark-border bg-gray-800 rounded"
             />
             <label htmlFor={`currentJob-${exp.id}`} className="ml-2 block text-sm text-dark-text-primary">
               I currently work here

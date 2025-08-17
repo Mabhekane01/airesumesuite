@@ -67,7 +67,7 @@ const AILoadingOverlay: React.FC<AILoadingOverlayProps> = ({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[9999] flex items-start justify-center pt-16 bg-black/60 backdrop-blur-sm"
+          className="fixed inset-0 z-[9999] flex items-start justify-center pt-16 bg-gray-900/60 backdrop-blur-sm"
         >
           <motion.div
             initial={{ scale: 0.8, opacity: 0, y: 20 }}
@@ -88,7 +88,7 @@ const AILoadingOverlay: React.FC<AILoadingOverlayProps> = ({
             }}
           >
             {/* Animated gradient border */}
-            <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-purple-500/20 via-blue-500/20 to-cyan-500/20 blur-sm -z-10 animate-gradient-shift" />
+            <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-emerald-500/20 via-blue-500/20 to-cyan-500/20 blur-sm -z-10 animate-gradient-shift" />
             
             {/* Close button */}
             {onCancel && (
@@ -130,7 +130,7 @@ const AILoadingOverlay: React.FC<AILoadingOverlayProps> = ({
                 {[...Array(6)].map((_, i) => (
                   <motion.div
                     key={i}
-                    className="absolute w-2 h-2 bg-gradient-to-r from-purple-400 to-blue-400 rounded-full"
+                    className="absolute w-2 h-2 bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full"
                     style={{
                       top: '50%',
                       left: '50%',
@@ -169,7 +169,7 @@ const AILoadingOverlay: React.FC<AILoadingOverlayProps> = ({
                   key={currentStep}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="text-purple-300 text-sm mb-4 font-medium animate-shimmer"
+                  className="text-emerald-300 text-sm mb-4 font-medium animate-shimmer"
                   style={{
                     background: 'linear-gradient(90deg, rgba(196, 181, 253, 0.8) 0%, rgba(147, 197, 253, 0.8) 50%, rgba(196, 181, 253, 0.8) 100%)',
                     backgroundClip: 'text',
@@ -228,7 +228,7 @@ const AILoadingOverlay: React.FC<AILoadingOverlayProps> = ({
 
               {/* Time estimate */}
               <div className="flex items-center justify-center text-white/50 text-xs">
-                <CogIcon className="w-4 h-4 mr-1 animate-spin text-purple-400" />
+                <CogIcon className="w-4 h-4 mr-1 animate-spin text-emerald-400" />
                 <span className="font-medium">Estimated time: {estimatedTime}s</span>
               </div>
             </div>

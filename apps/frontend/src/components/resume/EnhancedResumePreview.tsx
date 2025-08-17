@@ -365,9 +365,9 @@ export default function EnhancedResumePreview({
         />
         {/* Real-time AI enhancement indicators */}
         {aiGenerated && (
-          <div className="absolute top-4 right-4 bg-purple-500/20 border border-purple-400/30 rounded-lg p-2 flex items-center z-10">
-            <SparklesIcon className="w-4 h-4 text-purple-400 mr-1" />
-            <span className="text-xs text-purple-400 font-medium">AI Enhanced</span>
+          <div className="absolute top-4 right-4 bg-emerald-500/20 border border-emerald-400/30 rounded-lg p-2 flex items-center z-10">
+            <SparklesIcon className="w-4 h-4 text-emerald-400 mr-1" />
+            <span className="text-xs text-emerald-400 font-medium">AI Enhanced</span>
           </div>
         )}
       </div>
@@ -617,7 +617,7 @@ export default function EnhancedResumePreview({
             {resume.hobbies.map((hobby, index) => (
               <span
                 key={index}
-                className="px-3 py-2 bg-dark-secondary/20 text-dark-text-secondary rounded-full border border-dark-border"
+                className="px-3 py-2 bg-gray-800/20 text-dark-text-secondary rounded-full border border-dark-border"
               >
                 {hobby.name}
               </span>
@@ -1101,15 +1101,15 @@ export default function EnhancedResumePreview({
     <div className="space-y-6">
       <Card className="card-dark p-6">
         <div className="flex items-center mb-6">
-          <BeakerIcon className="w-6 h-6 text-purple-400 mr-3" />
+          <BeakerIcon className="w-6 h-6 text-emerald-400 mr-3" />
           <h3 className="text-xl font-semibold text-dark-text-primary">AI-Powered Enhancements</h3>
         </div>
         
         <div className="grid md:grid-cols-2 gap-4">
           {/* Professional Summary Enhancement */}
-          <div className="p-4 border border-dark-border rounded-lg hover:border-purple-400/50 transition-colors">
+          <div className="p-4 border border-dark-border rounded-lg hover:border-emerald-400/50 transition-colors">
             <div className="flex items-center mb-3">
-              <SparklesIcon className="w-5 h-5 text-purple-400 mr-2" />
+              <SparklesIcon className="w-5 h-5 text-emerald-400 mr-2" />
               <h4 className="font-medium text-dark-text-primary">Smart Summary</h4>
             </div>
             <p className="text-sm text-dark-text-secondary mb-4">
@@ -1136,9 +1136,9 @@ export default function EnhancedResumePreview({
           </div>
 
           {/* Job Optimization */}
-          <div className="p-4 border border-dark-border rounded-lg hover:border-blue-400/50 transition-colors">
+          <div className="p-4 border border-dark-border rounded-lg hover:border-teal-400/50 transition-colors">
             <div className="flex items-center mb-3">
-              <ArrowPathIcon className="w-5 h-5 text-blue-400 mr-2" />
+              <ArrowPathIcon className="w-5 h-5 text-teal-400 mr-2" />
               <h4 className="font-medium text-dark-text-primary">Job Matching</h4>
             </div>
             <p className="text-sm text-dark-text-secondary mb-4">
@@ -1277,9 +1277,9 @@ export default function EnhancedResumePreview({
       {/* Powered by Gemini */}
       <Card className="glass-dark p-4 border border-dark-border">
         <div className="flex items-center justify-center">
-          <BeakerIcon className="w-5 h-5 text-purple-400 mr-2" />
+          <BeakerIcon className="w-5 h-5 text-emerald-400 mr-2" />
           <span className="text-sm text-dark-text-secondary">
-            Powered by <span className="text-purple-400 font-medium">Google Gemini 2.5 Flash</span>
+            Powered by <span className="text-emerald-400 font-medium">Google Gemini 2.5 Flash</span>
           </span>
         </div>
       </Card>
@@ -1297,7 +1297,7 @@ export default function EnhancedResumePreview({
         {(currentAtsScore !== undefined || atsAnalysis) ? (
           <div className="space-y-6">
             {/* Score Display */}
-            <div className="text-center p-6 bg-gradient-to-br from-green-500/10 to-blue-500/10 rounded-xl border border-green-400/30">
+            <div className="text-center p-6 bg-gradient-to-br from-green-500/10 to-teal-500/10 rounded-xl border border-green-400/30">
               <div className={`text-5xl font-bold mb-2 ${
                 (atsAnalysis?.score || currentAtsScore) >= 80 ? 'text-green-400' : 
                 (atsAnalysis?.score || currentAtsScore) >= 60 ? 'text-yellow-400' : 'text-red-400'
@@ -1305,7 +1305,7 @@ export default function EnhancedResumePreview({
                 {atsAnalysis?.score || currentAtsScore}%
               </div>
               <p className="text-dark-text-secondary text-lg">ATS Compatibility Score</p>
-              <div className="mt-4 w-full bg-dark-secondary/30 rounded-full h-2">
+              <div className="mt-4 w-full bg-gray-800/30 rounded-full h-2">
                 <div 
                   className={`h-2 rounded-full transition-all duration-1000 ${
                     (atsAnalysis?.score || currentAtsScore) >= 80 ? 'bg-green-400' : 
@@ -1401,7 +1401,7 @@ export default function EnhancedResumePreview({
 
             {/* AI-Generated Recommendations */}
             {atsAnalysis?.recommendations && atsAnalysis.recommendations.length > 0 && (
-              <div className="p-4 bg-blue-500/10 border border-blue-400/30 rounded-lg">
+              <div className="p-4 bg-teal-500/10 border border-teal-400/30 rounded-lg">
                 <h4 className="font-medium text-dark-text-primary mb-3">🤖 AI Recommendations</h4>
                 <div className="space-y-2 text-sm text-dark-text-secondary">
                   {atsAnalysis.recommendations.map((rec: string, index: number) => (
@@ -1413,7 +1413,7 @@ export default function EnhancedResumePreview({
 
             {/* Improvement Suggestions */}
             {((atsAnalysis?.score || currentAtsScore) < 80) && !atsAnalysis?.recommendations && (
-              <div className="p-4 bg-blue-500/10 border border-blue-400/30 rounded-lg">
+              <div className="p-4 bg-teal-500/10 border border-teal-400/30 rounded-lg">
                 <h4 className="font-medium text-dark-text-primary mb-3">💡 Improvement Suggestions</h4>
                 <div className="space-y-2 text-sm text-dark-text-secondary">
                   {(atsAnalysis?.score || currentAtsScore) < 60 && <p>• Add more industry-specific keywords to your resume</p>}
@@ -1480,7 +1480,7 @@ export default function EnhancedResumePreview({
   return (
     <div className="space-y-6">
       {/* Tab Navigation */}
-      <div className="flex space-x-1 bg-dark-secondary/20 p-1 rounded-lg border border-dark-border">
+      <div className="flex space-x-1 bg-gray-800/20 p-1 rounded-lg border border-dark-border">
         <button
           onClick={() => setActiveTab('preview')}
           className={`flex-1 py-2 px-3 rounded-md font-medium transition-colors flex items-center justify-center ${
@@ -1653,7 +1653,7 @@ export default function EnhancedResumePreview({
 
       {/* Resume Comparison Modal */}
       {showComparison && originalResume && enhancementResult && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-7xl w-full max-h-[90vh] overflow-hidden">
             <div className="p-6 border-b border-gray-200 flex justify-between items-center">
               <h3 className="text-xl font-semibold text-gray-900">Resume Comparison</h3>
@@ -1803,7 +1803,7 @@ export default function EnhancedResumePreview({
                     }
                     setShowComparison(false);
                   }}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                  className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-blue-700"
                 >
                   Apply Changes
                 </button>

@@ -58,7 +58,7 @@ export default function SubscriptionGate({
       </div>
       
       {/* Overlay */}
-      <div className="absolute inset-0 flex items-center justify-center bg-dark-primary/80 backdrop-blur-sm rounded-lg">
+      <div className="absolute inset-0 flex items-center justify-center bg-gray-900/80 backdrop-blur-sm rounded-lg">
         <div className="text-center p-6 max-w-md">
           <div className="mb-4">
             <div className="w-16 h-16 bg-gradient-to-br from-yellow-400/20 to-orange-400/20 rounded-full flex items-center justify-center mx-auto mb-4">

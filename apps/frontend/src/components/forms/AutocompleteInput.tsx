@@ -341,7 +341,7 @@ export const AutocompleteInput: React.FC<AutocompleteInputProps> = ({
 
       {/* Dropdown */}
       {isOpen && (
-        <div className="absolute z-50 w-full mt-1 bg-dark-secondary border border-dark-border rounded-lg shadow-lg max-h-60 overflow-auto">
+        <div className="absolute z-50 w-full mt-1 bg-gray-800 border border-dark-border rounded-lg shadow-lg max-h-60 overflow-auto">
           {filteredOptions.length > 0 ? (
             <ul
               ref={listRef}

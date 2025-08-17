@@ -28,10 +28,10 @@ const testCategories = [
 
 const testTypes = [
   { value: 'success', label: 'Success', color: 'text-green-400' },
-  { value: 'info', label: 'Info', color: 'text-blue-400' },
+  { value: 'info', label: 'Info', color: 'text-teal-400' },
   { value: 'warning', label: 'Warning', color: 'text-yellow-400' },
   { value: 'error', label: 'Error', color: 'text-red-400' },
-  { value: 'deadline', label: 'Deadline', color: 'text-purple-400' }
+  { value: 'deadline', label: 'Deadline', color: 'text-emerald-400' }
 ];
 
 const testPriorities = [
@@ -141,7 +141,7 @@ export default function NotificationTestPage() {
 
         {/* Tab Navigation */}
         <div className="mb-8">
-          <nav className="flex space-x-1 bg-dark-secondary/50 p-1 rounded-lg">
+          <nav className="flex space-x-1 bg-gray-800/50 p-1 rounded-lg">
             {[
               { id: 'test', label: 'Test Notifications', icon: BellIcon },
               { id: 'stats', label: 'Statistics', icon: ChartBarIcon },
@@ -153,7 +153,7 @@ export default function NotificationTestPage() {
                 className={`flex items-center space-x-2 px-4 py-2 rounded-md font-medium transition-all ${
                   activeTab === tab.id
                     ? 'bg-accent-primary text-white shadow-glow-sm'
-                    : 'text-dark-text-secondary hover:text-dark-text-primary hover:bg-dark-tertiary/50'
+                    : 'text-dark-text-secondary hover:text-dark-text-primary hover:bg-gray-700/50'
                 }`}
               >
                 <tab.icon className="w-4 h-4" />
@@ -291,7 +291,7 @@ export default function NotificationTestPage() {
 
               <div className="space-y-4">
                 {/* Current Status */}
-                <div className="bg-dark-secondary/50 p-4 rounded-lg">
+                <div className="bg-gray-800/50 p-4 rounded-lg">
                   <h3 className="font-medium text-dark-text-primary mb-2">Current Status</h3>
                   <div className="space-y-2">
                     <div className="flex justify-between">

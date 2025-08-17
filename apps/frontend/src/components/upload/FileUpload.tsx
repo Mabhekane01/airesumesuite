@@ -227,7 +227,7 @@ export default function FileUpload({
         </motion.div>
 
         {uploadedFiles.some(f => f.status === 'uploading') && (
-          <div className="absolute inset-0 bg-dark-tertiary/80 backdrop-blur-sm rounded-xl flex items-center justify-center">
+          <div className="absolute inset-0 bg-gray-700/80 backdrop-blur-sm rounded-xl flex items-center justify-center">
             <div className="text-center">
               <div className="w-8 h-8 border-2 border-dark-accent border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
               <p className="text-sm text-dark-text-secondary">Uploading...</p>
@@ -294,7 +294,7 @@ export default function FileUpload({
                 {/* Progress Bar */}
                 {uploadedFile.status === 'uploading' && (
                   <div className="mt-3">
-                    <div className="bg-dark-secondary/20 rounded-full h-2">
+                    <div className="bg-gray-800/20 rounded-full h-2">
                       <motion.div
                         className="bg-dark-accent rounded-full h-2"
                         initial={{ width: 0 }}

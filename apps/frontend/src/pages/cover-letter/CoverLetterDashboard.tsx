@@ -86,10 +86,10 @@ export default function CoverLetterDashboard() {
       <div className="min-h-screen bg-gradient-dark py-4 xs:py-6 sm:py-8 px-2 xs:px-3 sm:px-4 md:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="animate-pulse">
-            <div className="h-6 xs:h-8 bg-dark-secondary rounded mb-4 xs:mb-6"></div>
+            <div className="h-6 xs:h-8 bg-gray-800 rounded mb-4 xs:mb-6"></div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 xs:gap-4 sm:gap-6">
               {[1, 2, 3].map(i => (
-                <div key={i} className="h-40 xs:h-48 bg-dark-secondary rounded-lg"></div>
+                <div key={i} className="h-40 xs:h-48 bg-gray-800 rounded-lg"></div>
               ))}
             </div>
           </div>
@@ -278,7 +278,7 @@ export default function CoverLetterDashboard() {
                       </Button>
                       
                       {/* Download Dropdown */}
-                      <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block bg-dark-secondary border border-dark-border rounded-lg shadow-xl py-2 min-w-[120px] z-50">
+                      <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block bg-gray-800 border border-dark-border rounded-lg shadow-xl py-2 min-w-[120px] z-50">
                         <button
                           onClick={() => handleDownload(coverLetter._id, 'pdf')}
                           className="block w-full text-left px-4 py-2 text-sm text-dark-text-primary hover:bg-dark-accent/10 transition-colors"

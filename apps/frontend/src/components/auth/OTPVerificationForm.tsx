@@ -149,8 +149,8 @@ export default function OTPVerificationForm({ email, onBack, onSuccess }: OTPVer
       </div>
 
       <div className="text-center mb-8">
-        <div className="mx-auto w-16 h-16 mb-4 bg-purple-600/20 rounded-full flex items-center justify-center">
-          <EnvelopeIcon className="w-8 h-8 text-purple-400" />
+        <div className="mx-auto w-16 h-16 mb-4 bg-emerald-600/20 rounded-full flex items-center justify-center">
+          <EnvelopeIcon className="w-8 h-8 text-emerald-400" />
         </div>
         <h2 className="text-3xl font-bold gradient-text-dark mb-2">
           Check Your Email
@@ -158,7 +158,7 @@ export default function OTPVerificationForm({ email, onBack, onSuccess }: OTPVer
         <p className="dark-text-secondary">
           We've sent a 6-digit verification code to
         </p>
-        <p className="text-purple-400 font-medium">{email}</p>
+        <p className="text-emerald-400 font-medium">{email}</p>
       </div>
 
       <div className="space-y-6">
@@ -177,7 +177,7 @@ export default function OTPVerificationForm({ email, onBack, onSuccess }: OTPVer
                 value={digit}
                 onChange={(e) => handleChange(index, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(index, e)}
-                className="w-12 h-12 text-center text-xl font-bold bg-dark-tertiary border border-dark-border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                className="w-12 h-12 text-center text-xl font-bold bg-gray-700 border border-dark-border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200"
                 disabled={isLoading}
               />
             ))}
@@ -224,7 +224,7 @@ export default function OTPVerificationForm({ email, onBack, onSuccess }: OTPVer
               <button
                 onClick={handleResend}
                 disabled={isLoading}
-                className="text-purple-400 hover:text-purple-300 font-medium transition-colors disabled:opacity-50"
+                className="text-emerald-400 hover:text-emerald-300 font-medium transition-colors disabled:opacity-50"
               >
                 Send New Code
               </button>
@@ -236,7 +236,7 @@ export default function OTPVerificationForm({ email, onBack, onSuccess }: OTPVer
           </div>
         </div>
 
-        <div className="bg-dark-tertiary border border-dark-border rounded-lg p-4">
+        <div className="bg-gray-700 border border-dark-border rounded-lg p-4">
           <h3 className="text-sm font-semibold text-yellow-400 mb-2">
             💡 Tips:
           </h3>

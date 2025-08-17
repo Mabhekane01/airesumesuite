@@ -170,7 +170,7 @@ export const EnhancedSalaryInput: React.FC<EnhancedSalaryInputProps> = ({
       
       {/* Salary Guidelines */}
       {(minValue > 0 || maxValue > 0) && (
-        <div className="bg-dark-secondary/20 border border-dark-border rounded-lg p-3">
+        <div className="bg-gray-800/20 border border-dark-border rounded-lg p-3">
           <h4 className="text-sm font-medium text-dark-text-secondary mb-2">💡 Salary Tips</h4>
           <ul className="text-xs text-dark-text-muted space-y-1">
             <li>• Research market rates on Glassdoor, PayScale, or Levels.fyi</li>

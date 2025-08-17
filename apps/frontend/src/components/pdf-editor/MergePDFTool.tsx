@@ -142,7 +142,7 @@ const MergePDFTool: React.FC<MergePDFToolProps> = ({ activeFile }) => {
       <div className="max-w-4xl mx-auto space-y-8">
         {/* Header */}
         <div className="text-center">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-black/40 backdrop-blur-xl border border-gray-600/30 shadow-2xl mb-6">
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gray-900/40 backdrop-blur-xl border border-gray-600/30 shadow-2xl mb-6">
             <Merge className="w-10 h-10 text-white" />
           </div>
           <h2 className="text-4xl font-bold text-white mb-3">Merge PDFs</h2>
@@ -151,7 +151,7 @@ const MergePDFTool: React.FC<MergePDFToolProps> = ({ activeFile }) => {
           </p>
         </div>
 
-        <div className="bg-black/20 backdrop-blur-xl border border-gray-600/20 rounded-2xl p-8">
+        <div className="bg-gray-900/20 backdrop-blur-xl border border-gray-600/20 rounded-2xl p-8">
           <div className="text-center mb-6">
             <input
               type="file"
@@ -169,7 +169,7 @@ const MergePDFTool: React.FC<MergePDFToolProps> = ({ activeFile }) => {
         </div>
 
         {files.length > 0 && (
-          <div className="bg-black/20 backdrop-blur-xl border border-gray-600/20 rounded-2xl p-8">
+          <div className="bg-gray-900/20 backdrop-blur-xl border border-gray-600/20 rounded-2xl p-8">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-white">PDF Files ({files.length})</h3>
               <div className="text-sm text-gray-400">
@@ -186,20 +186,20 @@ const MergePDFTool: React.FC<MergePDFToolProps> = ({ activeFile }) => {
                 onDragOver={(e) => handleDragOver(e, index)}
                 onDragEnd={handleDragEnd}
                 className={`
-                  flex items-center gap-4 p-4 bg-black/20 rounded-xl border border-gray-600/20
-                  transition-all duration-200 cursor-move hover:bg-black/40 hover:border-gray-500/40
+                  flex items-center gap-4 p-4 bg-gray-900/20 rounded-xl border border-gray-600/20
+                  transition-all duration-200 cursor-move hover:bg-gray-900/40 hover:border-gray-500/40
                   ${draggedIndex === index ? 'opacity-50 scale-95' : ''}
                 `}
               >
                 <div className="flex items-center gap-2 text-gray-400">
                   <GripVertical className="w-5 h-5" />
-                  <span className="font-mono text-sm bg-black/40 text-white px-2 py-1 rounded">
+                  <span className="font-mono text-sm bg-gray-900/40 text-white px-2 py-1 rounded">
                     {index + 1}
                   </span>
                 </div>
 
                 <div className="flex-shrink-0">
-                  <div className="w-16 h-20 bg-black/30 border border-gray-600/30 rounded-lg shadow-lg flex items-center justify-center">
+                  <div className="w-16 h-20 bg-gray-900/30 border border-gray-600/30 rounded-lg shadow-lg flex items-center justify-center">
                     {pdfFile.url ? (
                       <Document
                         file={pdfFile.url}
@@ -232,20 +232,20 @@ const MergePDFTool: React.FC<MergePDFToolProps> = ({ activeFile }) => {
                   <button
                     onClick={() => moveUp(index)}
                     disabled={index === 0}
-                    className="p-2 rounded-lg bg-black/30 text-gray-400 hover:text-white hover:bg-black/50 disabled:opacity-50 transition-colors"
+                    className="p-2 rounded-lg bg-gray-900/30 text-gray-400 hover:text-white hover:bg-gray-900/50 disabled:opacity-50 transition-colors"
                   >
                     <ArrowUp className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => moveDown(index)}
                     disabled={index === files.length - 1}
-                    className="p-2 rounded-lg bg-black/30 text-gray-400 hover:text-white hover:bg-black/50 disabled:opacity-50 transition-colors"
+                    className="p-2 rounded-lg bg-gray-900/30 text-gray-400 hover:text-white hover:bg-gray-900/50 disabled:opacity-50 transition-colors"
                   >
                     <ArrowDown className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => removeFile(pdfFile.id)}
-                    className="p-2 rounded-lg bg-black/30 text-red-400 hover:text-red-300 hover:bg-black/50 transition-colors"
+                    className="p-2 rounded-lg bg-gray-900/30 text-red-400 hover:text-red-300 hover:bg-gray-900/50 transition-colors"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>

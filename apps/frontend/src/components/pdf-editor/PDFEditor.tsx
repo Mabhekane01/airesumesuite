@@ -465,12 +465,12 @@ const LivePDFEditor = ({ file, selectedTool, onTextEdit, onTextDelete, onTextAdd
         }
       `}</style>
       {/* Compact Controls */}
-      <div className="flex items-center justify-between px-4 py-2 bg-black/20 backdrop-blur-xl border-b border-gray-600/20">
+      <div className="flex items-center justify-between px-4 py-2 bg-gray-900/20 backdrop-blur-xl border-b border-gray-600/20">
         <div className="flex items-center space-x-3">
           <button 
             onClick={handleZoomOut} 
             disabled={zoom <= 0.5}
-            className="p-2 rounded-lg bg-black/30 text-gray-300 hover:text-white hover:bg-black/50 disabled:opacity-50 transition-colors"
+            className="p-2 rounded-lg bg-gray-900/30 text-gray-300 hover:text-white hover:bg-gray-900/50 disabled:opacity-50 transition-colors"
           >
             <ZoomOut size={14} />
           </button>
@@ -478,7 +478,7 @@ const LivePDFEditor = ({ file, selectedTool, onTextEdit, onTextDelete, onTextAdd
           <button 
             onClick={handleZoomIn} 
             disabled={zoom >= 3}
-            className="p-2 rounded-lg bg-black/30 text-gray-300 hover:text-white hover:bg-black/50 disabled:opacity-50 transition-colors"
+            className="p-2 rounded-lg bg-gray-900/30 text-gray-300 hover:text-white hover:bg-gray-900/50 disabled:opacity-50 transition-colors"
           >
             <ZoomIn size={14} />
           </button>
@@ -489,7 +489,7 @@ const LivePDFEditor = ({ file, selectedTool, onTextEdit, onTextDelete, onTextAdd
             <button 
               onClick={() => setPageNumber(p => Math.max(1, p - 1))}
               disabled={pageNumber <= 1}
-              className="p-2 rounded-lg bg-black/30 text-gray-300 hover:text-white hover:bg-black/50 disabled:opacity-50 transition-colors"
+              className="p-2 rounded-lg bg-gray-900/30 text-gray-300 hover:text-white hover:bg-gray-900/50 disabled:opacity-50 transition-colors"
             >
               ←
             </button>
@@ -497,7 +497,7 @@ const LivePDFEditor = ({ file, selectedTool, onTextEdit, onTextDelete, onTextAdd
             <button 
               onClick={() => setPageNumber(p => Math.min(numPages, p + 1))}
               disabled={pageNumber >= numPages}
-              className="p-2 rounded-lg bg-black/30 text-gray-300 hover:text-white hover:bg-black/50 disabled:opacity-50 transition-colors"
+              className="p-2 rounded-lg bg-gray-900/30 text-gray-300 hover:text-white hover:bg-gray-900/50 disabled:opacity-50 transition-colors"
             >
               →
             </button>
@@ -590,7 +590,7 @@ const LivePDFEditor = ({ file, selectedTool, onTextEdit, onTextDelete, onTextAdd
                                   }
                                   e.stopPropagation();
                                 }}
-                                className="bg-white border-2 border-blue-500 rounded px-1 outline-none shadow-lg"
+                                className="bg-white border-2 border-teal-500 rounded px-1 outline-none shadow-lg"
                                 style={{
                                   fontSize: block.fontSize * scale,
                                   fontFamily: block.fontFamily,
@@ -618,7 +618,7 @@ const LivePDFEditor = ({ file, selectedTool, onTextEdit, onTextDelete, onTextAdd
                                 'w-full h-full flex items-start transition-all duration-150',
                                 selectedTool === 'text' ? 'cursor-text rounded-sm px-1 hover:bg-blue-100/80' : 'cursor-default',
                                 selectedTool === 'text' && hoveredTextId === block.id && {
-                                  'bg-blue-50/90 ring-1 ring-blue-300 shadow-sm': block.isOriginal,
+                                  'bg-blue-50/90 ring-1 ring-teal-300 shadow-sm': block.isOriginal,
                                   'bg-green-50/90 ring-1 ring-green-300 shadow-sm': !block.isOriginal
                                 }
                               )}
@@ -652,7 +652,7 @@ const LivePDFEditor = ({ file, selectedTool, onTextEdit, onTextDelete, onTextAdd
 
       {/* Status Bar */}
       {selectedTool && (
-        <div className="bg-black/20 backdrop-blur-xl border-t border-gray-600/20 text-white px-4 py-2 text-sm flex items-center justify-between">
+        <div className="bg-gray-900/20 backdrop-blur-xl border-t border-gray-600/20 text-white px-4 py-2 text-sm flex items-center justify-between">
           <div>
             {selectedTool === 'text' && (
               <span>
@@ -662,7 +662,7 @@ const LivePDFEditor = ({ file, selectedTool, onTextEdit, onTextDelete, onTextAdd
             )}
           </div>
           {modifications.length > 0 && (
-            <div className="text-xs bg-black/30 px-2 py-1 rounded-lg border border-gray-600/20">
+            <div className="text-xs bg-gray-900/30 px-2 py-1 rounded-lg border border-gray-600/20">
               {modifications.filter(m => m.type === 'replace').length} replaced, {modifications.filter(m => m.type === 'add').length} added, {modifications.filter(m => m.type === 'hide').length} hidden
             </div>
           )}
@@ -963,7 +963,7 @@ export default function PDFEditor() {
     <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black py-8 px-4">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-black/40 backdrop-blur-xl border border-gray-600/30 shadow-2xl mb-6">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-900/40 backdrop-blur-xl border border-gray-600/30 shadow-2xl mb-6">
             <FileText className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-4xl font-bold mb-3 text-white">
@@ -981,10 +981,10 @@ export default function PDFEditor() {
             return (
               <div
                 key={id}
-                className={`bg-black/20 backdrop-blur-xl border border-gray-600/20 rounded-xl transition-all ${
+                className={`bg-gray-900/20 backdrop-blur-xl border border-gray-600/20 rounded-xl transition-all ${
                   isDisabled 
                     ? 'opacity-50 cursor-not-allowed' 
-                    : 'hover:bg-black/40 hover:border-gray-500/40 cursor-pointer group hover:scale-105'
+                    : 'hover:bg-gray-900/40 hover:border-gray-500/40 cursor-pointer group hover:scale-105'
                 }`}
                 onClick={() => {
                   // Disable edit-pdf in production
@@ -1011,7 +1011,7 @@ export default function PDFEditor() {
         </div>
         
         <div className="mt-8 text-center">
-          <div className="bg-black/20 backdrop-blur-xl border border-gray-600/20 rounded-xl p-4 inline-block">
+          <div className="bg-gray-900/20 backdrop-blur-xl border border-gray-600/20 rounded-xl p-4 inline-block">
             <p className="text-gray-400 text-sm">
               Enterprise-grade PDF processing • Secure • No data retention
             </p>
@@ -1028,13 +1028,13 @@ export default function PDFEditor() {
       return (
         <div className="h-screen flex flex-col bg-gradient-to-br from-black via-gray-900 to-black">
           {/* Compact Top Toolbar */}
-          <div className="bg-black/20 backdrop-blur-xl border-b border-gray-600/20 px-4 py-3 flex-shrink-0">
+          <div className="bg-gray-900/20 backdrop-blur-xl border-b border-gray-600/20 px-4 py-3 flex-shrink-0">
             <div className="flex items-center justify-between">
               {/* Left Section */}
               <div className="flex items-center space-x-3">
                 <button
                   onClick={() => setCurrentFlow('landing')}
-                  className="text-gray-400 hover:text-white p-2 rounded-lg hover:bg-black/40 transition-colors"
+                  className="text-gray-400 hover:text-white p-2 rounded-lg hover:bg-gray-900/40 transition-colors"
                 >
                   <ArrowLeft size={16} />
                 </button>
@@ -1053,7 +1053,7 @@ export default function PDFEditor() {
                       'h-8 px-3 text-xs font-medium transition-all duration-200 rounded-lg border',
                       editingTool === id 
                         ? 'bg-gray-700/50 text-white border-gray-500/50' 
-                        : 'text-gray-400 hover:text-white hover:bg-black/40 border-gray-600/30 hover:border-gray-500/50'
+                        : 'text-gray-400 hover:text-white hover:bg-gray-900/40 border-gray-600/30 hover:border-gray-500/50'
                     )}
                   >
                     <Icon size={14} className="mr-1" />
@@ -1066,7 +1066,7 @@ export default function PDFEditor() {
               <div className="flex items-center space-x-2">
                 {/* Changes Counter */}
                 {changes.length > 0 && (
-                  <div className="text-xs text-gray-300 bg-black/30 px-2 py-1 rounded">
+                  <div className="text-xs text-gray-300 bg-gray-900/30 px-2 py-1 rounded">
                     {changes.length} changes
                   </div>
                 )}
@@ -1133,10 +1133,10 @@ export default function PDFEditor() {
               <div className="w-full max-w-6xl h-full">
                 {activeFile ? (
                   isUploading ? (
-                    <div className="h-full bg-black/20 backdrop-blur-xl border border-gray-600/20 rounded-2xl flex items-center justify-center shadow-2xl">
+                    <div className="h-full bg-gray-900/20 backdrop-blur-xl border border-gray-600/20 rounded-2xl flex items-center justify-center shadow-2xl">
                       <div className="text-center p-12">
-                        <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-blue-500/20 backdrop-blur-xl border border-blue-400/30 shadow-2xl mb-6">
-                          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-400"></div>
+                        <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-teal-500/20 backdrop-blur-xl border border-teal-400/30 shadow-2xl mb-6">
+                          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-teal-400"></div>
                         </div>
                         <h3 className="text-2xl font-bold text-white mb-4">Processing PDF</h3>
                         <p className="text-white/70 mb-4">
@@ -1157,7 +1157,7 @@ export default function PDFEditor() {
                   </div>
                   ) : (
                     // Fallback: Show PDF without SeJda features if upload failed
-                    <div className="h-full bg-black/20 backdrop-blur-xl border border-gray-600/20 rounded-2xl overflow-hidden shadow-2xl">
+                    <div className="h-full bg-gray-900/20 backdrop-blur-xl border border-gray-600/20 rounded-2xl overflow-hidden shadow-2xl">
                       <div className="h-full flex flex-col">
                         <div className="p-4 border-b border-gray-600/20 bg-yellow-900/30">
                           <div className="text-yellow-200 text-sm">
@@ -1189,9 +1189,9 @@ export default function PDFEditor() {
                     </div>
                   )
                 ) : (
-                  <div className="h-full bg-black/20 backdrop-blur-xl border border-gray-600/20 rounded-2xl flex items-center justify-center shadow-2xl">
+                  <div className="h-full bg-gray-900/20 backdrop-blur-xl border border-gray-600/20 rounded-2xl flex items-center justify-center shadow-2xl">
                     <div className="text-center p-12">
-                      <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-black/40 backdrop-blur-xl border border-gray-600/30 shadow-2xl mb-6">
+                      <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gray-900/40 backdrop-blur-xl border border-gray-600/30 shadow-2xl mb-6">
                         <Edit3 className="w-10 h-10 text-white" />
                       </div>
                       <h3 className="text-2xl font-bold text-white mb-4">Select PDF to Edit</h3>
@@ -1230,11 +1230,11 @@ export default function PDFEditor() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black">
         {/* Top Header */}
-        <div className="bg-black/20 backdrop-blur-xl border-b border-gray-600/20 px-4 py-3">
+        <div className="bg-gray-900/20 backdrop-blur-xl border-b border-gray-600/20 px-4 py-3">
           <div className="flex items-center max-w-6xl mx-auto">
             <button
               onClick={() => setCurrentFlow('landing')}
-              className="text-gray-400 hover:text-white mr-4 p-2 rounded-lg hover:bg-black/40 transition-colors"
+              className="text-gray-400 hover:text-white mr-4 p-2 rounded-lg hover:bg-gray-900/40 transition-colors"
             >
               <ArrowLeft size={16} />
             </button>
