@@ -18,7 +18,6 @@ import org.springframework.web.multipart.MultipartFile;
  */
 @RestController
 @RequestMapping("/api/pdf/advanced")
-@CrossOrigin(origins = "*")
 public class SimpleAdvancedPdfController {
 
     @Autowired

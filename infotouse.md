@@ -1,7 +1,65 @@
-nsforming...
-@ai-job-suite/frontend:build: ✓ 3306 modules transformed.
-@ai-job-suite/frontend:build: ../../node_modules/.pnpm/pdfjs-dist@3.11.174/node_modules/pdfjs-dist/build/pdf.js (1982:23): Use of eval in "../../node_modules/.pnpm/pdfjs-dist@3.11.174/node_modules/pdfjs-dist/build/pdf.js" is strongly discouraged as it poses security risks and may cause issues with minification.
-@ai-job-suite/backend:build: src/services/resume-builder/standardizedTemplateService.ts(1094,23): error TS2339: Property 'honors' does not exist on type '{ id?: string; degree: string; institution: string; fieldOfStudy: string; location?: string; graduationDate: string; gpa?: string; coursework?: string[]; }'.
-@ai-job-suite/backend:build:  ELIFECYCLE  Command failed with exit code 2.
-@ai-job-suite/backend:build: ERROR: command finished with error: command (C:\Users\ngwen\MyProjects\ai-job-suite\apps\backend) C:\Users\ngwen\AppData\Local\pnpm\.tools\pnpm\8.15.0\bin\pnpm.CMD run build exited (1)
-@ai-job-suite/backend#build: command (C:\Users\ngwen\MyProjects\ai-job-suite\apps\backend) C:\Users\ngwen\AppData\Local\pnpm\.tools\pnpm\8.15.0\bin\pnpm.CMD run build exited (1)
+name: Deploy to Firebase Hosting on merge
+
+on:
+push:
+branches: - main
+
+jobs:
+build_and_deploy:
+runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Cache pnpm store
+        uses: actions/cache@v3
+        with:
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install dependencies
+        working-directory: apps/frontend
+        run: pnpm install --frozen-lockfile
+
+      - name: Build project
+        working-directory: apps/frontend
+        run: pnpm run build
+        env:
+          VITE_NODE_ENV: production
+          VITE_APP_NAME: AI Job Suite
+          VITE_APP_VERSION: 1.0.0
+          VITE_API_BASE_URL: https://airesumesuite.onrender.com
+          VITE_APP_URL: https://airesumesuite.web.app
+          VITE_GOOGLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_CLIENT_ID }}
+          VITE_RECAPTCHA_SITE_KEY: ${{ secrets.VITE_RECAPTCHA_SITE_KEY }}
+          VITE_GA_TRACKING_ID: ${{ secrets.VITE_GA_TRACKING_ID }}
+          VITE_PAYSTACK_PUBLISHABLE_KEY: ${{ secrets.VITE_PAYSTACK_PUBLISHABLE_KEY }}
+          VITE_ENABLE_AI_FEATURES: true
+          VITE_ENABLE_PAYMENT_PROCESSING: true
+          VITE_ENABLE_ANALYTICS: true
+          VITE_ENABLE_RECAPTCHA: true
+          VITE_ENABLE_GOOGLE_AUTH: true
+          VITE_DEBUG_MODE: false
+          VITE_LOG_LEVEL: error
+          VITE_SENTRY_DSN: ${{ secrets.VITE_SENTRY_DSN }}
+          VITE_ENABLE_PWA: true
+
+      - name: Deploy to Firebase Hosting
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_AIRESUMESUITE_18A3C }}
+          channelId: live
+          projectId: airesumesuite-18a3c
+          entryPoint: apps/frontend
+        env:
+          FIREBASE_CLI_EXPERIMENTS: webframeworks

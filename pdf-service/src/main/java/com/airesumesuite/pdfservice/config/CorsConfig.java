@@ -20,18 +20,29 @@ public class CorsConfig implements WebMvcConfigurer {
 
     @Value("${cors.allowed.methods:GET,POST,PUT,DELETE,OPTIONS}")
     private String allowedMethods;
+    
+    @Value("${cors.allowed.headers:*}")
+    private String allowedHeaders;
+    
+    @Value("${cors.allow.credentials:false}")
+    private boolean allowCredentials;
+    
+    @Value("${cors.max.age:3600}")
+    private long maxAge;
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         List<String> origins = getAllowedOriginsList();
         String[] methods = allowedMethods.split(",");
+        String[] headers = allowedHeaders.split(",");
         
         registry.addMapping("/api/**")
                 .allowedOrigins(origins.toArray(new String[0]))
                 .allowedMethods(methods)
-                .allowedHeaders("*")
+                .allowedHeaders(headers)
                 .exposedHeaders("*")
-                .allowCredentials(false);
+                .allowCredentials(allowCredentials)
+                .maxAge(maxAge);
     }
 
     @Bean
@@ -43,9 +54,18 @@ public class CorsConfig implements WebMvcConfigurer {
             configuration.addAllowedOrigin(origin);
         }
         
-        configuration.addAllowedMethod("*");
-        configuration.addAllowedHeader("*");
-        configuration.setAllowCredentials(false);
+        String[] methods = allowedMethods.split(",");
+        for (String method : methods) {
+            configuration.addAllowedMethod(method.trim());
+        }
+        
+        String[] headers = allowedHeaders.split(",");
+        for (String header : headers) {
+            configuration.addAllowedHeader(header.trim());
+        }
+        
+        configuration.setAllowCredentials(allowCredentials);
+        configuration.setMaxAge(maxAge);
         
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/api/**", configuration);

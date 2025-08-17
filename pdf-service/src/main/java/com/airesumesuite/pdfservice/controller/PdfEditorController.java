@@ -33,7 +33,6 @@ import com.airesumesuite.pdfservice.service.PdfEditingService;
  */
 @RestController
 @RequestMapping("/api/pdf/editor")
-@CrossOrigin(origins = "*")
 public class PdfEditorController {
 
     private static final Logger logger = LoggerFactory.getLogger(PdfEditorController.class);
