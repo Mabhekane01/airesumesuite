@@ -1,5 +1,7 @@
 C:\Users\ngwen\MyProjects\ai-job-suite\pdf-service\src\main\java\com\airesumesuite\pdfservice\config\CorsConfig.java
+C:\Users\ngwen\MyProjects\ai-job-suite\pdf-service\src\main\java\com\airesumesuite\pdfservice\config\GlobalExceptionHandler.java
 C:\Users\ngwen\MyProjects\ai-job-suite\pdf-service\src\main\java\com\airesumesuite\pdfservice\config\PdfErrorHandler.java
+C:\Users\ngwen\MyProjects\ai-job-suite\pdf-service\src\main\java\com\airesumesuite\pdfservice\controller\ApiErrorController.java
 C:\Users\ngwen\MyProjects\ai-job-suite\pdf-service\src\main\java\com\airesumesuite\pdfservice\controller\PdfEditorController.java
 C:\Users\ngwen\MyProjects\ai-job-suite\pdf-service\src\main\java\com\airesumesuite\pdfservice\controller\SimpleAdvancedPdfController.java
 C:\Users\ngwen\MyProjects\ai-job-suite\pdf-service\src\main\java\com\airesumesuite\pdfservice\PdfServiceApplication.java

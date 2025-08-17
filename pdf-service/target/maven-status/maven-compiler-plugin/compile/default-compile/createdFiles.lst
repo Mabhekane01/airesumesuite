@@ -9,11 +9,13 @@ com\airesumesuite\pdfservice\service\PdfFormService.class
 com\airesumesuite\pdfservice\service\PdfImageService.class
 com\airesumesuite\pdfservice\config\PdfErrorHandler$PdfServiceException.class
 com\airesumesuite\pdfservice\service\PdfConversionService.class
+com\airesumesuite\pdfservice\config\GlobalExceptionHandler.class
 com\airesumesuite\pdfservice\service\PdfOcrService.class
 com\airesumesuite\pdfservice\config\PdfErrorHandler$InsufficientMemoryException.class
 com\airesumesuite\pdfservice\service\PdfImageService$FilteredImageInfo.class
 com\airesumesuite\pdfservice\config\PdfErrorHandler$FileSizeException.class
 com\airesumesuite\pdfservice\service\PdfSecurityService.class
+com\airesumesuite\pdfservice\controller\ApiErrorController.class
 com\airesumesuite\pdfservice\controller\PdfEditorController.class
 com\airesumesuite\pdfservice\controller\SimpleAdvancedPdfController.class
 com\airesumesuite\pdfservice\service\PdfCompressionService.class

@@ -1,5 +1,8 @@
 package com.airesumesuite.pdfservice.config;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -8,19 +11,15 @@ import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
-import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import com.airesumesuite.pdfservice.config.PdfErrorHandler.PdfServiceException;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Global exception handler for PDF service
  * Ensures all exceptions return JSON responses instead of HTML error pages
  */
 @ControllerAdvice
-public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
+public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
