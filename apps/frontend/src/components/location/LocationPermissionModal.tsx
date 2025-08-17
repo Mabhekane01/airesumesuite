@@ -46,7 +46,7 @@ export default function LocationPermissionModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-[60] p-4">
       <div className="bg-gray-900 rounded-lg shadow-xl max-w-md w-full mx-4 border border-dark-border">
         <div className="p-6">
           {/* Header */}

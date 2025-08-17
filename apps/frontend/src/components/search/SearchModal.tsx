@@ -128,7 +128,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-start justify-center pt-4 sm:pt-8 md:pt-16 px-2 sm:px-4">
+      <div className="fixed inset-0 z-[60] flex items-start justify-center pt-4 sm:pt-8 md:pt-16 px-2 sm:px-4">
         {/* Backdrop */}
         <motion.div
           initial={{ opacity: 0 }}

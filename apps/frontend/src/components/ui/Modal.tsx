@@ -27,7 +27,7 @@ export const Modal: React.FC<ModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-40 overflow-y-auto animate-slide-up-soft">
+    <div className="fixed inset-0 z-[60] overflow-y-auto animate-slide-up-soft">
       <div className="flex min-h-screen items-center justify-center p-4 sm:p-6 lg:p-8">
         {/* Backdrop */}
         <div 

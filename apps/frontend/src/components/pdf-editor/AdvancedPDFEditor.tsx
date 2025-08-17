@@ -258,7 +258,7 @@ export default function AdvancedPDFEditor() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-emerald-900 to-violet-900 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-dark-primary via-dark-secondary to-dark-tertiary relative overflow-hidden">
       {/* Animated Background */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-emerald-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
@@ -325,7 +325,7 @@ export default function AdvancedPDFEditor() {
                       'p-6 cursor-pointer transform transition-all duration-300 hover:scale-105 hover:-translate-y-2',
                       editorMode === mode.id 
                         ? `bg-gradient-to-br ${mode.color} text-white shadow-2xl border-2 border-white/30` 
-                        : 'bg-gray-900/20 backdrop-blur-xl border border-white/10 text-gray-300 hover:bg-white/10'
+                        : 'glass-dark border border-white/10 text-gray-300 hover:bg-white/10'
                     )}
                     onClick={() => setEditorMode(mode.id as any)}
                   >
@@ -367,13 +367,13 @@ export default function AdvancedPDFEditor() {
               <div
                 onDragOver={handleDragOver}
                 onDrop={handleDrop}
-                className="relative group border-2 border-dashed border-white/30 hover:border-cyan-400 rounded-3xl p-16 text-center transition-all duration-500 hover:bg-cyan-500/5 cursor-pointer"
+                className="relative group border-2 border-dashed border-white/30 hover:border-accent-secondary rounded-3xl p-16 text-center transition-all duration-500 hover:bg-accent-secondary/5 cursor-pointer"
                 onClick={() => fileInputRef.current?.click()}
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 to-purple-600/10 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <div className="absolute inset-0 bg-gradient-to-r from-accent-secondary/10 to-accent-primary/10 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 <div className="relative z-10">
                   <div className="w-24 h-24 mx-auto mb-8 bg-white/5 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                    <Upload className="text-cyan-400" size={48} />
+                    <Upload className="text-accent-secondary" size={48} />
                   </div>
                   <h3 className="text-white font-bold text-2xl mb-4">
                     Upload Your PDF Document
@@ -389,7 +389,7 @@ export default function AdvancedPDFEditor() {
                     onChange={(e) => handleFileUpload(e.target.files)}
                     className="hidden"
                   />
-                  <Button className="bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-600 hover:to-purple-700 transform hover:scale-105 shadow-2xl px-8 py-3 text-lg">
+                  <Button className="bg-gradient-to-r from-accent-secondary to-accent-primary hover:from-accent-primary hover:to-accent-secondary transform hover:scale-105 shadow-2xl px-8 py-3 text-lg">
                     <Upload size={20} className="mr-2" />
                     Choose PDF Files
                   </Button>
@@ -408,7 +408,7 @@ export default function AdvancedPDFEditor() {
                   {files.slice(-6).map((file, index) => (
                     <Card 
                       key={index} 
-                      className="p-4 bg-gray-900/20 backdrop-blur-xl border border-white/10 hover:bg-white/10 cursor-pointer transform transition-all duration-300 hover:scale-105"
+                      className="p-4 glass-dark border border-white/10 hover:bg-white/10 cursor-pointer transform transition-all duration-300 hover:scale-105"
                       onClick={() => setActiveFile(file)}
                     >
                       <div className="flex items-center space-x-3">
@@ -421,7 +421,7 @@ export default function AdvancedPDFEditor() {
                             {(file.file.size / 1024 / 1024).toFixed(1)} MB • {file.file.lastModified ? new Date(file.file.lastModified).toLocaleDateString() : 'Unknown date'}
                           </p>
                         </div>
-                        <Button size="sm" className="bg-cyan-500 hover:bg-cyan-600">
+                        <Button size="sm" className="bg-accent-secondary hover:bg-accent-primary">
                           Edit
                         </Button>
                       </div>

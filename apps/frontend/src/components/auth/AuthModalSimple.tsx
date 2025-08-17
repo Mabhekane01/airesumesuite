@@ -41,7 +41,7 @@ export default function AuthModalSimple({ isOpen, onClose, initialMode = 'login'
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center animate-slide-up-soft">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center animate-slide-up-soft">
       {/* Backdrop */}
       <div
         onClick={onClose}
