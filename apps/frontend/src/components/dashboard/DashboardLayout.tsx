@@ -6,8 +6,8 @@ import {
   useLocation,
   useNavigate,
 } from "react-router-dom";
-import { useNotifications } from '../../contexts/NotificationContext';
-import SearchModal from '../search/SearchModal';
+import { useNotifications } from "../../contexts/NotificationContext";
+import SearchModal from "../search/SearchModal";
 import DashboardHome from "./DashboardHome";
 import ResumeBuilder from "../../pages/resume-builder/ResumeBuilder";
 import ComprehensiveResumeBuilder from "../../pages/resume-builder/ComprehensiveResumeBuilder";
@@ -32,7 +32,7 @@ import ConversationalCoverLetterPage from "../../pages/cover-letter/Conversation
 import SimpleConversationalBuilder from "../../components/cover-letter/SimpleConversationalBuilder";
 import TestCoverLetterPage from "../../pages/cover-letter/TestCoverLetterPage";
 import IntelligentCoverLetterBuilder from "../../components/cover-letter/IntelligentCoverLetterBuilder";
-import ErrorBoundary from '../ErrorBoundary';
+import ErrorBoundary from "../ErrorBoundary";
 import {
   HomeIcon,
   DocumentTextIcon,
@@ -105,7 +105,14 @@ const quickActions = [
 
 export default function DashboardLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { notifications, unreadCount, isLoading: notificationsLoading, markAsRead, markAllAsRead, clearAll } = useNotifications();
+  const {
+    notifications,
+    unreadCount,
+    isLoading: notificationsLoading,
+    markAsRead,
+    markAllAsRead,
+    clearAll,
+  } = useNotifications();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
@@ -140,15 +147,15 @@ export default function DashboardLayout() {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       // Cmd+K or Ctrl+K to open search
-      if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
+      if ((event.metaKey || event.ctrlKey) && event.key === "k") {
         event.preventDefault();
         setSearchModalOpen(true);
       }
     };
 
-    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener("keydown", handleKeyDown);
     return () => {
-      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener("keydown", handleKeyDown);
     };
   }, []);
 
@@ -268,7 +275,9 @@ export default function DashboardLayout() {
                   <div className="mr-3 p-1.5 rounded-md bg-gradient-to-br from-accent-primary/20 to-accent-secondary/20 group-hover:from-accent-primary/30 group-hover:to-accent-secondary/30 transition-all duration-300">
                     <action.icon className="h-3.5 w-3.5 text-accent-primary group-hover:text-white transition-colors duration-300" />
                   </div>
-                  <span className="text-dark-text-secondary group-hover:text-accent-primary transition-colors duration-300">{action.name}</span>
+                  <span className="text-dark-text-secondary group-hover:text-accent-primary transition-colors duration-300">
+                    {action.name}
+                  </span>
                 </Link>
               ))}
             </div>
@@ -311,7 +320,7 @@ export default function DashboardLayout() {
 
               {/* Mobile search button */}
               <div className="md:hidden flex-1 max-w-[200px] min-w-0">
-                <button 
+                <button
                   onClick={() => setSearchModalOpen(true)}
                   className="w-full flex items-center justify-start px-2 sm:px-3 py-2 bg-gray-700/50 hover:bg-gray-700/70 border border-dark-border hover:border-dark-border/80 rounded-lg transition-all duration-200 text-left group active:scale-[0.98]"
                 >
@@ -340,7 +349,7 @@ export default function DashboardLayout() {
                   {unreadCount > 0 && (
                     <span className="absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 h-4 w-4 bg-accent-primary rounded-full flex items-center justify-center ring-2 ring-dark-secondary">
                       <span className="text-xs font-medium text-white">
-                        {unreadCount > 9 ? '9+' : unreadCount}
+                        {unreadCount > 9 ? "9+" : unreadCount}
                       </span>
                     </span>
                   )}
@@ -400,38 +409,50 @@ export default function DashboardLayout() {
                             <div
                               key={notification._id}
                               className={`px-4 py-3 hover:bg-gray-700/60 transition-all duration-200 cursor-pointer border-l-2 ${
-                                notification.read 
-                                  ? 'border-transparent' 
-                                  : 'border-accent-primary bg-accent-primary/5'
+                                notification.read
+                                  ? "border-transparent"
+                                  : "border-accent-primary bg-accent-primary/5"
                               }`}
-                              onClick={() => !notification.read && markAsRead(notification._id)}
+                              onClick={() =>
+                                !notification.read &&
+                                markAsRead(notification._id)
+                              }
                             >
                               <div className="flex items-start space-x-3">
                                 <div className="flex-shrink-0 mt-0.5">
-                                  {notification.type === 'success' && (
+                                  {notification.type === "success" && (
                                     <div className="h-2 w-2 bg-green-500 rounded-full"></div>
                                   )}
-                                  {notification.type === 'warning' && (
+                                  {notification.type === "warning" && (
                                     <div className="h-2 w-2 bg-yellow-500 rounded-full"></div>
                                   )}
-                                  {notification.type === 'deadline' && (
+                                  {notification.type === "deadline" && (
                                     <div className="h-2 w-2 bg-red-500 rounded-full"></div>
                                   )}
-                                  {notification.type === 'info' && (
+                                  {notification.type === "info" && (
                                     <div className="h-2 w-2 bg-teal-500 rounded-full"></div>
                                   )}
                                 </div>
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center justify-between">
-                                    <p className={`text-sm font-medium ${
-                                      notification.read 
-                                        ? 'text-dark-text-secondary' 
-                                        : 'text-dark-text-primary'
-                                    }`}>
+                                    <p
+                                      className={`text-sm font-medium ${
+                                        notification.read
+                                          ? "text-dark-text-secondary"
+                                          : "text-dark-text-primary"
+                                      }`}
+                                    >
                                       {notification.title}
                                     </p>
                                     <span className="text-xs text-dark-text-secondary/70">
-                                      {Math.floor((new Date().getTime() - new Date(notification.createdAt).getTime()) / 60000)}m ago
+                                      {Math.floor(
+                                        (new Date().getTime() -
+                                          new Date(
+                                            notification.createdAt
+                                          ).getTime()) /
+                                          60000
+                                      )}
+                                      m ago
                                     </span>
                                   </div>
                                   <p className="text-xs text-dark-text-secondary mt-1">
@@ -482,24 +503,30 @@ export default function DashboardLayout() {
                       {/* Show current tier */}
                       <div className="px-3 py-2 mb-2">
                         <div className="flex items-center justify-between">
-                          <span className="text-xs text-dark-text-muted">Current Plan</span>
+                          <span className="text-xs text-dark-text-muted">
+                            Current Plan
+                          </span>
                           <div className="flex items-center space-x-1">
-                            {user.tier === 'enterprise' ? (
+                            {user.tier === "enterprise" ? (
                               <>
                                 <StarIcon className="w-3 h-3 text-yellow-400" />
-                                <span className="text-xs font-medium text-yellow-400">Enterprise</span>
+                                <span className="text-xs font-medium text-yellow-400">
+                                  Enterprise
+                                </span>
                               </>
                             ) : (
                               <>
                                 <div className="w-3 h-3 rounded-full bg-gray-500"></div>
-                                <span className="text-xs font-medium text-gray-400">Free</span>
+                                <span className="text-xs font-medium text-gray-400">
+                                  Free
+                                </span>
                               </>
                             )}
                           </div>
                         </div>
                       </div>
-                      
-                      {user.tier !== 'enterprise' && (
+
+                      {user.tier !== "enterprise" && (
                         <Link
                           to="/dashboard/upgrade"
                           className="flex items-center px-3 py-2 text-sm text-yellow-400 hover:bg-yellow-400/10 rounded-lg transition-colors mb-1"
@@ -512,7 +539,7 @@ export default function DashboardLayout() {
                           Upgrade to Enterprise
                         </Link>
                       )}
-                      
+
                       <Link
                         to="/dashboard/account"
                         className="flex items-center px-3 py-2 text-sm text-dark-text-secondary hover:bg-dark-quaternary/50 rounded-lg transition-colors"
@@ -524,7 +551,7 @@ export default function DashboardLayout() {
                         <Cog6ToothIcon className="w-4 h-4 mr-2" />
                         Account Manager
                       </Link>
-                      
+
                       <button
                         onClick={() => {
                           setShowUserMenu(false);
@@ -553,9 +580,15 @@ export default function DashboardLayout() {
                 path="resume/comprehensive"
                 element={<ComprehensiveResumeBuilder />}
               />
-              <Route path="resume/preview/:id" element={<ResumePreviewPage />} />
+              <Route
+                path="resume/preview/:id"
+                element={<ResumePreviewPage />}
+              />
               <Route path="applications" element={<ApplicationTracker />} />
-              <Route path="applications/new" element={<CreateJobApplication />} />
+              <Route
+                path="applications/new"
+                element={<CreateJobApplication />}
+              />
               <Route
                 path="applications/:applicationId/edit"
                 element={<EditJobApplication />}
@@ -569,8 +602,14 @@ export default function DashboardLayout() {
               <Route path="documents" element={<DocumentManager />} />
               <Route path="calendar" element={<InterviewScheduler />} />
               <Route path="cover-letter" element={<CoverLetterGenerator />} />
-              <Route path="cover-letter/ai" element={<CoverLetterGenerator />} />
-              <Route path="cover-letter/builder" element={<CoverLetterGenerator />} />
+              <Route
+                path="cover-letter/ai"
+                element={<CoverLetterGenerator />}
+              />
+              <Route
+                path="cover-letter/builder"
+                element={<CoverLetterGenerator />}
+              />
               <Route
                 path="job-posting"
                 element={
@@ -588,7 +627,10 @@ export default function DashboardLayout() {
               <Route path="upgrade" element={<EnterpriseUpgrade />} />
               <Route path="upgrade/success" element={<PaymentSuccess />} />
               <Route path="debug" element={<ApiDebugInfo />} />
-              <Route path="notifications/test" element={<NotificationTestPage />} />
+              <Route
+                path="notifications/test"
+                element={<NotificationTestPage />}
+              />
             </Routes>
           </ErrorBoundary>
         </main>
@@ -599,7 +641,6 @@ export default function DashboardLayout() {
         isOpen={searchModalOpen}
         onClose={() => setSearchModalOpen(false)}
       />
-      
     </div>
   );
 }

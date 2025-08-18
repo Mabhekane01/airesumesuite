@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -31,8 +31,12 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Enhanced glow effects with softer emerald/teal */
@@ -50,29 +54,33 @@
 
 /* Premium animations */
 @keyframes fade-in {
-  0% { opacity: 0; }
-  100% { opacity: 1; }
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 
 @keyframes fade-in-up {
-  0% { 
-    opacity: 0; 
-    transform: translateY(20px); 
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
   }
-  100% { 
-    opacity: 1; 
-    transform: translateY(0); 
+  100% {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
 @keyframes fade-in-scale {
-  0% { 
-    opacity: 0; 
-    transform: scale(0.95); 
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
   }
-  100% { 
-    opacity: 1; 
-    transform: scale(1); 
+  100% {
+    opacity: 1;
+    transform: scale(1);
   }
 }
 
@@ -104,6 +112,45 @@
 
 .scrollbar-thin::-webkit-scrollbar {
   width: 6px;
+}
+
+/* Toggle switch styling */
+.toggle {
+  appearance: none;
+  width: 3rem;
+  height: 1.5rem;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 9999px;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.toggle:checked {
+  background-color: #059669;
+  border-color: #059669;
+}
+
+.toggle::before {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 1rem;
+  height: 1rem;
+  background-color: white;
+  border-radius: 50%;
+  transition: all 0.2s ease-in-out;
+}
+
+.toggle:checked::before {
+  transform: translateX(1.5rem);
+}
+
+.toggle:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.3);
 }
 
 /* Chat message hover effects */
@@ -139,7 +186,7 @@
   border-radius: var(--border-radius) !important;
   backdrop-filter: blur(20px) !important;
   -webkit-backdrop-filter: blur(20px) !important;
-  box-shadow: 
+  box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
   color: var(--toast-text) !important;
@@ -151,7 +198,7 @@
 [data-sonner-toast][data-type="success"] {
   background: var(--toast-success-bg) !important;
   border-color: var(--toast-success-border) !important;
-  box-shadow: 
+  box-shadow:
     0 8px 32px rgba(5, 150, 105, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
 }
@@ -159,7 +206,7 @@
 [data-sonner-toast][data-type="error"] {
   background: var(--toast-error-bg) !important;
   border-color: var(--toast-error-border) !important;
-  box-shadow: 
+  box-shadow:
     0 8px 32px rgba(220, 38, 38, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
 }
@@ -167,7 +214,7 @@
 [data-sonner-toast][data-type="warning"] {
   background: var(--toast-warning-bg) !important;
   border-color: var(--toast-warning-border) !important;
-  box-shadow: 
+  box-shadow:
     0 8px 32px rgba(245, 158, 11, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
 }
@@ -175,7 +222,7 @@
 [data-sonner-toast][data-type="info"] {
   background: var(--toast-info-bg) !important;
   border-color: var(--toast-info-border) !important;
-  box-shadow: 
+  box-shadow:
     0 8px 32px rgba(59, 130, 246, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
 }
@@ -222,34 +269,54 @@
   }
 }
 @keyframes float-gentle {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
 }
 
 @keyframes pulse-glow {
-  0%, 100% { 
+  0%,
+  100% {
     box-shadow: 0 0 20px rgba(139, 92, 246, 0.4);
     transform: scale(1);
   }
-  50% { 
+  50% {
     box-shadow: 0 0 40px rgba(139, 92, 246, 0.8);
     transform: scale(1.05);
   }
 }
 
 @keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 @keyframes gradient-shift {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
 }
 
 @keyframes bounce-subtle {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-5px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
 }
 
 /* Premium effects */
@@ -287,7 +354,7 @@
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 
+  box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
@@ -295,7 +362,7 @@
 .glass-premium:hover {
   background: rgba(75, 85, 99, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 
+  box-shadow:
     0 16px 64px rgba(0, 0, 0, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
@@ -310,7 +377,7 @@
 }
 
 .btn-premium::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
@@ -342,7 +409,7 @@
   @apply backdrop-blur-xl border border-white/10 rounded-3xl;
   @apply transition-all duration-500 transform hover:scale-105;
   background: rgba(75, 85, 99, 0.15);
-  box-shadow: 
+  box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
@@ -350,7 +417,7 @@
 .card-premium:hover {
   background: rgba(75, 85, 99, 0.25);
   border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 
+  box-shadow:
     0 20px 64px rgba(16, 185, 129, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
@@ -381,7 +448,8 @@
 }
 
 @keyframes float {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0px);
   }
   50% {
@@ -390,7 +458,8 @@
 }
 
 @keyframes glow {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
   }
   50% {
@@ -421,7 +490,8 @@
 }
 
 @keyframes glow-pulse {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
   }
   50% {
@@ -470,7 +540,8 @@
 }
 
 @keyframes pulse-slow {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
     opacity: 1;
   }
@@ -490,10 +561,12 @@
 }
 
 @keyframes blink {
-  0%, 50% {
+  0%,
+  50% {
     opacity: 1;
   }
-  51%, 100% {
+  51%,
+  100% {
     opacity: 0;
   }
 }
@@ -527,7 +600,7 @@
 }
 
 :root {
-  font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: "Inter", system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
@@ -562,7 +635,8 @@
 
 /* Custom animations for dark theme */
 @keyframes gradient-shift {
-  0%, 100% {
+  0%,
+  100% {
     background-position: 0% 50%;
   }
   50% {
@@ -571,16 +645,22 @@
 }
 
 @keyframes glow-pulse {
-  0%, 100% {
-    box-shadow: 0 0 20px rgba(16, 185, 129, 0.3), 0 0 40px rgba(20, 184, 166, 0.2);
+  0%,
+  100% {
+    box-shadow:
+      0 0 20px rgba(16, 185, 129, 0.3),
+      0 0 40px rgba(20, 184, 166, 0.2);
   }
   50% {
-    box-shadow: 0 0 30px rgba(16, 185, 129, 0.5), 0 0 60px rgba(20, 184, 166, 0.3);
+    box-shadow:
+      0 0 30px rgba(16, 185, 129, 0.5),
+      0 0 60px rgba(20, 184, 166, 0.3);
   }
 }
 
 @keyframes float-gentle {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0px);
   }
   50% {
@@ -600,7 +680,8 @@
 }
 
 @keyframes glow-border {
-  0%, 100% {
+  0%,
+  100% {
     border-color: rgba(16, 185, 129, 0.3);
   }
   50% {
@@ -807,47 +888,47 @@
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
   }
-  
+
   /* Larger touch targets on mobile */
   .touch-target {
     min-height: 44px;
     min-width: 44px;
   }
-  
+
   /* Better spacing on mobile */
   .mobile-spacing {
     padding: 12px;
   }
-  
+
   /* Mobile-first text sizes */
   .mobile-text-base {
     font-size: 14px;
     line-height: 1.4;
   }
-  
+
   .mobile-text-sm {
     font-size: 12px;
     line-height: 1.3;
   }
-  
+
   /* Compact mobile cards */
   .mobile-card {
     padding: 12px;
     border-radius: 8px;
   }
-  
+
   /* Mobile-optimized buttons */
   .mobile-btn {
     padding: 10px 16px;
     font-size: 14px;
     min-height: 40px;
   }
-  
+
   /* Reduced margins on mobile */
   .mobile-margin {
     margin: 8px 0;
   }
-  
+
   /* Better mobile grid spacing */
   .mobile-grid-gap {
     gap: 12px;
@@ -883,15 +964,15 @@
   .animate-slide-up-soft {
     animation-duration: 0.3s;
   }
-  
+
   .animate-glow-pulse {
     animation-duration: 1.5s;
   }
-  
+
   .animate-float-gentle {
     animation-duration: 4s;
   }
-  
+
   /* Reduce complex animations on mobile for performance */
   .animate-gradient {
     animation-duration: 2s;
@@ -947,16 +1028,16 @@
     padding-left: 1rem;
     padding-right: 1rem;
   }
-  
+
   .mobile-py {
     padding-top: 0.75rem;
     padding-bottom: 0.75rem;
   }
-  
+
   .mobile-m {
     margin: 0.75rem;
   }
-  
+
   .mobile-gap {
     gap: 1rem;
   }
@@ -967,16 +1048,16 @@
     padding-left: 1.5rem;
     padding-right: 1.5rem;
   }
-  
+
   .mobile-py {
     padding-top: 1rem;
     padding-bottom: 1rem;
   }
-  
+
   .mobile-m {
     margin: 1rem;
   }
-  
+
   .mobile-gap {
     gap: 1.5rem;
   }
@@ -995,7 +1076,7 @@
   .responsive-grid-auto {
     grid-template-columns: 1fr;
   }
-  
+
   .responsive-grid-cards {
     grid-template-columns: 1fr;
   }
@@ -1005,7 +1086,7 @@
   .responsive-grid-auto {
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   }
-  
+
   .responsive-grid-cards {
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   }
@@ -1051,11 +1132,11 @@
   .mobile-h1 {
     font-size: 2rem;
   }
-  
+
   .mobile-h2 {
     font-size: 1.75rem;
   }
-  
+
   .mobile-h3 {
     font-size: 1.5rem;
   }
@@ -1065,11 +1146,11 @@
   .mobile-h1 {
     font-size: 2.25rem;
   }
-  
+
   .mobile-h2 {
     font-size: 2rem;
   }
-  
+
   .mobile-h3 {
     font-size: 1.75rem;
   }

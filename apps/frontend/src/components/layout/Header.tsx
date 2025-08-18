@@ -9,6 +9,7 @@ import {
   BriefcaseIcon,
   ChartBarIcon,
   BellIcon,
+  FolderIcon,
 } from "@heroicons/react/24/outline";
 import { Menu, Transition } from "@headlessui/react";
 import { Fragment } from "react";
@@ -52,6 +53,12 @@ export default function Header() {
       href: "/job-tracker",
       icon: BriefcaseIcon,
       current: location.pathname.startsWith("/job-tracker"),
+    },
+    {
+      name: "Documents",
+      href: "/documents",
+      icon: FolderIcon,
+      current: location.pathname.startsWith("/documents"),
     },
   ];
 

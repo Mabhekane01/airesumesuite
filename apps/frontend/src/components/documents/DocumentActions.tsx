@@ -9,7 +9,8 @@ import {
   ArrowDownTrayIcon,
   ShareIcon,
   PrinterIcon,
-  CloudIcon
+  CloudIcon,
+  ChartBarIcon
 } from '@heroicons/react/24/outline';
 
 interface DocumentActionsProps {
@@ -21,6 +22,7 @@ interface DocumentActionsProps {
   onShare?: () => void;
   onPrint?: () => void;
   onCloudSave?: () => void;
+  onUploadForTracking?: () => void;
   hidePreview?: boolean;
 }
 
@@ -33,6 +35,7 @@ export default function DocumentActions({
   onShare,
   onPrint,
   onCloudSave,
+  onUploadForTracking,
   hidePreview = false,
 }: DocumentActionsProps) {
   const [showMenu, setShowMenu] = useState(false);
@@ -73,6 +76,12 @@ export default function DocumentActions({
       icon: ShareIcon, 
       onClick: onShare,
       color: 'text-indigo-400 hover:text-indigo-300'
+    }] : []),
+    ...(onUploadForTracking ? [{ 
+      label: 'Upload for Tracking', 
+      icon: ChartBarIcon, 
+      onClick: onUploadForTracking,
+      color: 'text-purple-400 hover:text-purple-300'
     }] : []),
     { 
       label: 'Delete', 

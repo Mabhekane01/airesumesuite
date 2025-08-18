@@ -9,6 +9,8 @@ import DashboardLayout from './components/dashboard/DashboardLayout'
 import LandingPageSimple from './pages/LandingPageSimple'
 import PublicTemplatesPage from './pages/PublicTemplatesPage'
 import PDFEditorPage from './pages/PDFEditorPage'
+import DocumentManagerApp from './components/document-manager/DocumentManagerApp'
+import DocTrackerLandingPage from './pages/DocTrackerLandingPage'
 import GoogleAuthCallback from './pages/auth/GoogleAuthCallback'
 import GoogleAuthError from './pages/auth/GoogleAuthError'
 // Removed old verification pages - now using OTP-based verification
@@ -58,6 +60,14 @@ function App() {
                   element={
                     <Layout>
                       <PDFEditorPage />
+                    </Layout>
+                  } 
+                />
+                <Route 
+                  path="/document-manager" 
+                  element={
+                    <Layout>
+                      {isAuthenticated ? <DocumentManagerApp /> : <DocTrackerLandingPage />}
                     </Layout>
                   } 
                 />

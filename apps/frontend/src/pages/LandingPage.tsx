@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
-import { 
-  DocumentTextIcon, 
-  PencilIcon, 
-  BriefcaseIcon, 
+import React, { useState, useEffect } from "react";
+import { motion, useScroll, useTransform } from "framer-motion";
+import {
+  DocumentTextIcon,
+  PencilIcon,
+  BriefcaseIcon,
   ChartBarIcon,
   StarIcon,
   CheckIcon,
@@ -21,205 +21,212 @@ import {
   EyeIcon,
   TrophyIcon,
   GlobeAltIcon,
-  CogIcon
-} from '@heroicons/react/24/outline';
-import { Link } from 'react-router-dom';
-import AuthModal from '../components/auth/AuthModal';
-import { useAuthStore } from '../stores/authStore';
+  CogIcon,
+} from "@heroicons/react/24/outline";
+import { Link } from "react-router-dom";
+import AuthModal from "../components/auth/AuthModal";
+import { useAuthStore } from "../stores/authStore";
 
 const advancedFeatures = [
   {
     icon: AcademicCapIcon,
-    title: 'LaTeX PDF Engine',
-    subtitle: 'Publication-Quality Documents',
-    description: 'Professional LaTeX compilation delivers academic-grade typography that makes HTML-to-PDF converters look amateur.',
-    tech: 'TexLive Engine + Vector Graphics',
-    color: 'from-emerald-500 to-teal-600',
-    highlight: 'Enterprise Grade'
+    title: "LaTeX PDF Engine",
+    subtitle: "Publication-Quality Documents",
+    description:
+      "Professional LaTeX compilation delivers academic-grade typography that makes HTML-to-PDF converters look amateur.",
+    tech: "TexLive Engine + Vector Graphics",
+    color: "from-emerald-500 to-teal-600",
+    highlight: "Enterprise Grade",
   },
   {
     icon: CpuChipIcon,
-    title: 'Multi-AI Intelligence',
-    subtitle: 'Claude + GPT-4 + Gemini',
-    description: 'Three AI models working together with intelligent fallbacks ensure 99.9% availability and superior content quality.',
-    tech: 'Smart Consensus Engine',
-    color: 'from-emerald-500 to-violet-600',
-    highlight: '99.9% Uptime'
+    title: "Multi-AI Intelligence",
+    subtitle: "Claude + GPT-4 + Gemini",
+    description:
+      "Three AI models working together with intelligent fallbacks ensure 99.9% availability and superior content quality.",
+    tech: "Smart Consensus Engine",
+    color: "from-emerald-500 to-violet-600",
+    highlight: "99.9% Uptime",
   },
   {
     icon: BoltIcon,
-    title: 'Real-time Analytics',
-    subtitle: 'Performance Intelligence',
-    description: 'Advanced metrics and insights powered by machine learning algorithms to optimize your job search strategy.',
-    tech: 'ML-Powered Insights',
-    color: 'from-orange-500 to-amber-600',
-    highlight: 'ML Powered'
+    title: "Real-time Analytics",
+    subtitle: "Performance Intelligence",
+    description:
+      "Advanced metrics and insights powered by machine learning algorithms to optimize your job search strategy.",
+    tech: "ML-Powered Insights",
+    color: "from-orange-500 to-amber-600",
+    highlight: "ML Powered",
   },
   {
     icon: ShieldCheckIcon,
-    title: 'Enterprise Security',
-    subtitle: 'Bank-Grade Protection',
-    description: 'JWT authentication, encrypted data transmission, and SOC 2 compliance ensure your data stays secure.',
-    tech: 'Zero-Trust Architecture',
-    color: 'from-blue-500 to-cyan-600',
-    highlight: 'SOC 2 Ready'
-  }
+    title: "Enterprise Security",
+    subtitle: "Bank-Grade Protection",
+    description:
+      "JWT authentication, encrypted data transmission, and SOC 2 compliance ensure your data stays secure.",
+    tech: "Zero-Trust Architecture",
+    color: "from-blue-500 to-cyan-600",
+    highlight: "SOC 2 Ready",
+  },
 ];
 
 const techStack = [
-  { name: 'React 18', category: 'Frontend', color: 'text-teal-400' },
-  { name: 'TypeScript', category: 'Language', color: 'text-teal-300' },
-  { name: 'Node.js', category: 'Backend', color: 'text-green-400' },
-  { name: 'MongoDB', category: 'Database', color: 'text-green-300' },
-  { name: 'Redis', category: 'Cache', color: 'text-red-400' },
-  { name: 'Docker', category: 'Deploy', color: 'text-teal-500' },
-  { name: 'LaTeX', category: 'Engine', color: 'text-emerald-400' },
-  { name: 'Claude AI', category: 'AI', color: 'text-emerald-400' },
-  { name: 'GPT-4', category: 'AI', color: 'text-emerald-300' },
-  { name: 'Gemini', category: 'AI', color: 'text-indigo-400' }
+  { name: "React 18", category: "Frontend", color: "text-teal-400" },
+  { name: "TypeScript", category: "Language", color: "text-teal-300" },
+  { name: "Node.js", category: "Backend", color: "text-green-400" },
+  { name: "MongoDB", category: "Database", color: "text-green-300" },
+  { name: "Redis", category: "Cache", color: "text-red-400" },
+  { name: "Docker", category: "Deploy", color: "text-teal-500" },
+  { name: "LaTeX", category: "Engine", color: "text-emerald-400" },
+  { name: "Claude AI", category: "AI", color: "text-emerald-400" },
+  { name: "GPT-4", category: "AI", color: "text-emerald-300" },
+  { name: "Gemini", category: "AI", color: "text-indigo-400" },
 ];
 
 const performanceMetrics = [
-  { 
-    metric: '2-15s', 
-    label: 'PDF Generation',
-    detail: 'LaTeX Compilation',
+  {
+    metric: "2-15s",
+    label: "PDF Generation",
+    detail: "LaTeX Compilation",
     icon: DocumentTextIcon,
-    color: 'text-emerald-400'
+    color: "text-emerald-400",
   },
-  { 
-    metric: '99.97%', 
-    label: 'System Uptime',
-    detail: 'Last 12 Months',
+  {
+    metric: "99.97%",
+    label: "System Uptime",
+    detail: "Last 12 Months",
     icon: ShieldCheckIcon,
-    color: 'text-teal-400'
+    color: "text-teal-400",
   },
-  { 
-    metric: '< 200ms', 
-    label: 'API Response',
-    detail: 'Global Average',
+  {
+    metric: "< 200ms",
+    label: "API Response",
+    detail: "Global Average",
     icon: BoltIcon,
-    color: 'text-orange-400'
+    color: "text-orange-400",
   },
-  { 
-    metric: '94%', 
-    label: 'Cache Hit Rate',
-    detail: 'Multi-Layer Cache',
+  {
+    metric: "94%",
+    label: "Cache Hit Rate",
+    detail: "Multi-Layer Cache",
     icon: CloudIcon,
-    color: 'text-cyan-400'
-  }
+    color: "text-cyan-400",
+  },
 ];
 
 const comparisons = [
   {
-    feature: 'PDF Quality',
-    us: 'LaTeX Academic Grade',
-    others: 'Basic HTML-to-PDF',
-    advantage: true
+    feature: "PDF Quality",
+    us: "LaTeX Academic Grade",
+    others: "Basic HTML-to-PDF",
+    advantage: true,
   },
   {
-    feature: 'AI Reliability',
-    us: 'Multi-AI with Fallbacks',
-    others: 'Single AI Provider',
-    advantage: true
+    feature: "AI Reliability",
+    us: "Multi-AI with Fallbacks",
+    others: "Single AI Provider",
+    advantage: true,
   },
   {
-    feature: 'Architecture',
-    us: 'Enterprise Scalable',
-    others: 'Monolithic Apps',
-    advantage: true
+    feature: "Architecture",
+    us: "Enterprise Scalable",
+    others: "Monolithic Apps",
+    advantage: true,
   },
   {
-    feature: 'Templates',
-    us: '33+ Professional LaTeX',
-    others: '10-20 Basic Templates',
-    advantage: true
-  }
+    feature: "Templates",
+    us: "33+ Professional LaTeX",
+    others: "10-20 Basic Templates",
+    advantage: true,
+  },
 ];
 
 const testimonials = [
   {
-    name: 'Dr. Sarah Chen',
-    role: 'Senior ML Engineer',
-    company: 'Google DeepMind',
-    content: 'The LaTeX quality is incredible - looks like my PhD thesis. Finally, a resume builder that understands professional typography.',
+    name: "Dr. Sarah Chen",
+    role: "Senior ML Engineer",
+    company: "Google DeepMind",
+    content:
+      "The LaTeX quality is incredible - looks like my PhD thesis. Finally, a resume builder that understands professional typography.",
     rating: 5,
-    highlight: 'PhD-Level Quality'
+    highlight: "PhD-Level Quality",
   },
   {
-    name: 'Marcus Rodriguez',
-    role: 'VP Engineering',
-    company: 'Stripe',
-    content: 'Multi-AI system is genius. When OpenAI was down, it seamlessly switched to Claude. Never experienced downtime.',
+    name: "Marcus Rodriguez",
+    role: "VP Engineering",
+    company: "Stripe",
+    content:
+      "Multi-AI system is genius. When OpenAI was down, it seamlessly switched to Claude. Never experienced downtime.",
     rating: 5,
-    highlight: '0 Downtime'
+    highlight: "0 Downtime",
   },
   {
-    name: 'Emily Watson',
-    role: 'Product Director',
-    company: 'Airbnb',
-    content: 'This is not just a resume builder - it\\'s a career intelligence platform. The analytics helped me negotiate 40% higher salary.',
+    name: "Emily Watson",
+    role: "Product Director",
+    company: "Airbnb",
+    content:
+      "This is not just a resume builder - it's a career intelligence platform. The analytics helped me negotiate 40% higher salary.",
     rating: 5,
-    highlight: '+40% Salary'
-  }
+    highlight: "+40% Salary",
+  },
 ];
 
 const pricingPlans = [
   {
-    name: 'Professional',
+    name: "Professional",
     price: 19,
-    period: 'month',
-    description: 'Perfect for individual job seekers',
+    period: "month",
+    description: "Perfect for individual job seekers",
     features: [
-      'Unlimited LaTeX Resumes',
-      'AI Content Generation',
-      '33+ Premium Templates',
-      'Cover Letter Generator',
-      'Basic Analytics',
-      'PDF/DOCX Downloads'
+      "Unlimited LaTeX Resumes",
+      "AI Content Generation",
+      "33+ Premium Templates",
+      "Cover Letter Generator",
+      "Basic Analytics",
+      "PDF/DOCX Downloads",
     ],
-    highlight: false
+    highlight: false,
   },
   {
-    name: 'Enterprise',
+    name: "Enterprise",
     price: 39,
-    period: 'month',
-    description: 'Advanced features for serious professionals',
+    period: "month",
+    description: "Advanced features for serious professionals",
     features: [
-      'Everything in Professional',
-      'Multi-AI Career Coach',
-      'Advanced Analytics & Insights',
-      'Job Application Tracking',
-      'Interview Preparation AI',
-      'Priority Support',
-      'API Access'
+      "Everything in Professional",
+      "Multi-AI Career Coach",
+      "Advanced Analytics & Insights",
+      "Job Application Tracking",
+      "Interview Preparation AI",
+      "Priority Support",
+      "API Access",
     ],
-    highlight: true
+    highlight: true,
   },
   {
-    name: 'Teams',
+    name: "Teams",
     price: 99,
-    period: 'month',
-    description: 'For teams and organizations',
+    period: "month",
+    description: "For teams and organizations",
     features: [
-      'Everything in Enterprise',
-      '10 Team Members',
-      'Admin Dashboard',
-      'Collaboration Features',
-      'Custom Branding',
-      'SSO Integration',
-      'White-label Options'
+      "Everything in Enterprise",
+      "10 Team Members",
+      "Admin Dashboard",
+      "Collaboration Features",
+      "Custom Branding",
+      "SSO Integration",
+      "White-label Options",
     ],
-    highlight: false
-  }
+    highlight: false,
+  },
 ];
 
 export default function LandingPage() {
   const [authModalOpen, setAuthModalOpen] = useState(false);
-  const [authMode, setAuthMode] = useState<'login' | 'register'>('register');
+  const [authMode, setAuthMode] = useState<"login" | "register">("register");
   const { isAuthenticated } = useAuthStore();
   const { scrollY } = useScroll();
-  
+
   // Parallax effects
   const yBg = useTransform(scrollY, [0, 1000], [0, -300]);
   const yText = useTransform(scrollY, [0, 1000], [0, -100]);
@@ -228,50 +235,26 @@ export default function LandingPage() {
     if (isAuthenticated) {
       return;
     }
-    setAuthMode('register');
+    setAuthMode("register");
     setAuthModalOpen(true);
   };
 
   return (
     <div className="min-h-screen bg-gradient-dark overflow-hidden">
-      {/* Advanced CSS for glassy effects */}
-      <style jsx>{`
-        .glass-card {
-          background: rgba(15, 23, 42, 0.7);
-          backdrop-filter: blur(16px);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        .glass-card-hover:hover {
-          background: rgba(15, 23, 42, 0.9);
-          border: 1px solid rgba(139, 92, 246, 0.3);
-          transform: translateY(-4px);
-        }
-        .glow-effect {
-          box-shadow: 0 0 50px rgba(139, 92, 246, 0.1);
-        }
-        .tech-orbit {
-          animation: orbit 20s linear infinite;
-        }
-        @keyframes orbit {
-          from { transform: rotate(0deg) translateX(100px) rotate(0deg); }
-          to { transform: rotate(360deg) translateX(100px) rotate(-360deg); }
-        }
-        .gradient-mesh {
-          background: 
-            radial-gradient(circle at 20% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
-            radial-gradient(circle at 80% 20%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
-            radial-gradient(circle at 40% 40%, rgba(16, 185, 129, 0.1) 0%, transparent 50%);
-        }
-      `}</style>
+      {/* Advanced CSS for glassy effects - using inline styles instead */}
 
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
         {/* Animated Background */}
-        <motion.div 
-          className="absolute inset-0 gradient-mesh"
-          style={{ y: yBg }}
+        <motion.div
+          className="absolute inset-0"
+          style={{
+            y: yBg,
+            background:
+              "radial-gradient(circle at 20% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(59, 130, 246, 0.1) 0%, transparent 50%), radial-gradient(circle at 40% 40%, rgba(16, 185, 129, 0.1) 0%, transparent 50%)",
+          }}
         />
-        
+
         {/* Floating Tech Elements */}
         <div className="absolute inset-0 overflow-hidden">
           {techStack.map((tech, i) => (
@@ -281,16 +264,16 @@ export default function LandingPage() {
               animate={{
                 x: [0, 100, 0],
                 y: [0, -50, 0],
-                opacity: [0.1, 0.3, 0.1]
+                opacity: [0.1, 0.3, 0.1],
               }}
               transition={{
                 duration: 10 + i * 2,
                 repeat: Infinity,
-                ease: "easeInOut"
+                ease: "easeInOut",
               }}
               style={{
-                left: `${10 + (i * 8) % 80}%`,
-                top: `${10 + (i * 12) % 80}%`,
+                left: `${10 + ((i * 8) % 80)}%`,
+                top: `${10 + ((i * 12) % 80)}%`,
               }}
             >
               {tech.name}
@@ -331,10 +314,18 @@ export default function LandingPage() {
 
             {/* Subtitle */}
             <p className="text-xl md:text-2xl text-gray-300 mb-12 max-w-4xl mx-auto leading-relaxed">
-              Revolutionary career platform powered by{' '}
-              <span className="text-emerald-400 font-semibold">LaTeX document engine</span>,{' '}
-              <span className="text-teal-400 font-semibold">multi-AI intelligence</span>, and{' '}
-              <span className="text-emerald-400 font-semibold">enterprise architecture</span>
+              Revolutionary career platform powered by{" "}
+              <span className="text-emerald-400 font-semibold">
+                LaTeX document engine
+              </span>
+              ,{" "}
+              <span className="text-teal-400 font-semibold">
+                multi-AI intelligence
+              </span>
+              , and{" "}
+              <span className="text-emerald-400 font-semibold">
+                enterprise architecture
+              </span>
             </p>
 
             {/* CTA Buttons */}
@@ -360,7 +351,7 @@ export default function LandingPage() {
                   </motion.button>
                   <button
                     onClick={() => {
-                      setAuthMode('login');
+                      setAuthMode("login");
                       setAuthModalOpen(true);
                     }}
                     className="glass-card glass-card-hover px-8 py-4 rounded-2xl font-medium text-lg text-white transition-all duration-300"
@@ -382,12 +373,19 @@ export default function LandingPage() {
             {performanceMetrics.map((metric, index) => {
               const Icon = metric.icon;
               return (
-                <div key={index} className="glass-card rounded-2xl p-6 text-center glow-effect">
+                <div
+                  key={index}
+                  className="glass-card rounded-2xl p-6 text-center glow-effect"
+                >
                   <Icon className={`h-8 w-8 ${metric.color} mx-auto mb-3`} />
-                  <div className={`text-2xl md:text-3xl font-bold ${metric.color} mb-1`}>
+                  <div
+                    className={`text-2xl md:text-3xl font-bold ${metric.color} mb-1`}
+                  >
                     {metric.metric}
                   </div>
-                  <div className="text-white font-medium mb-1">{metric.label}</div>
+                  <div className="text-white font-medium mb-1">
+                    {metric.label}
+                  </div>
                   <div className="text-gray-400 text-sm">{metric.detail}</div>
                 </div>
               );
@@ -430,24 +428,36 @@ export default function LandingPage() {
                   className="glass-card glass-card-hover rounded-3xl p-8 relative overflow-hidden group"
                 >
                   {/* Background Gradient */}
-                  <div className={`absolute inset-0 bg-gradient-to-br ${feature.color} opacity-5 group-hover:opacity-10 transition-opacity`} />
-                  
+                  <div
+                    className={`absolute inset-0 bg-gradient-to-br ${feature.color} opacity-5 group-hover:opacity-10 transition-opacity`}
+                  />
+
                   <div className="relative z-10">
                     <div className="flex items-start justify-between mb-6">
-                      <div className={`w-16 h-16 bg-gradient-to-br ${feature.color} rounded-2xl flex items-center justify-center`}>
+                      <div
+                        className={`w-16 h-16 bg-gradient-to-br ${feature.color} rounded-2xl flex items-center justify-center`}
+                      >
                         <Icon className="h-8 w-8 text-white" />
                       </div>
                       <div className="text-right">
-                        <div className="text-xs font-mono text-gray-400 mb-1">{feature.tech}</div>
+                        <div className="text-xs font-mono text-gray-400 mb-1">
+                          {feature.tech}
+                        </div>
                         <div className="px-3 py-1 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 rounded-full text-xs font-semibold text-emerald-300 border border-emerald-500/30">
                           {feature.highlight}
                         </div>
                       </div>
                     </div>
-                    
-                    <h3 className="text-2xl font-bold text-white mb-2">{feature.title}</h3>
-                    <div className="text-lg font-medium text-emerald-300 mb-4">{feature.subtitle}</div>
-                    <p className="text-gray-300 leading-relaxed">{feature.description}</p>
+
+                    <h3 className="text-2xl font-bold text-white mb-2">
+                      {feature.title}
+                    </h3>
+                    <div className="text-lg font-medium text-emerald-300 mb-4">
+                      {feature.subtitle}
+                    </div>
+                    <p className="text-gray-300 leading-relaxed">
+                      {feature.description}
+                    </p>
                   </div>
                 </motion.div>
               );
@@ -462,10 +472,14 @@ export default function LandingPage() {
             className="glass-card rounded-3xl p-8 glow-effect"
           >
             <div className="text-center mb-8">
-              <h3 className="text-2xl font-bold text-white mb-4">Enterprise Technology Stack</h3>
-              <p className="text-gray-300">Modern, scalable, and battle-tested technologies</p>
+              <h3 className="text-2xl font-bold text-white mb-4">
+                Enterprise Technology Stack
+              </h3>
+              <p className="text-gray-300">
+                Modern, scalable, and battle-tested technologies
+              </p>
             </div>
-            
+
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               {techStack.map((tech, index) => (
                 <motion.div
@@ -476,7 +490,11 @@ export default function LandingPage() {
                   whileHover={{ scale: 1.1 }}
                   className="glass-card rounded-xl p-4 text-center group cursor-pointer"
                 >
-                  <div className={`${tech.color} font-mono text-lg font-bold mb-2`}>{tech.name}</div>
+                  <div
+                    className={`${tech.color} font-mono text-lg font-bold mb-2`}
+                  >
+                    {tech.name}
+                  </div>
                   <div className="text-gray-400 text-sm">{tech.category}</div>
                 </motion.div>
               ))}
@@ -509,7 +527,9 @@ export default function LandingPage() {
             <div className="grid grid-cols-3 bg-gradient-to-r from-emerald-600/20 to-teal-600/20 p-6">
               <div className="text-gray-400 font-medium">Feature</div>
               <div className="text-center">
-                <div className="text-emerald-400 font-bold text-lg">AI Job Suite</div>
+                <div className="text-emerald-400 font-bold text-lg">
+                  AI Job Suite
+                </div>
                 <div className="text-emerald-300 text-sm">Enterprise Grade</div>
               </div>
               <div className="text-center">
@@ -517,7 +537,7 @@ export default function LandingPage() {
                 <div className="text-gray-500 text-sm">Basic Tools</div>
               </div>
             </div>
-            
+
             {comparisons.map((comp, index) => (
               <motion.div
                 key={index}
@@ -574,25 +594,32 @@ export default function LandingPage() {
                 <div className="absolute top-4 right-4 px-3 py-1 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 rounded-full text-xs font-semibold text-emerald-300 border border-emerald-500/30">
                   {testimonial.highlight}
                 </div>
-                
+
                 <div className="flex items-center mb-4">
                   {[...Array(testimonial.rating)].map((_, i) => (
-                    <StarIcon key={i} className="h-5 w-5 text-yellow-400 fill-current" />
+                    <StarIcon
+                      key={i}
+                      className="h-5 w-5 text-yellow-400 fill-current"
+                    />
                   ))}
                 </div>
-                
+
                 <p className="text-gray-300 mb-6 italic leading-relaxed">
                   "{testimonial.content}"
                 </p>
-                
+
                 <div className="flex items-center">
                   <div className="w-12 h-12 bg-gradient-to-br from-emerald-600 to-teal-600 rounded-2xl flex items-center justify-center text-white font-bold mr-4">
                     {testimonial.name[0]}
                   </div>
                   <div>
-                    <div className="font-bold text-white">{testimonial.name}</div>
+                    <div className="font-bold text-white">
+                      {testimonial.name}
+                    </div>
                     <div className="text-gray-400">{testimonial.role}</div>
-                    <div className="text-emerald-400 text-sm">{testimonial.company}</div>
+                    <div className="text-emerald-400 text-sm">
+                      {testimonial.company}
+                    </div>
                   </div>
                 </div>
               </motion.div>
@@ -629,9 +656,9 @@ export default function LandingPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: index * 0.1 }}
                 className={`glass-card rounded-3xl p-8 relative group ${
-                  plan.highlight 
-                    ? 'ring-2 ring-emerald-500/50 glow-effect scale-105 z-10' 
-                    : 'glass-card-hover'
+                  plan.highlight
+                    ? "ring-2 ring-emerald-500/50 glow-effect scale-105 z-10"
+                    : "glass-card-hover"
                 }`}
               >
                 {plan.highlight && (
@@ -641,11 +668,15 @@ export default function LandingPage() {
                     </div>
                   </div>
                 )}
-                
+
                 <div className="text-center mb-8">
-                  <h3 className="text-2xl font-bold text-white mb-4">{plan.name}</h3>
+                  <h3 className="text-2xl font-bold text-white mb-4">
+                    {plan.name}
+                  </h3>
                   <div className="mb-4">
-                    <span className="text-5xl font-bold text-white">${plan.price}</span>
+                    <span className="text-5xl font-bold text-white">
+                      ${plan.price}
+                    </span>
                     <span className="text-gray-400">/{plan.period}</span>
                   </div>
                   <p className="text-gray-300">{plan.description}</p>
@@ -664,8 +695,8 @@ export default function LandingPage() {
                   onClick={handleGetStarted}
                   className={`w-full py-4 rounded-2xl font-semibold text-lg transition-all duration-300 ${
                     plan.highlight
-                      ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:from-emerald-700 hover:to-teal-700 shadow-lg'
-                      : 'glass-card glass-card-hover text-white'
+                      ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:from-emerald-700 hover:to-teal-700 shadow-lg"
+                      : "glass-card glass-card-hover text-white"
                   }`}
                 >
                   Get Started
@@ -693,9 +724,10 @@ export default function LandingPage() {
               </span>
             </h2>
             <p className="text-xl text-gray-300 mb-12 max-w-2xl mx-auto">
-              Join thousands of professionals who've revolutionized their job search with our enterprise-grade platform.
+              Join thousands of professionals who've revolutionized their job
+              search with our enterprise-grade platform.
             </p>
-            
+
             {!isAuthenticated && (
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <motion.button
