@@ -3,6 +3,8 @@ import { query } from '@/config/database';
 import { cache } from '@/config/redis';
 import { logger } from '@/utils/logger';
 import { config } from '@/config/environment';
+import { webhookEventService } from './webhookEventService';
+import { webhookDeliveryService } from './webhookDeliveryService';
 
 // Clean up expired links
 const cleanupExpiredLinks = async (): Promise<void> => {
@@ -99,6 +101,54 @@ const cleanupOldWebhookDeliveries = async (): Promise<void> => {
     }
   } catch (error) {
     logger.error('Failed to cleanup old webhook deliveries:', error);
+  }
+};
+
+// Process pending webhook events
+const processPendingWebhooks = async (): Promise<void> => {
+  try {
+    // Get all active webhooks
+    const webhooks = await query(`
+      SELECT id FROM webhooks WHERE is_active = true
+    `);
+    
+    if (webhooks.rows.length === 0) {
+      return;
+    }
+    
+    logger.info(`Processing webhooks for ${webhooks.rows.length} active webhooks`);
+    
+    for (const webhook of webhooks.rows) {
+      try {
+        await webhookEventService.processWebhookEvents(webhook.id);
+      } catch (error) {
+        logger.error('Failed to process webhook events for webhook', {
+          webhookId: webhook.id,
+          error: error instanceof Error ? error.message : String(error)
+        });
+      }
+    }
+  } catch (error) {
+    logger.error('Failed to process pending webhooks:', error);
+  }
+};
+
+// Clean up old webhook events
+const cleanupOldWebhookEvents = async (): Promise<void> => {
+  try {
+    const retentionDays = config.WEBHOOK_RETENTION_DAYS || 90;
+    
+    const result = await query(`
+      DELETE FROM webhook_events 
+      WHERE created_at < NOW() - INTERVAL '${retentionDays} days'
+        AND status IN ('delivered', 'failed')
+    `);
+    
+    if (result.rowCount && result.rowCount > 0) {
+      logger.info(`Deleted ${result.rowCount} old webhook events`);
+    }
+  } catch (error) {
+    logger.error('Failed to cleanup old webhook events:', error);
   }
 };
 
@@ -206,6 +256,18 @@ export const initializeBackgroundJobs = (): void => {
     cleanupOldWebhookDeliveries();
   });
   
+  // Every 5 minutes: process pending webhooks
+  cron.schedule('*/5 * * * *', () => {
+    logger.debug('Processing pending webhooks...');
+    processPendingWebhooks();
+  });
+  
+  // Every day at 5 AM: cleanup old webhook events
+  cron.schedule('0 5 * * *', () => {
+    logger.debug('Running webhook events cleanup...');
+    cleanupOldWebhookEvents();
+  });
+  
   // Every 30 minutes: cleanup inactive sessions
   cron.schedule('*/30 * * * *', () => {
     logger.debug('Running session cleanup...');
@@ -235,6 +297,8 @@ export const runMaintenanceJobs = async (): Promise<void> => {
   await cleanupOldAnalytics();
   await cleanupOldApiRequests();
   await cleanupOldWebhookDeliveries();
+  await cleanupOldWebhookEvents();
+  await processPendingWebhooks();
   await cleanupInactiveSessions();
   await processStuckDocuments();
   await generateDailyAnalyticsSummary();

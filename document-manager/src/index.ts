@@ -3,169 +3,158 @@ import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
 import rateLimit from 'express-rate-limit';
-import { createServer } from 'http';
-import { Server as SocketServer } from 'socket.io';
+import { config } from './config/environment';
+import { initializeDatabase } from './config/database';
+import { logger } from './utils/logger';
+import routes from './routes';
+import { errorHandler, notFoundHandler } from './middleware/errorHandler';
+import { ensureUploadDir } from './middleware/upload';
 
-import { config } from '@/config/environment';
-import { logger } from '@/utils/logger';
-import { errorHandler } from '@/middleware/errorHandler';
-import { requestLogger } from '@/middleware/requestLogger';
-import { authMiddleware } from '@/middleware/auth';
-import { validateApiKey } from '@/middleware/apiKey';
-
-// Route imports
-import authRoutes from '@/routes/authRoutes';
-import documentRoutes from '@/routes/documentRoutes';
-import linkRoutes from '@/routes/linkRoutes';
-import analyticsRoutes from '@/routes/analyticsRoutes';
-import adminRoutes from '@/routes/adminRoutes';
-import publicRoutes from '@/routes/publicRoutes';
-import webhookRoutes from '@/routes/webhookRoutes';
-import integrationRoutes from '@/routes/integrationRoutes';
-
-// Initialize Express app
+// Create Express app
 const app = express();
-const server = createServer(app);
-const io = new SocketServer(server, {
-  cors: {
-    origin: config.CORS_ORIGINS,
-    methods: ['GET', 'POST'],
-    credentials: true
-  }
-});
-
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 1000, // limit each IP to 1000 requests per windowMs
-  message: 'Too many requests from this IP, please try again later.',
-  standardHeaders: true,
-  legacyHeaders: false,
-});
 
 // Security middleware
 app.use(helmet({
-  crossOriginEmbedderPolicy: false,
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'"],
       scriptSrc: ["'self'"],
       imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: ["'self'", "wss:"],
-      fontSrc: ["'self'"],
-      objectSrc: ["'none'"],
-      mediaSrc: ["'self'"],
-      frameSrc: ["'none'"],
     },
   },
 }));
 
+// CORS configuration
 app.use(cors({
   origin: config.CORS_ORIGINS,
   credentials: true,
-  optionsSuccessStatus: 200
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 
-app.use(compression());
-app.use(limiter);
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: config.RATE_LIMIT_WINDOW_MS,
+  max: config.RATE_LIMIT_MAX_REQUESTS,
+  message: {
+    success: false,
+    message: 'Too many requests from this IP, please try again later.',
+    code: 'RATE_LIMIT_EXCEEDED'
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
-// Request logging
-app.use(requestLogger);
+app.use('/api/', limiter);
+
+// Body parsing middleware
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Compression middleware
+app.use(compression());
+
+// Request logging middleware
+app.use((req, res, next) => {
+  logger.info('HTTP Request', {
+    method: req.method,
+    path: req.path,
+    ip: req.ip,
+    userAgent: req.get('User-Agent')
+  });
+  next();
+});
+
+// Ensure upload directory exists
+app.use(ensureUploadDir);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.status(200).json({
-    status: 'healthy',
+    success: true,
+    message: 'Document Manager Service is running',
     timestamp: new Date().toISOString(),
-    version: process.env.npm_package_version || '1.0.0',
+    version: '1.0.0',
     environment: config.NODE_ENV
   });
 });
 
-// API Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/documents', authMiddleware, documentRoutes);
-app.use('/api/links', authMiddleware, linkRoutes); // Integration with document-sharing-service
-app.use('/api/analytics', authMiddleware, analyticsRoutes); // Integration with document-sharing-service
-app.use('/api/admin', authMiddleware, adminRoutes);
-app.use('/api/webhooks', validateApiKey, webhookRoutes);
-app.use('/api/integration', integrationRoutes); // Integration routes with AI Resume Suite
+// Mount API routes
+app.use('/', routes);
 
-// Public routes (integration with document-sharing-service)
-app.use('/view', publicRoutes); // Integration with document-sharing-service
-app.use('/d', publicRoutes); // Integration with document-sharing-service
+// 404 handler for undefined routes
+app.use(notFoundHandler);
 
-// Static file serving for uploaded documents
-app.use('/uploads', express.static(config.UPLOAD_PATH, {
-  setHeaders: (res, path) => {
-    // Security headers for file serving
-    res.setHeader('X-Content-Type-Options', 'nosniff');
-    res.setHeader('X-Frame-Options', 'DENY');
-    res.setHeader('Cache-Control', 'private, max-age=3600');
-  }
-}));
-
-// Socket.IO for real-time analytics
-io.on('connection', (socket) => {
-  logger.info(`Socket connected: ${socket.id}`);
-  
-  socket.on('join-document', (documentId: string) => {
-    socket.join(`document-${documentId}`);
-    logger.info(`Socket ${socket.id} joined document ${documentId}`);
-  });
-  
-  socket.on('page-view', (data: any) => {
-    // Broadcast page view to analytics dashboard
-    socket.to(`document-${data.documentId}`).emit('real-time-view', data);
-  });
-  
-  socket.on('disconnect', () => {
-    logger.info(`Socket disconnected: ${socket.id}`);
-  });
-});
-
-// Error handling middleware (must be last)
+// Global error handling middleware
 app.use(errorHandler);
 
-// 404 handler
-app.use('*', (req, res) => {
-  res.status(404).json({
-    success: false,
-    message: 'Endpoint not found',
-    path: req.originalUrl
+// Graceful shutdown handling
+const gracefulShutdown = (signal: string) => {
+  logger.info(`Received ${signal}. Starting graceful shutdown...`);
+  
+  // Close server
+  (global as any).server.close(() => {
+    logger.info('HTTP server closed');
+    
+    // Close database connections
+    initializeDatabase().then(() => {
+      logger.info('Database connections closed');
+      process.exit(0);
+    }).catch((error) => {
+      logger.error('Error during shutdown:', error);
+      process.exit(1);
+    });
   });
+  
+  // Force exit after 10 seconds
+  setTimeout(() => {
+    logger.error('Forced shutdown after timeout');
+    process.exit(1);
+  }, 10000);
+};
+
+// Handle shutdown signals
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (error) => {
+  logger.error('Uncaught Exception:', error);
+  process.exit(1);
+});
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (reason, promise) => {
+  logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  process.exit(1);
 });
 
 // Start server
-const PORT = config.PORT || 3001;
+const startServer = async () => {
+  try {
+    // Initialize database
+    await initializeDatabase();
+    logger.info('Database initialized successfully');
+    
+    // Start HTTP server
+    const server = app.listen(config.PORT, config.HOST, () => {
+      logger.info(`Document Manager Service started`, {
+        host: config.HOST,
+        port: config.PORT,
+        environment: config.NODE_ENV,
+        timestamp: new Date().toISOString()
+      });
+    });
+    
+    // Store server reference for graceful shutdown
+    (global as any).server = server;
+    
+  } catch (error) {
+    logger.error('Failed to start server:', error);
+    process.exit(1);
+  }
+};
 
-server.listen(PORT, () => {
-  logger.info(`🚀 Document Manager Service running on port ${PORT}`);
-  logger.info(`📊 Environment: ${config.NODE_ENV}`);
-  logger.info(`🔗 Health check: http://localhost:${PORT}/health`);
-  
-  // Start background jobs
-  require('@/services/backgroundJobs');
-});
-
-// Graceful shutdown
-process.on('SIGTERM', () => {
-  logger.info('SIGTERM received, shutting down gracefully');
-  server.close(() => {
-    logger.info('Process terminated');
-    process.exit(0);
-  });
-});
-
-process.on('SIGINT', () => {
-  logger.info('SIGINT received, shutting down gracefully');
-  server.close(() => {
-    logger.info('Process terminated');
-    process.exit(0);
-  });
-});
-
-export { app, io };
+// Start the application
+startServer();

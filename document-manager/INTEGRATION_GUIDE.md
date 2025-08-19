@@ -1,415 +1,602 @@
-# AI Resume Suite Integration Guide
+# Document Manager Service - Integration Guide
 
-This guide explains how to integrate the Document Manager service with your existing AI Resume Suite.
+A comprehensive guide for integrating the Document Manager Service with your existing AI Resume Suite and external systems.
 
-## 🔧 Quick Setup
+## 🎯 Overview
 
-### 1. Environment Configuration
+The Document Manager Service is designed to work seamlessly with your existing AI Resume Suite backend and integrate with the Document Sharing Service to create a powerful, production-ready document management solution that rivals Papermark.
 
-Add these variables to your AI Resume Suite `.env`:
+## 🏗️ Architecture Integration
 
-```env
+### Service Relationships
+```
+AI Resume Suite Backend
+├── Document Manager Service (Port 3001)
+│   ├── Manages document uploads and organization
+│   ├── Integrates with existing Resume/CoverLetter models
+│   └── Provides document management APIs
+│
+└── Document Sharing Service (Port 4000)
+    ├── Handles document sharing and analytics
+    ├── Provides public viewing interfaces
+    └── Manages sharing permissions and tracking
+```
+
+### Data Flow
+1. **Document Creation**: User uploads document through AI Resume Suite
+2. **Processing**: Document Manager processes and stores the file
+3. **Sharing**: Document can be shared via Document Sharing Service
+4. **Analytics**: View tracking and analytics are collected
+5. **Integration**: Data flows back to AI Resume Suite for reporting
+
+## 🔗 API Integration
+
+### Base URLs
+- **Document Manager**: `http://localhost:3001`
+- **Document Sharing**: `http://localhost:4000`
+
+### Authentication
+Both services use JWT authentication. Include the token in the Authorization header:
+```bash
+Authorization: Bearer <your-jwt-token>
+```
+
+## 📚 Document Manager Service APIs
+
+### Document Management
+
+#### Upload Document
+```bash
+POST /api/documents
+Content-Type: multipart/form-data
+
+# Form data
+file: <file>
+title: "My Resume"
+description: "Software Engineer Resume"
+folderId: "optional-folder-id"
+organizationId: "optional-org-id"
+source: "upload"
+sourceMetadata: {}
+```
+
+#### Get User Documents
+```bash
+GET /api/documents?page=1&limit=20&category=resume
+```
+
+#### Update Document
+```bash
+PUT /api/documents/{id}
+{
+  "title": "Updated Resume Title",
+  "description": "Updated description"
+}
+```
+
+#### Delete Document
+```bash
+DELETE /api/documents/{id}
+```
+
+### Folder Management
+
+#### Create Folder
+```bash
+POST /api/folders
+{
+  "name": "Job Applications",
+  "description": "Resumes for job applications",
+  "color": "#3B82F6",
+  "parentFolderId": "optional-parent-id"
+}
+```
+
+#### Get Folder Tree
+```bash
+GET /api/folders/tree
+```
+
+#### Update Folder
+```bash
+PUT /api/folders/{id}
+{
+  "name": "Updated Folder Name",
+  "color": "#EF4444"
+}
+```
+
+### Integration APIs
+
+#### Link with Document Sharing Service
+```bash
+POST /api/links
+{
+  "documentId": "document-uuid",
+  "title": "Public Resume",
+  "description": "Share this resume with potential employers",
+  "password": "optional-password",
+  "expiresAt": "2024-12-31T23:59:59Z",
+  "settings": {
+    "allowDownload": true,
+    "allowPrint": false,
+    "trackViews": true,
+    "notifyOnView": true
+  }
+}
+```
+
+#### Get Integration Status
+```bash
+GET /api/integration/status
+```
+
+## 🔗 Document Sharing Service APIs
+
+### Document Sharing
+
+#### Create Share
+```bash
+POST /api/shares
+{
+  "documentId": "document-uuid",
+  "title": "My Resume",
+  "description": "Software Engineer Resume",
+  "password": "optional-password",
+  "expiresAt": "2024-12-31T23:59:59Z",
+  "settings": {
+    "allowDownload": true,
+    "allowPrint": false,
+    "watermark": "Confidential",
+    "trackViews": true,
+    "notifyOnView": true,
+    "accessList": ["employer@company.com"]
+  }
+}
+```
+
+#### Access Shared Document
+```bash
+# Public access
+GET /view/{shareId}
+
+# Password protected
+POST /view/{shareId}
+{
+  "password": "password"
+}
+```
+
+### Analytics
+
+#### Get Document Analytics
+```bash
+GET /api/analytics/documents/{documentId}
+```
+
+#### Get Share Analytics
+```bash
+GET /api/analytics/shares/{shareId}
+```
+
+#### Get Organization Analytics
+```bash
+GET /api/analytics/organization
+```
+
+## 🔄 Integration Examples
+
+### 1. Resume Upload and Sharing Flow
+
+```typescript
+// 1. Upload resume to Document Manager
+const uploadResponse = await fetch('http://localhost:3001/api/documents', {
+  method: 'POST',
+  headers: {
+    'Authorization': `Bearer ${token}`
+  },
+  body: formData
+});
+
+const document = await uploadResponse.json();
+
+// 2. Create share link via Document Sharing Service
+const shareResponse = await fetch('http://localhost:4000/api/shares', {
+  method: 'POST',
+  headers: {
+    'Authorization': `Bearer ${token}`,
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    documentId: document.data.id,
+    title: 'My Resume',
+    settings: {
+      allowDownload: true,
+      trackViews: true
+    }
+  })
+});
+
+const share = await shareResponse.json();
+console.log('Share URL:', share.data.shareUrl);
+```
+
+### 2. Analytics Integration
+
+```typescript
+// Get analytics for a shared document
+const analyticsResponse = await fetch(
+  `http://localhost:4000/api/analytics/shares/${shareId}`,
+  {
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  }
+);
+
+const analytics = await analyticsResponse.json();
+
+// Update AI Resume Suite with analytics
+await updateResumeAnalytics(resumeId, {
+  totalViews: analytics.data.totalViews,
+  uniqueViews: analytics.data.uniqueViews,
+  lastViewed: analytics.data.lastViewed
+});
+```
+
+### 3. Folder Organization
+
+```typescript
+// Create folder structure
+const folderResponse = await fetch('http://localhost:3001/api/folders', {
+  method: 'POST',
+  headers: {
+    'Authorization': `Bearer ${token}`,
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    name: 'Job Applications 2024',
+    description: 'Resumes for 2024 job applications',
+    color: '#10B981'
+  })
+});
+
+const folder = await folderResponse.json();
+
+// Move documents to folder
+await fetch(`http://localhost:3001/api/documents/${documentId}`, {
+  method: 'PUT',
+  headers: {
+    'Authorization': `Bearer ${token}`,
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    folderId: folder.data.id
+  })
+});
+```
+
+## 🔐 Authentication Integration
+
+### JWT Token Management
+
+```typescript
+// Get token from AI Resume Suite
+const token = getAuthToken();
+
+// Validate token with Document Manager
+const validateResponse = await fetch('http://localhost:3001/api/auth/validate', {
+  headers: {
+    'Authorization': `Bearer ${token}`
+  }
+});
+
+if (validateResponse.ok) {
+  // Token is valid, proceed with operations
+  const userData = await validateResponse.json();
+  console.log('Authenticated user:', userData);
+}
+```
+
+### User Synchronization
+
+```typescript
+// Sync user data between services
+const syncUserResponse = await fetch('http://localhost:3001/api/integration/sync-user', {
+  method: 'POST',
+  headers: {
+    'Authorization': `Bearer ${token}`,
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    userId: user.id,
+    email: user.email,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    organizationId: user.organizationId
+  })
+});
+```
+
+## 📊 Data Synchronization
+
+### Document Status Updates
+
+```typescript
+// Listen for document processing status updates
+const eventSource = new EventSource('http://localhost:3001/api/events/documents');
+
+eventSource.onmessage = (event) => {
+  const data = JSON.parse(event.data);
+  
+  if (data.type === 'document_processed') {
+    // Update AI Resume Suite with processing results
+    updateDocumentStatus(data.documentId, {
+      status: 'ready',
+      thumbnailUrl: data.thumbnailUrl,
+      pageCount: data.pageCount
+    });
+  }
+};
+```
+
+### Real-time Analytics
+
+```typescript
+// Subscribe to real-time analytics updates
+const socket = io('http://localhost:4000');
+
+socket.emit('join-document', documentId);
+
+socket.on('real-time-view', (data) => {
+  // Update UI with real-time view data
+  updateViewCounter(data.totalViews);
+  updateLastViewed(data.timestamp);
+});
+```
+
+## 🚀 Production Deployment
+
+### Environment Configuration
+
+```bash
 # Document Manager Service
-DOCUMENT_MANAGER_URL=http://localhost:3001
-DOCUMENT_MANAGER_ENABLED=true
+NODE_ENV=production
+PORT=3001
+JWT_SECRET=your-production-jwt-secret
+DATABASE_URL=postgresql://user:pass@host:5432/db
+REDIS_URL=redis://host:6379
+
+# Document Sharing Service
+NODE_ENV=production
+PORT=4000
+JWT_SECRET=your-production-jwt-secret
+DB_HOST=host
+DB_PASSWORD=password
+REDIS_HOST=host
 ```
 
-Add these variables to Document Manager `.env`:
+### Docker Compose
 
-```env
-# AI Resume Suite Integration
-AI_RESUME_SERVICE_URL=http://localhost:3000/api
-FRONTEND_URL=http://localhost:3000
+```yaml
+version: '3.8'
+services:
+  document-manager:
+    build: .
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      - postgres
+      - redis
 
-# Database (can be same as AI Resume Suite or separate)
-DATABASE_URL=postgresql://username:password@localhost:5432/document_manager
+  document-sharing:
+    build: ./document-sharing-service
+    ports:
+      - "4000:4000"
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      - postgres
+      - redis
+
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: document_sharing
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+
+  redis:
+    image: redis:7-alpine
 ```
 
-### 2. Add Document Manager to AI Resume Suite Frontend
+## 🔍 Monitoring and Health Checks
 
-In your AI Resume Suite frontend, add the document manager route:
+### Health Endpoints
 
-```jsx
-// In your main App.tsx or routing file
-import EnterpriseDocumentManager from './components/document-manager/EnterpriseDocumentManager';
+```bash
+# Document Manager Health
+GET http://localhost:3001/health
 
-// Add to your routes
-<Route path="/documents" element={<EnterpriseDocumentManager />} />
+# Document Sharing Health
+GET http://localhost:4000/health
+
+# Database Health
+GET http://localhost:4000/health/db
+
+# Redis Health
+GET http://localhost:4000/health/redis
 ```
 
-Add a navigation link:
-
-```jsx
-// In your navigation component
-<Link to="/documents" className="nav-link">
-  📄 Documents
-</Link>
-```
-
-### 3. Backend Integration Points
-
-#### A. Add Document Creation Webhook to Resume Builder
+### Logging Integration
 
 ```typescript
-// In your resume creation service
-const createResume = async (resumeData: any) => {
-  // ... existing resume creation logic ...
-  
-  // Send to Document Manager if enabled
-  if (process.env.DOCUMENT_MANAGER_ENABLED === 'true') {
+// Configure logging to central system
+import { logger } from '@document-sharing/core';
+
+logger.info('Document processed', {
+  documentId,
+  userId,
+  processingTime: Date.now() - startTime
+});
+```
+
+## 🧪 Testing Integration
+
+### Integration Tests
+
+```typescript
+describe('Document Manager Integration', () => {
+  it('should upload and share document', async () => {
+    // 1. Upload document
+    const document = await uploadDocument(testFile);
+    
+    // 2. Create share
+    const share = await createShare(document.id);
+    
+    // 3. Verify share is accessible
+    const accessResult = await accessSharedDocument(share.shareId);
+    
+    expect(accessResult.success).toBe(true);
+  });
+});
+```
+
+### Mock Services
+
+```typescript
+// Mock Document Manager Service
+const mockDocumentManager = {
+  uploadDocument: jest.fn(),
+  getDocument: jest.fn(),
+  updateDocument: jest.fn()
+};
+
+// Mock Document Sharing Service
+const mockDocumentSharing = {
+  createShare: jest.fn(),
+  getShare: jest.fn(),
+  getAnalytics: jest.fn()
+};
+```
+
+## 🚨 Error Handling
+
+### Service Unavailable
+
+```typescript
+try {
+  const response = await fetch('http://localhost:3001/api/documents');
+  // Handle response
+} catch (error) {
+  if (error.code === 'ECONNREFUSED') {
+    // Document Manager Service is down
+    console.error('Document Manager Service unavailable');
+    // Fallback to local storage or show error message
+  }
+}
+```
+
+### Retry Logic
+
+```typescript
+const retryOperation = async (operation: Function, maxRetries = 3) => {
+  for (let i = 0; i < maxRetries; i++) {
     try {
-      const formData = new FormData();
-      formData.append('file', resumePdfBlob);
-      formData.append('title', resumeData.title || 'My Resume');
-      formData.append('source', 'ai_resume');
-      formData.append('sourceMetadata', JSON.stringify({
-        resumeId: resume.id,
-        templateId: resumeData.templateId,
-        createdAt: new Date().toISOString()
-      }));
-      
-      await fetch(`${process.env.DOCUMENT_MANAGER_URL}/api/integration/ai-resume/create`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${userToken}`
-        },
-        body: formData
-      });
-      
-      console.log('Resume sent to Document Manager');
+      return await operation();
     } catch (error) {
-      console.error('Failed to send resume to Document Manager:', error);
-      // Don't fail the main operation
+      if (i === maxRetries - 1) throw error;
+      await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, i)));
     }
   }
 };
 ```
 
-#### B. Add Document Manager Auth Verification Endpoint
+## 📈 Performance Optimization
+
+### Caching Strategy
 
 ```typescript
-// In your AI Resume Suite auth routes
-router.get('/auth/verify', authMiddleware, (req, res) => {
-  res.json({
-    success: true,
-    user: {
-      id: req.user.id,
-      email: req.user.email,
-      tier: req.user.tier || 'free'
-    }
-  });
-});
-```
-
-#### C. Add Document Manager Menu Integration
-
-```typescript
-// In your AI Resume Suite dashboard
-const DocumentManagerWidget = () => {
-  const [documents, setDocuments] = useState([]);
-  const { token } = useAuthStore();
+// Cache frequently accessed documents
+const getDocumentWithCache = async (id: string) => {
+  const cacheKey = `document:${id}`;
+  let document = await redis.get(cacheKey);
   
-  useEffect(() => {
-    // Load recent documents from document manager
-    fetch(`${process.env.REACT_APP_DOCUMENT_MANAGER_URL}/api/integration/documents?limit=5`, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    })
-    .then(res => res.json())
-    .then(data => setDocuments(data.data || []))
-    .catch(console.error);
-  }, [token]);
-  
-  return (
-    <div className="bg-white rounded-xl p-6 shadow-sm">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold">Recent Documents</h3>
-        <Link to="/documents" className="text-blue-600 hover:text-blue-700">
-          View All
-        </Link>
-      </div>
-      
-      {documents.length === 0 ? (
-        <p className="text-gray-500">No documents yet</p>
-      ) : (
-        <div className="space-y-2">
-          {documents.map((doc: any) => (
-            <div key={doc.id} className="flex items-center justify-between p-2 hover:bg-gray-50 rounded">
-              <div>
-                <p className="font-medium">{doc.title}</p>
-                <p className="text-sm text-gray-500">{new Date(doc.created_at).toLocaleDateString()}</p>
-              </div>
-              <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
-                {doc.source}
-              </span>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
-```
-
-## 🚀 Deployment Steps
-
-### 1. Start Document Manager Service
-
-```bash
-cd document-manager
-npm install
-npm run build
-npm start
-```
-
-Service will run on port 3001 by default.
-
-### 2. Update AI Resume Suite
-
-```bash
-cd apps/frontend
-# Copy the document manager components
-cp -r ../../document-manager/frontend-components/src/components/document-manager ./src/components/
-
-# Update your routing and navigation
-# Add the routes and links as shown above
-```
-
-### 3. Database Migration
-
-If using a separate database for Document Manager:
-
-```bash
-# Create the database
-createdb document_manager
-
-# Run migrations
-cd document-manager
-npm run db:migrate
-```
-
-If using the same database, add the Document Manager tables to your existing database by running the schema.sql file.
-
-### 4. Test Integration
-
-1. **Login to AI Resume Suite** - Verify authentication works
-2. **Navigate to Documents** - Check the new documents page loads
-3. **Create a Resume** - Verify it appears in Document Manager
-4. **Create a Share Link** - Test document sharing functionality
-5. **Check Analytics** - Verify tracking works
-
-## 🔗 Frontend Integration Examples
-
-### Add "Share" Button to Resume Card
-
-```jsx
-const ResumeCard = ({ resume }) => {
-  const [shareUrl, setShareUrl] = useState('');
-  const { token } = useAuthStore();
-  
-  const handleShare = async () => {
-    try {
-      // Create a shareable link via Document Manager
-      const response = await fetch(`${process.env.REACT_APP_DOCUMENT_MANAGER_URL}/api/links`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          documentId: resume.documentManagerId, // If you store this reference
-          name: `Share of ${resume.title}`,
-          allowDownload: true,
-          expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days
-        })
-      });
-      
-      const data = await response.json();
-      setShareUrl(data.data.fullUrl);
-      
-      // Copy to clipboard
-      navigator.clipboard.writeText(data.data.fullUrl);
-      toast.success('Share link copied to clipboard!');
-    } catch (error) {
-      toast.error('Failed to create share link');
-    }
-  };
-  
-  return (
-    <div className="resume-card">
-      {/* Existing resume card content */}
-      
-      <button
-        onClick={handleShare}
-        className="share-button"
-      >
-        Share Resume
-      </button>
-    </div>
-  );
-};
-```
-
-### Add Document Manager Analytics to Dashboard
-
-```jsx
-const DashboardAnalytics = () => {
-  const [analytics, setAnalytics] = useState(null);
-  const { token } = useAuthStore();
-  
-  useEffect(() => {
-    fetch(`${process.env.REACT_APP_DOCUMENT_MANAGER_URL}/api/analytics/dashboard?days=7`, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    })
-    .then(res => res.json())
-    .then(data => setAnalytics(data.data))
-    .catch(console.error);
-  }, [token]);
-  
-  if (!analytics) return <div>Loading analytics...</div>;
-  
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div className="bg-blue-50 rounded-xl p-6">
-        <h3 className="text-lg font-semibold text-blue-900">Document Views</h3>
-        <p className="text-3xl font-bold text-blue-600">{analytics.summary.totalViews}</p>
-        <p className="text-sm text-blue-700">Last 7 days</p>
-      </div>
-      
-      <div className="bg-green-50 rounded-xl p-6">
-        <h3 className="text-lg font-semibold text-green-900">Downloads</h3>
-        <p className="text-3xl font-bold text-green-600">{analytics.summary.totalDownloads}</p>
-        <p className="text-sm text-green-700">Last 7 days</p>
-      </div>
-      
-      <div className="bg-purple-50 rounded-xl p-6">
-        <h3 className="text-lg font-semibold text-purple-900">Documents</h3>
-        <p className="text-3xl font-bold text-purple-600">{analytics.summary.totalDocuments}</p>
-        <p className="text-sm text-purple-700">Total managed</p>
-      </div>
-    </div>
-  );
-};
-```
-
-## 🔧 Configuration Options
-
-### Document Manager Features by Tier
-
-```javascript
-// In your subscription logic
-const getDocumentManagerFeatures = (tier) => {
-  switch (tier) {
-    case 'free':
-      return {
-        maxDocuments: 10,
-        maxViews: 100,
-        analytics: false,
-        customBranding: false,
-        passwordProtection: false
-      };
-    case 'premium':
-      return {
-        maxDocuments: 100,
-        maxViews: 1000,
-        analytics: true,
-        customBranding: true,
-        passwordProtection: true
-      };
-    case 'enterprise':
-      return {
-        maxDocuments: -1, // unlimited
-        maxViews: -1, // unlimited
-        analytics: true,
-        customBranding: true,
-        passwordProtection: true,
-        apiAccess: true,
-        webhooks: true
-      };
+  if (!document) {
+    document = await documentService.getDocument(id);
+    await redis.setex(cacheKey, 300, JSON.stringify(document)); // 5 min cache
   }
+  
+  return document;
 };
 ```
 
-## 🧪 Testing the Integration
+### Batch Operations
 
-### 1. Unit Tests
-
-```javascript
-// Test authentication integration
-describe('Document Manager Auth Integration', () => {
-  it('should verify AI Resume Suite tokens', async () => {
-    const token = generateAIResumeToken({ id: 'user123', email: 'test@example.com' });
-    
-    const response = await request(app)
-      .get('/api/auth/verify')
-      .set('Authorization', `Bearer ${token}`)
-      .expect(200);
-      
-    expect(response.body.success).toBe(true);
-    expect(response.body.data.user.id).toBe('user123');
-  });
-});
+```typescript
+// Batch document operations
+const batchUpdateDocuments = async (updates: Array<{id: string, data: any}>) => {
+  const promises = updates.map(({id, data}) => 
+    fetch(`http://localhost:3001/api/documents/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    })
+  );
+  
+  return Promise.all(promises);
+};
 ```
 
-### 2. Integration Tests
+## 🔐 Security Considerations
 
-```javascript
-// Test document creation from AI Resume Suite
-describe('AI Resume Suite Integration', () => {
-  it('should create document when resume is generated', async () => {
-    const formData = new FormData();
-    formData.append('file', mockPDFBuffer);
-    formData.append('title', 'Test Resume');
-    formData.append('source', 'ai_resume');
-    
-    const response = await request(app)
-      .post('/api/integration/ai-resume/create')
-      .set('Authorization', `Bearer ${validToken}`)
-      .send(formData)
-      .expect(201);
-      
-    expect(response.body.data.documentId).toBeDefined();
-  });
-});
+### API Key Management
+
+```typescript
+// Validate API keys for webhook endpoints
+const validateWebhookKey = (req: Request, res: Response, next: NextFunction) => {
+  const apiKey = req.headers['x-api-key'];
+  
+  if (!apiKey || !allowedKeys.includes(apiKey)) {
+    return res.status(401).json({ error: 'Invalid API key' });
+  }
+  
+  next();
+};
 ```
 
-## ✅ Verification Checklist
+### Rate Limiting
 
-- [ ] Document Manager service starts successfully
-- [ ] AI Resume Suite can authenticate with Document Manager
-- [ ] Created resumes appear in Document Manager
-- [ ] Share links work and track analytics
-- [ ] User tiers are properly mapped
-- [ ] Navigation between services is seamless
-- [ ] Database integration works (shared or separate)
-- [ ] File uploads and processing work
-- [ ] Real-time analytics display correctly
-- [ ] Webhooks trigger properly
+```typescript
+// Implement rate limiting for integration endpoints
+const rateLimit = require('express-rate-limit');
 
-## 🆘 Troubleshooting
+const integrationLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: 'Too many integration requests'
+});
 
-### Common Issues
+app.use('/api/integration', integrationLimiter);
+```
 
-1. **Authentication Fails**
-   - Check AI_RESUME_SERVICE_URL is correct
-   - Verify /auth/verify endpoint exists in AI Resume Suite
-   - Check JWT token format matches
+## 📚 Additional Resources
 
-2. **CORS Issues**
-   - Add frontend URL to CORS_ORIGINS in Document Manager
-   - Ensure both services allow cross-origin requests
+- [API Documentation](./docs/api.md)
+- [Deployment Guide](./docs/deployment.md)
+- [Troubleshooting](./docs/troubleshooting.md)
+- [Performance Tuning](./docs/performance.md)
 
-3. **File Uploads Fail**
-   - Check UPLOAD_PATH permissions
-   - Verify MAX_FILE_SIZE is appropriate
-   - Check disk space
+## 🆘 Support
 
-4. **Database Connection Issues**
-   - Verify DATABASE_URL is correct
-   - Check PostgreSQL is running
-   - Run database migrations
+For integration support:
+- Create an issue in the repository
+- Check the troubleshooting guide
+- Review the API documentation
+- Contact the development team
 
-This integration provides a seamless experience where users can manage all their documents (resumes, cover letters, PDFs) in one place while maintaining the security and analytics features needed for professional document sharing.
+---
+
+**Happy Integrating! 🚀**

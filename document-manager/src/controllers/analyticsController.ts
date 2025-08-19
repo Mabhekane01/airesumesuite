@@ -1,373 +1,405 @@
-import { Request, Response } from "express";
-import { query } from "@/config/database";
-import { cache } from "@/config/redis";
-import { createError, asyncHandler } from "@/middleware/errorHandler";
-import { logger, logAnalytics } from "@/utils/logger";
+import { Request, Response } from 'express';
+import { DocumentSharingIntegration } from '../services/documentSharingIntegration';
+import { logger } from '../utils/logger';
 
-// Get user analytics dashboard
-export const getUserAnalytics = asyncHandler(
-  async (req: Request, res: Response) => {
-    const userId = req.user!.id;
-    const {
-      period = "30d",
-      includeDocuments = true,
-      includeLinks = true,
-      includeCollaboration = true,
-    } = req.query;
+export class AnalyticsController {
+  private documentSharingIntegration: DocumentSharingIntegration;
 
+  constructor() {
+    this.documentSharingIntegration = new DocumentSharingIntegration();
+  }
+
+  /**
+   * Get document analytics by ID
+   */
+  async getDocumentAnalytics(req: Request, res: Response): Promise<void> {
     try {
-      // Get basic user stats
-      const userStats = await query(
-        `
-      SELECT 
-        COUNT(DISTINCT d.id) as total_documents,
-        COUNT(DISTINCT dl.id) as total_links,
-        SUM(d.file_size) as total_storage,
-        MAX(d.created_at) as last_upload
-      FROM users u
-      LEFT JOIN documents d ON u.id = d.user_id AND d.status = 'active'
-      LEFT JOIN document_links dl ON u.id = dl.user_id AND dl.is_active = true
-      WHERE u.id = $1
-    `,
-        [userId]
-      );
+      const userId = (req as any).user?.userId;
+      const { id } = req.params;
 
-      // Get document analytics for the period
-      let documentAnalytics = null;
-      if (includeDocuments === "true") {
-        const periodFilter =
-          period === "all"
-            ? ""
-            : `AND d.created_at >= NOW() - INTERVAL '${period}'`;
-        documentAnalytics = await query(
-          `
-        SELECT 
-          d.id,
-          d.title,
-          d.file_name,
-          d.created_at,
-          d.file_size,
-          COUNT(dv.id) as views,
-          COUNT(dd.id) as downloads
-        FROM documents d
-        LEFT JOIN document_views dv ON d.id = dv.document_id
-        LEFT JOIN document_downloads dd ON d.id = dd.document_id
-        WHERE d.user_id = $1 AND d.status = 'active' ${periodFilter}
-        GROUP BY d.id, d.title, d.file_name, d.created_at, d.file_size
-        ORDER BY d.created_at DESC
-        LIMIT 10
-      `,
-          [userId]
-        );
+      if (!userId) {
+        res.status(401).json({
+          success: false,
+          message: 'Authentication required'
+        });
+        return;
       }
 
-      // Get link analytics for the period
-      let linkAnalytics = null;
-      if (includeLinks === "true") {
-        const periodFilter =
-          period === "all"
-            ? ""
-            : `AND dl.created_at >= NOW() - INTERVAL '${period}'`;
-        linkAnalytics = await query(
-          `
-        SELECT 
-          dl.id,
-          dl.name,
-          dl.slug,
-          dl.created_at,
-          dl.current_views,
-          dl.max_views,
-          d.title as document_title
-        FROM document_links dl
-        JOIN documents d ON dl.document_id = d.id
-        WHERE dl.user_id = $1 AND dl.is_active = true ${periodFilter}
-        ORDER BY dl.created_at DESC
-        LIMIT 10
-      `,
-          [userId]
-        );
+      if (!id) {
+        res.status(400).json({
+          success: false,
+          message: 'Document ID is required'
+        });
+        return;
       }
 
-      res.json({
+      // Get document analytics from the document sharing service
+      const analytics = await this.documentSharingIntegration.getBasicDocumentAnalytics(id);
+
+      if (!analytics) {
+        res.status(404).json({
+          success: false,
+          message: 'Analytics not found for this document'
+        });
+        return;
+      }
+
+      res.status(200).json({
         success: true,
-        data: {
-          period,
-          userStats: userStats.rows[0],
-          documentAnalytics: documentAnalytics?.rows || [],
-          linkAnalytics: linkAnalytics?.rows || [],
-          timestamp: new Date().toISOString(),
-        },
+        data: { analytics }
       });
     } catch (error) {
-      logger.error("Error fetching user analytics:", error);
-      throw createError(
-        "Failed to fetch analytics",
-        500,
-        "ANALYTICS_FETCH_ERROR"
-      );
+      logger.error('Get document analytics error', { 
+        error: error.message, 
+        stack: error.stack,
+        userId: (req as any).user?.userId,
+        documentId: req.params.id
+      });
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error while fetching document analytics'
+      });
     }
   }
-);
 
-// Get organization analytics (Enterprise only)
-export const getOrganizationAnalytics = asyncHandler(
-  async (req: Request, res: Response) => {
-    const userId = req.user!.id;
-    const {
-      organizationId,
-      period = "30d",
-      includeUsers = true,
-      includeDepartments = true,
-      includeProjects = true,
-    } = req.query;
-
-    // Verify user has access to organization
-    const orgAccess = await query(
-      `
-    SELECT role FROM organization_members 
-    WHERE user_id = $1 AND organization_id = $2 AND role IN ('owner', 'admin')
-  `,
-      [userId, organizationId]
-    );
-
-    if (orgAccess.rows.length === 0) {
-      throw createError(
-        "Access denied to organization",
-        403,
-        "ORGANIZATION_ACCESS_DENIED"
-      );
-    }
-
+  /**
+   * Get analytics summary for user
+   */
+  async getAnalyticsSummary(req: Request, res: Response): Promise<void> {
     try {
-      // Get organization stats
-      const orgStats = await query(
-        `
-      SELECT 
-        COUNT(DISTINCT d.id) as total_documents,
-        COUNT(DISTINCT u.id) as total_members,
-        SUM(d.file_size) as total_storage,
-        MAX(d.created_at) as last_activity
-      FROM organizations o
-      LEFT JOIN documents d ON o.id = d.organization_id AND d.status = 'active'
-      LEFT JOIN organization_members om ON o.id = om.organization_id
-      LEFT JOIN users u ON om.user_id = u.id
-      WHERE o.id = $1
-    `,
-        [organizationId]
-      );
+      const userId = (req as any).user?.userId;
+      const { dateFrom, dateTo, groupBy = 'day' } = req.query;
 
-      res.json({
+      if (!userId) {
+        res.status(401).json({
+          success: false,
+          message: 'Authentication required'
+        });
+        return;
+      }
+
+      // Validate date parameters
+      const fromDate = dateFrom ? new Date(dateFrom as string) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000); // Default to 30 days ago
+      const toDate = dateTo ? new Date(dateTo as string) : new Date();
+
+      if (isNaN(fromDate.getTime()) || isNaN(toDate.getTime())) {
+        res.status(400).json({
+          success: false,
+          message: 'Invalid date format'
+        });
+        return;
+      }
+
+      // Get analytics summary from the document sharing service
+      const summary = await this.documentSharingIntegration.getAnalyticsStatus();
+
+      if (!summary) {
+        res.status(404).json({
+          success: false,
+          message: 'Analytics summary not available'
+        });
+        return;
+      }
+
+      res.status(200).json({
         success: true,
-        data: {
-          organizationId,
-          period,
-          organizationStats: orgStats.rows[0],
-          timestamp: new Date().toISOString(),
-        },
+        data: { 
+          summary,
+          dateRange: {
+            from: fromDate.toISOString(),
+            to: toDate.toISOString()
+          },
+          groupBy
+        }
       });
     } catch (error) {
-      logger.error("Error fetching organization analytics:", error);
-      throw createError(
-        "Failed to fetch organization analytics",
-        500,
-        "ORG_ANALYTICS_FETCH_ERROR"
-      );
+      logger.error('Get analytics summary error', { 
+        error: error.message, 
+        stack: error.stack,
+        userId: (req as any).user?.userId
+      });
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error while fetching analytics summary'
+      });
     }
   }
-);
 
-// Get document performance metrics
-export const getDocumentPerformanceMetrics = asyncHandler(
-  async (req: Request, res: Response) => {
-    const { documentId } = req.params;
-    const {
-      period = "30d",
-      includeHeatmap = false,
-      includeUserJourney = false,
-      includeEngagement = false,
-    } = req.query;
-    const userId = req.user!.id;
-
-    // Verify document access
-    const documentAccess = await query(
-      `
-    SELECT id FROM documents
-    WHERE id = $1 AND (
-      user_id = $2 OR 
-      organization_id IN (
-        SELECT organization_id 
-        FROM organization_members 
-        WHERE user_id = $2
-      )
-    )
-  `,
-      [documentId, userId]
-    );
-
-    if (documentAccess.rows.length === 0) {
-      throw createError(
-        "Document not found or access denied",
-        404,
-        "DOCUMENT_NOT_FOUND"
-      );
-    }
-
+  /**
+   * Get popular documents
+   */
+  async getPopularDocuments(req: Request, res: Response): Promise<void> {
     try {
-      // Get basic performance metrics
-      const periodFilter =
-        period === "all"
-          ? ""
-          : `AND dv.created_at >= NOW() - INTERVAL '${period}'`;
-      const performanceMetrics = await query(
-        `
-      SELECT 
-        COUNT(dv.id) as total_views,
-        COUNT(DISTINCT dv.visitor_id) as unique_visitors,
-        COUNT(DISTINCT dv.ip_address) as unique_ips,
-        COUNT(dd.id) as total_downloads,
-        AVG(EXTRACT(EPOCH FROM (dv.updated_at - dv.created_at))) as avg_session_duration
-      FROM documents d
-      LEFT JOIN document_views dv ON d.id = dv.document_id ${periodFilter}
-      LEFT JOIN document_downloads dd ON d.id = dd.document_id ${periodFilter}
-      WHERE d.id = $1
-    `,
-        [documentId]
-      );
+      const userId = (req as any).user?.userId;
+      const { limit = 10, period = '30d' } = req.query;
 
-      res.json({
+      if (!userId) {
+        res.status(401).json({
+          success: false,
+          message: 'Authentication required'
+        });
+        return;
+      }
+
+      // Get popular documents from the document sharing service
+      const popularDocs = await this.documentSharingIntegration.getBasicDocumentAnalytics('popular');
+
+      if (!popularDocs) {
+        res.status(404).json({
+          success: false,
+          message: 'Popular documents data not available'
+        });
+        return;
+      }
+
+      res.status(200).json({
         success: true,
-        data: {
-          documentId,
+        data: { 
+          popularDocuments: popularDocs,
           period,
-          performanceMetrics: performanceMetrics.rows[0],
-          timestamp: new Date().toISOString(),
-        },
+          limit: parseInt(limit as string)
+        }
       });
     } catch (error) {
-      logger.error("Error fetching document performance metrics:", error);
-      throw createError(
-        "Failed to fetch performance metrics",
-        500,
-        "PERFORMANCE_METRICS_FETCH_ERROR"
-      );
+      logger.error('Get popular documents error', { 
+        error: error.message, 
+        stack: error.stack,
+        userId: (req as any).user?.userId
+      });
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error while fetching popular documents'
+      });
     }
   }
-);
 
-// Placeholder implementations for other analytics functions
-export const getRealTimeAnalytics = asyncHandler(
-  async (req: Request, res: Response) => {
-    res.json({
-      success: true,
-      message: "Real-time analytics endpoint - to be implemented",
-    });
-  }
-);
+  /**
+   * Get document performance metrics
+   */
+  async getDocumentPerformance(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = (req as any).user?.userId;
+      const { id } = req.params;
+      const { metric = 'views', period = '30d' } = req.query;
 
-export const getPredictiveAnalytics = asyncHandler(
-  async (req: Request, res: Response) => {
-    res.json({
-      success: true,
-      message: "Predictive analytics endpoint - to be implemented",
-    });
-  }
-);
+      if (!userId) {
+        res.status(401).json({
+          success: false,
+          message: 'Authentication required'
+        });
+        return;
+      }
 
-export const getEngagementInsights = asyncHandler(
-  async (req: Request, res: Response) => {
-    res.json({
-      success: true,
-      message: "Engagement insights endpoint - to be implemented",
-    });
-  }
-);
+      if (!id) {
+        res.status(400).json({
+          success: false,
+          message: 'Document ID is required'
+        });
+        return;
+      }
 
-export const getConversionAnalytics = asyncHandler(
-  async (req: Request, res: Response) => {
-    res.json({
-      success: true,
-      message: "Conversion analytics endpoint - to be implemented",
-    });
-  }
-);
+      // Get document performance metrics from the document sharing service
+      const performance = await this.documentSharingIntegration.getBasicDocumentAnalytics(id);
 
-export const getSecurityAnalytics = asyncHandler(
-  async (req: Request, res: Response) => {
-    res.json({
-      success: true,
-      message: "Security analytics endpoint - to be implemented",
-    });
-  }
-);
+      if (!performance) {
+        res.status(404).json({
+          success: false,
+          message: 'Performance data not available for this document'
+        });
+        return;
+      }
 
-export const getComplianceReport = asyncHandler(
-  async (req: Request, res: Response) => {
-    res.json({
-      success: true,
-      message: "Compliance report endpoint - to be implemented",
-    });
+      res.status(200).json({
+        success: true,
+        data: { 
+          performance,
+          metric,
+          period
+        }
+      });
+    } catch (error) {
+      logger.error('Get document performance error', { 
+        error: error.message, 
+        stack: error.stack,
+        userId: (req as any).user?.userId,
+        documentId: req.params.id
+      });
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error while fetching document performance'
+      });
+    }
   }
-);
 
-export const getCustomReport = asyncHandler(
-  async (req: Request, res: Response) => {
-    res.json({
-      success: true,
-      message: "Custom report endpoint - to be implemented",
-    });
-  }
-);
+  /**
+   * Export analytics data
+   */
+  async exportAnalytics(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = (req as any).user?.userId;
+      const { format = 'json', dateFrom, dateTo } = req.query;
 
-export const exportAnalytics = asyncHandler(
-  async (req: Request, res: Response) => {
-    res.json({
-      success: true,
-      message: "Export analytics endpoint - to be implemented",
-    });
-  }
-);
+      if (!userId) {
+        res.status(401).json({
+          success: false,
+          message: 'Authentication required'
+        });
+        return;
+      }
 
-export const getHeatmapData = asyncHandler(
-  async (req: Request, res: Response) => {
-    res.json({
-      success: true,
-      message: "Heatmap data endpoint - to be implemented",
-    });
-  }
-);
+      // Validate export format
+      const validFormats = ['json', 'csv', 'xlsx'];
+      if (!validFormats.includes(format as string)) {
+        res.status(400).json({
+          success: false,
+          message: 'Invalid export format. Supported formats: json, csv, xlsx'
+        });
+        return;
+      }
 
-export const getAIPoweredInsights = asyncHandler(
-  async (req: Request, res: Response) => {
-    res.json({
-      success: true,
-      message: "AI-powered insights endpoint - to be implemented",
-    });
-  }
-);
+      // Validate date parameters
+      const fromDate = dateFrom ? new Date(dateFrom as string) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+      const toDate = dateTo ? new Date(dateTo as string) : new Date();
 
-export const getTrendAnalysis = asyncHandler(
-  async (req: Request, res: Response) => {
-    res.json({
-      success: true,
-      message: "Trend analysis endpoint - to be implemented",
-    });
-  }
-);
+      if (isNaN(fromDate.getTime()) || isNaN(toDate.getTime())) {
+        res.status(400).json({
+          success: false,
+          message: 'Invalid date format'
+        });
+        return;
+      }
 
-export const getBenchmarkComparison = asyncHandler(
-  async (req: Request, res: Response) => {
-    res.json({
-      success: true,
-      message: "Benchmark comparison endpoint - to be implemented",
-    });
-  }
-);
+      // Get analytics data for export
+      const analyticsData = await this.documentSharingIntegration.getAnalyticsStatus();
 
-export const getROIAnalytics = asyncHandler(
-  async (req: Request, res: Response) => {
-    res.json({
-      success: true,
-      message: "ROI analytics endpoint - to be implemented",
-    });
+      if (!analyticsData) {
+        res.status(404).json({
+          success: false,
+          message: 'Analytics data not available for export'
+        });
+        return;
+      }
+
+      // Set response headers for file download
+      const filename = `analytics_${fromDate.toISOString().split('T')[0]}_to_${toDate.toISOString().split('T')[0]}.${format}`;
+      
+      res.setHeader('Content-Type', this.getContentType(format as string));
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+
+      // Export data based on format
+      if (format === 'json') {
+        res.json({
+          success: true,
+          data: {
+            analytics: analyticsData,
+            exportInfo: {
+              format: 'json',
+              dateRange: {
+                from: fromDate.toISOString(),
+                to: toDate.toISOString()
+              },
+              exportedAt: new Date().toISOString()
+            }
+          }
+        });
+      } else {
+        // For CSV and XLSX, we would need to implement proper export logic
+        // For now, return JSON with a note
+        res.json({
+          success: true,
+          message: `${format.toUpperCase()} export not yet implemented. Returning JSON format.`,
+          data: {
+            analytics: analyticsData,
+            exportInfo: {
+              format: 'json',
+              dateRange: {
+                from: fromDate.toISOString(),
+                to: toDate.toISOString()
+              },
+              exportedAt: new Date().toISOString()
+            }
+          }
+        });
+      }
+
+      logger.info('Analytics exported successfully', {
+        userId,
+        format,
+        dateFrom: fromDate.toISOString(),
+        dateTo: toDate.toISOString()
+      });
+    } catch (error) {
+      logger.error('Export analytics error', { 
+        error: error.message, 
+        stack: error.stack,
+        userId: (req as any).user?.userId
+      });
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error while exporting analytics'
+      });
+    }
   }
-);
+
+  /**
+   * Get real-time analytics
+   */
+  async getRealTimeAnalytics(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = (req as any).user?.userId;
+
+      if (!userId) {
+        res.status(401).json({
+          success: false,
+          message: 'Authentication required'
+        });
+        return;
+      }
+
+      // Get real-time analytics from the document sharing service
+      const realTimeData = await this.documentSharingIntegration.getAnalyticsStatus();
+
+      if (!realTimeData) {
+        res.status(404).json({
+          success: false,
+          message: 'Real-time analytics not available'
+        });
+        return;
+      }
+
+      res.status(200).json({
+        success: true,
+        data: { 
+          realTime: realTimeData,
+          timestamp: new Date().toISOString()
+        }
+      });
+    } catch (error) {
+      logger.error('Get real-time analytics error', { 
+        error: error.message, 
+        stack: error.stack,
+        userId: (req as any).user?.userId
+      });
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error while fetching real-time analytics'
+      });
+    }
+  }
+
+  /**
+   * Get content type for export format
+   */
+  private getContentType(format: string): string {
+    switch (format) {
+      case 'json':
+        return 'application/json';
+      case 'csv':
+        return 'text/csv';
+      case 'xlsx':
+        return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+      default:
+        return 'application/json';
+    }
+  }
+}

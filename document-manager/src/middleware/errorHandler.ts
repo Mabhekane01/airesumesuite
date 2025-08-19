@@ -1,198 +1,181 @@
 import { Request, Response, NextFunction } from 'express';
-import { logger } from '@/utils/logger';
-import { config } from '@/config/environment';
+import { logger } from '../utils/logger';
 
-export interface ApiError extends Error {
+export interface AppError extends Error {
   statusCode?: number;
-  code?: string;
-  details?: any;
   isOperational?: boolean;
+  code?: string;
 }
 
-// Create a standardized error
-export const createError = (
-  message: string,
-  statusCode: number = 500,
-  code?: string,
-  details?: any
-): ApiError => {
-  const error = new Error(message) as ApiError;
-  error.statusCode = statusCode;
-  error.code = code;
-  error.details = details;
-  error.isOperational = true;
-  return error;
-};
+/**
+ * Custom error class for operational errors
+ */
+export class OperationalError extends Error implements AppError {
+  public statusCode: number;
+  public isOperational: boolean;
+  public code?: string;
 
-// Error handler middleware
+  constructor(message: string, statusCode: number = 500, code?: string) {
+    super(message);
+    this.statusCode = statusCode;
+    this.isOperational = true;
+    this.code = code;
+    
+    Error.captureStackTrace(this, this.constructor);
+  }
+}
+
+/**
+ * Main error handling middleware
+ */
 export const errorHandler = (
-  error: ApiError,
+  error: AppError,
   req: Request,
   res: Response,
   next: NextFunction
 ): void => {
-  // Log error
-  logger.error('API Error:', {
-    message: error.message,
-    statusCode: error.statusCode,
-    code: error.code,
+  // Default error values
+  const statusCode = error.statusCode || 500;
+  const message = error.message || 'Internal server error';
+  const code = error.code || 'INTERNAL_ERROR';
+
+  // Log error details
+  logger.error('Application error', {
+    error: error.message,
     stack: error.stack,
+    statusCode,
+    code,
     path: req.path,
     method: req.method,
     ip: req.ip,
-    userAgent: req.get('User-Agent'),
-    userId: req.user?.id,
-    details: error.details
+    userAgent: req.get('User-Agent')
   });
-  
-  // Determine status code
-  const statusCode = error.statusCode || 500;
-  
-  // Determine error message
-  let message = error.message;
-  
-  // Don't expose internal errors in production
-  if (statusCode === 500 && config.NODE_ENV === 'production') {
-    message = 'Internal server error';
-  }
-  
-  // Create error response
-  const errorResponse: any = {
+
+  // Don't leak error details in production
+  const isProduction = process.env.NODE_ENV === 'production';
+  const errorResponse = {
     success: false,
-    message,
-    code: error.code || 'INTERNAL_ERROR',
-    timestamp: new Date().toISOString(),
+    message: isProduction && statusCode === 500 ? 'Internal server error' : message,
+    ...(isProduction ? {} : { code, stack: error.stack })
   };
-  
-  // Add request ID if available
-  if (req.headers['x-request-id']) {
-    errorResponse.requestId = req.headers['x-request-id'];
+
+  // Handle specific error types
+  if (error.name === 'ValidationError') {
+    res.status(400).json({
+      success: false,
+      message: 'Validation error',
+      code: 'VALIDATION_ERROR',
+      details: error.message
+    });
+    return;
   }
-  
-  // Add error details in development
-  if (config.NODE_ENV === 'development') {
-    errorResponse.details = error.details;
-    errorResponse.stack = error.stack;
+
+  if (error.name === 'CastError') {
+    res.status(400).json({
+      success: false,
+      message: 'Invalid ID format',
+      code: 'INVALID_ID'
+    });
+    return;
   }
-  
+
+  if (error.name === 'MongoError' || error.name === 'MongoServerError') {
+    if ((error as any).code === 11000) {
+      res.status(409).json({
+        success: false,
+        message: 'Duplicate key error',
+        code: 'DUPLICATE_KEY'
+      });
+      return;
+    }
+  }
+
+  if (error.name === 'JsonWebTokenError') {
+    res.status(401).json({
+      success: false,
+      message: 'Invalid token',
+      code: 'INVALID_TOKEN'
+    });
+    return;
+  }
+
+  if (error.name === 'TokenExpiredError') {
+    res.status(401).json({
+      success: false,
+      message: 'Token expired',
+      code: 'TOKEN_EXPIRED'
+    });
+    return;
+  }
+
+  // Send error response
   res.status(statusCode).json(errorResponse);
 };
 
-// Async error wrapper
+/**
+ * Async error wrapper for route handlers
+ */
 export const asyncHandler = (fn: Function) => {
   return (req: Request, res: Response, next: NextFunction) => {
     Promise.resolve(fn(req, res, next)).catch(next);
   };
 };
 
-// Validation error handler
-export const validationErrorHandler = (errors: any[]): ApiError => {
-  const message = errors.map(error => error.msg).join(', ');
-  return createError(
-    `Validation failed: ${message}`,
-    400,
-    'VALIDATION_ERROR',
-    errors
-  );
-};
-
-// Database error handler
-export const databaseErrorHandler = (error: any): ApiError => {
-  logger.error('Database error:', error);
-  
-  // PostgreSQL error codes
-  switch (error.code) {
-    case '23505': // Unique violation
-      return createError(
-        'Resource already exists',
-        409,
-        'DUPLICATE_RESOURCE',
-        { constraint: error.constraint }
-      );
-    case '23503': // Foreign key violation
-      return createError(
-        'Referenced resource not found',
-        400,
-        'INVALID_REFERENCE',
-        { constraint: error.constraint }
-      );
-    case '23502': // Not null violation
-      return createError(
-        'Required field missing',
-        400,
-        'MISSING_REQUIRED_FIELD',
-        { column: error.column }
-      );
-    case '42P01': // Undefined table
-      return createError(
-        'Database table not found',
-        500,
-        'DATABASE_ERROR'
-      );
-    default:
-      return createError(
-        'Database operation failed',
-        500,
-        'DATABASE_ERROR'
-      );
-  }
-};
-
-// File upload error handler
-export const fileUploadErrorHandler = (error: any): ApiError => {
-  if (error.code === 'LIMIT_FILE_SIZE') {
-    return createError(
-      'File size too large',
-      413,
-      'FILE_TOO_LARGE',
-      { maxSize: error.limit }
-    );
-  }
-  
-  if (error.code === 'LIMIT_FILE_COUNT') {
-    return createError(
-      'Too many files',
-      413,
-      'TOO_MANY_FILES',
-      { maxCount: error.limit }
-    );
-  }
-  
-  if (error.code === 'LIMIT_UNEXPECTED_FILE') {
-    return createError(
-      'Unexpected file field',
-      400,
-      'UNEXPECTED_FILE_FIELD',
-      { fieldName: error.field }
-    );
-  }
-  
-  return createError(
-    'File upload failed',
-    400,
-    'FILE_UPLOAD_ERROR',
-    { originalError: error.message }
-  );
-};
-
-// Not found handler
+/**
+ * Not found middleware for undefined routes
+ */
 export const notFoundHandler = (req: Request, res: Response): void => {
   res.status(404).json({
     success: false,
-    message: 'Endpoint not found',
-    code: 'NOT_FOUND',
-    path: req.originalUrl,
-    method: req.method,
-    timestamp: new Date().toISOString()
+    message: 'Route not found',
+    code: 'ROUTE_NOT_FOUND',
+    path: req.originalUrl
   });
 };
 
-export default {
-  createError,
-  errorHandler,
-  asyncHandler,
-  validationErrorHandler,
-  databaseErrorHandler,
-  fileUploadErrorHandler,
-  notFoundHandler,
+/**
+ * Validation error handler
+ */
+export const validationErrorHandler = (errors: any[]) => {
+  const error = new OperationalError(
+    'Validation failed',
+    400,
+    'VALIDATION_ERROR'
+  );
+  
+  // Add validation details to error
+  (error as any).validationErrors = errors;
+  
+  throw error;
+};
+
+/**
+ * Database connection error handler
+ */
+export const handleDatabaseError = (error: any): void => {
+  logger.error('Database connection error', {
+    error: error.message,
+    stack: error.stack
+  });
+
+  // In production, you might want to restart the service or alert administrators
+  if (process.env.NODE_ENV === 'production') {
+    process.exit(1);
+  }
+};
+
+/**
+ * Graceful shutdown handler
+ */
+export const gracefulShutdown = (signal: string): void => {
+  logger.info(`Received ${signal}. Starting graceful shutdown...`);
+  
+  // Close database connections
+  // Close Redis connections
+  // Stop accepting new requests
+  
+  setTimeout(() => {
+    logger.info('Graceful shutdown completed');
+    process.exit(0);
+  }, 10000); // 10 second timeout
 };

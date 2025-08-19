@@ -13,28 +13,23 @@
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-    "removeComments": true,
+    "removeComments": false,
     "noImplicitAny": true,
-    "strictNullChecks": true,
-    "strictFunctionTypes": true,
     "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true,
-    "noUncheckedIndexedAccess": true,
+    "noImplicitThis": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "exactOptionalPropertyTypes": true,
     "noImplicitOverride": true,
-    "allowSyntheticDefaultImports": true,
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noUncheckedIndexedAccess": true,
+    "allowUnusedLabels": false,
+    "allowUnreachableCode": false,
     "baseUrl": "./src",
     "paths": {
-      "@/*": ["*"],
-      "@/config/*": ["config/*"],
-      "@/controllers/*": ["controllers/*"],
-      "@/middleware/*": ["middleware/*"],
-      "@/models/*": ["models/*"],
-      "@/services/*": ["services/*"],
-      "@/utils/*": ["utils/*"],
-      "@/types/*": ["types/*"]
-    }
+      "@/*": ["*"]
+    },
+    "types": ["node", "jest"]
   },
   "include": [
     "src/**/*"
@@ -44,5 +39,9 @@
     "dist",
     "**/*.test.ts",
     "**/*.spec.ts"
-  ]
+  ],
+  "ts-node": {
+    "esm": false,
+    "experimentalSpecifierResolution": "node"
+  }
 }

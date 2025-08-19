@@ -1,487 +1,637 @@
 import { Request, Response } from 'express';
-import { query, withTransaction } from '@/config/database';
-import { cache } from '@/config/redis';
-import { DocumentProcessingService, UploadedFile } from '@/services/documentUploadService';
-import { createError, asyncHandler } from '@/middleware/errorHandler';
-import { logger, logAnalytics } from '@/utils/logger';
-import { v4 as uuidv4 } from 'uuid';
+import { DocumentService } from '../services/documentService';
+import { logger } from '../utils/logger';
 
-// Document creation
-export const createDocument = asyncHandler(async (req: Request, res: Response) => {
-  const { title, description, folderId, organizationId, source = 'upload', sourceMetadata = {} } = req.body;
-  const userId = req.user!.id;
-  
-  if (!req.file) {
-    throw createError('No file uploaded', 400, 'NO_FILE');
+export class DocumentController {
+  private documentService: DocumentService;
+
+  constructor() {
+    this.documentService = new DocumentService();
   }
-  
-  // Validate file
-  DocumentProcessingService.validateFile(req.file);
-  
-  // Process the uploaded file
-  const processedFile: UploadedFile = await DocumentProcessingService.processFile(req.file, userId);
-  
-  // Create document in database
-  const documentId = uuidv4();
-  
-  await withTransaction(async (client) => {
-    const documentResult = await client.query(`
-      INSERT INTO documents (
-        id, user_id, organization_id, folder_id, title, description,
-        file_name, file_size, file_type, mime_type, file_url, file_path,
-        page_count, thumbnail_url, preview_images, text_content,
-        source, source_metadata, processing_status
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
-      RETURNING *
-    `, [
-      documentId,
-      userId,
-      organizationId || null,
-      folderId || null,
-      title || processedFile.originalName,
-      description || null,
-      processedFile.originalName,
-      processedFile.fileSize,
-      processedFile.fileType,
-      processedFile.mimeType,
-      processedFile.url,
-      processedFile.filePath,
-      processedFile.pageCount || null,
-      processedFile.thumbnailUrl || null,
-      processedFile.previewImages || [],
-      processedFile.textContent || null,
-      source,
-      JSON.stringify(sourceMetadata),
-      'completed'
-    ]);
-    
-    // Log activity
-    await client.query(`
-      INSERT INTO activity_logs (user_id, organization_id, action, resource_type, resource_id, details, ip_address, user_agent)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-    `, [
-      userId,
-      organizationId || null,
-      'upload',
-      'document',
-      documentId,
-      JSON.stringify({
-        fileName: processedFile.originalName,
-        fileSize: processedFile.fileSize,
-        fileType: processedFile.fileType
-      }),
-      req.ip,
-      req.get('User-Agent')
-    ]);
-    
-    return documentResult.rows[0];
-  });
-  
-  // Clear cache
-  await cache.del(`documents:user:${userId}`);
-  if (organizationId) {
-    await cache.del(`documents:org:${organizationId}`);
-  }
-  
-  // Log analytics
-  logAnalytics('document_created', {
-    documentId,
-    userId,
-    organizationId,
-    fileType: processedFile.fileType,
-    fileSize: processedFile.fileSize,
-    source
-  });
-  
-  res.status(201).json({
-    success: true,
-    message: 'Document uploaded successfully',
-    data: {
-      id: documentId,
-      title: title || processedFile.originalName,
-      fileName: processedFile.originalName,
-      fileSize: processedFile.fileSize,
-      fileType: processedFile.fileType,
-      url: processedFile.url,
-      thumbnailUrl: processedFile.thumbnailUrl,
-      pageCount: processedFile.pageCount,
-      processing: processedFile.metadata
+
+  /**
+   * Upload a new document
+   */
+  async uploadDocument(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = (req as any).user?.userId;
+      const { folderId, title, description, tags } = req.body;
+      const file = req.file;
+
+      if (!userId) {
+        res.status(401).json({
+          success: false,
+          message: 'Authentication required'
+        });
+        return;
+      }
+
+      if (!file) {
+        res.status(400).json({
+          success: false,
+          message: 'No file uploaded'
+        });
+        return;
+      }
+
+      if (!title) {
+        res.status(400).json({
+          success: false,
+          message: 'Document title is required'
+        });
+        return;
+      }
+
+      const documentData = {
+        userId,
+        folderId: folderId || null,
+        title,
+        description: description || null,
+        tags: tags ? tags.split(',').map((tag: string) => tag.trim()) : [],
+        originalFilename: file.originalname,
+        filePath: file.path,
+        fileSize: file.size,
+        mimeType: file.mimetype
+      };
+
+      const document = await this.documentService.createDocument(documentData);
+
+      logger.info('Document uploaded successfully', {
+        userId,
+        documentId: document.id,
+        filename: file.originalname,
+        fileSize: file.size
+      });
+
+      res.status(201).json({
+        success: true,
+        message: 'Document uploaded successfully',
+        data: {
+          document: {
+            id: document.id,
+            title: document.title,
+            description: document.description,
+            tags: document.tags,
+            originalFilename: document.originalFilename,
+            fileSize: document.fileSize,
+            mimeType: document.mimeType,
+            folderId: document.folderId,
+            createdAt: document.createdAt
+          }
+        }
+      });
+    } catch (error) {
+      logger.error('Document upload error', { 
+        error: error.message, 
+        stack: error.stack,
+        userId: (req as any).user?.userId 
+      });
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error during document upload'
+      });
     }
-  });
-});
+  }
 
-// Get user documents
-export const getDocuments = asyncHandler(async (req: Request, res: Response) => {
-  const userId = req.user!.id;
-  const { folderId, organizationId, search, page = 1, limit = 20, sortBy = 'created_at', sortOrder = 'DESC' } = req.query;
-  
-  const offset = (Number(page) - 1) * Number(limit);
-  
-  // Build query
-  let whereClause = 'WHERE d.status = $1 AND (d.user_id = $2';
-  const params: any[] = ['active', userId];
-  
-  if (organizationId) {
-    whereClause += ' OR d.organization_id = $3)';
-    params.push(organizationId);
-  } else {
-    whereClause += ')';
+  /**
+   * Get document by ID
+   */
+  async getDocument(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = (req as any).user?.userId;
+      const { id } = req.params;
+
+      if (!userId) {
+        res.status(401).json({
+          success: false,
+          message: 'Authentication required'
+        });
+        return;
+      }
+
+      if (!id) {
+        res.status(400).json({
+          success: false,
+          message: 'Document ID is required'
+        });
+        return;
+      }
+
+      const document = await this.documentService.getDocument(id, userId);
+
+      if (!document) {
+        res.status(404).json({
+          success: false,
+          message: 'Document not found'
+        });
+        return;
+      }
+
+      res.status(200).json({
+        success: true,
+        data: { document }
+      });
+    } catch (error) {
+      logger.error('Get document error', { 
+        error: error.message, 
+        stack: error.stack,
+        userId: (req as any).user?.userId,
+        documentId: req.params.id
+      });
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error while fetching document'
+      });
+    }
   }
-  
-  if (folderId) {
-    whereClause += ` AND d.folder_id = $${params.length + 1}`;
-    params.push(folderId);
+
+  /**
+   * Search documents
+   */
+  async searchDocuments(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = (req as any).user?.userId;
+      const {
+        query,
+        folderId,
+        tags,
+        mimeType,
+        dateFrom,
+        dateTo,
+        sortBy = 'createdAt',
+        sortOrder = 'desc',
+        page = 1,
+        limit = 20
+      } = req.query;
+
+      if (!userId) {
+        res.status(401).json({
+          success: false,
+          message: 'Authentication required'
+        });
+        return;
+      }
+
+      const filters = {
+        query: query as string,
+        folderId: folderId as string,
+        tags: tags ? (tags as string).split(',').map(tag => tag.trim()) : undefined,
+        mimeType: mimeType as string,
+        dateFrom: dateFrom ? new Date(dateFrom as string) : undefined,
+        dateTo: dateTo ? new Date(dateTo as string) : undefined
+      };
+
+      const sort = {
+        field: sortBy as string,
+        order: sortOrder as 'asc' | 'desc'
+      };
+
+      const pagination = {
+        page: parseInt(page as string),
+        limit: parseInt(limit as string)
+      };
+
+      const result = await this.documentService.searchDocuments(
+        userId,
+        filters,
+        sort,
+        pagination
+      );
+
+      res.status(200).json({
+        success: true,
+        data: {
+          documents: result.documents,
+          pagination: {
+            page: result.pagination.page,
+            limit: result.pagination.limit,
+            total: result.pagination.total,
+            totalPages: Math.ceil(result.pagination.total / result.pagination.limit)
+          }
+        }
+      });
+    } catch (error) {
+      logger.error('Search documents error', { 
+        error: error.message, 
+        stack: error.stack,
+        userId: (req as any).user?.userId 
+      });
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error while searching documents'
+      });
+    }
   }
-  
-  if (search) {
-    whereClause += ` AND (d.title ILIKE $${params.length + 1} OR d.text_content ILIKE $${params.length + 1})`;
-    params.push(`%${search}%`);
+
+  /**
+   * Update document
+   */
+  async updateDocument(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = (req as any).user?.userId;
+      const { id } = req.params;
+      const { title, description, tags, folderId } = req.body;
+
+      if (!userId) {
+        res.status(401).json({
+          success: false,
+          message: 'Authentication required'
+        });
+        return;
+      }
+
+      if (!id) {
+        res.status(400).json({
+          success: false,
+          message: 'Document ID is required'
+        });
+        return;
+      }
+
+      if (!title) {
+        res.status(400).json({
+          success: false,
+          message: 'Document title is required'
+        });
+        return;
+      }
+
+      const updateData = {
+        title,
+        description: description || null,
+        tags: tags ? tags.split(',').map((tag: string) => tag.trim()) : [],
+        folderId: folderId || null
+      };
+
+      const updatedDocument = await this.documentService.updateDocument(
+        id,
+        userId,
+        updateData
+      );
+
+      if (!updatedDocument) {
+        res.status(404).json({
+          success: false,
+          message: 'Document not found'
+        });
+        return;
+      }
+
+      logger.info('Document updated successfully', {
+        userId,
+        documentId: id
+      });
+
+      res.status(200).json({
+        success: true,
+        message: 'Document updated successfully',
+        data: {
+          document: {
+            id: updatedDocument.id,
+            title: updatedDocument.title,
+            description: updatedDocument.description,
+            tags: updatedDocument.tags,
+            folderId: updatedDocument.folderId,
+            updatedAt: updatedDocument.updatedAt
+          }
+        }
+      });
+    } catch (error) {
+      logger.error('Update document error', { 
+        error: error.message, 
+        stack: error.stack,
+        userId: (req as any).user?.userId,
+        documentId: req.params.id
+      });
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error while updating document'
+      });
+    }
   }
-  
-  // Valid sort columns
-  const validSortColumns = ['created_at', 'updated_at', 'title', 'file_size'];
-  const sortColumn = validSortColumns.includes(sortBy as string) ? sortBy : 'created_at';
-  const order = sortOrder === 'ASC' ? 'ASC' : 'DESC';
-  
-  // Get documents
-  const documentsResult = await query(`
-    SELECT 
-      d.id, d.title, d.description, d.file_name, d.file_size, d.file_type,
-      d.mime_type, d.file_url, d.thumbnail_url, d.page_count, d.source,
-      d.created_at, d.updated_at, d.folder_id,
-      f.name as folder_name,
-      CASE WHEN d.organization_id IS NOT NULL THEN o.name ELSE NULL END as organization_name
-    FROM documents d
-    LEFT JOIN folders f ON d.folder_id = f.id
-    LEFT JOIN organizations o ON d.organization_id = o.id
-    ${whereClause}
-    ORDER BY d.${sortColumn} ${order}
-    LIMIT $${params.length + 1} OFFSET $${params.length + 2}
-  `, [...params, Number(limit), offset]);
-  
-  // Get total count
-  const countResult = await query(`
-    SELECT COUNT(*) as total
-    FROM documents d
-    ${whereClause}
-  `, params);
-  
-  const total = parseInt(countResult.rows[0].total);
-  const totalPages = Math.ceil(total / Number(limit));
-  
-  res.json({
-    success: true,
-    data: {
-      documents: documentsResult.rows,
-      pagination: {
-        page: Number(page),
-        limit: Number(limit),
-        total,
-        totalPages,
-        hasNext: Number(page) < totalPages,
-        hasPrev: Number(page) > 1
+
+  /**
+   * Delete document
+   */
+  async deleteDocument(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = (req as any).user?.userId;
+      const { id } = req.params;
+
+      if (!userId) {
+        res.status(401).json({
+          success: false,
+          message: 'Authentication required'
+        });
+        return;
+      }
+
+      if (!id) {
+        res.status(400).json({
+          success: false,
+          message: 'Document ID is required'
+        });
+        return;
+      }
+
+      const deleted = await this.documentService.deleteDocument(id, userId);
+
+      if (!deleted) {
+        res.status(404).json({
+          success: false,
+          message: 'Document not found'
+        });
+        return;
+      }
+
+      logger.info('Document deleted successfully', {
+        userId,
+        documentId: id
+      });
+
+      res.status(200).json({
+        success: true,
+        message: 'Document deleted successfully'
+      });
+    } catch (error) {
+      logger.error('Delete document error', { 
+        error: error.message, 
+        stack: error.stack,
+        userId: (req as any).user?.userId,
+        documentId: req.params.id
+      });
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error while deleting document'
+      });
+    }
+  }
+
+  /**
+   * Move document to folder
+   */
+  async moveDocument(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = (req as any).user?.userId;
+      const { id } = req.params;
+      const { folderId } = req.body;
+
+      if (!userId) {
+        res.status(401).json({
+          success: false,
+          message: 'Authentication required'
+        });
+        return;
+      }
+
+      if (!id) {
+        res.status(400).json({
+          success: false,
+          message: 'Document ID is required'
+        });
+        return;
+      }
+
+      const moved = await this.documentService.moveDocumentToFolder(
+        id,
+        userId,
+        folderId || null
+      );
+
+      if (!moved) {
+        res.status(404).json({
+          success: false,
+          message: 'Document not found'
+        });
+        return;
+      }
+
+      logger.info('Document moved successfully', {
+        userId,
+        documentId: id,
+        folderId
+      });
+
+      res.status(200).json({
+        success: true,
+        message: 'Document moved successfully',
+        data: {
+          documentId: id,
+          folderId
+        }
+      });
+    } catch (error) {
+      logger.error('Move document error', { 
+        error: error.message, 
+        stack: error.stack,
+        userId: (req as any).user?.userId,
+        documentId: req.params.id
+      });
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error while moving document'
+      });
+    }
+  }
+
+  /**
+   * Get document statistics
+   */
+  async getDocumentStats(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = (req as any).user?.userId;
+
+      if (!userId) {
+        res.status(401).json({
+          success: false,
+          message: 'Authentication required'
+        });
+        return;
+      }
+
+      const stats = await this.documentService.getDocumentStats(userId);
+
+      res.status(200).json({
+        success: true,
+        data: { stats }
+      });
+    } catch (error) {
+      logger.error('Get document stats error', { 
+        error: error.message, 
+        stack: error.stack,
+        userId: (req as any).user?.userId
+      });
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error while fetching document statistics'
+      });
+    }
+  }
+
+  /**
+   * Create share link for document
+   */
+  async createShareLink(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = (req as any).user?.userId;
+      const { id } = req.params;
+      const { 
+        isPublic = false, 
+        password, 
+        expiresAt, 
+        allowDownload = true, 
+        allowPrint = false,
+        watermark = false 
+      } = req.body;
+
+      if (!userId) {
+        res.status(401).json({
+          success: false,
+          message: 'Authentication required'
+        });
+        return;
+      }
+
+      if (!id) {
+        res.status(400).json({
+          success: false,
+          message: 'Document ID is required'
+        });
+        return;
+      }
+
+      const shareData = {
+        isPublic,
+        password: password || null,
+        expiresAt: expiresAt ? new Date(expiresAt) : null,
+        allowDownload,
+        allowPrint,
+        watermark
+      };
+
+      const share = await this.documentService.createShareLink(id, userId, shareData);
+
+      if (!share) {
+        res.status(404).json({
+          success: false,
+          message: 'Document not found'
+        });
+        return;
+      }
+
+      logger.info('Share link created successfully', {
+        userId,
+        documentId: id,
+        shareId: share.id
+      });
+
+      res.status(201).json({
+        success: true,
+        message: 'Share link created successfully',
+        data: {
+          share: {
+            id: share.id,
+            shareId: share.shareId,
+            isPublic: share.isPublic,
+            password: share.password ? '***' : null,
+            expiresAt: share.expiresAt,
+            allowDownload: share.allowDownload,
+            allowPrint: share.allowPrint,
+            watermark: share.watermark,
+            createdAt: share.createdAt
+          }
+        }
+      });
+    } catch (error) {
+      logger.error('Create share link error', { 
+        error: error.message, 
+        stack: error.stack,
+        userId: (req as any).user?.userId,
+        documentId: req.params.id
+      });
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error while creating share link'
+      });
+    }
+  }
+
+  /**
+   * Download document
+   */
+  async downloadDocument(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = (req as any).user?.userId;
+      const { id } = req.params;
+
+      if (!userId) {
+        res.status(401).json({
+          success: false,
+          message: 'Authentication required'
+        });
+        return;
+      }
+
+      if (!id) {
+        res.status(400).json({
+          success: false,
+          message: 'Document ID is required'
+        });
+        return;
+      }
+
+      const document = await this.documentService.getDocument(id, userId);
+
+      if (!document) {
+        res.status(404).json({
+          success: false,
+          message: 'Document not found'
+        });
+        return;
+      }
+
+      // Set headers for file download
+      res.setHeader('Content-Type', document.mimeType);
+      res.setHeader('Content-Disposition', `attachment; filename="${document.originalFilename}"`);
+      res.setHeader('Content-Length', document.fileSize);
+
+      // Send file
+      res.sendFile(document.filePath, (err) => {
+        if (err) {
+          logger.error('File download error', { 
+            error: err.message,
+            userId,
+            documentId: id,
+            filePath: document.filePath
+          });
+          if (!res.headersSent) {
+            res.status(500).json({
+              success: false,
+              message: 'Error downloading file'
+            });
+          }
+        }
+      });
+
+      // Log download
+      logger.info('Document downloaded', {
+        userId,
+        documentId: id,
+        filename: document.originalFilename
+      });
+    } catch (error) {
+      logger.error('Download document error', { 
+        error: error.message, 
+        stack: error.stack,
+        userId: (req as any).user?.userId,
+        documentId: req.params.id
+      });
+      if (!res.headersSent) {
+        res.status(500).json({
+          success: false,
+          message: 'Internal server error while downloading document'
+        });
       }
     }
-  });
-});
-
-// Get single document
-export const getDocument = asyncHandler(async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const userId = req.user!.id;
-  
-  const documentResult = await query(`
-    SELECT 
-      d.*,
-      f.name as folder_name,
-      u.email as owner_email,
-      CASE WHEN d.organization_id IS NOT NULL THEN o.name ELSE NULL END as organization_name
-    FROM documents d
-    LEFT JOIN folders f ON d.folder_id = f.id
-    LEFT JOIN users u ON d.user_id = u.id
-    LEFT JOIN organizations o ON d.organization_id = o.id
-    WHERE d.id = $1 AND d.status = 'active' AND (
-      d.user_id = $2 OR 
-      d.organization_id IN (
-        SELECT organization_id 
-        FROM organization_members 
-        WHERE user_id = $2
-      )
-    )
-  `, [id, userId]);
-  
-  if (documentResult.rows.length === 0) {
-    throw createError('Document not found', 404, 'DOCUMENT_NOT_FOUND');
   }
-  
-  const document = documentResult.rows[0];
-  
-  // Get document sharing links
-  const linksResult = await query(`
-    SELECT id, slug, name, is_active, created_at, expires_at, current_views, max_views
-    FROM document_links
-    WHERE document_id = $1 AND is_active = true
-    ORDER BY created_at DESC
-  `, [id]);
-  
-  res.json({
-    success: true,
-    data: {
-      ...document,
-      links: linksResult.rows
-    }
-  });
-});
-
-// Update document
-export const updateDocument = asyncHandler(async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const { title, description, folderId } = req.body;
-  const userId = req.user!.id;
-  
-  const updateResult = await query(`
-    UPDATE documents 
-    SET title = COALESCE($1, title),
-        description = COALESCE($2, description),
-        folder_id = COALESCE($3, folder_id),
-        updated_at = NOW()
-    WHERE id = $4 AND (
-      user_id = $5 OR 
-      organization_id IN (
-        SELECT organization_id 
-        FROM organization_members 
-        WHERE user_id = $5 AND role IN ('owner', 'admin')
-      )
-    )
-    RETURNING *
-  `, [title, description, folderId, id, userId]);
-  
-  if (updateResult.rows.length === 0) {
-    throw createError('Document not found or access denied', 404, 'DOCUMENT_NOT_FOUND');
-  }
-  
-  // Clear cache
-  await cache.del(`documents:user:${userId}`);
-  
-  // Log activity
-  await query(`
-    INSERT INTO activity_logs (user_id, action, resource_type, resource_id, details, ip_address, user_agent)
-    VALUES ($1, $2, $3, $4, $5, $6, $7)
-  `, [
-    userId,
-    'update',
-    'document',
-    id,
-    JSON.stringify({ title, description, folderId }),
-    req.ip,
-    req.get('User-Agent')
-  ]);
-  
-  res.json({
-    success: true,
-    message: 'Document updated successfully',
-    data: updateResult.rows[0]
-  });
-});
-
-// Delete document
-export const deleteDocument = asyncHandler(async (req: Request, res: Response) => {
-  const { id } = req.params;
-  
-  if (!id) {
-    throw createError('Document ID is required', 400, 'MISSING_DOCUMENT_ID');
-  }
-  
-  const userId = req.user!.id;
-  const { permanent = false } = req.query;
-  
-  // Get document details first
-  const documentResult = await query(`
-    SELECT file_path, file_url, thumbnail_url, preview_images, user_id
-    FROM documents
-    WHERE id = $1 AND (
-      user_id = $2 OR 
-      organization_id IN (
-        SELECT organization_id 
-        FROM organization_members 
-        WHERE user_id = $2 AND role IN ('owner', 'admin')
-      )
-    )
-  `, [id, userId]);
-  
-  if (documentResult.rows.length === 0) {
-    throw createError('Document not found or access denied', 404, 'DOCUMENT_NOT_FOUND');
-  }
-  
-  const document = documentResult.rows[0];
-  
-  if (permanent === 'true') {
-    // Permanent deletion
-    await withTransaction(async (client) => {
-      // Delete document links
-      await client.query('DELETE FROM document_links WHERE document_id = $1', [id]);
-      
-      // Delete analytics data
-      await client.query('DELETE FROM document_views WHERE document_id = $1', [id]);
-      await client.query('DELETE FROM page_views WHERE document_id = $1', [id]);
-      await client.query('DELETE FROM document_downloads WHERE document_id = $1', [id]);
-      
-      // Delete document
-      await client.query('DELETE FROM documents WHERE id = $1', [id]);
-      
-      // Log activity
-      await client.query(`
-        INSERT INTO activity_logs (user_id, action, resource_type, resource_id, details, ip_address, user_agent)
-        VALUES ($1, $2, $3, $4, $5, $6, $7)
-      `, [
-        userId,
-        'delete_permanent',
-        'document',
-        id,
-        JSON.stringify({ fileName: document.file_path }),
-        req.ip,
-        req.get('User-Agent')
-      ]);
-    });
-    
-    // Delete physical files
-    try {
-      const fileData: UploadedFile = {
-        id,
-        originalName: '',
-        fileName: '',
-        filePath: document.file_path,
-        fileSize: 0,
-        mimeType: '',
-        fileType: '',
-        url: document.file_url,
-        thumbnailUrl: document.thumbnail_url,
-        previewImages: document.preview_images
-      };
-      
-      await DocumentProcessingService.deleteFile(fileData);
-    } catch (error) {
-      logger.error('File deletion failed:', error);
-      // Continue - database deletion succeeded
-    }
-    
-    res.json({
-      success: true,
-      message: 'Document permanently deleted'
-    });
-  } else {
-    // Soft deletion
-    await query(`
-      UPDATE documents 
-      SET status = 'deleted', updated_at = NOW()
-      WHERE id = $1
-    `, [id]);
-    
-    // Log activity
-    await query(`
-      INSERT INTO activity_logs (user_id, action, resource_type, resource_id, details, ip_address, user_agent)
-      VALUES ($1, $2, $3, $4, $5, $6, $7)
-    `, [
-      userId,
-      'delete',
-      'document',
-      id,
-      JSON.stringify({ soft_delete: true }),
-      req.ip,
-      req.get('User-Agent')
-    ]);
-    
-    res.json({
-      success: true,
-      message: 'Document moved to trash'
-    });
-  }
-  
-  // Clear cache
-  await cache.del(`documents:user:${userId}`);
-});
-
-// Get document analytics
-export const getDocumentAnalytics = asyncHandler(async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const { days = 30 } = req.query;
-  const userId = req.user!.id;
-  
-  // Verify document access
-  const documentResult = await query(`
-    SELECT id FROM documents
-    WHERE id = $1 AND (
-      user_id = $2 OR 
-      organization_id IN (
-        SELECT organization_id 
-        FROM organization_members 
-        WHERE user_id = $2
-      )
-    )
-  `, [id, userId]);
-  
-  if (documentResult.rows.length === 0) {
-    throw createError('Document not found or access denied', 404, 'DOCUMENT_NOT_FOUND');
-  }
-  
-  // Get analytics data
-  const viewsResult = await query(`
-    SELECT 
-      DATE(created_at) as date,
-      COUNT(*) as views,
-      COUNT(DISTINCT visitor_id) as unique_visitors,
-      COUNT(DISTINCT ip_address) as unique_ips
-    FROM document_views
-    WHERE document_id = $1 AND created_at >= NOW() - INTERVAL '${Number(days)} days'
-    GROUP BY DATE(created_at)
-    ORDER BY date DESC
-  `, [id]);
-  
-  // Get top countries
-  const countriesResult = await query(`
-    SELECT country, COUNT(*) as views
-    FROM document_views
-    WHERE document_id = $1 AND created_at >= NOW() - INTERVAL '${Number(days)} days'
-    GROUP BY country
-    ORDER BY views DESC
-    LIMIT 10
-  `, [id]);
-  
-  // Get device types
-  const devicesResult = await query(`
-    SELECT device_type, COUNT(*) as views
-    FROM document_views
-    WHERE document_id = $1 AND created_at >= NOW() - INTERVAL '${Number(days)} days'
-    GROUP BY device_type
-    ORDER BY views DESC
-  `, [id]);
-  
-  // Get referrers
-  const referrersResult = await query(`
-    SELECT referrer, COUNT(*) as views
-    FROM document_views
-    WHERE document_id = $1 AND created_at >= NOW() - INTERVAL '${Number(days)} days' AND referrer IS NOT NULL
-    GROUP BY referrer
-    ORDER BY views DESC
-    LIMIT 10
-  `, [id]);
-  
-  res.json({
-    success: true,
-    data: {
-      views: viewsResult.rows,
-      countries: countriesResult.rows,
-      devices: devicesResult.rows,
-      referrers: referrersResult.rows
-    }
-  });
-});
-
-export default {
-  createDocument,
-  getDocuments,
-  getDocument,
-  updateDocument,
-  deleteDocument,
-  getDocumentAnalytics,
-};
+}
