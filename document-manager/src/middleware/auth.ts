@@ -174,3 +174,48 @@ export const requireAdmin = (req: AuthenticatedRequest, res: Response, next: Nex
 
   next();
 };
+
+/**
+ * Subscription-based access control middleware
+ */
+export const requireSubscription = (minTier: string = 'pro') => {
+  return (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
+    if (!req.user) {
+      res.status(401).json({
+        success: false,
+        message: 'Authentication required'
+      });
+      return;
+    }
+
+    const tierOrder = ['free', 'pro', 'enterprise'];
+    const userTierIndex = tierOrder.indexOf(req.user.subscriptionTier);
+    const minTierIndex = tierOrder.indexOf(minTier);
+
+    if (userTierIndex < minTierIndex) {
+      res.status(403).json({
+        success: false,
+        message: `${minTier} subscription or higher required`
+      });
+      return;
+    }
+
+    next();
+  };
+};
+
+/**
+ * Document access control middleware
+ */
+export const requireDocumentAccess = (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
+  if (!req.user) {
+    res.status(401).json({
+      success: false,
+      message: 'Authentication required'
+    });
+    return;
+  }
+
+  // Basic document access check - can be enhanced with document ownership verification
+  next();
+};

@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { logRequest } from '@/utils/logger';
+import { logApiRequest } from '@/utils/logger';
 import { v4 as uuidv4 } from 'uuid';
 
 // Request logging middleware
@@ -26,7 +26,7 @@ export const requestLogger = (req: Request, res: Response, next: NextFunction): 
     const responseTime = Date.now() - startTime;
     
     if (shouldLog) {
-      logRequest(req, res, responseTime);
+      logApiRequest(req, res, responseTime);
     }
     
     // Call original end function

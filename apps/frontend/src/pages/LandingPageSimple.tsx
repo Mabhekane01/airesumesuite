@@ -93,6 +93,16 @@ function DevelopmentNotice({
   isOpen: boolean;
   onClose: () => void;
 }) {
+  useEffect(() => {
+    if (isOpen) {
+      const timer = setTimeout(() => {
+        onClose();
+      }, 5000); // 5 seconds
+
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   return (
@@ -159,7 +169,7 @@ function DevelopmentNotice({
           onClick={onClose}
           className="w-full mt-6 glass-card glass-card-hover text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 hover:scale-105 active:scale-95 border border-white/20"
         >
-          Got it! 👍
+          Continue
         </button>
       </div>
     </div>

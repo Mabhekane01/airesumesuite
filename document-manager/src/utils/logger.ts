@@ -61,7 +61,7 @@ const combinedTransport = new winston.transports.File({
 
 // Create logger instance
 const logger = winston.createLogger({
-  level: process.env.LOG_LEVEL || 'info',
+  level: process.env['LOG_LEVEL'] || 'info',
   format: logFormat,
   defaultMeta: { service: 'document-manager' },
   transports: [
@@ -72,7 +72,7 @@ const logger = winston.createLogger({
 });
 
 // Add console transport in development
-if (process.env.NODE_ENV !== 'production') {
+if (process.env['NODE_ENV'] !== 'production') {
   logger.add(consoleTransport);
 }
 

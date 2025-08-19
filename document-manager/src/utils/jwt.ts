@@ -24,8 +24,7 @@ export const generateToken = (payload: Omit<TokenPayload, 'iat' | 'exp'>): strin
   try {
     return jwt.sign(payload, config.JWT_SECRET, {
       expiresIn: config.JWT_EXPIRES_IN,
-      issuer: 'document-manager',
-      audience: 'document-manager-client',
+      algorithm: 'HS256'
     });
   } catch (error) {
     logger.error('JWT generation error:', error);

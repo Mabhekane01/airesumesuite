@@ -16,7 +16,7 @@ export class WebhookController {
   async createWebhook(req: Request, res: Response): Promise<void> {
     try {
       const userId = (req as any).user?.userId;
-      const { name, url, events, isActive = true, description } = req.body;
+      const { name, url, events, isActive = true } = req.body;
 
       if (!userId) {
         res.status(401).json({
@@ -156,7 +156,7 @@ export class WebhookController {
         error: error instanceof Error ? error.message : String(error), 
         stack: error instanceof Error ? error.stack : undefined,
         userId: (req as any).user?.userId,
-        webhookId: req.params.id
+        webhookId: req.params['id']
       });
       res.status(500).json({
         success: false,
@@ -219,8 +219,8 @@ export class WebhookController {
       });
     } catch (error) {
       logger.error('List webhooks error', { 
-        error: error.message, 
-        stack: error.stack,
+        error: error instanceof Error ? error.message : String(error), 
+        stack: error instanceof Error ? error.stack : undefined,
         userId: (req as any).user?.userId
       });
       res.status(500).json({
@@ -301,6 +301,14 @@ export class WebhookController {
 
       const updatedWebhook = await this.webhookModel.update(id, updateData);
 
+      if (!updatedWebhook) {
+        res.status(404).json({
+          success: false,
+          message: 'Webhook not found'
+        });
+        return;
+      }
+
       logger.info('Webhook updated successfully', {
         userId,
         webhookId: id,
@@ -317,15 +325,15 @@ export class WebhookController {
             url: updatedWebhook.url,
             events: updatedWebhook.events,
             isActive: updatedWebhook.isActive,
-            description: updatedWebhook.description,
+
             updatedAt: updatedWebhook.updatedAt
           }
         }
       });
     } catch (error) {
       logger.error('Update webhook error', { 
-        error: error.message, 
-        stack: error.stack,
+        error: error instanceof Error ? error.message : String(error), 
+        stack: error instanceof Error ? error.stack : undefined,
         userId: (req as any).user?.userId,
         webhookId: req.params.id
       });
@@ -384,8 +392,8 @@ export class WebhookController {
       });
     } catch (error) {
       logger.error('Delete webhook error', { 
-        error: error.message, 
-        stack: error.stack,
+        error: error instanceof Error ? error.message : String(error), 
+        stack: error instanceof Error ? error.stack : undefined,
         userId: (req as any).user?.userId,
         webhookId: req.params.id
       });
@@ -473,8 +481,8 @@ export class WebhookController {
       });
     } catch (error) {
       logger.error('Test webhook error', { 
-        error: error.message, 
-        stack: error.stack,
+        error: error instanceof Error ? error.message : String(error), 
+        stack: error instanceof Error ? error.stack : undefined,
         userId: (req as any).user?.userId,
         webhookId: req.params.id
       });
@@ -560,8 +568,8 @@ export class WebhookController {
       });
     } catch (error) {
       logger.error('Get webhook history error', { 
-        error: error.message, 
-        stack: error.stack,
+        error: error instanceof Error ? error.message : String(error), 
+        stack: error instanceof Error ? error.stack : undefined,
         userId: (req as any).user?.userId,
         webhookId: req.params.id
       });

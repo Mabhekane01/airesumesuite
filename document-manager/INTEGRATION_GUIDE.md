@@ -9,6 +9,7 @@ The Document Manager Service is designed to work seamlessly with your existing A
 ## 🏗️ Architecture Integration
 
 ### Service Relationships
+
 ```
 AI Resume Suite Backend
 ├── Document Manager Service (Port 3001)
@@ -23,6 +24,7 @@ AI Resume Suite Backend
 ```
 
 ### Data Flow
+
 1. **Document Creation**: User uploads document through AI Resume Suite
 2. **Processing**: Document Manager processes and stores the file
 3. **Sharing**: Document can be shared via Document Sharing Service
@@ -32,11 +34,14 @@ AI Resume Suite Backend
 ## 🔗 API Integration
 
 ### Base URLs
+
 - **Document Manager**: `http://localhost:3001`
 - **Document Sharing**: `http://localhost:4000`
 
 ### Authentication
+
 Both services use JWT authentication. Include the token in the Authorization header:
+
 ```bash
 Authorization: Bearer <your-jwt-token>
 ```
@@ -46,6 +51,7 @@ Authorization: Bearer <your-jwt-token>
 ### Document Management
 
 #### Upload Document
+
 ```bash
 POST /api/documents
 Content-Type: multipart/form-data
@@ -61,11 +67,13 @@ sourceMetadata: {}
 ```
 
 #### Get User Documents
+
 ```bash
 GET /api/documents?page=1&limit=20&category=resume
 ```
 
 #### Update Document
+
 ```bash
 PUT /api/documents/{id}
 {
@@ -75,6 +83,7 @@ PUT /api/documents/{id}
 ```
 
 #### Delete Document
+
 ```bash
 DELETE /api/documents/{id}
 ```
@@ -82,6 +91,7 @@ DELETE /api/documents/{id}
 ### Folder Management
 
 #### Create Folder
+
 ```bash
 POST /api/folders
 {
@@ -93,11 +103,13 @@ POST /api/folders
 ```
 
 #### Get Folder Tree
+
 ```bash
 GET /api/folders/tree
 ```
 
 #### Update Folder
+
 ```bash
 PUT /api/folders/{id}
 {
@@ -109,6 +121,7 @@ PUT /api/folders/{id}
 ### Integration APIs
 
 #### Link with Document Sharing Service
+
 ```bash
 POST /api/links
 {
@@ -127,6 +140,7 @@ POST /api/links
 ```
 
 #### Get Integration Status
+
 ```bash
 GET /api/integration/status
 ```
@@ -136,6 +150,7 @@ GET /api/integration/status
 ### Document Sharing
 
 #### Create Share
+
 ```bash
 POST /api/shares
 {
@@ -156,6 +171,7 @@ POST /api/shares
 ```
 
 #### Access Shared Document
+
 ```bash
 # Public access
 GET /view/{shareId}
@@ -170,16 +186,19 @@ POST /view/{shareId}
 ### Analytics
 
 #### Get Document Analytics
+
 ```bash
 GET /api/analytics/documents/{documentId}
 ```
 
 #### Get Share Analytics
+
 ```bash
 GET /api/analytics/shares/{shareId}
 ```
 
 #### Get Organization Analytics
+
 ```bash
 GET /api/analytics/organization
 ```
@@ -190,35 +209,35 @@ GET /api/analytics/organization
 
 ```typescript
 // 1. Upload resume to Document Manager
-const uploadResponse = await fetch('http://localhost:3001/api/documents', {
-  method: 'POST',
+const uploadResponse = await fetch("http://localhost:3001/api/documents", {
+  method: "POST",
   headers: {
-    'Authorization': `Bearer ${token}`
+    Authorization: `Bearer ${token}`,
   },
-  body: formData
+  body: formData,
 });
 
 const document = await uploadResponse.json();
 
 // 2. Create share link via Document Sharing Service
-const shareResponse = await fetch('http://localhost:4000/api/shares', {
-  method: 'POST',
+const shareResponse = await fetch("http://localhost:4000/api/shares", {
+  method: "POST",
   headers: {
-    'Authorization': `Bearer ${token}`,
-    'Content-Type': 'application/json'
+    Authorization: `Bearer ${token}`,
+    "Content-Type": "application/json",
   },
   body: JSON.stringify({
     documentId: document.data.id,
-    title: 'My Resume',
+    title: "My Resume",
     settings: {
       allowDownload: true,
-      trackViews: true
-    }
-  })
+      trackViews: true,
+    },
+  }),
 });
 
 const share = await shareResponse.json();
-console.log('Share URL:', share.data.shareUrl);
+console.log("Share URL:", share.data.shareUrl);
 ```
 
 ### 2. Analytics Integration
@@ -229,8 +248,8 @@ const analyticsResponse = await fetch(
   `http://localhost:4000/api/analytics/shares/${shareId}`,
   {
     headers: {
-      'Authorization': `Bearer ${token}`
-    }
+      Authorization: `Bearer ${token}`,
+    },
   }
 );
 
@@ -240,7 +259,7 @@ const analytics = await analyticsResponse.json();
 await updateResumeAnalytics(resumeId, {
   totalViews: analytics.data.totalViews,
   uniqueViews: analytics.data.uniqueViews,
-  lastViewed: analytics.data.lastViewed
+  lastViewed: analytics.data.lastViewed,
 });
 ```
 
@@ -248,31 +267,31 @@ await updateResumeAnalytics(resumeId, {
 
 ```typescript
 // Create folder structure
-const folderResponse = await fetch('http://localhost:3001/api/folders', {
-  method: 'POST',
+const folderResponse = await fetch("http://localhost:3001/api/folders", {
+  method: "POST",
   headers: {
-    'Authorization': `Bearer ${token}`,
-    'Content-Type': 'application/json'
+    Authorization: `Bearer ${token}`,
+    "Content-Type": "application/json",
   },
   body: JSON.stringify({
-    name: 'Job Applications 2024',
-    description: 'Resumes for 2024 job applications',
-    color: '#10B981'
-  })
+    name: "Job Applications 2024",
+    description: "Resumes for 2024 job applications",
+    color: "#10B981",
+  }),
 });
 
 const folder = await folderResponse.json();
 
 // Move documents to folder
 await fetch(`http://localhost:3001/api/documents/${documentId}`, {
-  method: 'PUT',
+  method: "PUT",
   headers: {
-    'Authorization': `Bearer ${token}`,
-    'Content-Type': 'application/json'
+    Authorization: `Bearer ${token}`,
+    "Content-Type": "application/json",
   },
   body: JSON.stringify({
-    folderId: folder.data.id
-  })
+    folderId: folder.data.id,
+  }),
 });
 ```
 
@@ -285,16 +304,19 @@ await fetch(`http://localhost:3001/api/documents/${documentId}`, {
 const token = getAuthToken();
 
 // Validate token with Document Manager
-const validateResponse = await fetch('http://localhost:3001/api/auth/validate', {
-  headers: {
-    'Authorization': `Bearer ${token}`
+const validateResponse = await fetch(
+  "http://localhost:3001/api/auth/validate",
+  {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
   }
-});
+);
 
 if (validateResponse.ok) {
   // Token is valid, proceed with operations
   const userData = await validateResponse.json();
-  console.log('Authenticated user:', userData);
+  console.log("Authenticated user:", userData);
 }
 ```
 
@@ -302,20 +324,23 @@ if (validateResponse.ok) {
 
 ```typescript
 // Sync user data between services
-const syncUserResponse = await fetch('http://localhost:3001/api/integration/sync-user', {
-  method: 'POST',
-  headers: {
-    'Authorization': `Bearer ${token}`,
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({
-    userId: user.id,
-    email: user.email,
-    firstName: user.firstName,
-    lastName: user.lastName,
-    organizationId: user.organizationId
-  })
-});
+const syncUserResponse = await fetch(
+  "http://localhost:3001/api/integration/sync-user",
+  {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      userId: user.id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      organizationId: user.organizationId,
+    }),
+  }
+);
 ```
 
 ## 📊 Data Synchronization
@@ -324,17 +349,19 @@ const syncUserResponse = await fetch('http://localhost:3001/api/integration/sync
 
 ```typescript
 // Listen for document processing status updates
-const eventSource = new EventSource('http://localhost:3001/api/events/documents');
+const eventSource = new EventSource(
+  "http://localhost:3001/api/events/documents"
+);
 
 eventSource.onmessage = (event) => {
   const data = JSON.parse(event.data);
-  
-  if (data.type === 'document_processed') {
+
+  if (data.type === "document_processed") {
     // Update AI Resume Suite with processing results
     updateDocumentStatus(data.documentId, {
-      status: 'ready',
+      status: "ready",
       thumbnailUrl: data.thumbnailUrl,
-      pageCount: data.pageCount
+      pageCount: data.pageCount,
     });
   }
 };
@@ -344,11 +371,11 @@ eventSource.onmessage = (event) => {
 
 ```typescript
 // Subscribe to real-time analytics updates
-const socket = io('http://localhost:4000');
+const socket = io("http://localhost:4000");
 
-socket.emit('join-document', documentId);
+socket.emit("join-document", documentId);
 
-socket.on('real-time-view', (data) => {
+socket.on("real-time-view", (data) => {
   // Update UI with real-time view data
   updateViewCounter(data.totalViews);
   updateLastViewed(data.timestamp);
@@ -379,7 +406,7 @@ REDIS_HOST=host
 ### Docker Compose
 
 ```yaml
-version: '3.8'
+version: "3.8"
 services:
   document-manager:
     build: .
@@ -434,12 +461,12 @@ GET http://localhost:4000/health/redis
 
 ```typescript
 // Configure logging to central system
-import { logger } from '@document-sharing/core';
+import { logger } from "@document-sharing/core";
 
-logger.info('Document processed', {
+logger.info("Document processed", {
   documentId,
   userId,
-  processingTime: Date.now() - startTime
+  processingTime: Date.now() - startTime,
 });
 ```
 
@@ -448,17 +475,17 @@ logger.info('Document processed', {
 ### Integration Tests
 
 ```typescript
-describe('Document Manager Integration', () => {
-  it('should upload and share document', async () => {
+describe("Document Manager Integration", () => {
+  it("should upload and share document", async () => {
     // 1. Upload document
     const document = await uploadDocument(testFile);
-    
+
     // 2. Create share
     const share = await createShare(document.id);
-    
+
     // 3. Verify share is accessible
     const accessResult = await accessSharedDocument(share.shareId);
-    
+
     expect(accessResult.success).toBe(true);
   });
 });
@@ -471,14 +498,14 @@ describe('Document Manager Integration', () => {
 const mockDocumentManager = {
   uploadDocument: jest.fn(),
   getDocument: jest.fn(),
-  updateDocument: jest.fn()
+  updateDocument: jest.fn(),
 };
 
 // Mock Document Sharing Service
 const mockDocumentSharing = {
   createShare: jest.fn(),
   getShare: jest.fn(),
-  getAnalytics: jest.fn()
+  getAnalytics: jest.fn(),
 };
 ```
 
@@ -488,12 +515,12 @@ const mockDocumentSharing = {
 
 ```typescript
 try {
-  const response = await fetch('http://localhost:3001/api/documents');
+  const response = await fetch("http://localhost:3001/api/documents");
   // Handle response
 } catch (error) {
-  if (error.code === 'ECONNREFUSED') {
+  if (error.code === "ECONNREFUSED") {
     // Document Manager Service is down
-    console.error('Document Manager Service unavailable');
+    console.error("Document Manager Service unavailable");
     // Fallback to local storage or show error message
   }
 }
@@ -508,7 +535,9 @@ const retryOperation = async (operation: Function, maxRetries = 3) => {
       return await operation();
     } catch (error) {
       if (i === maxRetries - 1) throw error;
-      await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, i)));
+      await new Promise((resolve) =>
+        setTimeout(resolve, 1000 * Math.pow(2, i))
+      );
     }
   }
 };
@@ -523,12 +552,12 @@ const retryOperation = async (operation: Function, maxRetries = 3) => {
 const getDocumentWithCache = async (id: string) => {
   const cacheKey = `document:${id}`;
   let document = await redis.get(cacheKey);
-  
+
   if (!document) {
     document = await documentService.getDocument(id);
     await redis.setex(cacheKey, 300, JSON.stringify(document)); // 5 min cache
   }
-  
+
   return document;
 };
 ```
@@ -537,15 +566,17 @@ const getDocumentWithCache = async (id: string) => {
 
 ```typescript
 // Batch document operations
-const batchUpdateDocuments = async (updates: Array<{id: string, data: any}>) => {
-  const promises = updates.map(({id, data}) => 
+const batchUpdateDocuments = async (
+  updates: Array<{ id: string; data: any }>
+) => {
+  const promises = updates.map(({ id, data }) =>
     fetch(`http://localhost:3001/api/documents/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
     })
   );
-  
+
   return Promise.all(promises);
 };
 ```
@@ -556,13 +587,17 @@ const batchUpdateDocuments = async (updates: Array<{id: string, data: any}>) => 
 
 ```typescript
 // Validate API keys for webhook endpoints
-const validateWebhookKey = (req: Request, res: Response, next: NextFunction) => {
-  const apiKey = req.headers['x-api-key'];
-  
+const validateWebhookKey = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const apiKey = req.headers["x-api-key"];
+
   if (!apiKey || !allowedKeys.includes(apiKey)) {
-    return res.status(401).json({ error: 'Invalid API key' });
+    return res.status(401).json({ error: "Invalid API key" });
   }
-  
+
   next();
 };
 ```
@@ -571,15 +606,15 @@ const validateWebhookKey = (req: Request, res: Response, next: NextFunction) => 
 
 ```typescript
 // Implement rate limiting for integration endpoints
-const rateLimit = require('express-rate-limit');
+const rateLimit = require("express-rate-limit");
 
 const integrationLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // limit each IP to 100 requests per windowMs
-  message: 'Too many integration requests'
+  message: "Too many integration requests",
 });
 
-app.use('/api/integration', integrationLimiter);
+app.use("/api/integration", integrationLimiter);
 ```
 
 ## 📚 Additional Resources
@@ -592,6 +627,7 @@ app.use('/api/integration', integrationLimiter);
 ## 🆘 Support
 
 For integration support:
+
 - Create an issue in the repository
 - Check the troubleshooting guide
 - Review the API documentation

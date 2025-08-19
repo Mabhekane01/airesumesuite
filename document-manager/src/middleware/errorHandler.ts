@@ -10,20 +10,29 @@ export interface AppError extends Error {
 /**
  * Custom error class for operational errors
  */
-export class OperationalError extends Error implements AppError {
-  public statusCode: number;
-  public isOperational: boolean;
-  public code?: string;
+export class OperationalError extends Error {
+  public readonly isOperational: boolean;
+  public readonly statusCode: number;
+  public readonly code: string | undefined;
 
   constructor(message: string, statusCode: number = 500, code?: string) {
     super(message);
-    this.statusCode = statusCode;
+    this.name = 'OperationalError';
     this.isOperational = true;
+    this.statusCode = statusCode;
     this.code = code;
     
-    Error.captureStackTrace(this, this.constructor);
+    // Maintains proper stack trace for where our error was thrown (only available on V8)
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, OperationalError);
+    }
   }
 }
+
+// Helper function to create operational errors
+export const createError = (message: string, statusCode: number = 500, code?: string): OperationalError => {
+  return new OperationalError(message, statusCode, code);
+};
 
 /**
  * Main error handling middleware
@@ -52,7 +61,7 @@ export const errorHandler = (
   });
 
   // Don't leak error details in production
-  const isProduction = process.env.NODE_ENV === 'production';
+  const isProduction = process.env['NODE_ENV'] === 'production';
   const errorResponse = {
     success: false,
     message: isProduction && statusCode === 500 ? 'Internal server error' : message,
@@ -159,7 +168,7 @@ export const handleDatabaseError = (error: any): void => {
   });
 
   // In production, you might want to restart the service or alert administrators
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env['NODE_ENV'] === 'production') {
     process.exit(1);
   }
 };
