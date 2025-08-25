@@ -290,8 +290,7 @@ export const getActiveSessions = async (req: AuthenticatedRequest, res: Response
       loginTime: session.loginTime,
       location: session.location,
       browser: session.userAgent?.browser || 'Unknown',
-      isCurrent: session.isActive && session.lastActivity && 
-                 (Date.now() - session.lastActivity.getTime()) < 24 * 60 * 60 * 1000
+      isCurrent: session.sessionId === req.user?.sessionId
     }));
 
     return res.json({

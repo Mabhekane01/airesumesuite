@@ -3,23 +3,35 @@ import { AnalyticsController } from '../controllers/analyticsController';
 import { authMiddleware } from '../middleware/auth';
 
 const router = Router();
-const analyticsController = new AnalyticsController();
+const controller = new AnalyticsController();
 
-// Apply authentication middleware to all analytics routes
+// All analytics endpoints require authentication
 router.use(authMiddleware);
 
 // Document analytics
-router.get('/documents/:id', analyticsController.getDocumentAnalytics.bind(analyticsController));
-router.get('/documents/:id/performance', analyticsController.getDocumentPerformance.bind(analyticsController));
+router.get('/documents/:documentId', controller.getDocumentAnalytics);
+router.get('/documents/:documentId/real-time', controller.getRealTimeAnalytics);
+router.get('/documents/:documentId/predictive', controller.getPredictiveAnalytics);
+router.get('/documents/:documentId/heatmap/:pageNumber', controller.getHeatmapData);
+router.get('/documents/:documentId/performance', controller.getPerformanceMetrics);
 
-// Analytics overview and summary
-router.get('/summary', analyticsController.getAnalyticsSummary.bind(analyticsController));
-router.get('/popular', analyticsController.getPopularDocuments.bind(analyticsController));
+// User analytics summary
+router.get('/summary', controller.getUserAnalyticsSummary);
+router.get('/trends', controller.getAnalyticsTrends);
+router.get('/audience', controller.getAudienceInsights);
 
-// Real-time analytics
-router.get('/realtime', analyticsController.getRealTimeAnalytics.bind(analyticsController));
+// Document comparison
+router.post('/compare', controller.compareDocuments);
 
-// Analytics export
-router.get('/export', analyticsController.exportAnalytics.bind(analyticsController));
+// Custom dashboards
+router.get('/dashboards/:dashboardId', controller.getCustomDashboard);
+router.post('/dashboards', controller.saveCustomDashboard);
+
+// Analytics alerts
+router.get('/alerts', controller.getAnalyticsAlerts);
+router.post('/alerts', controller.setupAnalyticsAlert);
+
+// Data export
+router.post('/export', controller.exportAnalytics);
 
 export default router;

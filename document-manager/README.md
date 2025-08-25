@@ -1,382 +1,429 @@
-# Document Manager Service
+# Enhanced Document Management System
 
-A production-ready, enterprise-grade document management service designed to rival and exceed Papermark's capabilities. This service integrates seamlessly with the AI Resume Suite and works in conjunction with the Document Sharing Service to provide a comprehensive document management solution.
-
-## 🎯 Overview
-
-The Document Manager Service is the core backend service that handles:
-
-- Document upload, storage, and management
-- Folder organization and hierarchy
-- User and organization management
-- Integration with the Document Sharing Service
-- Analytics and tracking
-- Webhook management for external integrations
-
-## 🏗️ Architecture
-
-### Service Structure
-
-```
-document-manager/
-├── src/
-│   ├── config/           # Configuration and environment
-│   ├── models/           # Database models and data access
-│   ├── services/         # Business logic and core services
-│   ├── controllers/      # HTTP request handlers
-│   ├── routes/           # API route definitions
-│   ├── middleware/       # Express middleware
-│   ├── utils/            # Utility functions and helpers
-│   └── index.ts          # Main application entry point
-├── database/             # Database schema and migrations
-├── logs/                 # Application logs
-└── uploads/              # File storage directory
-```
-
-### Integration Points
-
-- **Document Sharing Service**: Handles public sharing, analytics, and view tracking
-- **AI Resume Suite**: Integrates with existing resume and cover letter functionality
-- **External Systems**: Webhook support for third-party integrations
+A superior document management and sharing service that goes beyond Papermark with advanced analytics, AI-powered insights, and enterprise-grade features.
 
 ## 🚀 Features
 
 ### Core Document Management
 
-- ✅ **Document Upload**: Support for PDF, DOC, DOCX, PPT, PPTX, TXT, and image files
-- ✅ **File Processing**: Automatic text extraction, thumbnail generation, and preview creation
-- ✅ **Metadata Management**: Rich document metadata with search capabilities
-- ✅ **Version Control**: Document versioning and history tracking
-- ✅ **Storage Providers**: Support for local, S3, GCS, and Azure storage
+- **Document Upload & Storage**: Support for multiple file formats (PDF, DOC, PPT, etc.)
+- **Folder Organization**: Hierarchical folder structure with drag-and-drop support
+- **Version Control**: Track document versions and changes
+- **Search & Discovery**: Full-text search across documents and content
 
-### Organization & Collaboration
+### Advanced Document Sharing
 
-- ✅ **User Management**: User accounts with subscription tiers
-- ✅ **Organization Support**: Multi-tenant organization management
-- ✅ **Folder System**: Hierarchical folder organization with colors and descriptions
-- ✅ **Access Control**: Role-based permissions and sharing controls
+- **Shareable Links**: Create branded, customizable sharing links
+- **Data Rooms**: Secure virtual data rooms for sensitive document sharing
+- **Access Control**: Password protection, IP restrictions, country restrictions
+- **Branding**: Custom domains, logos, colors, and watermarks
+- **QR Code Generation**: Mobile-friendly document access
 
-### Advanced Features
+### Comprehensive Analytics
 
-- ✅ **Search & Filtering**: Full-text search with advanced filtering options
-- ✅ **Analytics**: Comprehensive document usage analytics and insights
-- ✅ **Webhooks**: Real-time event notifications for external systems
-- ✅ **Caching**: Redis-based caching for improved performance
-- ✅ **Security**: JWT authentication, rate limiting, and input validation
+- **Real-time Tracking**: Live viewer count, session duration, engagement metrics
+- **Page-level Analytics**: Scroll depth, time spent, interactions, bounce rate
+- **Visitor Demographics**: Geographic location, devices, browsers, operating systems
+- **Traffic Sources**: UTM tracking, referrer analysis, conversion rates
+- **Predictive Insights**: AI-powered engagement predictions and trends
+- **Heatmaps**: Visual representation of user interactions
 
-## 📊 Database Schema
+### Enterprise Features
 
-The service uses PostgreSQL with the following main tables:
+- **Webhooks**: Event-driven integrations and notifications
+- **API Access**: RESTful API with comprehensive endpoints
+- **Multi-tenant Support**: Organization and user management
+- **Audit Logs**: Complete activity tracking and compliance
+- **Export & Reporting**: Data export in multiple formats
 
-- **users**: User accounts and profiles
-- **organizations**: Organization management
-- **documents**: Document metadata and storage information
-- **folders**: Folder hierarchy and organization
-- **document_shares**: Document sharing and access control
-- **analytics**: Usage tracking and analytics data
-- **webhooks**: Webhook configuration and events
+## 🏗️ Architecture
+
+### Backend Services
+
+- **Document Manager**: Core document operations and storage
+- **Enhanced Sharing Service**: Advanced sharing and analytics
+- **Analytics Engine**: Real-time data processing and insights
+- **Notification Service**: Webhooks and event notifications
+- **File Processor**: Document conversion and processing
+- **API Gateway**: Unified API access and rate limiting
+
+### Database Schema
+
+- **PostgreSQL**: Robust relational database with JSONB support
+- **UUID Primary Keys**: Secure, globally unique identifiers
+- **Optimized Indexes**: Fast query performance for analytics
+- **Real-time Updates**: Triggers for automatic timestamp updates
+
+### Frontend Components
+
+- **React-based UI**: Modern, responsive interface
+- **Framer Motion**: Smooth animations and transitions
+- **Real-time Updates**: Live data synchronization
+- **Mobile-First Design**: Optimized for all devices
+
+## 🛠️ Setup & Installation
+
+### Prerequisites
+
+- Node.js 18+
+- PostgreSQL 14+
+- Redis (for caching and sessions)
+- Docker (optional)
+
+### Backend Setup
+
+1. **Clone the repository**
+
+```bash
+git clone <repository-url>
+cd document-manager
+```
+
+2. **Install dependencies**
+
+```bash
+npm install
+```
+
+3. **Environment configuration**
+
+```bash
+cp .env.example .env
+# Edit .env with your database and service credentials
+```
+
+4. **Database setup**
+
+```bash
+# Run database migrations
+npm run db:migrate
+
+# Seed initial data (optional)
+npm run db:seed
+```
+
+5. **Start the service**
+
+```bash
+# Development
+npm run dev
+
+# Production
+npm run build
+npm start
+```
+
+### Frontend Setup
+
+1. **Navigate to frontend directory**
+
+```bash
+cd apps/frontend
+```
+
+2. **Install dependencies**
+
+```bash
+npm install
+```
+
+3. **Start development server**
+
+```bash
+npm run dev
+```
+
+## 📊 API Endpoints
+
+### Document Management
+
+```
+POST   /api/documents              # Upload document
+GET    /api/documents              # List documents
+GET    /api/documents/:id          # Get document
+PUT    /api/documents/:id          # Update document
+DELETE /api/documents/:id          # Delete document
+```
+
+### Enhanced Sharing
+
+```
+POST   /api/sharing/links          # Create shareable link
+GET    /api/sharing/links          # List user's links
+GET    /api/sharing/view/:slug     # Get link by slug
+PUT    /api/sharing/links/:id      # Update link
+DELETE /api/sharing/links/:id      # Delete link
+
+POST   /api/sharing/datarooms      # Create data room
+GET    /api/sharing/datarooms      # List data rooms
+POST   /api/sharing/datarooms/:id/documents  # Add document to room
+```
+
+### Analytics
+
+```
+GET    /api/analytics/documents/:id    # Document analytics
+GET    /api/analytics/realtime/:id     # Real-time analytics
+GET    /api/analytics/predictive/:id   # Predictive insights
+GET    /api/analytics/heatmap/:id/:page # Heatmap data
+GET    /api/analytics/export           # Export analytics data
+```
+
+### Public Endpoints (No Auth Required)
+
+```
+POST   /api/sharing/view/:linkId/record      # Record document view
+POST   /api/sharing/page/:viewId/record      # Record page view
+POST   /api/sharing/download/record          # Record download
+```
+
+## 🔐 Authentication & Security
+
+### JWT Authentication
+
+- Secure token-based authentication
+- Configurable token expiration
+- Refresh token support
+
+### Access Control
+
+- User-based permissions
+- Organization-level access control
+- IP and country restrictions
+- Password-protected links
+
+### Data Protection
+
+- Encrypted data transmission (HTTPS)
+- Secure file storage
+- Audit logging for compliance
+- GDPR-compliant data handling
+
+## 📈 Analytics & Insights
+
+### Real-time Metrics
+
+- Current active viewers
+- Session duration tracking
+- Page engagement rates
+- Download conversion rates
+
+### Advanced Analytics
+
+- **Engagement Scoring**: AI-powered engagement calculation
+- **Predictive Trends**: Future performance forecasting
+- **Behavioral Analysis**: User interaction patterns
+- **Geographic Insights**: Location-based analytics
+- **Device Performance**: Cross-platform optimization
+
+### Custom Dashboards
+
+- Configurable metric displays
+- Date range filtering
+- Comparative analysis
+- Export capabilities
+
+## 🎨 Customization & Branding
+
+### Brand Customization
+
+- Custom domain support
+- Brand logo integration
+- Color scheme customization
+- Watermark options
+
+### Link Personalization
+
+- Custom link names and descriptions
+- Expiration dates
+- View limits
+- Access restrictions
+
+## 🔌 Integrations & Webhooks
+
+### Webhook Events
+
+- Document viewed
+- Page interaction
+- Download completed
+- Link accessed
+- Visitor information captured
+
+### Third-party Integrations
+
+- CRM systems (Salesforce, HubSpot)
+- Marketing platforms (Mailchimp, ConvertKit)
+- Analytics tools (Google Analytics, Mixpanel)
+- Storage providers (AWS S3, Google Cloud)
+
+## 🚀 Performance & Scalability
+
+### Optimization Features
+
+- Database query optimization
+- Caching strategies
+- CDN integration
+- Load balancing support
+
+### Monitoring
+
+- Real-time performance metrics
+- Error tracking and alerting
+- Usage analytics
+- Health checks
+
+## 📱 Mobile & Accessibility
+
+### Mobile Optimization
+
+- Responsive design
+- Touch-friendly interface
+- Progressive Web App support
+- Offline capabilities
+
+### Accessibility
+
+- WCAG 2.1 compliance
+- Screen reader support
+- Keyboard navigation
+- High contrast modes
+
+## 🧪 Testing
+
+### Test Coverage
+
+```bash
+# Run all tests
+npm test
+
+# Run specific test suites
+npm run test:unit
+npm run test:integration
+npm run test:e2e
+
+# Coverage report
+npm run test:coverage
+```
+
+## 📚 Usage Examples
+
+### Creating a Shareable Link
+
+```typescript
+const linkData = {
+  documentId: "doc-123",
+  name: "Q4 Financial Report",
+  description: "Quarterly financial performance overview",
+  password: "secure123",
+  expiresAt: "2024-12-31",
+  maxViews: 100,
+  allowDownload: true,
+  brandName: "Acme Corp",
+  brandColors: {
+    primary: "#2563eb",
+    secondary: "#1e40af",
+  },
+};
+
+const link = await sharingService.createShareableLink(userId, linkData);
+```
+
+### Getting Document Analytics
+
+```typescript
+const analytics = await analyticsService.getDocumentAnalytics("doc-123", {
+  startDate: "2024-01-01",
+  endDate: "2024-12-31",
+  countries: ["US", "CA", "UK"],
+});
+
+console.log(`Total views: ${analytics.totalViews}`);
+console.log(`Engagement score: ${analytics.engagementScore}%`);
+```
+
+### Setting up Webhooks
+
+```typescript
+const webhookConfig = {
+  linkId: "link-123",
+  webhookUrl: "https://your-app.com/webhooks",
+  events: ["view", "download", "email_capture"],
+  secret: "webhook-secret-key",
+};
+
+await sharingService.setupWebhook(userId, webhookConfig);
+```
 
 ## 🔧 Configuration
 
 ### Environment Variables
 
 ```bash
-# Server Configuration
-NODE_ENV=development
-PORT=3001
-HOST=0.0.0.0
+# Database
+DATABASE_URL=postgresql://user:pass@localhost:5432/dms
+REDIS_URL=redis://localhost:6379
 
-# Database Configuration
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=document_manager
-DB_USER=postgres
-DB_PASSWORD=password
-DB_MAX_CONNECTIONS=20
-
-# Redis Configuration
-REDIS_HOST=localhost
-REDIS_PORT=6379
-REDIS_PASSWORD=
-REDIS_DB=0
-
-# JWT Configuration
-JWT_SECRET=your-super-secret-jwt-key
+# Authentication
+JWT_SECRET=your-jwt-secret
 JWT_EXPIRES_IN=24h
 
 # File Storage
-UPLOAD_PATH=./uploads
-MAX_FILE_SIZE=104857600
-ALLOWED_FILE_TYPES=pdf,doc,docx,ppt,pptx,txt,jpg,jpeg,png,gif,webp
+S3_BUCKET=your-bucket
+S3_REGION=us-east-1
+AWS_ACCESS_KEY_ID=your-key
+AWS_SECRET_ACCESS_KEY=your-secret
 
-# Integration URLs
-DOCUMENT_SHARING_SERVICE_URL=http://localhost:4000
-AI_RESUME_SUITE_URL=http://localhost:3000
-
-# Security
-RATE_LIMIT_WINDOW_MS=900000
-RATE_LIMIT_MAX_REQUESTS=1000
-
-# Logging
-LOG_LEVEL=info
+# Analytics
+ANALYTICS_ENABLED=true
+TRACKING_DOMAIN=your-domain.com
 ```
 
-## 🚀 Getting Started
+### Feature Flags
 
-### Prerequisites
+```typescript
+const config = {
+  features: {
+    analytics: true,
+    webhooks: true,
+    customDomains: true,
+    dataRooms: true,
+    predictiveInsights: true,
+  },
+};
+```
 
-- Node.js 18+
-- PostgreSQL 15+
-- Redis 7+
-- TypeScript 5+
+## 🚨 Troubleshooting
 
-### Installation
+### Common Issues
+
+1. **Database Connection Errors**
+
+   - Verify PostgreSQL is running
+   - Check connection string format
+   - Ensure database exists and user has permissions
+
+2. **File Upload Failures**
+
+   - Check file size limits
+   - Verify supported file types
+   - Ensure storage service credentials are correct
+
+3. **Analytics Not Recording**
+   - Verify tracking is enabled
+   - Check browser console for errors
+   - Ensure API endpoints are accessible
+
+### Debug Mode
 
 ```bash
-# Clone the repository
-git clone <repository-url>
-cd document-manager
+# Enable debug logging
+DEBUG=* npm run dev
 
-# Install dependencies
-npm install
-
-# Set up environment variables
-cp .env.example .env
-# Edit .env with your configuration
-
-# Set up database
-npm run db:migrate
-
-# Start development server
-npm run dev
-
-# Build for production
-npm run build
-npm start
+# Check service health
+curl http://localhost:3000/health
 ```
-
-### Database Setup
-
-```bash
-# Create database
-createdb document_manager
-
-# Run migrations
-npm run db:migrate
-
-# Seed with sample data (optional)
-npm run db:seed
-```
-
-## 📚 API Endpoints
-
-### Authentication
-
-- `POST /api/auth/login` - User login
-- `POST /api/auth/register` - User registration
-- `POST /api/auth/refresh` - Refresh JWT token
-
-### Documents
-
-- `GET /api/documents` - List documents
-- `POST /api/documents` - Upload document
-- `GET /api/documents/:id` - Get document details
-- `PUT /api/documents/:id` - Update document
-- `DELETE /api/documents/:id` - Delete document
-
-### Folders
-
-- `GET /api/folders` - List folders
-- `POST /api/folders` - Create folder
-- `PUT /api/folders/:id` - Update folder
-- `DELETE /api/folders/:id` - Delete folder
-
-### Sharing
-
-- `POST /api/links` - Create share link
-- `GET /api/links` - List share links
-- `DELETE /api/links/:id` - Delete share link
-
-### Analytics
-
-- `GET /api/analytics/documents/:id` - Document analytics
-- `GET /api/analytics/summary` - Analytics summary
-
-### Webhooks
-
-- `GET /api/webhooks` - List webhooks
-- `POST /api/webhooks` - Create webhook
-- `PUT /api/webhooks/:id` - Update webhook
-- `DELETE /api/webhooks/:id` - Delete webhook
-
-## 🔌 Integration
-
-### Document Sharing Service
-
-The service integrates with the Document Sharing Service to provide:
-
-- Public document viewing
-- Password-protected sharing
-- View tracking and analytics
-- Download and print controls
-
-### AI Resume Suite
-
-Integration with the existing AI Resume Suite:
-
-- Resume and cover letter management
-- User authentication synchronization
-- Analytics data sharing
-
-## 📈 Performance & Scalability
-
-### Caching Strategy
-
-- Redis-based document caching (5-minute TTL)
-- User and folder data caching
-- Analytics result caching
-
-### Database Optimization
-
-- Connection pooling with configurable limits
-- Indexed queries for common operations
-- Efficient pagination and filtering
-
-### File Processing
-
-- Asynchronous file processing
-- Thumbnail generation and optimization
-- Background job processing
-
-## 🔒 Security Features
-
-### Authentication & Authorization
-
-- JWT-based authentication
-- Role-based access control
-- Organization-level permissions
-
-### Input Validation
-
-- Request validation and sanitization
-- File type and size validation
-- SQL injection prevention
-
-### Rate Limiting
-
-- Configurable rate limiting
-- IP-based request throttling
-- Abuse prevention
-
-## 📝 Logging & Monitoring
-
-### Logging
-
-- Winston-based structured logging
-- Multiple log levels and transports
-- File and console logging
-- Log rotation and management
-
-### Health Checks
-
-- Database connectivity monitoring
-- Redis health checks
-- Service status endpoints
-
-## 🧪 Testing
-
-### Test Commands
-
-```bash
-# Run all tests
-npm test
-
-# Run tests with coverage
-npm run test:coverage
-
-# Run specific test suites
-npm run test:unit
-npm run test:integration
-```
-
-### Test Structure
-
-- Unit tests for models and services
-- Integration tests for API endpoints
-- Database testing with test fixtures
-
-## 🚀 Deployment
-
-### Docker
-
-```bash
-# Build image
-docker build -t document-manager .
-
-# Run container
-docker run -p 3001:3001 document-manager
-```
-
-### Production Considerations
-
-- Environment variable configuration
-- Database connection pooling
-- Redis clustering
-- Load balancing
-- SSL/TLS termination
-- Monitoring and alerting
-
-## 🔄 Development Workflow
-
-### Code Quality
-
-- ESLint configuration
-- Prettier formatting
-- TypeScript strict mode
-- Pre-commit hooks
-
-### API Documentation
-
-- OpenAPI/Swagger specification
-- Interactive API documentation
-- Request/response examples
-
-## 📋 TODO & Roadmap
-
-### Completed ✅
-
-- Core database models and schema
-- Document upload and processing
-- Folder management system
-- User and organization management
-- Complete API structure with controllers and routes
-- Authentication middleware
-- Logging and error handling
-- Configuration management
-- File upload middleware
-- Error handling middleware
-- Docker configuration
-- TypeScript configuration
-- Webhook delivery implementation
-- Background job processing
-
-### In Progress 🚧
-
-- Integration testing
-- Performance optimization
-
-### Planned 📅
-
-- Advanced search capabilities
-- Real-time collaboration features
-- Mobile API optimization
-- Advanced analytics dashboard
-- Multi-language support
-- Advanced security features
 
 ## 🤝 Contributing
-
-### Development Setup
 
 1. Fork the repository
 2. Create a feature branch
@@ -384,33 +431,41 @@ docker run -p 3001:3001 document-manager
 4. Add tests for new functionality
 5. Submit a pull request
 
-### Code Standards
+### Development Guidelines
 
 - Follow TypeScript best practices
-- Use meaningful variable and function names
-- Add comprehensive error handling
-- Include JSDoc comments for public APIs
-- Write unit tests for new features
-
-## 📞 Support
-
-### Getting Help
-
-- Check the troubleshooting guide
-- Review API documentation
-- Search existing issues
-- Create a new issue with detailed information
-
-### Contact
-
-- Development team: [team-email]
-- Documentation: [docs-url]
-- Community: [community-url]
+- Write comprehensive tests
+- Update documentation
+- Follow the existing code style
 
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
+## 🆘 Support
+
+- **Documentation**: [docs.example.com](https://docs.example.com)
+- **Issues**: [GitHub Issues](https://github.com/your-repo/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/your-repo/discussions)
+- **Email**: support@example.com
+
+## 🔮 Roadmap
+
+### Upcoming Features
+
+- **AI Content Analysis**: Automatic document summarization and insights
+- **Advanced Security**: End-to-end encryption, digital signatures
+- **Collaboration Tools**: Real-time commenting and annotation
+- **Advanced Workflows**: Approval processes and document routing
+- **Mobile Apps**: Native iOS and Android applications
+
+### Long-term Vision
+
+- **Enterprise Integration**: SSO, LDAP, Active Directory
+- **Advanced AI**: Content recommendations, automated tagging
+- **Global CDN**: Multi-region document delivery
+- **Compliance Tools**: HIPAA, SOC2, GDPR compliance features
+
 ---
 
-**Built with ❤️ by the AI Resume Suite Team**
+Built with ❤️ for modern document management needs.

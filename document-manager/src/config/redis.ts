@@ -1,39 +1,39 @@
-import { createClient } from 'redis';
-import { config } from './environment';
-import { logger } from '@/utils/logger';
+import { createClient } from "redis";
+import { config } from "./environment";
+import { logger } from "@/utils/logger";
 
 // Redis client
 export const redis = createClient({
-  url: config.REDIS_URL,
+  url: `redis://${config["REDIS_HOST"]}:${config["REDIS_PORT"]}`,
   socket: {
     connectTimeout: 5000,
   },
 });
 
 // Redis connection events
-redis.on('connect', () => {
-  logger.info('🔗 Connecting to Redis...');
+redis.on("connect", () => {
+  logger.info("🔗 Connecting to Redis...");
 });
 
-redis.on('ready', () => {
-  logger.info('✅ Redis client ready');
+redis.on("ready", () => {
+  logger.info("✅ Redis client ready");
 });
 
-redis.on('error', (err) => {
-  logger.error('❌ Redis connection error:', err);
+redis.on("error", (err) => {
+  logger.error("❌ Redis connection error:", err);
 });
 
-redis.on('end', () => {
-  logger.info('🔚 Redis connection ended');
+redis.on("end", () => {
+  logger.info("🔚 Redis connection ended");
 });
 
 // Initialize Redis connection
 export const initializeRedis = async (): Promise<void> => {
   try {
     await redis.connect();
-    logger.info('📡 Connected to Redis successfully');
+    logger.info("📡 Connected to Redis successfully");
   } catch (error) {
-    logger.error('❌ Failed to connect to Redis:', error);
+    logger.error("❌ Failed to connect to Redis:", error);
     // Don't exit process - Redis is optional for core functionality
   }
 };
@@ -46,18 +46,22 @@ export const cache = {
       const data = await redis.get(key);
       return data ? JSON.parse(data) : null;
     } catch (error) {
-      logger.error('Cache get error:', error);
+      logger.error("Cache get error:", error);
       return null;
     }
   },
 
   // Set cached data with TTL
-  set: async (key: string, data: any, ttlSeconds: number = 3600): Promise<boolean> => {
+  set: async (
+    key: string,
+    data: any,
+    ttlSeconds: number = 3600
+  ): Promise<boolean> => {
     try {
       await redis.setEx(key, ttlSeconds, JSON.stringify(data));
       return true;
     } catch (error) {
-      logger.error('Cache set error:', error);
+      logger.error("Cache set error:", error);
       return false;
     }
   },
@@ -68,7 +72,7 @@ export const cache = {
       await redis.del(key);
       return true;
     } catch (error) {
-      logger.error('Cache delete error:', error);
+      logger.error("Cache delete error:", error);
       return false;
     }
   },
@@ -79,7 +83,7 @@ export const cache = {
       const result = await redis.exists(key);
       return result === 1;
     } catch (error) {
-      logger.error('Cache exists error:', error);
+      logger.error("Cache exists error:", error);
       return false;
     }
   },
@@ -93,24 +97,28 @@ export const cache = {
       }
       return count;
     } catch (error) {
-      logger.error('Cache increment error:', error);
+      logger.error("Cache increment error:", error);
       return 0;
     }
   },
 
   // Set with pattern for bulk operations
-  setPattern: async (pattern: string, data: Record<string, any>, ttlSeconds: number = 3600): Promise<void> => {
+  setPattern: async (
+    pattern: string,
+    data: Record<string, any>,
+    ttlSeconds: number = 3600
+  ): Promise<void> => {
     try {
       const multi = redis.multi();
-      
+
       Object.entries(data).forEach(([key, value]) => {
-        const fullKey = pattern.replace('*', key);
+        const fullKey = pattern.replace("*", key);
         multi.setEx(fullKey, ttlSeconds, JSON.stringify(value));
       });
-      
+
       await multi.exec();
     } catch (error) {
-      logger.error('Cache setPattern error:', error);
+      logger.error("Cache setPattern error:", error);
     }
   },
 
@@ -119,10 +127,10 @@ export const cache = {
     try {
       const keys = await redis.keys(pattern);
       if (keys.length === 0) return {};
-      
+
       const values = await redis.mGet(keys);
       const result: Record<string, any> = {};
-      
+
       keys.forEach((key, index) => {
         if (values[index]) {
           try {
@@ -132,10 +140,10 @@ export const cache = {
           }
         }
       });
-      
+
       return result;
     } catch (error) {
-      logger.error('Cache getByPattern error:', error);
+      logger.error("Cache getByPattern error:", error);
       return {};
     }
   },
@@ -145,11 +153,11 @@ export const cache = {
     // Track document view
     trackView: async (documentId: string, viewData: any): Promise<void> => {
       try {
-        const key = `analytics:views:${documentId}:${new Date().toISOString().split('T')[0]}`;
+        const key = `analytics:views:${documentId}:${new Date().toISOString().split("T")[0]}`;
         await redis.lPush(key, JSON.stringify(viewData));
-        await redis.expire(key, 86400 * config.ANALYTICS_RETENTION_DAYS); // Retention period
+        await redis.expire(key, 86400 * config["ANALYTICS_RETENTION_DAYS"]); // Retention period
       } catch (error) {
-        logger.error('Analytics tracking error:', error);
+        logger.error("Analytics tracking error:", error);
       }
     },
 
@@ -158,41 +166,48 @@ export const cache = {
       try {
         const views: any[] = [];
         const now = new Date();
-        
+
         for (let i = 0; i < days; i++) {
-          const date = new Date(now.getTime() - (i * 24 * 60 * 60 * 1000));
-          const dateStr = date.toISOString().split('T')[0];
+          const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+          const dateStr = date.toISOString().split("T")[0];
           const key = `analytics:views:${documentId}:${dateStr}`;
-          
+
           const dayViews = await redis.lRange(key, 0, -1);
-          views.push(...dayViews.map(view => JSON.parse(view)));
+          views.push(...dayViews.map((view) => JSON.parse(view)));
         }
-        
+
         return views;
       } catch (error) {
-        logger.error('Analytics get views error:', error);
+        logger.error("Analytics get views error:", error);
         return [];
       }
     },
 
     // Track real-time viewers
-    addViewer: async (documentId: string, viewerId: string, ttl: number = 300): Promise<void> => {
+    addViewer: async (
+      documentId: string,
+      viewerId: string,
+      ttl: number = 300
+    ): Promise<void> => {
       try {
         const key = `realtime:viewers:${documentId}`;
         await redis.sAdd(key, viewerId);
         await redis.expire(key, ttl);
       } catch (error) {
-        logger.error('Add viewer error:', error);
+        logger.error("Add viewer error:", error);
       }
     },
 
     // Remove viewer
-    removeViewer: async (documentId: string, viewerId: string): Promise<void> => {
+    removeViewer: async (
+      documentId: string,
+      viewerId: string
+    ): Promise<void> => {
       try {
         const key = `realtime:viewers:${documentId}`;
         await redis.sRem(key, viewerId);
       } catch (error) {
-        logger.error('Remove viewer error:', error);
+        logger.error("Remove viewer error:", error);
       }
     },
 
@@ -202,21 +217,25 @@ export const cache = {
         const key = `realtime:viewers:${documentId}`;
         return await redis.sCard(key);
       } catch (error) {
-        logger.error('Get viewers count error:', error);
+        logger.error("Get viewers count error:", error);
         return 0;
       }
-    }
+    },
   },
 
   // Session management
   session: {
     // Store session data
-    set: async (sessionId: string, data: any, ttlSeconds: number = 86400): Promise<void> => {
+    set: async (
+      sessionId: string,
+      data: any,
+      ttlSeconds: number = 86400
+    ): Promise<void> => {
       try {
         const key = `session:${sessionId}`;
         await redis.setEx(key, ttlSeconds, JSON.stringify(data));
       } catch (error) {
-        logger.error('Session set error:', error);
+        logger.error("Session set error:", error);
       }
     },
 
@@ -227,7 +246,7 @@ export const cache = {
         const data = await redis.get(key);
         return data ? JSON.parse(data) : null;
       } catch (error) {
-        logger.error('Session get error:', error);
+        logger.error("Session get error:", error);
         return null;
       }
     },
@@ -238,23 +257,23 @@ export const cache = {
         const key = `session:${sessionId}`;
         await redis.del(key);
       } catch (error) {
-        logger.error('Session delete error:', error);
+        logger.error("Session delete error:", error);
       }
-    }
-  }
+    },
+  },
 };
 
 // Graceful shutdown
-process.on('SIGINT', async () => {
-  logger.info('🔄 Closing Redis connection...');
+process.on("SIGINT", async () => {
+  logger.info("🔄 Closing Redis connection...");
   await redis.quit();
-  logger.info('✅ Redis connection closed');
+  logger.info("✅ Redis connection closed");
 });
 
-process.on('SIGTERM', async () => {
-  logger.info('🔄 Closing Redis connection...');
+process.on("SIGTERM", async () => {
+  logger.info("🔄 Closing Redis connection...");
   await redis.quit();
-  logger.info('✅ Redis connection closed');
+  logger.info("✅ Redis connection closed");
 });
 
 export default { redis, cache, initializeRedis };

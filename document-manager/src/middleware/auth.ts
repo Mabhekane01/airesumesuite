@@ -1,59 +1,61 @@
-import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
-import { config } from '../config/environment';
-import { logger } from '../utils/logger';
-
-export interface AuthenticatedRequest extends Request {
-  user?: {
-    userId: string;
-    email: string;
-    subscriptionTier: string;
-  };
-}
+import { Response, NextFunction } from "express";
+import jwt from "jsonwebtoken";
+import { config } from "../config/environment";
+import { logger } from "../utils/logger";
+import { AuthenticatedRequest } from "../types/express";
 
 /**
  * Authentication middleware to verify JWT tokens
  */
-export const authMiddleware = (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
+export const authMiddleware = (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+): void => {
   try {
     const authHeader = req.headers.authorization;
-    
+
     if (!authHeader) {
       res.status(401).json({
         success: false,
-        message: 'Authorization header is required'
+        message: "Authorization header is required",
       });
       return;
     }
 
-    const token = authHeader.startsWith('Bearer ') 
-      ? authHeader.substring(7) 
+    const token = authHeader.startsWith("Bearer ")
+      ? authHeader.substring(7)
       : authHeader;
 
     if (!token) {
       res.status(401).json({
         success: false,
-        message: 'Token is required'
+        message: "Token is required",
       });
       return;
     }
 
     // Verify JWT token
     const decoded = jwt.verify(token, config.JWT_SECRET) as any;
-    
+
     if (!decoded || !decoded.userId || !decoded.email) {
       res.status(401).json({
         success: false,
-        message: 'Invalid token format'
+        message: "Invalid token format",
       });
       return;
     }
 
     // Add user information to request
     req.user = {
-      userId: decoded.userId,
+      id: decoded.userId,
       email: decoded.email,
-      subscriptionTier: decoded.subscriptionTier || 'free'
+      name: decoded.name || "Unknown User",
+      subscriptionTier: decoded.subscriptionTier || "free",
+      avatarUrl: null,
+      brandColors: {},
+      createdAt: new Date(),
+      updatedAt: new Date(),
     };
 
     next();
@@ -61,7 +63,7 @@ export const authMiddleware = (req: AuthenticatedRequest, res: Response, next: N
     if (error instanceof jwt.JsonWebTokenError) {
       res.status(401).json({
         success: false,
-        message: 'Invalid token'
+        message: "Invalid token",
       });
       return;
     }
@@ -69,19 +71,19 @@ export const authMiddleware = (req: AuthenticatedRequest, res: Response, next: N
     if (error instanceof jwt.TokenExpiredError) {
       res.status(401).json({
         success: false,
-        message: 'Token has expired'
+        message: "Token has expired",
       });
       return;
     }
 
-    logger.error('Authentication middleware error', { 
+    logger.error("Authentication middleware error", {
       error: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack : undefined
+      stack: error instanceof Error ? error.stack : undefined,
     });
 
     res.status(500).json({
       success: false,
-      message: 'Internal server error during authentication'
+      message: "Internal server error during authentication",
     });
   }
 };
@@ -89,11 +91,15 @@ export const authMiddleware = (req: AuthenticatedRequest, res: Response, next: N
 /**
  * Optional authentication middleware - doesn't fail if no token provided
  */
-export const optionalAuthMiddleware = (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
+export const optionalAuthMiddleware = (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+): void => {
   try {
     const authHeader = req.headers.authorization;
-    
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
       next();
       return;
     }
@@ -107,21 +113,26 @@ export const optionalAuthMiddleware = (req: AuthenticatedRequest, res: Response,
 
     // Verify JWT token
     const decoded = jwt.verify(token, config.JWT_SECRET) as any;
-    
+
     if (decoded && decoded.userId && decoded.email) {
       // Add user information to request
       req.user = {
-        userId: decoded.userId,
+        id: decoded.userId,
         email: decoded.email,
-        subscriptionTier: decoded.subscriptionTier || 'free'
+        name: decoded.name || "Unknown User",
+        subscriptionTier: decoded.subscriptionTier || "free",
+        avatarUrl: null,
+        brandColors: {},
+        createdAt: new Date(),
+        updatedAt: new Date(),
       };
     }
 
     next();
   } catch (error) {
     // Log error but continue without authentication
-    logger.warn('Optional authentication failed', { 
-      error: error instanceof Error ? error.message : String(error)
+    logger.warn("Optional authentication failed", {
+      error: error instanceof Error ? error.message : String(error),
     });
     next();
   }
@@ -131,11 +142,15 @@ export const optionalAuthMiddleware = (req: AuthenticatedRequest, res: Response,
  * Role-based access control middleware
  */
 export const requireRole = (allowedRoles: string[]) => {
-  return (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
+  return (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): void => {
     if (!req.user) {
       res.status(401).json({
         success: false,
-        message: 'Authentication required'
+        message: "Authentication required",
       });
       return;
     }
@@ -143,7 +158,7 @@ export const requireRole = (allowedRoles: string[]) => {
     if (!allowedRoles.includes(req.user.subscriptionTier)) {
       res.status(403).json({
         success: false,
-        message: 'Insufficient permissions for this operation'
+        message: "Insufficient permissions for this operation",
       });
       return;
     }
@@ -155,19 +170,23 @@ export const requireRole = (allowedRoles: string[]) => {
 /**
  * Admin-only middleware
  */
-export const requireAdmin = (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
+export const requireAdmin = (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+): void => {
   if (!req.user) {
     res.status(401).json({
       success: false,
-      message: 'Authentication required'
+      message: "Authentication required",
     });
     return;
   }
 
-  if (req.user.subscriptionTier !== 'enterprise') {
+  if (req.user.subscriptionTier !== "enterprise") {
     res.status(403).json({
       success: false,
-      message: 'Admin access required'
+      message: "Admin access required",
     });
     return;
   }
@@ -178,26 +197,47 @@ export const requireAdmin = (req: AuthenticatedRequest, res: Response, next: Nex
 /**
  * Subscription-based access control middleware
  */
-export const requireSubscription = (minTier: string = 'pro') => {
-  return (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
+export const requireSubscription = (minTier: string | string[] = "pro") => {
+  return (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): void => {
     if (!req.user) {
       res.status(401).json({
         success: false,
-        message: 'Authentication required'
+        message: "Authentication required",
       });
       return;
     }
 
-    const tierOrder = ['free', 'pro', 'enterprise'];
+    const tierOrder = ["free", "pro", "enterprise"];
     const userTierIndex = tierOrder.indexOf(req.user.subscriptionTier);
-    const minTierIndex = tierOrder.indexOf(minTier);
 
-    if (userTierIndex < minTierIndex) {
-      res.status(403).json({
-        success: false,
-        message: `${minTier} subscription or higher required`
+    if (Array.isArray(minTier)) {
+      // Check if user has any of the required tiers
+      const hasRequiredTier = minTier.some((tier) => {
+        const tierIndex = tierOrder.indexOf(tier);
+        return userTierIndex >= tierIndex;
       });
-      return;
+
+      if (!hasRequiredTier) {
+        res.status(403).json({
+          success: false,
+          message: `${minTier.join(" or ")} subscription or higher required`,
+        });
+        return;
+      }
+    } else {
+      // Single tier check
+      const minTierIndex = tierOrder.indexOf(minTier);
+      if (userTierIndex < minTierIndex) {
+        res.status(403).json({
+          success: false,
+          message: `${minTier} subscription or higher required`,
+        });
+        return;
+      }
     }
 
     next();
@@ -207,11 +247,15 @@ export const requireSubscription = (minTier: string = 'pro') => {
 /**
  * Document access control middleware
  */
-export const requireDocumentAccess = (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
+export const requireDocumentAccess = (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+): void => {
   if (!req.user) {
     res.status(401).json({
       success: false,
-      message: 'Authentication required'
+      message: "Authentication required",
     });
     return;
   }

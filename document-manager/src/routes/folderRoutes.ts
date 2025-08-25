@@ -1,25 +1,60 @@
-import { Router } from 'express';
-import { FolderController } from '../controllers/folderController';
-import { authMiddleware } from '../middleware/auth';
+import { Router } from "express";
+import { FolderController } from "../controllers/folderController";
+import { authMiddleware, requireSubscription } from "../middleware/auth";
 
 const router = Router();
 const folderController = new FolderController();
 
-// Apply authentication middleware to all folder routes
+// Apply authentication to all routes
 router.use(authMiddleware);
 
 // Folder CRUD operations
-router.post('/', folderController.createFolder.bind(folderController));
-router.get('/:id', folderController.getFolder.bind(folderController));
-router.put('/:id', folderController.updateFolder.bind(folderController));
-router.delete('/:id', folderController.deleteFolder.bind(folderController));
+router.get(
+  "/",
+  requireSubscription(["free", "pro", "enterprise"]),
+  folderController.getFolders.bind(folderController)
+);
+router.get(
+  "/:id",
+  requireSubscription(["free", "pro", "enterprise"]),
+  folderController.getFolder.bind(folderController)
+);
+router.post(
+  "/",
+  requireSubscription(["free", "pro", "enterprise"]),
+  folderController.createFolder.bind(folderController)
+);
+router.put(
+  "/:id",
+  requireSubscription(["free", "pro", "enterprise"]),
+  folderController.updateFolder.bind(folderController)
+);
+router.delete(
+  "/:id",
+  requireSubscription(["free", "pro", "enterprise"]),
+  folderController.deleteFolder.bind(folderController)
+);
 
-// Folder hierarchy and navigation
-router.get('/tree/overview', folderController.getFolderTree.bind(folderController));
-router.get('/:id/contents', folderController.getFolderContents.bind(folderController));
-router.get('/:id/stats', folderController.getFolderStats.bind(folderController));
+// Folder operations
+router.post(
+  "/:id/documents",
+  requireSubscription(["free", "pro", "enterprise"]),
+  folderController.addDocumentToFolder.bind(folderController)
+);
+router.delete(
+  "/:id/documents/:documentId",
+  requireSubscription(["free", "pro", "enterprise"]),
+  folderController.removeDocumentFromFolder.bind(folderController)
+);
+router.post(
+  "/:id/move",
+  requireSubscription(["free", "pro", "enterprise"]),
+  folderController.moveFolder.bind(folderController)
+);
+router.post(
+  "/:id/duplicate",
+  requireSubscription(["free", "pro", "enterprise"]),
+  folderController.duplicateFolder.bind(folderController)
+);
 
 export default router;
-
-
-

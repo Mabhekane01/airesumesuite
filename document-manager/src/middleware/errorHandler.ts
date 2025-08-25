@@ -1,5 +1,5 @@
-import { Request, Response, NextFunction } from 'express';
-import { logger } from '../utils/logger';
+import { Request, Response, NextFunction } from "express";
+import { logger } from "../utils/logger";
 
 export interface AppError extends Error {
   statusCode?: number;
@@ -17,11 +17,11 @@ export class OperationalError extends Error {
 
   constructor(message: string, statusCode: number = 500, code?: string) {
     super(message);
-    this.name = 'OperationalError';
+    this.name = "OperationalError";
     this.isOperational = true;
     this.statusCode = statusCode;
     this.code = code;
-    
+
     // Maintains proper stack trace for where our error was thrown (only available on V8)
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, OperationalError);
@@ -30,7 +30,11 @@ export class OperationalError extends Error {
 }
 
 // Helper function to create operational errors
-export const createError = (message: string, statusCode: number = 500, code?: string): OperationalError => {
+export const createError = (
+  message: string,
+  statusCode: number = 500,
+  code?: string
+): OperationalError => {
   return new OperationalError(message, statusCode, code);
 };
 
@@ -41,15 +45,15 @@ export const errorHandler = (
   error: AppError,
   req: Request,
   res: Response,
-  next: NextFunction
+  _next: NextFunction
 ): void => {
   // Default error values
   const statusCode = error.statusCode || 500;
-  const message = error.message || 'Internal server error';
-  const code = error.code || 'INTERNAL_ERROR';
+  const message = error.message || "Internal server error";
+  const code = error.code || "INTERNAL_ERROR";
 
   // Log error details
-  logger.error('Application error', {
+  logger.error("Application error", {
     error: error.message,
     stack: error.stack,
     statusCode,
@@ -57,62 +61,63 @@ export const errorHandler = (
     path: req.path,
     method: req.method,
     ip: req.ip,
-    userAgent: req.get('User-Agent')
+    userAgent: req.get("User-Agent"),
   });
 
   // Don't leak error details in production
-  const isProduction = process.env['NODE_ENV'] === 'production';
+  const isProduction = process.env["NODE_ENV"] === "production";
   const errorResponse = {
     success: false,
-    message: isProduction && statusCode === 500 ? 'Internal server error' : message,
-    ...(isProduction ? {} : { code, stack: error.stack })
+    message:
+      isProduction && statusCode === 500 ? "Internal server error" : message,
+    ...(isProduction ? {} : { code, stack: error.stack }),
   };
 
   // Handle specific error types
-  if (error.name === 'ValidationError') {
+  if (error.name === "ValidationError") {
     res.status(400).json({
       success: false,
-      message: 'Validation error',
-      code: 'VALIDATION_ERROR',
-      details: error.message
+      message: "Validation error",
+      code: "VALIDATION_ERROR",
+      details: error.message,
     });
     return;
   }
 
-  if (error.name === 'CastError') {
+  if (error.name === "CastError") {
     res.status(400).json({
       success: false,
-      message: 'Invalid ID format',
-      code: 'INVALID_ID'
+      message: "Invalid ID format",
+      code: "INVALID_ID",
     });
     return;
   }
 
-  if (error.name === 'MongoError' || error.name === 'MongoServerError') {
+  if (error.name === "MongoError" || error.name === "MongoServerError") {
     if ((error as any).code === 11000) {
       res.status(409).json({
         success: false,
-        message: 'Duplicate key error',
-        code: 'DUPLICATE_KEY'
+        message: "Duplicate key error",
+        code: "DUPLICATE_KEY",
       });
       return;
     }
   }
 
-  if (error.name === 'JsonWebTokenError') {
+  if (error.name === "JsonWebTokenError") {
     res.status(401).json({
       success: false,
-      message: 'Invalid token',
-      code: 'INVALID_TOKEN'
+      message: "Invalid token",
+      code: "INVALID_TOKEN",
     });
     return;
   }
 
-  if (error.name === 'TokenExpiredError') {
+  if (error.name === "TokenExpiredError") {
     res.status(401).json({
       success: false,
-      message: 'Token expired',
-      code: 'TOKEN_EXPIRED'
+      message: "Token expired",
+      code: "TOKEN_EXPIRED",
     });
     return;
   }
@@ -136,9 +141,9 @@ export const asyncHandler = (fn: Function) => {
 export const notFoundHandler = (req: Request, res: Response): void => {
   res.status(404).json({
     success: false,
-    message: 'Route not found',
-    code: 'ROUTE_NOT_FOUND',
-    path: req.originalUrl
+    message: "Route not found",
+    code: "ROUTE_NOT_FOUND",
+    path: req.originalUrl,
   });
 };
 
@@ -147,14 +152,14 @@ export const notFoundHandler = (req: Request, res: Response): void => {
  */
 export const validationErrorHandler = (errors: any[]) => {
   const error = new OperationalError(
-    'Validation failed',
+    "Validation failed",
     400,
-    'VALIDATION_ERROR'
+    "VALIDATION_ERROR"
   );
-  
+
   // Add validation details to error
   (error as any).validationErrors = errors;
-  
+
   throw error;
 };
 
@@ -162,13 +167,13 @@ export const validationErrorHandler = (errors: any[]) => {
  * Database connection error handler
  */
 export const handleDatabaseError = (error: any): void => {
-  logger.error('Database connection error', {
+  logger.error("Database connection error", {
     error: error.message,
-    stack: error.stack
+    stack: error.stack,
   });
 
   // In production, you might want to restart the service or alert administrators
-  if (process.env['NODE_ENV'] === 'production') {
+  if (process.env["NODE_ENV"] === "production") {
     process.exit(1);
   }
 };
@@ -178,13 +183,13 @@ export const handleDatabaseError = (error: any): void => {
  */
 export const gracefulShutdown = (signal: string): void => {
   logger.info(`Received ${signal}. Starting graceful shutdown...`);
-  
+
   // Close database connections
   // Close Redis connections
   // Stop accepting new requests
-  
+
   setTimeout(() => {
-    logger.info('Graceful shutdown completed');
+    logger.info("Graceful shutdown completed");
     process.exit(0);
   }, 10000); // 10 second timeout
 };

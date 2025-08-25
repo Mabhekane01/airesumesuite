@@ -42,6 +42,7 @@ import { automationService } from './services/automationService';
 import { locationService } from './services/locationService';
 import { companyService } from './services/companyService';
 import { currencyService } from './services/currencyService';
+import { updateSessionActivity } from './middleware/sessionActivity';
 // Import interview services with error handling
 let interviewNotificationService: any;
 let emailService: any;
@@ -259,6 +260,7 @@ app.get('/api/v1/auth/status', (req, res) => {
 
 // API Routes
 app.use('/api/v1', publicRoutes); // Public routes are not behind auth
+app.use(updateSessionActivity);
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/resumes', resumeRoutes);
 app.use('/api/v1/upload', fileUploadRoutes);

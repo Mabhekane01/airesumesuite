@@ -1,22 +1,52 @@
-import { Router } from 'express';
-import { WebhookController } from '../controllers/webhookController';
-import { authMiddleware } from '../middleware/auth';
+import { Router } from "express";
+import { WebhookController } from "../controllers/webhookController";
+import { authMiddleware, requireSubscription } from "../middleware/auth";
 
 const router = Router();
 const webhookController = new WebhookController();
 
-// Apply authentication middleware to all webhook routes
+// Apply authentication to all routes
 router.use(authMiddleware);
 
-// Webhook CRUD operations
-router.post('/', webhookController.createWebhook.bind(webhookController));
-router.get('/:id', webhookController.getWebhook.bind(webhookController));
-router.put('/:id', webhookController.updateWebhook.bind(webhookController));
-router.delete('/:id', webhookController.deleteWebhook.bind(webhookController));
-
 // Webhook management
-router.get('/', webhookController.listWebhooks.bind(webhookController));
-router.post('/:id/test', webhookController.testWebhook.bind(webhookController));
-router.get('/:id/history', webhookController.getWebhookHistory.bind(webhookController));
+router.get(
+  "/",
+  requireSubscription(["pro", "enterprise"]),
+  webhookController.getWebhooks.bind(webhookController)
+);
+router.post(
+  "/",
+  requireSubscription(["pro", "enterprise"]),
+  webhookController.createWebhook.bind(webhookController)
+);
+router.get(
+  "/:id",
+  requireSubscription(["pro", "enterprise"]),
+  webhookController.getWebhook.bind(webhookController)
+);
+router.put(
+  "/:id",
+  requireSubscription(["pro", "enterprise"]),
+  webhookController.updateWebhook.bind(webhookController)
+);
+router.delete(
+  "/:id",
+  requireSubscription(["pro", "enterprise"]),
+  webhookController.deleteWebhook.bind(webhookController)
+);
+
+// Webhook testing
+router.post(
+  "/:id/test",
+  requireSubscription(["pro", "enterprise"]),
+  webhookController.testWebhook.bind(webhookController)
+);
+
+// Webhook events
+router.get(
+  "/:id/events",
+  requireSubscription(["pro", "enterprise"]),
+  webhookController.getWebhookEvents.bind(webhookController)
+);
 
 export default router;
