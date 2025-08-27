@@ -1,8 +1,16 @@
 // Core package exports
-export { DocumentService } from './services/documentService';
-export * from './types';
-export * from './database/connection';
-export * from './utils/logger';
-
-
-
+export * from "./database/connection";
+export * from "./database/schema";
+export * from "./models/User";
+export * from "./models/Document";
+export * from "./models/DocumentLink";
+export * from "./models/DocumentView";
+export * from "./models/Organization";
+export * from "./services/UserService";
+export * from "./services/DocumentService";
+export * from "./services/SecurityService";
+export * from "./utils/logger";
+export * from "./utils/validation";
+export * from "./utils/encryption";
+export * from "./types";
+export * from "./config/environment";

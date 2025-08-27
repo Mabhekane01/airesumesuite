@@ -1,325 +1,428 @@
 # Document Sharing Service
 
-A production-ready, enterprise-grade document sharing platform that rivals Papermark. Built with Node.js, TypeScript, PostgreSQL, and Redis. Provides secure document sharing, advanced analytics, and comprehensive API integration.
+A comprehensive, enterprise-grade document sharing and analytics platform designed to rival and exceed Papermark's capabilities.
 
 ## 🚀 Features
 
 ### Core Functionality
-- **Secure Document Management** - Upload, store, and organize documents with role-based access control
-- **Advanced Sharing** - Password protection, expiration dates, custom domains, access lists
-- **Real-time Analytics** - View tracking, engagement metrics, geographic insights, device analytics
-- **File Processing** - PDF watermarking, format conversion, preview generation, thumbnail creation
-- **Security** - End-to-end encryption, JWT authentication, rate limiting, IP whitelisting
-- **API-First Design** - RESTful API with comprehensive documentation and webhook support
 
-### Enterprise Features
-- **Multi-tenant Architecture** - Organization-based isolation and management
-- **Custom Branding** - White-label solutions with custom domains and styling
-- **Advanced Permissions** - Granular role-based access control (Owner, Admin, Editor, Viewer)
-- **Audit Logging** - Comprehensive activity tracking and compliance reporting
-- **Webhook Integration** - Real-time notifications for external systems
-- **Scalable Storage** - Local and cloud storage options with automatic cleanup
+- **Document Management**: Upload, organize, and manage documents with advanced metadata
+- **Secure Sharing**: Create password-protected, expiring shareable links
+- **Multi-format Support**: PDF, DOC, PPT, XLS, images, and more
+- **Organization Management**: Multi-tenant architecture with role-based access control
+- **Advanced Analytics**: Real-time tracking, page-level insights, and comprehensive reporting
+
+### Security & Access Control
+
+- **JWT Authentication**: Secure token-based authentication with refresh tokens
+- **Role-Based Access Control**: Owner, Admin, Member, and Viewer roles
+- **Organization Isolation**: Complete data separation between organizations
+- **Password Protection**: Optional password protection for shared documents
+- **Link Expiration**: Set expiration dates for shared links
+
+### Analytics & Insights
+
+- **Real-time Tracking**: Live viewer tracking and engagement metrics
+- **Geographic Analytics**: Country and city-level visitor insights
+- **Device Analytics**: Browser, OS, and device type tracking
+- **Page-level Insights**: Individual page performance and engagement
+- **Traffic Sources**: Referrer tracking and source analysis
+
+### File Processing
+
+- **Document Conversion**: Convert Office documents to PDF
+- **Thumbnail Generation**: Automatic thumbnail creation for documents
+- **Text Extraction**: OCR and text extraction from images and PDFs
+- **Preview Generation**: Multiple resolution previews for documents
 
 ## 🏗️ Architecture
+
+The service is built using a microservices architecture with the following components:
 
 ```
 document-sharing-service/
 ├── packages/
-│ ├── core/                    # Core business logic and models
-│ │   ├── src/
-│ │   │   ├── database/       # Database connection and migrations
-│ │   │   ├── models/         # Data models and business logic
-│ │   │   ├── services/       # Core business services
-│ │   │   ├── utils/          # Utilities and helpers
-│ │   │   └── types/          # TypeScript interfaces and types
-│ │   └── package.json
-│ ├── api-gateway/            # REST API and GraphQL endpoints
-│ ├── analytics-engine/       # Real-time analytics processing
-│ ├── file-processor/         # Document processing and conversion
-│ └── notification-service/   # Email, webhooks, real-time updates
-├── infrastructure/           # Docker and deployment configs
-├── monitoring/               # Health checks and monitoring
-└── docker-compose.yml        # Development environment setup
+│   ├── core/                 # Core functionality and models
+│   ├── api-gateway/          # Main API service
+│   ├── analytics-engine/     # Analytics and tracking service
+│   ├── file-processor/       # File processing and conversion
+│   └── notification-service/ # Email and push notifications
+├── docker/                   # Docker configuration
+├── infrastructure/           # Infrastructure setup
+└── monitoring/              # Monitoring and logging
 ```
 
 ## 🛠️ Technology Stack
 
 - **Backend**: Node.js, TypeScript, Express.js
-- **Database**: PostgreSQL with advanced indexing and JSONB support
-- **Cache**: Redis for session management and rate limiting
-- **File Processing**: Sharp for image processing, pdf2pic for PDF previews
-- **Security**: JWT, bcrypt, crypto, rate limiting
-- **Storage**: Local file system with S3 integration support
-- **Monitoring**: Winston logging, health checks, performance metrics
+- **Database**: PostgreSQL with advanced indexing
+- **Caching**: Redis for sessions and caching
+- **File Storage**: Local storage with S3 integration support
+- **Authentication**: JWT with bcrypt password hashing
+- **Containerization**: Docker and Docker Compose
+- **Monitoring**: Winston logging, health checks
 
-## 🚀 Quick Start
+## 📋 Prerequisites
 
-### Prerequisites
 - Node.js 18+
 - PostgreSQL 15+
 - Redis 7+
-- Docker & Docker Compose (optional)
+- Docker (optional)
+- LibreOffice (for document conversion)
 
-### Development Setup
+## 🚀 Quick Start
 
-1. **Clone and Install Dependencies**
+### 1. Clone and Install Dependencies
+
 ```bash
 git clone <repository-url>
 cd document-sharing-service
 npm install
 ```
 
-2. **Environment Configuration**
-```bash
-cp .env.example .env
-```
+### 2. Environment Configuration
 
-Configure your `.env` file:
+Create a `.env` file in the root directory:
+
 ```env
 # Database
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=document_sharing
-DB_USER=postgres
-DB_PASSWORD=your_password
-DB_MAX_CONNECTIONS=20
+DATABASE_URL=postgresql://username:password@localhost:5432/document_sharing
+REDIS_URL=redis://localhost:6379
 
-# Redis
-REDIS_HOST=localhost
-REDIS_PORT=6379
-REDIS_PASSWORD=
-REDIS_DB=0
+# JWT Secrets
+JWT_SECRET=your-super-secret-jwt-key
+JWT_REFRESH_SECRET=your-super-secret-refresh-key
 
-# Security
-JWT_SECRET=your-super-secret-jwt-key-change-in-production
-ENCRYPTION_KEY=your-encryption-key-change-in-production
-SALT_ROUNDS=12
-
-# Storage
-LOCAL_STORAGE_PATH=./uploads
+# File Storage
+UPLOAD_PATH=./uploads
 MAX_FILE_SIZE=104857600
-BASE_URL=http://localhost:4000
 
-# Logging
-LOG_LEVEL=info
+# Server
+PORT=3000
 NODE_ENV=development
+BASE_URL=http://localhost:3000
+
+# CORS
+ALLOWED_ORIGINS=http://localhost:3000,http://localhost:3001
 ```
 
-3. **Database Setup**
+### 3. Database Setup
+
 ```bash
-# Start PostgreSQL and Redis
-docker-compose up -d postgres redis
+# Create database
+createdb document_sharing
 
 # Run migrations
-cd packages/core
+npm run db:migrate
+
+# Seed initial data (optional)
+npm run db:seed
+```
+
+### 4. Start Services
+
+```bash
+# Development mode (all services)
+npm run dev
+
+# Production build
 npm run build
-node dist/database/migrations.js
+npm start
+
+# Individual services
+npm run dev:api
+npm run dev:analytics
+npm run dev:file-processor
+npm run dev:notifications
 ```
 
-4. **Start Services**
+### 5. Docker (Alternative)
+
 ```bash
-# Start API Gateway
-cd packages/api-gateway
-npm run dev
+# Build and start all services
+npm run docker:build
+npm run docker:up
 
-# Start Core Service
-cd packages/core
-npm run dev
+# View logs
+npm run docker:logs
 
-# Start Analytics Engine
-cd packages/analytics-engine
-npm run dev
-```
-
-5. **Verify Installation**
-```bash
-# Health check
-curl http://localhost:4000/health
-
-# API documentation
-open http://localhost:4000/api-docs
+# Stop services
+npm run docker:down
 ```
 
 ## 📚 API Documentation
 
-### Authentication
-```bash
-# Login
-POST /api/auth/login
+### Authentication Endpoints
+
+#### Register User
+
+```http
+POST /api/v1/auth/register
+Content-Type: application/json
+
 {
   "email": "user@example.com",
-  "password": "password"
+  "password": "securepassword",
+  "firstName": "John",
+  "lastName": "Doe",
+  "organizationId": "optional-org-id"
 }
+```
 
-# Response
+#### Login
+
+```http
+POST /api/v1/auth/login
+Content-Type: application/json
+
 {
-  "success": true,
-  "data": {
-    "token": "jwt_token_here",
-    "user": { ... }
-  }
+  "email": "user@example.com",
+  "password": "securepassword"
+}
+```
+
+#### Refresh Token
+
+```http
+POST /api/v1/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "your-refresh-token"
 }
 ```
 
 ### Document Management
-```bash
-# Upload document
-POST /api/documents
+
+#### Upload Document
+
+```http
+POST /api/v1/documents/upload
 Authorization: Bearer <token>
 Content-Type: multipart/form-data
 
-# Get documents
-GET /api/documents?page=1&limit=20
-Authorization: Bearer <token>
+file: <file>
+title: "Document Title"
+description: "Optional description"
+tags: "tag1,tag2,tag3"
+isPublic: false
+```
 
-# Search documents
-GET /api/documents/search?query=resume&category=resume
+#### Get Documents
+
+```http
+GET /api/v1/documents?page=1&limit=20&search=keyword&tags=tag1,tag2
 Authorization: Bearer <token>
+```
+
+#### Get Public Documents
+
+```http
+GET /api/v1/documents/public?page=1&limit=20&search=keyword
 ```
 
 ### Document Sharing
-```bash
-# Create share
-POST /api/shares
-Authorization: Bearer <token>
-{
-  "documentId": "uuid",
-  "title": "My Resume",
-  "password": "optional_password",
-  "expiresAt": "2024-12-31T23:59:59Z",
-  "settings": {
-    "allowDownload": true,
-    "allowPrint": false,
-    "trackViews": true
-  }
-}
 
-# Access shared document
-GET /view/{shareId}
-# or with password
-POST /view/{shareId}
+#### Create Shareable Link
+
+```http
+POST /api/v1/shares
+Authorization: Bearer <token>
+Content-Type: application/json
+
 {
-  "password": "password"
+  "documentId": "doc-uuid",
+  "password": "optional-password",
+  "expiresAt": "2024-12-31T23:59:59Z",
+  "allowDownload": true,
+  "customDomain": "optional-domain.com"
 }
+```
+
+#### View Shared Document
+
+```http
+GET /d/{slug}?password=optional-password
 ```
 
 ### Analytics
-```bash
-# Get document analytics
-GET /api/analytics/documents/{documentId}
-Authorization: Bearer <token>
 
-# Get share analytics
-GET /api/analytics/shares/{shareId}
-Authorization: Bearer <token>
+#### Document Analytics
 
-# Get organization analytics
-GET /api/analytics/organization
+```http
+GET /api/v1/analytics/documents/{documentId}?timeRange=30d
 Authorization: Bearer <token>
 ```
 
-## 🔒 Security Features
+#### Organization Analytics
 
-### Authentication & Authorization
-- JWT-based authentication with configurable expiration
-- Role-based access control (Owner, Admin, Editor, Viewer)
-- Organization-level isolation and permissions
-- API key validation for webhook endpoints
+```http
+GET /api/v1/analytics/organization?timeRange=30d
+Authorization: Bearer <token>
+```
 
-### File Security
-- File type validation by content (magic bytes)
-- Secure file access tokens with expiration
-- IP whitelisting and rate limiting
-- Encrypted storage of sensitive metadata
+#### Record View (for document viewer)
 
-### Data Protection
-- Password hashing with bcrypt (configurable salt rounds)
-- AES-256 encryption for sensitive data
-- Secure random string generation
-- Comprehensive audit logging
+```http
+POST /api/v1/analytics/record-view
+Content-Type: application/json
 
-## 📊 Analytics & Insights
+{
+  "documentId": "doc-uuid",
+  "linkId": "optional-link-uuid",
+  "ipAddress": "127.0.0.1",
+  "userAgent": "Mozilla/5.0...",
+  "timeOnPage": 120,
+  "pagesViewed": [1, 2, 3],
+  "interactions": ["scroll_50", "click_button"]
+}
+```
 
-### View Tracking
-- Real-time view counting and unique visitor tracking
-- Geographic data (country, city) with IP geolocation
-- Device and browser analytics
-- Session duration and engagement metrics
+### User Management
 
-### Performance Metrics
-- File upload/download performance
-- API response times and error rates
-- Storage utilization and cleanup statistics
-- Rate limiting and security event monitoring
+#### Get Users
 
-### Custom Events
-- Track specific user actions (view, download, print)
-- Custom metadata and tagging
-- Webhook integration for external analytics
-- Export capabilities for business intelligence
+```http
+GET /api/v1/users?page=1&limit=20&role=admin&search=john
+Authorization: Bearer <token>
+```
 
-## 🔧 Configuration
+#### Update User
 
-### Environment Variables
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `NODE_ENV` | Environment mode | `development` |
-| `PORT` | Service port | `4000` |
-| `DB_HOST` | PostgreSQL host | `localhost` |
-| `REDIS_HOST` | Redis host | `localhost` |
-| `JWT_SECRET` | JWT signing secret | `change-in-production` |
-| `MAX_FILE_SIZE` | Maximum file size in bytes | `104857600` (100MB) |
-| `LOG_LEVEL` | Logging level | `info` |
+```http
+PUT /api/v1/users/{userId}
+Authorization: Bearer <token>
+Content-Type: application/json
 
-### Database Configuration
-- Connection pooling with configurable limits
-- Automatic retry and failover handling
-- JSONB support for flexible metadata storage
-- Advanced indexing for optimal query performance
+{
+  "firstName": "Updated Name",
+  "role": "admin",
+  "permissions": ["manage_members", "manage_documents"]
+}
+```
 
-### Storage Configuration
-- Local file system with automatic directory creation
-- Configurable file size limits and type restrictions
-- Automatic thumbnail and preview generation
-- Cleanup jobs for temporary and expired files
+### Organization Management
+
+#### Get Organization
+
+```http
+GET /api/v1/organizations/{orgId}
+Authorization: Bearer <token>
+```
+
+#### Update Organization
+
+```http
+PUT /api/v1/organizations/{orgId}
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "name": "Updated Org Name",
+  "domain": "newdomain.com",
+  "settings": {
+    "branding": {
+      "logo": "logo-url",
+      "colors": ["#007bff", "#28a745"]
+    }
+  }
+}
+```
+
+## 🔐 Authentication & Authorization
+
+### JWT Token Structure
+
+```json
+{
+  "userId": "user-uuid",
+  "email": "user@example.com",
+  "organizationId": "org-uuid",
+  "role": "admin",
+  "permissions": ["manage_members", "manage_documents"],
+  "subscriptionTier": "pro",
+  "iat": 1234567890,
+  "exp": 1234567890
+}
+```
+
+### Permission System
+
+- **Owner**: Full access to organization and all features
+- **Admin**: Manage members, documents, and organization settings
+- **Member**: Create and manage documents, view analytics
+- **Viewer**: View documents and basic analytics
+
+### Rate Limiting
+
+- **Free Tier**: 100 requests per 15 minutes
+- **Pro Tier**: 500 requests per 15 minutes
+- **Enterprise Tier**: 2000 requests per 15 minutes
+
+## 📊 Database Schema
+
+### Core Tables
+
+- `users` - User accounts and authentication
+- `organizations` - Multi-tenant organizations
+- `documents` - Document metadata and storage
+- `document_links` - Shareable links and access control
+- `document_views` - Analytics and tracking data
+
+### Key Features
+
+- UUID primary keys for security
+- JSONB fields for flexible metadata storage
+- Proper indexing for performance
+- Soft deletes for data integrity
+- Timestamp tracking for all records
 
 ## 🚀 Deployment
 
-### Docker Deployment
-```bash
-# Build and start all services
-docker-compose -f docker-compose.prod.yml up -d
+### Production Environment Variables
 
-# Scale services
-docker-compose -f docker-compose.prod.yml up -d --scale api-gateway=3
+```env
+NODE_ENV=production
+DATABASE_URL=postgresql://user:pass@host:5432/db
+REDIS_URL=redis://host:6379
+JWT_SECRET=very-long-random-secret
+JWT_REFRESH_SECRET=very-long-random-refresh-secret
+UPLOAD_PATH=/var/uploads
+MAX_FILE_SIZE=104857600
+BASE_URL=https://yourdomain.com
+ALLOWED_ORIGINS=https://yourdomain.com
 ```
 
-### Production Considerations
-- Use environment-specific configuration files
-- Implement proper SSL/TLS termination
-- Set up monitoring and alerting
-- Configure backup and disaster recovery
-- Use managed database and Redis services
-- Implement CDN for file delivery
+### Docker Production
+
+```bash
+# Build production image
+docker build -f Dockerfile.production -t document-sharing:latest .
+
+# Run with environment variables
+docker run -d \
+  --name document-sharing \
+  -p 3000:3000 \
+  -e NODE_ENV=production \
+  -e DATABASE_URL=... \
+  document-sharing:latest
+```
 
 ### Health Checks
+
 ```bash
 # Service health
-GET /health
+curl http://localhost:3000/health
 
-# Database health
-GET /health/db
+# Database connectivity
+curl http://localhost:3000/health/db
 
-# Redis health
-GET /health/redis
-
-# Storage health
-GET /health/storage
+# Redis connectivity
+curl http://localhost:3000/health/redis
 ```
 
 ## 🧪 Testing
 
-### Running Tests
 ```bash
 # Run all tests
 npm test
@@ -327,37 +430,61 @@ npm test
 # Run tests with coverage
 npm run test:coverage
 
-# Run specific test suite
-npm run test:unit
-npm run test:integration
-npm run test:e2e
+# Run specific service tests
+npm run test:api
+npm run test:analytics
+npm run test:file-processor
+npm run test:notifications
+
+# Watch mode
+npm run test:watch
 ```
 
-### Test Coverage
-- Unit tests for all business logic
-- Integration tests for database operations
-- End-to-end tests for API endpoints
-- Security and performance testing
-
-## 📈 Performance
+## 📈 Performance & Scaling
 
 ### Optimization Features
-- Database connection pooling
-- Redis caching for frequently accessed data
-- Efficient file storage and retrieval
-- Optimized database queries with proper indexing
-- Background job processing for heavy operations
 
-### Monitoring
-- Real-time performance metrics
-- Database query performance analysis
-- File operation timing and success rates
-- API endpoint response time tracking
-- Error rate and failure monitoring
+- Database connection pooling
+- Redis caching for sessions and data
+- Efficient file processing with streaming
+- Pagination for all list endpoints
+- Proper database indexing
+
+### Scaling Considerations
+
+- Horizontal scaling with load balancers
+- Database read replicas for analytics
+- CDN integration for file delivery
+- Microservice architecture for independent scaling
+
+## 🔍 Monitoring & Logging
+
+### Logging
+
+- Structured logging with Winston
+- Request/response logging
+- Error tracking and alerting
+- Performance metrics
+
+### Health Monitoring
+
+- Service health checks
+- Database connectivity monitoring
+- Redis connectivity monitoring
+- File system health checks
+
+## 🛡️ Security Features
+
+- JWT token validation
+- Password hashing with bcrypt
+- CORS configuration
+- Rate limiting
+- Input validation and sanitization
+- SQL injection prevention
+- XSS protection with helmet
 
 ## 🤝 Contributing
 
-### Development Workflow
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
@@ -365,36 +492,42 @@ npm run test:e2e
 5. Ensure all tests pass
 6. Submit a pull request
 
-### Code Standards
-- TypeScript strict mode enabled
-- ESLint configuration for code quality
-- Prettier for consistent formatting
-- Comprehensive error handling
-- Detailed logging and monitoring
-
 ## 📄 License
 
-MIT License - see [LICENSE](./LICENSE) file for details.
+This project is licensed under the MIT License - see the LICENSE file for details.
 
 ## 🆘 Support
 
-### Documentation
-- [API Reference](./docs/api.md)
-- [Integration Guide](./docs/integration.md)
-- [Deployment Guide](./docs/deployment.md)
-- [Troubleshooting](./docs/troubleshooting.md)
+For support and questions:
 
-### Community
-- [GitHub Issues](https://github.com/your-org/document-sharing-service/issues)
-- [Discussions](https://github.com/your-org/document-sharing-service/discussions)
-- [Wiki](https://github.com/your-org/document-sharing-service/wiki)
+- Create an issue in the repository
+- Check the documentation
+- Review the API examples
 
-### Enterprise Support
-- Dedicated support team
-- Custom integrations and features
-- On-premise deployment assistance
-- Training and consulting services
+## 🚧 Roadmap
+
+### Phase 1 (Current)
+
+- ✅ Core API functionality
+- ✅ Authentication and authorization
+- ✅ Document management
+- ✅ Basic sharing features
+- ✅ Analytics foundation
+
+### Phase 2 (Next)
+
+- 🔄 Advanced file processing
+- 🔄 Real-time analytics with WebSockets
+- 🔄 Advanced sharing features
+- 🔄 Mobile optimization
+
+### Phase 3 (Future)
+
+- 📋 AI-powered document analysis
+- 📋 Advanced collaboration features
+- 📋 Enterprise integrations
+- 📋 Mobile applications
 
 ---
 
-**Built with ❤️ by the AI Resume Suite Team**
+**Built with ❤️ for enterprise document sharing needs**

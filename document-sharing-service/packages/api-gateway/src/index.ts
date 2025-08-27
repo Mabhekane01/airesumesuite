@@ -4,21 +4,13 @@ import helmet from "helmet";
 import compression from "compression";
 import rateLimit from "express-rate-limit";
 import dotenv from "dotenv";
+import { logger } from "@document-sharing/core/utils/logger";
 
 // Load environment variables
 dotenv.config();
 
-// Import routes
-import shareRoutes from "./routes/shares";
-import analyticsRoutes from "./routes/analytics";
-import webhookRoutes from "./routes/webhooks";
-
-// Import middleware
-import { errorHandler } from "./middleware/errorHandler";
-import { requestLogger } from "./middleware/requestLogger";
-
-// Create Express app
 const app = express();
+const PORT = process.env.PORT || 3000;
 
 // Security middleware
 app.use(
@@ -37,13 +29,11 @@ app.use(
 // CORS configuration
 app.use(
   cors({
-    origin: [
+    origin: process.env.ALLOWED_ORIGINS?.split(",") || [
       "http://localhost:3000",
-      "http://localhost:5173",
-      "http://localhost:3001",
     ],
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
   })
 );
@@ -53,8 +43,7 @@ const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // limit each IP to 100 requests per windowMs
   message: {
-    success: false,
-    message: "Too many requests from this IP, please try again later.",
+    error: "Too many requests from this IP, please try again later.",
     code: "RATE_LIMIT_EXCEEDED",
   },
   standardHeaders: true,
@@ -64,106 +53,86 @@ const limiter = rateLimit({
 app.use("/api/", limiter);
 
 // Body parsing middleware
-app.use(express.json({ limit: "10mb" }));
-app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
 // Compression middleware
 app.use(compression());
 
 // Request logging
-app.use(requestLogger);
+app.use((req, res, next) => {
+  logger.info(`${req.method} ${req.path}`, {
+    ip: req.ip,
+    userAgent: req.get("User-Agent"),
+    timestamp: new Date().toISOString(),
+  });
+  next();
+});
 
 // Health check endpoint
-app.get("/health", (_req, res) => {
+app.get("/health", (req, res) => {
   res.status(200).json({
-    success: true,
-    message: "Document Sharing Service is running",
+    status: "healthy",
     timestamp: new Date().toISOString(),
-    version: "1.0.0",
-    environment: process.env["NODE_ENV"] || "development",
+    service: "document-sharing-api-gateway",
+    version: process.env.npm_package_version || "1.0.0",
   });
 });
 
 // API routes
-app.use("/api/v1/shares", shareRoutes);
-app.use("/api/v1/analytics", analyticsRoutes);
-app.use("/api/v1/webhooks", webhookRoutes);
+app.use("/api/v1/auth", require("./routes/auth").default);
+app.use("/api/v1/documents", require("./routes/documents").default);
+app.use("/api/v1/shares", require("./routes/shares").default);
+app.use("/api/v1/analytics", require("./routes/analytics").default);
+app.use("/api/v1/users", require("./routes/users").default);
+app.use("/api/v1/organizations", require("./routes/organizations").default);
 
-// Document viewing route (public)
-app.get("/d/:slug", async (req, res) => {
-  try {
-    const { slug } = req.params;
-
-    // This would typically render a document viewer page
-    // For now, return a simple response
-    res.json({
-      success: true,
-      message: "Document viewer endpoint",
-      slug,
-      note: "This endpoint would render the document viewer interface",
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Internal server error",
-    });
-  }
-});
-
-// 404 handler for undefined routes
+// 404 handler
 app.use("*", (req, res) => {
   res.status(404).json({
-    success: false,
-    message: `Route ${req.originalUrl} not found`,
+    error: "Endpoint not found",
+    code: "ENDPOINT_NOT_FOUND",
+    path: req.originalUrl,
   });
 });
 
-// Error handling middleware
-app.use(errorHandler);
+// Global error handler
+app.use(
+  (
+    error: any,
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction
+  ) => {
+    logger.error("Unhandled error:", error);
 
-// Start server
-const PORT = parseInt(process.env["PORT"] || "4000");
-const HOST = process.env["HOST"] || "0.0.0.0";
+    const statusCode = error.statusCode || 500;
+    const message = error.message || "Internal server error";
 
-const server = app.listen(PORT, HOST, () => {
-  console.log(`Document Sharing Service started`, {
-    host: HOST,
-    port: PORT,
-    environment: process.env["NODE_ENV"] || "development",
-    timestamp: new Date().toISOString(),
-  });
-});
+    res.status(statusCode).json({
+      error: message,
+      code: error.code || "INTERNAL_SERVER_ERROR",
+      ...(process.env.NODE_ENV === "development" && { stack: error.stack }),
+    });
+  }
+);
 
 // Graceful shutdown
-const gracefulShutdown = (signal: string) => {
-  console.log(`Received ${signal}. Starting graceful shutdown...`);
-
-  server.close(() => {
-    console.log("HTTP server closed");
-    process.exit(0);
-  });
-
-  // Force exit after 10 seconds
-  setTimeout(() => {
-    console.error("Forced shutdown after timeout");
-    process.exit(1);
-  }, 10000);
-};
-
-// Handle shutdown signals
-process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
-process.on("SIGINT", () => gracefulShutdown("SIGINT"));
-
-// Handle uncaught exceptions
-process.on("uncaughtException", (error) => {
-  console.error("Uncaught Exception:", error);
-  process.exit(1);
+process.on("SIGTERM", () => {
+  logger.info("SIGTERM received, shutting down gracefully");
+  process.exit(0);
 });
 
-// Handle unhandled promise rejections
-process.on("unhandledRejection", (reason, promise) => {
-  console.error("Unhandled Rejection at:", promise, "reason:", reason);
-  process.exit(1);
+process.on("SIGINT", () => {
+  logger.info("SIGINT received, shutting down gracefully");
+  process.exit(0);
+});
+
+// Start server
+app.listen(PORT, () => {
+  logger.info(`Document Sharing API Gateway started on port ${PORT}`);
+  logger.info(`Environment: ${process.env.NODE_ENV || "development"}`);
+  logger.info(`Health check: http://localhost:${PORT}/health`);
 });
 
 export default app;

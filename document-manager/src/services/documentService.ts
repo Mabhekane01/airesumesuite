@@ -1,14 +1,24 @@
-import { DocumentModel, Document, CreateDocumentData, UpdateDocumentData, DocumentFilters, DocumentSort } from '@/models/Document';
-import { FolderModel, Folder } from '@/models/Folder';
-import { DocumentSharingIntegration } from './documentSharingIntegration';
-import { DocumentProcessingService, UploadedFile } from './documentUploadService';
-import { webhookEventService } from './webhookEventService';
-import { pool, redis } from '@/config/database';
-import { config } from '@/config/environment';
-import { logger, logFileOperation, logAnalytics } from '@/utils/logger';
-import { v4 as uuidv4 } from 'uuid';
-import path from 'path';
-import fs from 'fs/promises';
+import {
+  DocumentModel,
+  Document,
+  CreateDocumentData,
+  UpdateDocumentData,
+  DocumentFilters,
+  DocumentSort,
+} from "@/models/Document";
+import { FolderModel, Folder } from "@/models/Folder";
+import { DocumentSharingIntegration } from "./documentSharingIntegration";
+import {
+  DocumentProcessingService,
+  UploadedFile,
+} from "./documentUploadService";
+import { webhookEventService } from "./webhookEventService";
+import { pool, redis } from "@/config/database";
+import { config } from "@/config/environment";
+import { logger, logFileOperation, logAnalytics } from "@/utils/logger";
+import { v4 as uuidv4 } from "uuid";
+import path from "path";
+import fs from "fs/promises";
 
 export interface DocumentWithFolder extends Document {
   folder?: Folder;
@@ -59,8 +69,11 @@ export class DocumentService {
   ): Promise<Document> {
     try {
       // Process the uploaded file
-      const processedFile = await DocumentProcessingService.processFile(file, userId);
-      
+      const processedFile = await DocumentProcessingService.processFile(
+        file,
+        userId
+      );
+
       // Create document record
       const documentData: CreateDocumentData = {
         userId,
@@ -78,62 +91,68 @@ export class DocumentService {
         thumbnailUrl: processedFile.thumbnailUrl,
         previewImages: processedFile.previewImages,
         textContent: processedFile.textContent,
-        source: metadata.source || 'upload',
-        sourceMetadata: metadata.sourceMetadata || {}
+        source: metadata.source || "upload",
+        sourceMetadata: metadata.sourceMetadata || {},
       };
 
       const document = await this.documentModel.create(documentData);
-      
+
       // Cache document data
       await this.cacheDocument(document);
-      
+
       // Log file operation
-      logFileOperation('create', document.filePath, userId, {
+      logFileOperation("create", document.filePath, userId, {
         documentId: document.id,
         fileSize: document.fileSize,
-        fileType: document.fileType
+        fileType: document.fileType,
       });
 
       // Log analytics
-      logAnalytics('Document created', {
+      logAnalytics("Document created", {
         documentId: document.id,
         userId,
         organizationId,
         fileType: document.fileType,
         fileSize: document.fileSize,
-        source: document.source
+        source: document.source,
       });
 
       // Create webhook events for document creation
       try {
         await webhookEventService.createWebhookEventsForAction(
-          'document.created',
+          "document.created",
           {
             documentId: document.id,
             title: document.title,
             fileType: document.fileType,
             fileSize: document.fileSize,
             userId,
-            organizationId
+            organizationId,
           },
           userId,
           organizationId
         );
       } catch (error) {
-        logger.warn('Failed to create webhook events for document creation:', error);
+        logger.warn(
+          "Failed to create webhook events for document creation:",
+          error
+        );
       }
 
       return document;
     } catch (error) {
-      logger.error('Failed to create document:', error);
-      throw new Error('Failed to create document');
+      logger.error("Failed to create document:", error);
+      throw new Error("Failed to create document");
     }
   }
 
   /**
    * Get document by ID with folder information
    */
-  async getDocument(id: string, userId: string): Promise<DocumentWithFolder | null> {
+  async getDocument(
+    id: string,
+    userId: string
+  ): Promise<DocumentWithFolder | null> {
     try {
       // Try to get from cache first
       const cached = await this.getCachedDocument(id);
@@ -149,7 +168,7 @@ export class DocumentService {
       // Check access permissions
       if (document.userId !== userId && document.organizationId) {
         // TODO: Check organization membership
-        throw new Error('Access denied');
+        throw new Error("Access denied");
       }
 
       // Get folder information
@@ -165,14 +184,17 @@ export class DocumentService {
       let lastViewed: Date | undefined;
 
       try {
-        const sharingData = await this.documentSharingIntegration.getBasicDocumentAnalytics(id);
+        const sharingData =
+          await this.documentSharingIntegration.getBasicDocumentAnalytics(id);
         if (sharingData?.data) {
           shareCount = sharingData.data.shareCount || 0;
           viewCount = sharingData.data.totalViews || 0;
-          lastViewed = sharingData.data.lastViewed ? new Date(sharingData.data.lastViewed) : undefined;
+          lastViewed = sharingData.data.lastViewed
+            ? new Date(sharingData.data.lastViewed)
+            : undefined;
         }
       } catch (error) {
-        logger.warn('Failed to get sharing analytics:', error);
+        logger.warn("Failed to get sharing analytics:", error);
       }
 
       const documentWithFolder: DocumentWithFolder = {
@@ -180,7 +202,7 @@ export class DocumentService {
         folder,
         shareCount,
         viewCount,
-        lastViewed
+        lastViewed,
       };
 
       // Cache the result
@@ -188,9 +210,20 @@ export class DocumentService {
 
       return documentWithFolder;
     } catch (error) {
-      logger.error('Failed to get document:', error);
-      throw new Error('Failed to get document');
+      logger.error("Failed to get document:", error);
+      throw new Error("Failed to get document");
     }
+  }
+
+  /**
+   * Move document to folder (alias for moveDocumentToFolder)
+   */
+  async moveDocument(
+    documentId: string,
+    userId: string,
+    folderId: string | null
+  ): Promise<Document | null> {
+    return this.moveDocumentToFolder(documentId, userId, folderId);
   }
 
   /**
@@ -200,7 +233,7 @@ export class DocumentService {
     userId: string,
     organizationId: string | undefined,
     filters: DocumentFilters,
-    sort: DocumentSort = { field: 'createdAt', direction: 'desc' },
+    sort: DocumentSort = { field: "createdAt", direction: "desc" },
     page: number = 1,
     limit: number = 20
   ): Promise<DocumentSearchResult> {
@@ -209,11 +242,16 @@ export class DocumentService {
       const searchFilters: DocumentFilters = {
         ...filters,
         userId,
-        organizationId
+        organizationId,
       };
 
-      const result = await this.documentModel.search(searchFilters, sort, page, limit);
-      
+      const result = await this.documentModel.search(
+        searchFilters,
+        sort,
+        page,
+        limit
+      );
+
       // Enrich documents with folder information
       const documentsWithFolders = await Promise.all(
         result.documents.map(async (doc) => {
@@ -225,7 +263,7 @@ export class DocumentService {
 
           return {
             ...doc,
-            folder
+            folder,
           };
         })
       );
@@ -237,11 +275,11 @@ export class DocumentService {
         total: result.total,
         page,
         limit,
-        totalPages
+        totalPages,
       };
     } catch (error) {
-      logger.error('Failed to search documents:', error);
-      throw new Error('Failed to search documents');
+      logger.error("Failed to search documents:", error);
+      throw new Error("Failed to search documents");
     }
   }
 
@@ -261,7 +299,7 @@ export class DocumentService {
       }
 
       if (existingDocument.userId !== userId) {
-        throw new Error('Access denied');
+        throw new Error("Access denied");
       }
 
       // Update document
@@ -274,33 +312,36 @@ export class DocumentService {
       await this.clearDocumentCache(id);
 
       // Log analytics
-      logAnalytics('Document updated', {
+      logAnalytics("Document updated", {
         documentId: id,
         userId,
-        updateFields: Object.keys(updateData)
+        updateFields: Object.keys(updateData),
       });
 
       // Create webhook events for document update
       try {
         await webhookEventService.createWebhookEventsForAction(
-          'document.updated',
+          "document.updated",
           {
             documentId: id,
             updateFields: Object.keys(updateData),
             userId,
-            organizationId: existingDocument.organizationId
+            organizationId: existingDocument.organizationId,
           },
           userId,
           existingDocument.organizationId
         );
       } catch (error) {
-        logger.warn('Failed to create webhook events for document update:', error);
+        logger.warn(
+          "Failed to create webhook events for document update:",
+          error
+        );
       }
 
       return updatedDocument;
     } catch (error) {
-      logger.error('Failed to update document:', error);
-      throw new Error('Failed to update document');
+      logger.error("Failed to update document:", error);
+      throw new Error("Failed to update document");
     }
   }
 
@@ -316,16 +357,18 @@ export class DocumentService {
       }
 
       if (existingDocument.userId !== userId) {
-        throw new Error('Access denied');
+        throw new Error("Access denied");
       }
 
       // Delete from document-sharing-service first
       try {
         // TODO: Implement deleteDocumentShares method in DocumentSharingIntegration
         // For now, we'll just log that this needs to be implemented
-        logger.info('Document shares deletion not yet implemented', { documentId: id });
+        logger.info("Document shares deletion not yet implemented", {
+          documentId: id,
+        });
       } catch (error) {
-        logger.warn('Failed to delete document shares:', error);
+        logger.warn("Failed to delete document shares:", error);
       }
 
       // Delete document (soft delete)
@@ -335,37 +378,40 @@ export class DocumentService {
         await this.clearDocumentCache(id);
 
         // Log analytics
-        logAnalytics('Document deleted', {
+        logAnalytics("Document deleted", {
           documentId: id,
           userId,
           fileType: existingDocument.fileType,
-          fileSize: existingDocument.fileSize
+          fileSize: existingDocument.fileSize,
         });
 
         // Create webhook events for document deletion
         try {
           await webhookEventService.createWebhookEventsForAction(
-            'document.deleted',
+            "document.deleted",
             {
               documentId: id,
               title: existingDocument.title,
               fileType: existingDocument.fileType,
               fileSize: existingDocument.fileSize,
               userId,
-              organizationId: existingDocument.organizationId
+              organizationId: existingDocument.organizationId,
             },
             userId,
             existingDocument.organizationId
           );
         } catch (error) {
-          logger.warn('Failed to create webhook events for document deletion:', error);
+          logger.warn(
+            "Failed to create webhook events for document deletion:",
+            error
+          );
         }
       }
 
       return deleted;
     } catch (error) {
-      logger.error('Failed to delete document:', error);
-      throw new Error('Failed to delete document');
+      logger.error("Failed to delete document:", error);
+      throw new Error("Failed to delete document");
     }
   }
 
@@ -385,29 +431,29 @@ export class DocumentService {
       }
 
       if (existingDocument.userId !== userId) {
-        throw new Error('Access denied');
+        throw new Error("Access denied");
       }
 
       // Check if folder exists and user has access
       if (folderId) {
         const folder = await this.folderModel.findById(folderId);
         if (!folder || folder.userId !== userId) {
-          throw new Error('Invalid folder');
+          throw new Error("Invalid folder");
         }
       }
 
       // Update document
-      const updatedDocument = await this.documentModel.update(documentId, { 
-        folderId: folderId || undefined 
+      const updatedDocument = await this.documentModel.update(documentId, {
+        folderId: folderId || undefined,
       });
-      
+
       // Clear cache
       await this.clearDocumentCache(documentId);
 
       return updatedDocument;
     } catch (error) {
-      logger.error('Failed to move document to folder:', error);
-      throw new Error('Failed to move document to folder');
+      logger.error("Failed to move document to folder:", error);
+      throw new Error("Failed to move document to folder");
     }
   }
 
@@ -420,26 +466,29 @@ export class DocumentService {
   ): Promise<DocumentStats> {
     try {
       const stats = await this.documentModel.getStats(userId, organizationId);
-      
+
       // Get recent uploads
       const recentUploads = await this.documentModel.search(
         { userId, organizationId },
-        { field: 'createdAt', direction: 'desc' },
+        { field: "createdAt", direction: "desc" },
         1,
         5
       );
 
       // Get popular documents (by view count from document-sharing-service)
-      const popularDocuments = await this.getPopularDocuments(userId, organizationId);
+      const popularDocuments = await this.getPopularDocuments(
+        userId,
+        organizationId
+      );
 
       return {
         ...stats,
         recentUploads: recentUploads.documents,
-        popularDocuments
+        popularDocuments,
       };
     } catch (error) {
-      logger.error('Failed to get document stats:', error);
-      throw new Error('Failed to get document stats');
+      logger.error("Failed to get document stats:", error);
+      throw new Error("Failed to get document stats");
     }
   }
 
@@ -464,11 +513,11 @@ export class DocumentService {
       // Check if document exists and user has access
       const existingDocument = await this.documentModel.findById(documentId);
       if (!existingDocument) {
-        throw new Error('Document not found');
+        throw new Error("Document not found");
       }
 
       if (existingDocument.userId !== userId) {
-        throw new Error('Access denied');
+        throw new Error("Access denied");
       }
 
       // Create share via document-sharing-service
@@ -485,23 +534,23 @@ export class DocumentService {
           allowDownload: shareOptions.allowDownload !== false,
           allowPrint: shareOptions.allowPrint !== false,
           trackViews: shareOptions.trackViews !== false,
-          notifyOnView: shareOptions.notifyOnView || false
-        }
+          notifyOnView: shareOptions.notifyOnView || false,
+        },
       };
 
       // Log analytics
-      logAnalytics('Share link created', {
+      logAnalytics("Share link created", {
         documentId,
         userId,
         shareId: share.id,
         hasPassword: !!shareOptions.password,
-        expiresAt: shareOptions.expiresAt
+        expiresAt: shareOptions.expiresAt,
       });
 
       return share;
     } catch (error) {
-      logger.error('Failed to create share link:', error);
-      throw new Error('Failed to create share link');
+      logger.error("Failed to create share link:", error);
+      throw new Error("Failed to create share link");
     }
   }
 
@@ -517,7 +566,7 @@ export class DocumentService {
       // Get user's documents
       const userDocuments = await this.documentModel.search(
         { userId, organizationId },
-        { field: 'createdAt', direction: 'desc' },
+        { field: "createdAt", direction: "desc" },
         1,
         50 // Get more documents to sort by popularity
       );
@@ -530,15 +579,18 @@ export class DocumentService {
       const documentsWithViews = await Promise.all(
         userDocuments.documents.map(async (doc) => {
           try {
-            const analytics = await this.documentSharingIntegration.getBasicDocumentAnalytics(doc.id);
+            const analytics =
+              await this.documentSharingIntegration.getBasicDocumentAnalytics(
+                doc.id
+              );
             return {
               ...doc,
-              viewCount: analytics?.data?.totalViews || 0
+              viewCount: analytics?.data?.totalViews || 0,
             };
           } catch (error) {
             return {
               ...doc,
-              viewCount: 0
+              viewCount: 0,
             };
           }
         })
@@ -549,7 +601,7 @@ export class DocumentService {
         .sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0))
         .slice(0, limit);
     } catch (error) {
-      logger.error('Failed to get popular documents:', error);
+      logger.error("Failed to get popular documents:", error);
       return [];
     }
   }
@@ -557,25 +609,29 @@ export class DocumentService {
   /**
    * Cache document data
    */
-  private async cacheDocument(document: Document | DocumentWithFolder): Promise<void> {
+  private async cacheDocument(
+    document: Document | DocumentWithFolder
+  ): Promise<void> {
     try {
       const cacheKey = `document:${document.id}`;
       await redis.setEx(cacheKey, 300, JSON.stringify(document)); // 5 minutes
     } catch (error) {
-      logger.warn('Failed to cache document:', error);
+      logger.warn("Failed to cache document:", error);
     }
   }
 
   /**
    * Get cached document
    */
-  private async getCachedDocument(id: string): Promise<DocumentWithFolder | null> {
+  private async getCachedDocument(
+    id: string
+  ): Promise<DocumentWithFolder | null> {
     try {
       const cacheKey = `document:${id}`;
       const cached = await redis.get(cacheKey);
       return cached ? JSON.parse(cached) : null;
     } catch (error) {
-      logger.warn('Failed to get cached document:', error);
+      logger.warn("Failed to get cached document:", error);
       return null;
     }
   }
@@ -588,7 +644,7 @@ export class DocumentService {
       const cacheKey = `document:${id}`;
       await redis.del(cacheKey);
     } catch (error) {
-      logger.warn('Failed to clear document cache:', error);
+      logger.warn("Failed to clear document cache:", error);
     }
   }
 }

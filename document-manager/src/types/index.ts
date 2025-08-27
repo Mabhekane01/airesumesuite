@@ -56,9 +56,6 @@ export interface Document {
   id: string;
   userId: string;
   organizationId?: string;
-  folderId?: string;
-
-  // Document metadata
   title: string;
   description?: string;
   fileName: string;
@@ -66,33 +63,22 @@ export interface Document {
   fileSize: number;
   fileType: string;
   mimeType: string;
-
-  // Storage
   fileUrl: string;
   filePath: string;
   storageProvider: "local" | "s3" | "gcs" | "azure";
-
-  // Document processing
   pageCount?: number;
   thumbnailUrl?: string;
   previewImages: string[];
   textContent?: string;
-
-  // Versioning
   version: number;
   parentDocumentId?: string;
-
-  // Status
   status: "active" | "archived" | "deleted";
   processingStatus: "pending" | "processing" | "completed" | "failed";
-
-  // Integration sources
   source: "upload" | "ai_resume" | "pdf_editor" | "api";
   sourceMetadata: Record<string, any>;
-
-  // Additional properties that were missing
   tags?: string[];
-
+  folderId?: string;
+  isFavorite: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -274,23 +260,23 @@ export interface UpdateDocumentData {
 }
 
 export interface DocumentFilters {
-  userId: string;
-  organizationId?: string;
+  query?: string;
   folderId?: string;
-  fileType?: string;
-  status?: string;
-  processingStatus?: string;
-  source?: string;
-  search?: string;
+  tags?: string[];
+  mimeType?: string;
   dateFrom?: Date;
   dateTo?: Date;
+  page?: number;
+  limit?: number;
 }
 
 export interface DocumentWithFolder extends Document {
-  folder?: Folder;
-  shareCount: number;
-  viewCount: number;
-  lastViewed?: Date;
+  folder?: {
+    id: string;
+    name: string;
+    color?: string;
+  };
+  originalFilename?: string;
 }
 
 export interface DocumentSearchResult {
@@ -333,11 +319,13 @@ export interface ShareLinkData {
   title?: string;
   description?: string;
   password?: string;
-  expiresAt?: Date;
+  expiresAt?: Date | null;
   allowDownload?: boolean;
   allowPrint?: boolean;
   trackViews?: boolean;
   notifyOnView?: boolean;
+  isPublic?: boolean;
+  watermark?: boolean;
 }
 
 // Analytics interfaces

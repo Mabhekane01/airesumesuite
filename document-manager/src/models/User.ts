@@ -30,6 +30,7 @@ export interface CreateUserData {
 
 export interface UpdateUserData {
   name?: string;
+  passwordHash?: string;
   avatarUrl?: string;
   subscriptionTier?: 'free' | 'pro' | 'enterprise';
   customDomain?: string;
@@ -200,6 +201,11 @@ export class UserModel {
       if (updateData.apiKey !== undefined) {
         fields.push(`api_key = $${paramCount++}`);
         values.push(updateData.apiKey);
+      }
+      
+      if (updateData.passwordHash !== undefined) {
+        fields.push(`password_hash = $${paramCount++}`);
+        values.push(updateData.passwordHash);
       }
 
       if (fields.length === 0) {
