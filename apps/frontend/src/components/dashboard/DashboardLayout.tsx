@@ -22,7 +22,7 @@ import CareerCoachPage from "../../pages/career-coach/CareerCoachPage";
 import InterviewScheduler from "../../pages/job-tracker/InterviewScheduler";
 import ApiDebugInfo from "../debug/ApiDebugInfo";
 import NotificationTestPage from "../../pages/NotificationTestPage";
-import AccountManager from "../account/AccountManager";
+// AccountManager import removed - now using separate account page
 import EnterpriseUpgrade from "../../pages/payment/EnterpriseUpgrade";
 import PaymentSuccess from "../../pages/payment/PaymentSuccess";
 import DocumentManager from "../../pages/DocumentManager";
@@ -511,7 +511,14 @@ export default function DashboardLayout() {
                               <>
                                 <StarIcon className="w-3 h-3 text-yellow-400" />
                                 <span className="text-xs font-medium text-yellow-400">
-                                  Enterprise
+                                  Pro
+                                </span>
+                              </>
+                            ) : user.tier === "pro" ? (
+                              <>
+                                <StarIcon className="w-3 h-3 text-blue-400" />
+                                <span className="text-xs font-medium text-blue-400">
+                                  Pro
                                 </span>
                               </>
                             ) : (
@@ -526,22 +533,22 @@ export default function DashboardLayout() {
                         </div>
                       </div>
 
-                      {user.tier !== "enterprise" && (
+                      {user.tier === "free" && (
                         <Link
                           to="/dashboard/upgrade"
-                          className="flex items-center px-3 py-2 text-sm text-yellow-400 hover:bg-yellow-400/10 rounded-lg transition-colors mb-1"
+                          className="flex items-center px-3 py-2 text-sm text-blue-400 hover:bg-blue-400/10 rounded-lg transition-colors mb-1"
                           onClick={() => {
                             setShowUserMenu(false);
                             setSidebarOpen(false);
                           }}
                         >
                           <StarIcon className="w-4 h-4 mr-2" />
-                          Upgrade to Enterprise
+                          Upgrade to Pro
                         </Link>
                       )}
 
                       <Link
-                        to="/dashboard/account"
+                        to="/account"
                         className="flex items-center px-3 py-2 text-sm text-dark-text-secondary hover:bg-dark-quaternary/50 rounded-lg transition-colors"
                         onClick={() => {
                           setShowUserMenu(false);
@@ -549,7 +556,7 @@ export default function DashboardLayout() {
                         }}
                       >
                         <Cog6ToothIcon className="w-4 h-4 mr-2" />
-                        Account Manager
+                        Account Settings
                       </Link>
 
                       <button
@@ -623,7 +630,7 @@ export default function DashboardLayout() {
                   </div>
                 }
               />
-              <Route path="account" element={<AccountManager />} />
+              {/* Account route removed - now handled by separate /account page */}
               <Route path="upgrade" element={<EnterpriseUpgrade />} />
               <Route path="upgrade/success" element={<PaymentSuccess />} />
               <Route path="debug" element={<ApiDebugInfo />} />

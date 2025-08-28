@@ -15,7 +15,9 @@
     "lint:fix": "eslint src/**/*.ts --fix",
     "db:migrate": "tsx src/scripts/migrate.ts",
     "db:seed": "tsx src/scripts/seed.ts",
-    "db:reset": "tsx src/scripts/reset.ts"
+    "db:reset": "tsx src/scripts/reset.ts",
+    "clean": "rm -rf dist node_modules",
+    "type-check": "tsc --noEmit"
   },
   "keywords": [
     "document-management",
@@ -73,7 +75,6 @@
     "@types/node-cron": "^3.0.11",
     "@types/nodemailer": "^6.4.14",
     "@types/pdf-parse": "^1.1.4",
-    "@types/pdf2pic": "^3.1.0",
     "@types/pg": "^8.10.9",
     "@types/qrcode": "^1.5.5",
     "@types/sharp": "^0.32.0",
@@ -91,9 +92,10 @@
     "typescript": "^5.2.2"
   },
   "engines": {
-    "node": ">=18.0.0",
-    "npm": ">=8.0.0"
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
   },
+  "packageManager": "pnpm@9.12.3",
   "repository": {
     "type": "git",
     "url": "https://github.com/ai-resume-suite/document-manager.git"

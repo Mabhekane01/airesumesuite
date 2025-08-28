@@ -15,7 +15,9 @@
     "lint:fix": "eslint src/**/*.ts --fix",
     "migrate": "ts-node src/database/migrate.ts",
     "seed": "ts-node src/database/seed.ts",
-    "db:reset": "ts-node src/database/reset.ts"
+    "db:reset": "ts-node src/database/reset.ts",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist node_modules"
   },
   "dependencies": {
     "pg": "^8.11.0",
@@ -57,6 +59,11 @@
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0"
   },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "packageManager": "pnpm@9.12.3",
   "keywords": [
     "database",
     "authentication",

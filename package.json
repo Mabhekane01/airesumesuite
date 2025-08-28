@@ -3,10 +3,13 @@
   "version": "1.0.0",
   "description": "AI-powered job application suite with resume builder, cover letter generator, and job tracking",
   "private": true,
-  "packageManager": "pnpm@8.15.0",
+  "packageManager": "pnpm@9.12.3",
   "workspaces": [
     "apps/*",
-    "packages/*"
+    "packages/*",
+    "document-manager",
+    "document-sharing-service",
+    "auth-service"
   ],
   "scripts": {
     "build": "turbo run build",
@@ -24,7 +27,15 @@
     "docker:build": "docker-compose build",
     "docker:up": "docker-compose up -d",
     "docker:down": "docker-compose down",
-    "start:prod": "NODE_ENV=production turbo run start"
+    "start:prod": "NODE_ENV=production turbo run start",
+    "dev:auth": "turbo run dev --filter=auth-service",
+    "dev:doc-manager": "turbo run dev --filter=document-manager",
+    "dev:doc-sharing": "turbo run dev --filter=document-sharing-service",
+    "dev:airesume": "turbo run dev --filter=airesume",
+    "build:auth": "turbo run build --filter=auth-service",
+    "build:doc-manager": "turbo run build --filter=document-manager",
+    "build:doc-sharing": "turbo run build --filter=document-sharing-service",
+    "build:airesume": "turbo run build --filter=airesume"
   },
   "devDependencies": {
     "@playwright/test": "^1.41.0",
