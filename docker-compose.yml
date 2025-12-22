@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  backend:
+    image: ghcr.io/mabhekane01/airesumesuite-latex-base:latest
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      # Add other necessary environment variables here, e.g., database URL, API keys
+      # - DATABASE_URL=mongodb://...
+      # - GEMINI_API_KEY=...
+    restart: unless-stopped

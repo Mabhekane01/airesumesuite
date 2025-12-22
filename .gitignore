@@ -1,0 +1,498 @@
+# ==========================================
+# AI JOB SUITE - PRODUCTION .GITIGNORE
+# ==========================================
+# Enterprise-grade exclusions for security, performance, and reliability
+
+# ==========================================
+# CRITICAL SECURITY - NEVER COMMIT
+# ==========================================
+
+# Environment Variables & Secrets
+.env*
+!.env.example
+!.env.template
+*.env
+.environment
+environment.json
+config.json
+secrets.json
+secret.yaml
+secrets.yaml
+
+# API Keys & Tokens
+*apikey*
+*api_key*
+*secret*
+*token*
+*password*
+*passwd*
+jwt-secret*
+oauth*
+auth-config*
+
+# Exception: Allow tokenCleanup utility files
+!**/tokenCleanup.ts
+!**/tokenCleanupScheduler.ts
+
+# Database Credentials
+database.json
+db-config*
+connection-string*
+mongo-uri*
+redis-config*
+
+# Certificates & Keys
+*.pem
+*.key
+*.crt
+*.cert
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.truststore
+ssh_host_*
+id_rsa*
+id_dsa*
+id_ecdsa*
+id_ed25519*
+
+# Cloud Credentials
+.aws/
+.gcp/
+.azure/
+*-service-account.json
+gcloud-service-key.json
+aws-credentials*
+azure-credentials*
+
+# ==========================================
+# DEPENDENCIES & PACKAGE MANAGERS
+# ==========================================
+
+# Node.js
+node_modules/
+*/node_modules/
+.pnpm-store/
+.pnpm-debug.log*
+.yarn/
+.yarn-integrity
+.npm/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Python (if any Python tools)
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+
+# ==========================================
+# BUILD OUTPUTS & ARTIFACTS
+# ==========================================
+
+# Production builds
+dist/
+build/
+out/
+.next/
+.nuxt/
+.turbo/
+.parcel-cache/
+
+# Compiled binaries
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Archives
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# ==========================================
+# DEVELOPMENT & TESTING
+# ==========================================
+
+# Testing
+coverage/
+*.lcov
+.nyc_output
+test-results/
+playwright-report/
+blob-report/
+.coverage
+htmlcov/
+.pytest_cache/
+.testmondata
+
+# Debugging
+*.tsbuildinfo
+.vscode/launch.json
+.vscode/tasks.json
+
+# ==========================================
+# LOGS & MONITORING
+# ==========================================
+
+# Application logs
+logs/
+*.log
+log/
+application.log*
+error.log*
+access.log*
+debug.log*
+audit.log*
+security.log*
+
+# System logs
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# PM2 logs
+.pm2/
+
+# ==========================================
+# RUNTIME & PROCESS FILES
+# ==========================================
+
+# Process IDs
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Runtime data
+lib-cov/
+coverage/
+.grunt/
+
+# ==========================================
+# WINDOWS COMPATIBILITY
+# ==========================================
+
+# Windows reserved names (CRITICAL for Windows)
+nul
+con
+prn
+aux
+com1
+com2
+com3
+com4
+com5
+com6
+com7
+com8
+com9
+lpt1
+lpt2
+lpt3
+lpt4
+lpt5
+lpt6
+lpt7
+lpt8
+lpt9
+CON
+PRN
+AUX
+NUL
+COM1
+COM2
+COM3
+COM4
+COM5
+COM6
+COM7
+COM8
+COM9
+LPT1
+LPT2
+LPT3
+LPT4
+LPT5
+LPT6
+LPT7
+LPT8
+LPT9
+
+# Windows system files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# ==========================================
+# MACOS COMPATIBILITY
+# ==========================================
+
+# macOS system files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+.AppleDouble
+.LSOverride
+Icon?
+
+# ==========================================
+# LINUX COMPATIBILITY
+# ==========================================
+
+# Linux system files
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# ==========================================
+# IDEs & EDITORS
+# ==========================================
+
+# Visual Studio Code
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json.example
+
+# JetBrains IDEs
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+*.sublime-session
+
+# Vim
+*.swp
+*.swo
+*~
+.netrwhist
+
+# Emacs
+\#*\#
+.\#*
+*~
+.emacs.desktop
+.emacs.desktop.lock
+
+# Other editors
+.atom/
+.brackets.json
+*.code-workspace
+
+# ==========================================
+# AI JOB SUITE SPECIFIC
+# ==========================================
+
+# Development and build info files
+infotouse.md
+infotouse.txt
+build-info.md
+
+# User uploads (CRITICAL - contains PII)
+uploads/
+user-uploads/
+resume-files/
+cover-letter-files/
+user-documents/
+profile-photos/
+temp-files/
+document-exports/
+
+# Generated content
+generated-resumes/
+generated-cover-letters/
+ai-responses/
+analysis-cache/
+
+# User data exports
+exports/
+downloads/
+user-exports/
+
+# Cache directories
+.cache/
+cache/
+.temp-cache/
+ai-cache/
+gemini-cache/
+openai-cache/
+
+# Session data
+sessions/
+.sessions/
+user-sessions/
+
+# ==========================================
+# DATABASE & STORAGE
+# ==========================================
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+*.mdb
+*.accdb
+
+# Database dumps
+*.sql
+*.dump
+database-backup*
+db-backup*
+*.bak
+
+# Redis dumps
+dump.rdb
+appendonly.aof
+
+# ==========================================
+# DOCKER & CONTAINERIZATION
+# ==========================================
+
+# Docker files (keep main ones, ignore generated)
+docker-compose.override.yml
+.dockerignore
+*.dockerfile.local
+Dockerfile.local
+
+# Container runtime
+.docker/
+
+# ==========================================
+# CI/CD & DEPLOYMENT
+# ==========================================
+
+# Deployment configs
+.deploy/
+deployment-config.json
+k8s-secrets.yaml
+helm-values.yaml
+
+# CI/CD artifacts
+.github/workflows/*.local.yml
+.gitlab-ci.local.yml
+jenkins-config.xml
+
+# Build artifacts
+*.tgz
+dist.zip
+release/
+
+# ==========================================
+# MONITORING & ANALYTICS
+# ==========================================
+
+# Error tracking
+.sentry/
+sentry.properties
+bugsnag.json
+
+# Analytics
+.analytics/
+ga-config.json
+mixpanel-config.json
+
+# ==========================================
+# BACKUP & RECOVERY
+# ==========================================
+
+# Backup files
+*.backup
+*.bak
+*~
+*.orig
+*.rej
+backup/
+backups/
+
+# Recovery files
+*.recovery
+.recovery/
+
+# ==========================================
+# PACKAGE LOCKS (Selective)
+# ==========================================
+
+# Keep pnpm-lock.yaml for consistency
+package-lock.json
+yarn.lock
+
+# ==========================================
+# TEMPORARY & CACHE FILES
+# ==========================================
+
+# Temporary directories
+tmp/
+temp/
+.tmp/
+.temp/
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+
+# Cache directories
+.eslintcache
+.stylelintcache
+.postcss-cache/
+.sass-cache/
+
+# ==========================================
+# PERFORMANCE & OPTIMIZATION
+# ==========================================
+
+# Bundle analyzer
+bundle-analyzer-report.html
+.bundle-analyzer/
+
+# Source maps (production)
+*.map
+!*.css.map
+
+# Profiling
+*.prof
+*.heapsnapshot
+.clinic/
+
+# ==========================================
+# LOCAL DEVELOPMENT OVERRIDES
+# ==========================================
+
+# Local development
+.local/
+local/
+dev-local/
+.dev/
+
+# Personal configs
+.personal/
+personal/
+my-config*
+
+# Local testing
+test-local/
+.test-local/
+
+# ==========================================
+# END OF AI JOB SUITE .GITIGNORE
+# ==========================================

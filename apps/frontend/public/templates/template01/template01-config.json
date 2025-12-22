@@ -1,0 +1,168 @@
+{
+  "templateId": "template01",
+  "templateName": "ASU Sparky Sundevil Resume",
+  "description": "A professional academic resume template designed at Arizona State University featuring clean sections and excellent readability. Perfect for students and early career professionals in technical fields.",
+  "category": "academic",
+  "tags": ["single-column", "academic", "student", "ats-friendly", "professional"],
+  "isStandardized": true,
+  "requiredFields": [
+    "personalInfo.firstName",
+    "personalInfo.lastName",
+    "personalInfo.email",
+    "personalInfo.phone",
+    "professionalSummary"
+  ],
+  "optionalFields": [
+    "personalInfo.professionalTitle",
+    "personalInfo.linkedinUrl",
+    "personalInfo.portfolioUrl",
+    "personalInfo.githubUrl",
+    "personalInfo.websiteUrl",
+    "personalInfo.location",
+    "workExperience",
+    "education",
+    "skills",
+    "projects",
+    "certifications",
+    "languages",
+    "volunteerExperience",
+    "awards",
+    "publications",
+    "references",
+    "hobbies",
+    "additionalSections"
+  ],
+  "placeholders": {
+    "personalInfo": [
+      "FIRST_NAME",
+      "LAST_NAME",
+      "EMAIL",
+      "PHONE",
+      "LOCATION",
+      "PROFESSIONAL_TITLE",
+      "LINKEDIN",
+      "GITHUB",
+      "PORTFOLIO",
+      "WEBSITE"
+    ],
+    "sections": [
+      "PROFESSIONAL_SUMMARY",
+      "WORK_EXPERIENCE",
+      "EDUCATION",
+      "SKILLS",
+      "PROJECTS",
+      "CERTIFICATIONS",
+      "LANGUAGES",
+      "VOLUNTEER_EXPERIENCE",
+      "AWARDS",
+      "PUBLICATIONS",
+      "REFERENCES",
+      "HOBBIES",
+      "ADDITIONAL_SECTIONS"
+    ]
+  },
+  "conditionalSections": {
+    "professionalTitle": {
+      "ifTag": "IF_PROFESSIONAL_TITLE",
+      "endIfTag": "/IF_PROFESSIONAL_TITLE",
+      "required": false
+    },
+    "location": {
+      "ifTag": "IF_LOCATION",
+      "endIfTag": "/IF_LOCATION",
+      "required": false
+    },
+    "linkedin": {
+      "ifTag": "IF_LINKEDIN",
+      "endIfTag": "/IF_LINKEDIN",
+      "required": false
+    },
+    "github": {
+      "ifTag": "IF_GITHUB",
+      "endIfTag": "/IF_GITHUB",
+      "required": false
+    },
+    "portfolio": {
+      "ifTag": "IF_PORTFOLIO",
+      "endIfTag": "/IF_PORTFOLIO",
+      "required": false
+    },
+    "website": {
+      "ifTag": "IF_WEBSITE",
+      "endIfTag": "/IF_WEBSITE",
+      "required": false
+    },
+    "workExperience": {
+      "ifTag": "IF_WORK_EXPERIENCE",
+      "endIfTag": "/IF_WORK_EXPERIENCE",
+      "required": false
+    },
+    "education": {
+      "ifTag": "IF_EDUCATION",
+      "endIfTag": "/IF_EDUCATION",
+      "required": false
+    },
+    "skills": {
+      "ifTag": "IF_SKILLS",
+      "endIfTag": "/IF_SKILLS",
+      "required": false
+    },
+    "projects": {
+      "ifTag": "IF_PROJECTS",
+      "endIfTag": "/IF_PROJECTS",
+      "required": false
+    },
+    "certifications": {
+      "ifTag": "IF_CERTIFICATIONS",
+      "endIfTag": "/IF_CERTIFICATIONS",
+      "required": false
+    },
+    "languages": {
+      "ifTag": "IF_LANGUAGES",
+      "endIfTag": "/IF_LANGUAGES",
+      "required": false
+    },
+    "volunteerExperience": {
+      "ifTag": "IF_VOLUNTEER_EXPERIENCE",
+      "endIfTag": "/IF_VOLUNTEER_EXPERIENCE",
+      "required": false
+    },
+    "awards": {
+      "ifTag": "IF_AWARDS",
+      "endIfTag": "/IF_AWARDS",
+      "required": false
+    },
+    "publications": {
+      "ifTag": "IF_PUBLICATIONS",
+      "endIfTag": "/IF_PUBLICATIONS",
+      "required": false
+    },
+    "references": {
+      "ifTag": "IF_REFERENCES",
+      "endIfTag": "/IF_REFERENCES",
+      "required": false
+    },
+    "hobbies": {
+      "ifTag": "IF_HOBBIES",
+      "endIfTag": "/IF_HOBBIES",
+      "required": false
+    },
+    "additionalSections": {
+      "ifTag": "IF_ADDITIONAL_SECTIONS",
+      "endIfTag": "/IF_ADDITIONAL_SECTIONS",
+      "required": false
+    }
+  },
+  "compilationSettings": {
+    "compiler": "pdflatex",
+    "passes": 2,
+    "specialPackages": ["fontawesome5", "multicol", "tabularx", "geometry", "xcolor"]
+  },
+  "metadata": {
+    "author": "AI Job Suite",
+    "version": "1.0.0",
+    "lastUpdated": "2025-08-13",
+    "screenshotPath": "/templates/template01/33592.jpeg",
+    "previewUrl": "/templates/template01/33592.jpeg"
+  }
+}

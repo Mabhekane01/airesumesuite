@@ -1,0 +1,39 @@
+{
+  "name": "ai-job-suite",
+  "version": "1.0.0",
+  "description": "AI-powered job application suite with resume builder, cover letter generator, and job tracking",
+  "private": true,
+  "packageManager": "pnpm@8.15.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "test:coverage": "turbo run test:coverage",
+    "test:watch": "turbo run test:watch",
+    "test:ci": "turbo run test:ci",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "type-check": "turbo run type-check",
+    "clean": "turbo run clean",
+    "docker:build": "docker-compose build",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "start:prod": "NODE_ENV=production turbo run start"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.41.0",
+    "@types/node": "^20.11.0",
+    "@types/node-cron": "^3.0.9",
+    "turbo": "^1.13.0",
+    "typescript": "^5.3.0"
+  },
+  "dependencies": {
+    "node-cron": "^3.0.3"
+  }
+}

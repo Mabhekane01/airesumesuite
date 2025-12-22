@@ -1,0 +1,209 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Standardized Resume Template Configuration",
+  "description": "Configuration schema for standardized resume templates that work with the hybrid AI + deterministic system",
+  "type": "object",
+  "properties": {
+    "templateId": {
+      "type": "string",
+      "description": "Unique identifier for the template",
+      "pattern": "^template[0-9]{2}$"
+    },
+    "templateName": {
+      "type": "string",
+      "description": "Human-readable name for the template"
+    },
+    "description": {
+      "type": "string",
+      "description": "Brief description of the template style and purpose"
+    },
+    "category": {
+      "type": "string",
+      "enum": ["modern", "professional", "creative", "academic", "minimalist", "classic"],
+      "description": "Template category for filtering"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["two-column", "single-column", "colorful", "minimal", "photo-ready", "ats-friendly", "academic", "creative"]
+      },
+      "description": "Tags for additional filtering and search"
+    },
+    "isStandardized": {
+      "type": "boolean",
+      "description": "Whether this template uses the standardized placeholder system",
+      "default": true
+    },
+    "requiredFields": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "personalInfo.firstName",
+          "personalInfo.lastName", 
+          "personalInfo.email",
+          "personalInfo.phone",
+          "personalInfo.location",
+          "professionalSummary"
+        ]
+      },
+      "description": "Fields that are required for this template to render properly"
+    },
+    "optionalFields": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "personalInfo.professionalTitle",
+          "personalInfo.linkedinUrl",
+          "personalInfo.portfolioUrl", 
+          "personalInfo.githubUrl",
+          "personalInfo.websiteUrl",
+          "workExperience",
+          "education",
+          "skills",
+          "projects",
+          "certifications",
+          "languages",
+          "volunteerExperience",
+          "awards",
+          "publications",
+          "references",
+          "hobbies",
+          "additionalSections"
+        ]
+      },
+      "description": "Fields that can be included if provided by the user"
+    },
+    "placeholders": {
+      "type": "object",
+      "description": "All placeholders used in this template",
+      "properties": {
+        "personalInfo": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "FIRST_NAME",
+              "LAST_NAME",
+              "EMAIL", 
+              "PHONE",
+              "LOCATION",
+              "PROFESSIONAL_TITLE",
+              "LINKEDIN",
+              "GITHUB",
+              "PORTFOLIO",
+              "WEBSITE"
+            ]
+          }
+        },
+        "sections": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "PROFESSIONAL_SUMMARY",
+              "WORK_EXPERIENCE",
+              "EDUCATION",
+              "SKILLS",
+              "PROJECTS",
+              "CERTIFICATIONS",
+              "LANGUAGES",
+              "VOLUNTEER_EXPERIENCE",
+              "AWARDS",
+              "PUBLICATIONS", 
+              "REFERENCES",
+              "HOBBIES",
+              "ADDITIONAL_SECTIONS"
+            ]
+          }
+        }
+      }
+    },
+    "conditionalSections": {
+      "type": "object",
+      "description": "How conditional sections are handled",
+      "properties": {
+        "workExperience": {
+          "type": "object",
+          "properties": {
+            "ifTag": {"type": "string", "default": "IF_WORK_EXPERIENCE"},
+            "endIfTag": {"type": "string", "default": "/IF_WORK_EXPERIENCE"},
+            "required": {"type": "boolean", "default": false}
+          }
+        },
+        "education": {
+          "type": "object", 
+          "properties": {
+            "ifTag": {"type": "string", "default": "IF_EDUCATION"},
+            "endIfTag": {"type": "string", "default": "/IF_EDUCATION"},
+            "required": {"type": "boolean", "default": false}
+          }
+        },
+        "skills": {
+          "type": "object",
+          "properties": {
+            "ifTag": {"type": "string", "default": "IF_SKILLS"},
+            "endIfTag": {"type": "string", "default": "/IF_SKILLS"},
+            "required": {"type": "boolean", "default": false}
+          }
+        },
+        "projects": {
+          "type": "object",
+          "properties": {
+            "ifTag": {"type": "string", "default": "IF_PROJECTS"},
+            "endIfTag": {"type": "string", "default": "/IF_PROJECTS"},
+            "required": {"type": "boolean", "default": false}
+          }
+        }
+      }
+    },
+    "compilationSettings": {
+      "type": "object",
+      "description": "LaTeX compilation settings for this template",
+      "properties": {
+        "compiler": {
+          "type": "string",
+          "enum": ["pdflatex", "xelatex", "lualatex"],
+          "default": "pdflatex",
+          "description": "Required LaTeX compiler"
+        },
+        "passes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3,
+          "default": 2,
+          "description": "Number of compilation passes needed"
+        },
+        "specialPackages": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Special packages that might need extra handling"
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional template metadata",
+      "properties": {
+        "author": {"type": "string"},
+        "version": {"type": "string"},
+        "lastUpdated": {"type": "string", "format": "date"},
+        "screenshotPath": {"type": "string"},
+        "previewUrl": {"type": "string"}
+      }
+    }
+  },
+  "required": [
+    "templateId",
+    "templateName", 
+    "description",
+    "category",
+    "isStandardized",
+    "requiredFields",
+    "optionalFields",
+    "placeholders"
+  ],
+  "additionalProperties": false
+}

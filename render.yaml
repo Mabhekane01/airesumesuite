@@ -1,0 +1,8 @@
+services:
+  - type: web
+    name: ai-job-suite-backend
+    env: image
+    image: ghcr.io/mabhekane01/airesumesuite-latex-base:latest
+    plan: starter
+    region: oregon
+    branch: main
