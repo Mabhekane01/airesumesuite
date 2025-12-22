@@ -694,10 +694,10 @@ export class TemplateService {
     if (this.nonEmpty(data.trackingUrl)) {
       out.push("");
       out.push("% --------- Tracking Footer -----------");
-      out.push("\\\vfill");
-      out.push("\\\begin{center}");
-      out.push(`\\\footnotesize \\\color{gray} View the latest version of this resume at \\\href{${data.trackingUrl}}{${this.escapeLatex(data.trackingUrl)}}`);
-      out.push("\\\end{center}");
+      out.push("\\vfill");
+      out.push("\\begin{center}");
+      out.push(`\\footnotesize \\color{gray} View the latest version of this architecture at \\href{${data.trackingUrl}}{${this.escapeLatex(data.trackingUrl)}}`);
+      out.push("\\end{center}");
     }
 
     if (out.length === 0) {

@@ -30,6 +30,7 @@ import {
   ClipboardDocumentCheckIcon,
   CreditCardIcon,
   StarIcon,
+  Square2StackIcon,
 } from "@heroicons/react/24/outline";
 import { useAuthStore } from "../../stores/authStore";
 import { toast } from "sonner";
@@ -53,14 +54,14 @@ const navigation = [
     icon: PencilIcon,
   },
   {
+    name: "Documents",
+    href: "/dashboard/documents",
+    icon: Square2StackIcon,
+  },
+  {
     name: "Job Applications",
     href: "/dashboard/applications",
     icon: BriefcaseIcon,
-  },
-  { 
-    name: "Resume Tracking", 
-    href: "/dashboard/analytics/resume-tracking", 
-    icon: EyeIcon 
   },
   { name: "Career Coach", href: "/dashboard/coach", icon: SparklesIcon },
   { name: "Analytics", href: "/dashboard/analytics", icon: ChartBarIcon },

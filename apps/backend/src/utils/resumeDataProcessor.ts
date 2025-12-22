@@ -332,7 +332,7 @@ export function processCompleteResumeData(data: any): any {
     awards: processAwardsData(data.awards || []),
     publications: processPublicationsData(data.publications || []),
     hobbies: processHobbiesData(data.hobbies || []),
-    templateId: data.templateId || 'modern-1',
+    templateId: data.templateId || data.template || 'modern-1',
     isPublic: Boolean(data.isPublic)
   };
   

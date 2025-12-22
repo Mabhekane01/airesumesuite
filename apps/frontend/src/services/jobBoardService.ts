@@ -1,4 +1,4 @@
-import { API_CONFIG, buildApiUrl } from '../config/api';
+import { api } from './api';
 
 export interface JobPosting {
   _id: string;
@@ -10,7 +10,7 @@ export interface JobPosting {
   url?: string;
   salaryRange?: string;
   jobType?: string;
-  source: 'scraper' | 'user';
+  source: 'scraper' | 'user' | 'admin';
   status: 'pending' | 'approved' | 'rejected';
   postedAt?: string;
   createdAt: string;
@@ -19,37 +19,31 @@ export interface JobPosting {
 class JobBoardService {
   async getJobs(filters: { country?: string; source?: string } = {}): Promise<JobPosting[]> {
     const query = new URLSearchParams(filters as any).toString();
-    const response = await fetch(buildApiUrl(`/api/v1/jobs?${query}`), {
-      headers: { 'Content-Type': 'application/json' }
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.message || 'Failed to fetch jobs');
-    return data.data;
+    try {
+      const response = await api.get(`/jobs?${query}`);
+      return response.data.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Failed to fetch jobs');
+    }
   }
 
   async submitJob(jobData: Partial<JobPosting>): Promise<JobPosting> {
-    const response = await fetch(buildApiUrl('/api/v1/jobs'), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(jobData)
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.message || 'Failed to submit job');
-    return data.data;
+    try {
+      const response = await api.post('/jobs', jobData);
+      return response.data.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Failed to submit job');
+    }
   }
 
   // Admin: Trigger scrape
   async triggerScrape(country: string): Promise<any> {
-    const token = localStorage.getItem('token'); // Assuming admin protection
-    const response = await fetch(buildApiUrl('/api/v1/jobs/scrape'), {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({ country })
-    });
-    return await response.json();
+    try {
+      const response = await api.post('/jobs/scrape', { country });
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Failed to trigger scrape');
+    }
   }
 }
 

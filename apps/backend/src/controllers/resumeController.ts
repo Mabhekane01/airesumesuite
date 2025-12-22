@@ -127,10 +127,10 @@ export const resumeValidation = [
   body('personalInfo.email').isEmail().normalizeEmail().withMessage('Valid email is required'),
   body('personalInfo.phone').notEmpty().withMessage('Phone is required'),
   body('personalInfo.location').notEmpty().trim().withMessage('Location is required'),
-  body('personalInfo.linkedinUrl').optional().isURL().withMessage('LinkedIn URL must be valid'),
-  body('personalInfo.portfolioUrl').optional().isURL().withMessage('Portfolio URL must be valid'),
-  body('personalInfo.githubUrl').optional().isURL().withMessage('GitHub URL must be valid'),
-  body('personalInfo.websiteUrl').optional().isURL().withMessage('Website URL must be valid'),
+  body('personalInfo.linkedinUrl').optional().isString().trim(),
+  body('personalInfo.portfolioUrl').optional().isString().trim(),
+  body('personalInfo.githubUrl').optional().isString().trim(),
+  body('personalInfo.websiteUrl').optional().isString().trim(),
   body('personalInfo.professionalTitle').optional().isString().trim(),
   
   // Professional summary
@@ -179,10 +179,10 @@ export const resumeUpdateValidation = [
   body('personalInfo.email').optional().isEmail().normalizeEmail().withMessage('Valid email is required'),
   body('personalInfo.phone').optional().notEmpty().withMessage('Phone cannot be empty'),
   body('personalInfo.location').optional().notEmpty().trim().withMessage('Location cannot be empty'),
-  body('personalInfo.linkedinUrl').optional().isURL().withMessage('LinkedIn URL must be valid'),
-  body('personalInfo.portfolioUrl').optional().isURL().withMessage('Portfolio URL must be valid'),
-  body('personalInfo.githubUrl').optional().isURL().withMessage('GitHub URL must be valid'),
-  body('personalInfo.websiteUrl').optional().isURL().withMessage('Website URL must be valid'),
+  body('personalInfo.linkedinUrl').optional().isString().trim(),
+  body('personalInfo.portfolioUrl').optional().isString().trim(),
+  body('personalInfo.githubUrl').optional().isString().trim(),
+  body('personalInfo.websiteUrl').optional().isString().trim(),
   
   body('professionalSummary').optional().isString().trim(),
   body('workExperience').optional().isArray().withMessage('Work experience must be an array'),
@@ -469,6 +469,23 @@ export class StandardizedResumeController {
         return;
       }
 
+      // Check if we have an existing PDF in the database
+      if (resume.generatedFiles?.pdf?.data) {
+        console.log('✅ [OPTIMIZED] Attaching tracking to existing PDF from database');
+        
+        // Think out of the box: Overlay tracking layer using pdf-lib instead of heavy LaTeX
+        const originalBuffer = resume.generatedFiles.pdf.data;
+        const trackedBuffer = await resumeService.attachTrackingToPDF(originalBuffer, trackingUrl);
+        
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Length', trackedBuffer.length);
+        res.setHeader('Content-Disposition', `attachment; filename="tracked-${resume.generatedFiles.pdf.filename || 'resume.pdf'}"`);
+        res.setHeader('Cache-Control', 'no-cache');
+        res.send(trackedBuffer);
+        return;
+      }
+
+      // Fallback to generation if no PDF exists (legacy or first-time)
       const standardizedData = convertToStandardizedData(resume, trackingUrl);
 
       console.log(`📄 [LATEX] Generating TRACKED PDF with URL: ${trackingUrl}`);

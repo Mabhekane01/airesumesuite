@@ -37,6 +37,21 @@ interface AnalyticsData {
     offerRate: number;
     averageResponseTime: number;
   };
+  documentEngagement?: {
+    totalViews: number;
+    totalDownloads: number;
+    uniqueViewers: number;
+    engagementRate: number;
+    topDocuments: Array<{
+      title: string;
+      views: number;
+      status: string;
+    }>;
+    viewsOverTime: Array<{
+      date: string;
+      views: number;
+    }>;
+  };
   trends: {
     applicationsOverTime: Array<{
       date: string;
@@ -91,6 +106,15 @@ interface AnalyticsData {
   };
 }
 
+import { 
+  EyeIcon, 
+  ArrowDownTrayIcon, 
+  FingerPrintIcon, 
+  SignalIcon, 
+  GlobeAltIcon as GlobeIcon,
+  DocumentTextIcon
+} from '@heroicons/react/24/outline';
+
 export default function ApplicationAnalytics() {
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -105,7 +129,7 @@ export default function ApplicationAnalytics() {
   const loadAnalytics = async () => {
     try {
       setLoading(true);
-      const response = await analyticsAPI.getApplicationAnalytics({ timeRange });
+      const response = await analyticsAPI.getComprehensiveAnalytics();
       if (response.success && response.data) {
         setAnalyticsData(response.data);
       }
@@ -140,19 +164,25 @@ export default function ApplicationAnalytics() {
     );
   }
 
-  const { overview, trends, insights, performance } = analyticsData;
+  const { overview, trends, insights, performance, documentEngagement } = analyticsData;
 
   return (
-    <div className="space-y-10 animate-slide-up-soft pb-20">
+    <div className="space-y-12 animate-slide-up-soft pb-24">
       {/* --- HEADER --- */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
-        <div className="space-y-2">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-blue/10 text-brand-blue border border-brand-blue/20">
-            <PresentationChartLineIcon className="w-3.5 h-3.5" />
-            <span className="text-[10px] font-black uppercase tracking-widest">Performance Console</span>
+      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 pb-6 border-b border-surface-200/60">
+        <div className="space-y-4">
+          <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-brand-blue/5 text-brand-blue border border-brand-blue/10 shadow-sm backdrop-blur-sm">
+            <PresentationChartLineIcon className="w-4 h-4" />
+            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Performance Intelligence Console</span>
           </div>
-          <h1 className="text-4xl md:text-5xl font-display font-black text-brand-dark tracking-tighter">Application Analytics.</h1>
-          <p className="text-lg text-text-secondary font-bold opacity-70">Metric tracking and conversion funnel optimization.</p>
+          <div className="space-y-1">
+            <h1 className="text-4xl md:text-6xl font-display font-black text-brand-dark tracking-tighter">
+              Deployment <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-blue to-brand-purple">Analytics.</span>
+            </h1>
+            <p className="text-lg md:text-xl text-text-secondary font-medium max-w-2xl leading-relaxed">
+              Synthesize tracking signals and conversion metrics into actionable career intelligence.
+            </p>
+          </div>
         </div>
         
         <div className="flex items-center gap-4 bg-white border border-surface-200 p-2 rounded-2xl shadow-sm">
@@ -171,38 +201,149 @@ export default function ApplicationAnalytics() {
         </div>
       </div>
 
-      {/* --- KEY METRICS --- */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-        {[
-          { label: "Total Deployments", val: overview.totalApplications, icon: BuildingOfficeIcon, color: "text-brand-blue", bg: "bg-brand-blue/10", trend: trends?.applicationsTrend },
-          { label: "Response Rate", val: `${overview.responseRate.toFixed(1)}%`, icon: CheckCircleIcon, color: "text-brand-success", bg: "bg-brand-success/10", trend: trends?.responseRateTrend },
-          { label: "Interview Index", val: `${overview.interviewRate.toFixed(1)}%`, icon: UserGroupIcon, color: "text-brand-orange", bg: "bg-brand-orange/10", trend: trends?.interviewRateTrend },
-          { label: "Latency (Days)", val: overview.averageResponseTime, icon: ClockIcon, color: "text-brand-dark", bg: "bg-brand-dark/5", trend: trends?.responseTimeTrend, inverse: true }
-        ].map((stat, i) => (
-          <motion.div
-            key={i}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.1 }}
-            className="bg-white border border-surface-200 p-8 rounded-[2rem] shadow-sm group hover:shadow-xl transition-all duration-500"
-          >
-            <div className="flex items-start justify-between mb-6">
-              <div className={`w-12 h-12 rounded-2xl ${stat.bg} ${stat.color} flex items-center justify-center border border-current opacity-80 group-hover:scale-110 group-hover:opacity-100 transition-all duration-500`}>
-                <stat.icon className="w-6 h-6" />
-              </div>
-              {stat.trend !== undefined && (
-                <div className={`flex items-center gap-1 text-[10px] font-black uppercase tracking-widest ${
-                  (stat.inverse ? stat.trend < 0 : stat.trend > 0) ? "text-brand-success" : "text-red-500"
-                }`}>
-                  {stat.trend > 0 ? <ArrowUpIcon className="w-3 h-3" /> : <ArrowDownIcon className="w-3 h-3" />}
-                  {Math.abs(stat.trend).toFixed(1)}%
+      {/* --- DOCUMENT INTELLIGENCE --- */}
+      {documentEngagement && (
+        <div className="space-y-8">
+          <div className="flex items-center gap-3 px-2">
+            <div className="w-2 h-2 rounded-full bg-brand-purple animate-pulse" />
+            <h2 className="text-[10px] font-black text-text-tertiary uppercase tracking-[0.3em]">Document Tracking Grid (Live)</h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {[
+              { label: "Total Document Views", val: documentEngagement.totalViews, icon: EyeIcon, color: "text-brand-purple", bg: "bg-brand-purple/5" },
+              { label: "Unique Viewers", val: documentEngagement.uniqueViewers, icon: UserGroupIcon, color: "text-brand-blue", bg: "bg-brand-blue/5" },
+              { label: "Asset Downloads", val: documentEngagement.totalDownloads, icon: ArrowDownTrayIcon, color: "text-brand-success", bg: "bg-brand-success/5" },
+              { label: "Engagement Rate", val: `${documentEngagement.engagementRate.toFixed(1)}%`, icon: SignalIcon, color: "text-brand-orange", bg: "bg-brand-orange/5" }
+            ].map((stat, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: i * 0.05 }}
+                className="bg-white border border-surface-200 p-8 rounded-[2.5rem] shadow-sm group hover:shadow-xl hover:border-brand-purple/20 transition-all duration-500 relative overflow-hidden"
+              >
+                <div className="absolute top-0 right-0 p-6 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity duration-500">
+                  <stat.icon className="w-20 h-20" />
                 </div>
-              )}
+                <div className={`w-12 h-12 rounded-2xl ${stat.bg} ${stat.color} flex items-center justify-center border border-current/20 mb-6 group-hover:scale-110 transition-transform duration-500`}>
+                  <stat.icon className="w-6 h-6" />
+                </div>
+                <p className="text-[11px] font-black text-text-tertiary uppercase tracking-widest mb-1">{stat.label}</p>
+                <p className="text-4xl font-black text-brand-dark tracking-tighter group-hover:text-brand-purple transition-colors">{stat.val}</p>
+              </motion.div>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div className="lg:col-span-8 bg-white border border-surface-200 rounded-[3rem] p-10 shadow-lg relative overflow-hidden group">
+              <div className="absolute inset-0 bg-[radial-gradient(#8b5cf6_1px,transparent_1px)] [background-size:32px_32px] opacity-[0.03]" />
+              <div className="relative z-10 flex items-center justify-between mb-10 pb-6 border-b border-surface-100">
+                <div className="space-y-1">
+                  <h3 className="text-2xl font-display font-black text-brand-dark tracking-tight leading-none uppercase">High-Engagement Architectures.</h3>
+                  <p className="text-xs font-bold text-text-tertiary uppercase tracking-widest">Performance by deployment node</p>
+                </div>
+                <FingerPrintIcon className="w-8 h-8 text-brand-purple opacity-20" />
+              </div>
+              
+              <div className="relative z-10 space-y-4">
+                {documentEngagement.topDocuments.length === 0 ? (
+                  <div className="py-20 text-center border-2 border-dashed border-surface-100 rounded-3xl">
+                    <p className="text-sm font-bold text-text-tertiary italic">Waiting for tracking signals...</p>
+                  </div>
+                ) : (
+                  documentEngagement.topDocuments.map((doc, idx) => (
+                    <div key={idx} className="flex items-center justify-between p-6 bg-surface-50 border border-surface-200 rounded-2xl hover:bg-white hover:border-brand-purple/20 hover:shadow-xl transition-all duration-300 group/item">
+                      <div className="flex items-center gap-5">
+                        <div className="w-12 h-12 rounded-xl bg-white border border-surface-100 flex items-center justify-center text-brand-purple shadow-sm group-hover/item:scale-110 transition-transform">
+                          <DocumentTextIcon className="w-6 h-6" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-black text-brand-dark group-hover/item:text-brand-purple transition-colors">{doc.title}</p>
+                          <p className="text-[10px] font-bold text-text-tertiary uppercase tracking-widest flex items-center gap-2">
+                            <span className={`w-1.5 h-1.5 rounded-full ${doc.status === 'active' ? 'bg-brand-success' : 'bg-surface-300'}`} />
+                            Node Status: {doc.status}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-2xl font-black text-brand-dark tracking-tighter">{doc.views}</p>
+                        <p className="text-[9px] font-black text-text-tertiary uppercase tracking-widest">Total Hits</p>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
-            <p className="text-[11px] font-black text-text-tertiary uppercase tracking-widest mb-1">{stat.label}</p>
-            <p className="text-4xl font-black text-brand-dark tracking-tighter group-hover:text-brand-blue transition-colors">{stat.val}</p>
-          </motion.div>
-        ))}
+
+            <div className="lg:col-span-4 bg-brand-dark rounded-[3rem] p-10 text-white relative overflow-hidden shadow-2xl group">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(139,92,246,0.3),transparent_60%)]" />
+              <div className="relative z-10 space-y-8">
+                <div className="w-14 h-14 rounded-2xl bg-white/10 border border-white/10 flex items-center justify-center text-brand-purple backdrop-blur-md">
+                  <CpuChipIcon className="w-7 h-7 stroke-[1.5px]" />
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-3xl font-display font-black tracking-tight leading-tight">Document <br />Intelligence.</h3>
+                  <p className="text-sm font-medium text-white/60 leading-relaxed">
+                    AI-driven analysis of how recruiters interact with your architecture nodes. 
+                  </p>
+                </div>
+                
+                <div className="space-y-4">
+                  <div className="p-5 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 transition-colors">
+                    <p className="text-xs font-black text-brand-purple uppercase tracking-[0.2em] mb-2">Real-Time Sync</p>
+                    <p className="text-sm font-medium text-surface-200">Your documents are sending signals from 12+ external platforms.</p>
+                  </div>
+                  <div className="p-5 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 transition-colors">
+                    <p className="text-xs font-black text-brand-success uppercase tracking-[0.2em] mb-2">Optimal Engagement</p>
+                    <p className="text-sm font-medium text-surface-200">Most views occur within 48 hours of initial deployment.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- CORE PIPELINE METRICS --- */}
+      <div className="space-y-8 pt-8 border-t border-surface-200/60">
+        <div className="flex items-center gap-3 px-2">
+          <div className="w-2 h-2 rounded-full bg-brand-blue animate-pulse" />
+          <h2 className="text-[10px] font-black text-text-tertiary uppercase tracking-[0.3em]">Pipeline Execution Metrics</h2>
+        </div>
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          {[
+            { label: "Total Deployments", val: overview.totalApplications, icon: BuildingOfficeIcon, color: "text-brand-blue", bg: "bg-brand-blue/10", trend: trends?.applicationsTrend },
+            { label: "Response Rate", val: `${overview.responseRate.toFixed(1)}%`, icon: CheckCircleIcon, color: "text-brand-success", bg: "bg-brand-success/10", trend: trends?.responseRateTrend },
+            { label: "Interview Index", val: `${overview.interviewRate.toFixed(1)}%`, icon: UserGroupIcon, color: "text-brand-orange", bg: "bg-brand-orange/10", trend: trends?.interviewRateTrend },
+            { label: "Latency (Days)", val: overview.averageResponseTime, icon: ClockIcon, color: "text-brand-dark", bg: "bg-brand-dark/5", trend: trends?.responseTimeTrend, inverse: true }
+          ].map((stat, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.1 }}
+              className="bg-white border border-surface-200 p-8 rounded-[2rem] shadow-sm group hover:shadow-xl transition-all duration-500"
+            >
+              <div className="flex items-start justify-between mb-6">
+                <div className={`w-12 h-12 rounded-2xl ${stat.bg} ${stat.color} flex items-center justify-center border border-current opacity-80 group-hover:scale-110 group-hover:opacity-100 transition-all duration-500`}>
+                  <stat.icon className="w-6 h-6" />
+                </div>
+                {stat.trend !== undefined && (
+                  <div className={`flex items-center gap-1 text-[10px] font-black uppercase tracking-widest ${
+                    (stat.inverse ? stat.trend < 0 : stat.trend > 0) ? "text-brand-success" : "text-red-500"
+                  }`}>
+                    {stat.trend > 0 ? <ArrowUpIcon className="w-3 h-3" /> : <ArrowDownIcon className="w-3 h-3" />}
+                    {Math.abs(stat.trend).toFixed(1)}%
+                  </div>
+                )}
+              </div>
+              <p className="text-[11px] font-black text-text-tertiary uppercase tracking-widest mb-1">{stat.label}</p>
+              <p className="text-4xl font-black text-brand-dark tracking-tighter group-hover:text-brand-blue transition-colors">{stat.val}</p>
+            </motion.div>
+          ))}
+        </div>
       </div>
 
       {/* --- CHARTS ROW --- */}

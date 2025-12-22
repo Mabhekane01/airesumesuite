@@ -93,7 +93,7 @@ export default function ResumeBuilder() {
                 <h2 className="text-2xl font-black text-brand-dark tracking-tighter uppercase">Recent Deployments.</h2>
               </div>
               <button 
-                onClick={() => navigate('/dashboard/documents')}
+                onClick={() => navigate('/dashboard')}
                 className="text-[10px] font-black text-brand-blue uppercase tracking-[0.2em] hover:underline"
               >
                 Access Global Archive →

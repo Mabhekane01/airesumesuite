@@ -21,6 +21,12 @@ function cloneWithBuffers(obj: any): any {
     return new Date(obj);
   }
   
+  // Handle MongoDB ObjectId (or similar objects with toHexString)
+  // This ensures IDs are serialized as strings instead of { _bsontype: 'ObjectId', ... }
+  if (obj && typeof obj.toHexString === 'function') {
+    return obj.toString();
+  }
+  
   if (Array.isArray(obj)) {
     return obj.map(item => cloneWithBuffers(item));
   }
@@ -258,9 +264,16 @@ export function convertDatesForFrontend(resumeData: any): any {
   }
 
   // Convert Buffer data to base64 for frontend compatibility
-  if (converted.generatedFiles?.pdf?.data && Buffer.isBuffer(converted.generatedFiles.pdf.data)) {
-    console.log('📄 Converting PDF Buffer to base64 for frontend, size:', converted.generatedFiles.pdf.data.length);
-    converted.generatedFiles.pdf.data = converted.generatedFiles.pdf.data.toString('base64');
+  if (converted.generatedFiles?.pdf?.data) {
+    const pdfData = converted.generatedFiles.pdf.data;
+    if (Buffer.isBuffer(pdfData)) {
+      console.log('📄 Converting PDF Buffer to base64 for frontend, size:', pdfData.length);
+      converted.generatedFiles.pdf.data = pdfData.toString('base64');
+    } else if (pdfData.buffer && Buffer.isBuffer(pdfData.buffer)) {
+      // Handle MongoDB Binary type which has a .buffer property
+      console.log('📄 Converting PDF Binary Buffer to base64 for frontend, size:', pdfData.buffer.length);
+      converted.generatedFiles.pdf.data = pdfData.buffer.toString('base64');
+    }
   }
 
   return converted;

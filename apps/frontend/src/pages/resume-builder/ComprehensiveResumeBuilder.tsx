@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
 import { locationService } from '../../services/locationService';
 import JobOptimizationModal from '../../components/resume/JobOptimizationModal';
@@ -79,6 +79,7 @@ import {
 const ComprehensiveResumeBuilderContent: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { id } = useParams<{ id: string }>(); // Get ID from URL path
   const { 
     resumeData, 
     aiData, 
@@ -143,9 +144,20 @@ const ComprehensiveResumeBuilderContent: React.FC = () => {
     if (templateId) {
       updateResumeData({ template: templateId, isLatexTemplate: isLatexTemplate });
     }
-    const editId = urlParams.get('edit');
-    if (editId) loadResumeForEditing(editId);
-  }, [location.state?.templateId, location.search]);
+    
+    // Check for ID in params (preferred) or query param (legacy/fallback)
+    const editId = id || urlParams.get('edit');
+    
+    if (editId) {
+      if (editId === '[object Object]') {
+        console.error('Invalid resume ID detected: [object Object]');
+        toast.error('Invalid architecture reference detected. Return to dashboard.');
+        navigate('/dashboard/documents');
+        return;
+      }
+      loadResumeForEditing(editId);
+    }
+  }, [location.state?.templateId, location.search, id]);
 
   const loadResumeForEditing = async (resumeId: string) => {
     try {
@@ -157,7 +169,7 @@ const ComprehensiveResumeBuilderContent: React.FC = () => {
         setIsDirty(false); // Reset dirty state after loading
       }
     } catch (error) {
-      navigate('/dashboard/documents');
+      navigate('/dashboard');
     } finally {
       setIsLoading(false);
     }
@@ -215,31 +227,103 @@ const ComprehensiveResumeBuilderContent: React.FC = () => {
       }
       toast.loading('Synchronizing architecture...', { id: 'save-resume' });
       
-      // Clean and prepare resume data for saving - filter out empty entries
+      // Robust cleaning of all resume sections
       const cleanedWorkExperience = (resumeData.workExperience || []).filter(
-        (exp) => exp.jobTitle.trim() !== '' && exp.company.trim() !== ''
+        (exp) => exp.jobTitle?.trim() && exp.company?.trim()
+      );
+
+      const cleanedEducation = (resumeData.education || []).filter(
+        (edu) => edu.institution?.trim() && edu.degree?.trim()
+      );
+
+      const cleanedSkills = (resumeData.skills || []).filter(
+        (skill) => skill.name?.trim()
       );
 
       const cleanedProjects = (resumeData.projects || []).filter(
-        (proj) => proj.name.trim() !== ''
+        (proj) => proj.name?.trim()
+      );
+
+      const cleanedCertifications = (resumeData.certifications || []).filter(
+        (cert) => cert.name?.trim() && cert.issuer?.trim()
+      );
+
+      const cleanedLanguages = (resumeData.languages || []).filter(
+        (lang) => lang.name?.trim()
       );
 
       const resumeToSave = {
         ...resumeData,
         workExperience: cleanedWorkExperience,
+        education: cleanedEducation,
+        skills: cleanedSkills,
         projects: cleanedProjects,
-        title: `${resumeData.personalInfo.firstName} ${resumeData.personalInfo.lastName} Architecture`,
-        templateId: resumeData.template,
-        optimizedLatexCode: aiData?.optimizedLatexCode
+        certifications: cleanedCertifications,
+        languages: cleanedLanguages,
+        title: resumeData.title || `${resumeData.personalInfo.firstName} ${resumeData.personalInfo.lastName} Architecture`,
+        template: resumeData.template || resumeData.templateId || 'template01',
+        templateId: resumeData.template || resumeData.templateId || 'template01',
+        isPublic: resumeData.isPublic ?? false,
+        optimizedLatexCode: aiData?.optimizedLatexCode,
+        personalInfo: {
+          ...resumeData.personalInfo,
+          linkedinUrl: resumeData.personalInfo?.linkedinUrl || '',
+          portfolioUrl: resumeData.personalInfo?.portfolioUrl || '',
+          githubUrl: resumeData.personalInfo?.githubUrl || '',
+          websiteUrl: resumeData.personalInfo?.websiteUrl || '',
+          professionalTitle: resumeData.personalInfo?.professionalTitle || ''
+        }
       };
 
-      const result = await resumeService.createResume(resumeToSave);
+      const resumeId = resumeData._id || resumeData.id;
+      let result;
+      
+      if (resumeId && !resumeData['temp-id']) {
+        const updatedData = await resumeService.updateResume(resumeId, resumeToSave);
+        result = { success: true, data: updatedData };
+      } else {
+        result = await resumeService.createResume(resumeToSave);
+      }
+
       if (result.success) {
-        toast.success('✅ Repository Updated.', { id: 'save-resume' });
+        const savedResumeId = result.data?._id || result.data?.id || resumeId;
+        
+        // Also save the PDF to the database if we have it in cache
+        if (aiData.pdfBlob && savedResumeId && !resumeData['temp-id']) {
+          try {
+            await resumeService.savePDFToDatabase(savedResumeId, {
+              templateId: resumeToSave.templateId,
+              optimizedLatexCode: aiData.optimizedLatexCode,
+              pdfBlob: aiData.pdfBlob,
+              resumeData: resumeToSave,
+              jobOptimized: aiData.optimizedForJob
+            });
+            console.log('✅ PDF also finalized and saved to repository.');
+          } catch (pdfError) {
+            console.warn('⚠️ PDF finalization failed, but JSON architecture saved.', pdfError);
+          }
+        }
+
+        toast.success('✅ Repository Updated. Architecture Finalized.', { id: 'save-resume' });
+        
+        // Update local state with the saved data
+        if (result.data) {
+          updateResumeData(result.data);
+        }
+        
         setIsDirty(false); // Reset dirty state after successful save
+        
+        // Clear persistence and navigate back to dashboard after a short delay
+        localStorage.removeItem('resume-builder-current-step');
+        setTimeout(() => {
+          navigate('/dashboard');
+        }, 1500);
+      } else {
+        toast.error(result.message || 'Sync failed.', { id: 'save-resume' });
       }
     } catch (error: any) {
-      toast.error('Sync failed.', { id: 'save-resume' });
+      console.error('Finalize save error:', error);
+      toast.error('Sync failed. Please check your connection.', { id: 'save-resume' });
     } finally {
       setIsLoading(false);
     }

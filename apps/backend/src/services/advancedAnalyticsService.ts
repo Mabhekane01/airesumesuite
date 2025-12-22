@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import { JobApplication } from '../models/JobApplication';
+import { ResumeShare } from '../models/ResumeShare';
 
 // Production monitoring for advanced analytics
 class AdvancedAnalyticsLogger {
@@ -63,6 +64,16 @@ export interface AnalyticsMetrics {
   marketCompetitiveness: number;
   applicationOptimizationScore: number;
   industryBenchmark: number;
+  
+  // Document analytics
+  documentEngagement?: {
+    totalViews: number;
+    totalDownloads: number;
+    uniqueViewers: number;
+    engagementRate: number;
+    topDocuments: any[];
+    viewsOverTime: any[];
+  };
   
   // Trend analysis
   applicationTrends: TrendData[];
@@ -164,6 +175,7 @@ class AdvancedAnalyticsService {
       const trendAnalysis = await this.calculateTrendAnalysis(applications);
       const seasonalPatterns = await this.calculateSeasonalPatterns(applications);
       const performanceImprovement = await this.calculatePerformanceImprovement(applications);
+      const documentEngagement = await this.getDocumentAnalytics(userId);
 
       const result = {
         applicationEffectiveness: coreMetrics.applicationEffectiveness || 0,
@@ -180,6 +192,7 @@ class AdvancedAnalyticsService {
         applicationTrends: trendAnalysis,
         seasonalPatterns,
         performanceImprovement,
+        documentEngagement
       };
       
       // Cache expensive comprehensive analytics for 10 minutes
@@ -191,6 +204,65 @@ class AdvancedAnalyticsService {
       throw new Error('Failed to generate analytics');
     }
     });
+  }
+
+  async getDocumentAnalytics(userId: string) {
+    try {
+      const userObjectId = new mongoose.Types.ObjectId(userId);
+      const shares = await ResumeShare.find({ userId: userObjectId });
+      
+      let totalViews = 0;
+      let totalDownloads = 0;
+      const uniqueIps = new Set();
+      const viewsOverTimeMap: Record<string, number> = {};
+
+      shares.forEach(share => {
+        totalViews += share.viewCount;
+        totalDownloads += (share as any).downloadCount || 0;
+        
+        share.views.forEach(view => {
+          if (view.ipAddress) uniqueIps.add(view.ipAddress);
+          
+          const date = new Date(view.viewedAt).toISOString().split('T')[0];
+          viewsOverTimeMap[date] = (viewsOverTimeMap[date] || 0) + 1;
+        });
+      });
+
+      const topDocuments = shares
+        .sort((a, b) => b.viewCount - a.viewCount)
+        .slice(0, 5)
+        .map(s => ({
+          title: s.title,
+          views: s.viewCount,
+          status: s.status
+        }));
+
+      const viewsOverTime = Object.entries(viewsOverTimeMap)
+        .map(([date, count]) => ({ date, views: count }))
+        .sort((a, b) => a.date.localeCompare(b.date));
+
+      const totalApplications = await JobApplication.countDocuments({ userId: userObjectId });
+      const engagementRate = totalApplications > 0 ? (totalViews / totalApplications) * 100 : 0;
+
+      return {
+        totalViews,
+        totalDownloads,
+        uniqueViewers: uniqueIps.size,
+        engagementRate,
+        topDocuments,
+        viewsOverTime
+      };
+    } catch (error) {
+      console.error('Error in getDocumentAnalytics:', error);
+      return {
+        totalViews: 0,
+        totalDownloads: 0,
+        uniqueViewers: 0,
+        engagementRate: 0,
+        topDocuments: [],
+        viewsOverTime: []
+      };
+    }
   }
 
   async getCompanyAnalysis(userId: string): Promise<CompanyAnalysis[]> {

@@ -31,13 +31,16 @@ const PDFFromBlob = ({ blobUrl, pdfBlob, title, isFullscreenMode, onFullscreen, 
         // If we have a direct blob, use it. Otherwise try to fetch from blob URL
         if (!blob && blobUrl && blobUrl.startsWith('blob:')) {
           console.log(`🔄 No direct blob available, trying to fetch from URL: ${blobUrl}`);
-          const response = await fetch(blobUrl);
-          
-          if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          try {
+            const response = await fetch(blobUrl);
+            if (!response.ok) {
+              throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            blob = await response.blob();
+          } catch (fetchErr) {
+            console.error('❌ Failed to fetch blob from URL:', fetchErr);
+            throw new Error('PDF blob is no longer accessible');
           }
-          
-          blob = await response.blob();
         } else if (blob) {
           // Handle React state proxy issues - try to access size/type safely
           const blobSize = blob.size || 'unknown';
@@ -62,32 +65,30 @@ const PDFFromBlob = ({ blobUrl, pdfBlob, title, isFullscreenMode, onFullscreen, 
           throw new Error('PDF file is empty - regeneration required');
         }
         
-        if (!blob.type.includes('pdf')) {
-          throw new Error('Invalid file type - not a PDF');
+        // Relaxed type check as some browsers might not set application/pdf correctly for blobs created on the fly
+        if (blob.type && !blob.type.includes('pdf') && !blob.type.includes('application/octet-stream')) {
+           console.warn('⚠️ Blob type mismatch:', blob.type);
         }
         
         // Convert to data URL for iframe
         console.log('🔄 Starting FileReader conversion...');
         const reader = new FileReader();
         reader.onload = () => {
-          const dataUrl = reader.result;
+          const result = reader.result;
           console.log(`✅ Successfully converted to data URL`);
-          console.log(`🔍 Data URL length: ${dataUrl?.length || 0} chars`);
-          console.log(`🔍 Data URL prefix: ${dataUrl?.substring ? dataUrl.substring(0, 50) : 'N/A'}...`);
           
-          // Validate that it's a PDF data URL
-          if (dataUrl && !dataUrl.startsWith('data:application/pdf')) {
-            console.warn(`⚠️ Data URL doesn't start with PDF MIME type: ${dataUrl.substring(0, 30)}`);
-          }
-          
-          if (dataUrl) {
-            setDataUrl(dataUrl);
+          if (typeof result === 'string') {
+            // Validate that it's a PDF data URL (or at least starts with data:)
+            if (!result.startsWith('data:application/pdf') && !result.startsWith('data:application/octet-stream')) {
+              console.warn(`⚠️ Data URL might have incorrect MIME type: ${result.substring(0, 30)}`);
+            }
+            setDataUrl(result);
             setLoading(false);
             console.log('✅ PDF data URL set successfully');
           } else {
-            console.error('❌ FileReader result is null/undefined');
-            setError('Failed to convert PDF to displayable format');
-            setLoading(false);
+             console.error('❌ FileReader result is not a string');
+             setError('Failed to convert PDF to displayable format');
+             setLoading(false);
           }
         };
         reader.onerror = (e) => {
@@ -96,15 +97,15 @@ const PDFFromBlob = ({ blobUrl, pdfBlob, title, isFullscreenMode, onFullscreen, 
           setLoading(false);
         };
         reader.readAsDataURL(blob);
-      } catch (err) {
+      } catch (err: any) {
         console.error('❌ Failed to process blob:', err);
         console.error('❌ Error details:', err.message);
         
         // Show more specific error messages
         if (err.message.includes('Invalid blob object')) {
           setError('PDF data corrupted - please regenerate');
-        } else if (err.message.includes('Failed to fetch')) {
-          setError('PDF blob is no longer accessible');
+        } else if (err.message.includes('PDF blob is no longer accessible')) {
+           setError('PDF session expired - please regenerate');
         } else if (err.message.includes('No blob data')) {
           setError('PDF data not available');
         } else if (err.message.includes('HTTP')) {
@@ -567,6 +568,46 @@ export default function PDFPreview({
           clearTimeout(loadTimeout);
         }
       };
+    } else if (!pdfUrl && propPdfBlob) {
+      console.log('📎 Using provided PDF blob prop');
+      const url = URL.createObjectURL(propPdfBlob);
+      setActualPdfUrl(url);
+      setPdfBlob(propPdfBlob);
+      
+      if (url.startsWith('blob:')) {
+        console.log(`🚨 Using immediate fallback for prop blob URL`);
+        setViewerMethod('fallback');
+        setIframeError(true);
+      } else {
+        setIframeError(false);
+        setViewerMethod('embed');
+      }
+
+      return () => {
+        setTimeout(() => {
+          URL.revokeObjectURL(url);
+        }, 10000);
+      };
+    } else if (!pdfUrl && propPdfBlob) {
+      console.log('📎 Using provided PDF blob prop');
+      const url = URL.createObjectURL(propPdfBlob);
+      setActualPdfUrl(url);
+      setPdfBlob(propPdfBlob);
+      
+      if (url.startsWith('blob:')) {
+        console.log(`🚨 Using immediate fallback for prop blob URL`);
+        setViewerMethod('fallback');
+        setIframeError(true);
+      } else {
+        setIframeError(false);
+        setViewerMethod('embed');
+      }
+
+      return () => {
+        setTimeout(() => {
+          URL.revokeObjectURL(url);
+        }, 10000);
+      };
     } else if (pdfUrl && (hasContentChanged || isForceRefresh)) {
       console.log('🔄 Input changed or force refresh triggered, clearing cache and regenerating PDF');
       // Content has changed or force refresh, clear cache and regenerate
@@ -824,11 +865,18 @@ export default function PDFPreview({
 
     if (loading) {
       return (
-        <div className="flex items-center justify-center h-full min-h-96 bg-gray-700 rounded-lg">
-          <div className="text-center">
-            <ArrowPathIcon className="h-8 w-8 animate-spin text-accent-primary mx-auto mb-4" />
-            <p className="text-text-secondary">Generating LaTeX PDF preview...</p>
-            <p className="text-dark-text-muted text-sm mt-2">This may take up to 2 minutes for high-quality compilation</p>
+        <div className="flex items-center justify-center w-full h-full min-h-[600px] bg-white rounded-[2.5rem] shadow-sm border border-surface-100">
+          <div className="text-center space-y-6">
+            <div className="relative">
+              <div className="absolute inset-0 bg-brand-blue/20 rounded-full blur-2xl animate-pulse" />
+              <div className="w-16 h-16 rounded-2xl bg-brand-blue/5 border border-brand-blue/10 flex items-center justify-center mx-auto relative z-10">
+                <ArrowPathIcon className="h-8 w-8 animate-spin text-brand-blue" />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <p className="text-sm font-black text-brand-dark uppercase tracking-[0.2em]">Compiling Architecture Preview...</p>
+              <p className="text-xs font-medium text-text-secondary max-w-[240px] mx-auto leading-relaxed">Synthesizing Vector LaTeX layers into a high-fidelity deployment.</p>
+            </div>
           </div>
         </div>
       );
@@ -836,18 +884,22 @@ export default function PDFPreview({
 
     if (error) {
       return (
-        <div className="flex items-center justify-center h-full min-h-96 bg-gray-700 rounded-lg border border-accent-danger/30">
-          <div className="text-center">
-            <DocumentTextIcon className="h-12 w-12 text-accent-danger mx-auto mb-4" />
-            <p className="text-accent-danger mb-2">Failed to load PDF preview</p>
-            <p className="text-dark-text-muted text-sm">{error}</p>
+        <div className="flex items-center justify-center w-full h-full min-h-[600px] bg-white rounded-[2.5rem] border border-red-100 shadow-sm">
+          <div className="text-center space-y-6 max-w-md px-10">
+            <div className="w-20 h-20 bg-red-50 rounded-[2rem] flex items-center justify-center mx-auto text-red-500 border border-red-100">
+              <DocumentTextIcon className="h-10 w-10" />
+            </div>
+            <div className="space-y-2">
+              <p className="text-lg font-black text-brand-dark tracking-tight">Preview Unavailable</p>
+              <p className="text-sm text-text-secondary font-medium leading-relaxed">{error}</p>
+            </div>
             {templateId && resumeData && (
               <Button
                 onClick={generatePDFPreview}
                 variant="outline"
-                className="mt-4"
+                className="px-8 py-3.5 rounded-xl border-2 border-surface-200 text-[10px] font-black uppercase tracking-[0.15em] hover:bg-surface-50 hover:border-brand-dark transition-all duration-300"
               >
-                Try Again
+                Retry Compilation
               </Button>
             )}
           </div>
@@ -857,10 +909,12 @@ export default function PDFPreview({
 
     if (!actualPdfUrl) {
       return (
-        <div className="flex items-center justify-center h-full min-h-96 bg-gray-700 rounded-lg">
-          <div className="text-center">
-            <DocumentTextIcon className="h-12 w-12 text-dark-text-muted mx-auto mb-4" />
-            <p className="text-text-secondary">No PDF available</p>
+        <div className="flex items-center justify-center w-full h-full min-h-[600px] bg-white rounded-[2.5rem] border-2 border-dashed border-surface-200">
+          <div className="text-center space-y-4 opacity-40 group-hover:opacity-60 transition-opacity duration-500">
+            <div className="w-20 h-20 bg-surface-50 rounded-[2rem] flex items-center justify-center mx-auto text-text-tertiary">
+              <DocumentTextIcon className="h-10 w-10" />
+            </div>
+            <p className="text-[10px] font-black text-text-tertiary uppercase tracking-[0.2em]">Idle: Target node not generated.</p>
           </div>
         </div>
       );
@@ -869,7 +923,7 @@ export default function PDFPreview({
     // If iframe fails to load blob URL, use direct blob display
     if (iframeError && pdfBlob) {
       return (
-        <div className={`relative h-full min-h-96 bg-gray-100 overflow-hidden`}>
+        <div className={`relative w-full h-full min-h-[800px] bg-gray-50 rounded-[2.5rem] overflow-hidden border border-surface-200 shadow-inner`}>
           <PDFFromBlob 
             blobUrl={actualPdfUrl}
             pdfBlob={pdfBlob}
@@ -916,11 +970,13 @@ export default function PDFPreview({
     // Show fallback only for non-blob URLs that have errors
     if (shouldUseSpecialRender && !isBlob) {
       return (
-        <div className={`relative h-full min-h-96 bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center`}>
-          <div className="text-center p-8">
-            <DocumentTextIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-800 mb-2">PDF Error</h3>
-            <p className="text-gray-600 mb-4">Unable to load PDF. Please try refreshing.</p>
+        <div className={`relative w-full h-full min-h-[600px] bg-white rounded-[2.5rem] overflow-hidden flex items-center justify-center border border-red-100 shadow-sm`}>
+          <div className="text-center p-10 space-y-4">
+            <DocumentTextIcon className="h-16 w-16 text-text-tertiary mx-auto opacity-30" />
+            <div className="space-y-1">
+              <h3 className="text-lg font-black text-brand-dark uppercase tracking-tight">Preview Error</h3>
+              <p className="text-sm font-medium text-text-secondary">Unable to load deployment preview. Please refresh.</p>
+            </div>
           </div>
         </div>
       );
@@ -932,7 +988,7 @@ export default function PDFPreview({
       
       // Use iframe with data URL instead of blob URL
       return (
-        <div className={`relative h-full min-h-96 bg-gray-100 overflow-hidden`}>
+        <div className={`relative w-full h-full min-h-[800px] bg-gray-50 rounded-[2.5rem] overflow-hidden border border-surface-200 shadow-inner`}>
           <PDFFromBlob 
             blobUrl={actualPdfUrl} 
             pdfBlob={pdfBlob}
@@ -944,13 +1000,13 @@ export default function PDFPreview({
     }
 
     return (
-      <div className={`relative h-full bg-gray-100 rounded-lg overflow-hidden`}>
+      <div className={`relative w-full h-full min-h-[800px] bg-gray-50 rounded-[2.5rem] overflow-hidden border border-surface-200 shadow-inner`}>
         {/* PDF Viewer - Try different methods based on viewerMethod state */}
         {viewerMethod === 'embed' ? (
           <embed
             src={`${actualPdfUrl}#toolbar=0&navpanes=0&scrollbar=0&zoom=FitH&view=FitH`}
             type="application/pdf"
-            className="w-full h-full border-none"
+            className="w-full h-full border-none rounded-[2.5rem]"
             title={title || 'PDF Preview'}
             onLoad={handleViewerLoad}
             onError={handleViewerError}
@@ -964,7 +1020,7 @@ export default function PDFPreview({
           <object
             data={`${actualPdfUrl}#toolbar=0&navpanes=0&scrollbar=0&zoom=FitH&view=FitH`}
             type="application/pdf"
-            className="w-full h-full border-none"
+            className="w-full h-full border-none rounded-[2.5rem]"
             title={title || 'PDF Preview'}
             onLoad={handleViewerLoad}
             onError={handleViewerError}
@@ -979,13 +1035,12 @@ export default function PDFPreview({
         )}
         
         {/* PDF Controls Overlay */}
-        <div className="absolute top-4 right-4 flex space-x-2">
+        <div className="absolute top-6 right-6 flex space-x-2 relative z-30">
           <Button
             onClick={() => window.open(actualPdfUrl, '_blank')}
-            variant="outline"
-            className="bg-white/90 text-gray-800 border-gray-300 hover:bg-white"
+            className="bg-white/90 backdrop-blur-md text-brand-dark border border-surface-200 hover:bg-white hover:shadow-xl transition-all duration-300 rounded-[1rem] px-5 py-2.5 text-[10px] font-black uppercase tracking-[0.15em] flex items-center gap-2.5 shadow-lg active:scale-95"
           >
-            <EyeIcon className="h-4 w-4 mr-2" />
+            <EyeIcon className="h-4 w-4 stroke-[2.5px]" />
             Open in New Tab
           </Button>
         </div>

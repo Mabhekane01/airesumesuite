@@ -20,6 +20,7 @@ import { toast } from 'sonner';
 import { useAuthStore } from '../stores/authStore';
 import ResumeSelector from '../components/career-coach/ResumeSelector';
 import { ResumeData } from '../services/resumeService';
+import { api } from '../services/api';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
 
@@ -60,7 +61,7 @@ const ResumeSelectionModal = ({
               <p className="text-xs font-bold text-text-tertiary">Choose which resume architecture to deploy.</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 text-text-tertiary hover:text-brand-dark transition-colors"><X size={24} /></button>
+          <button onClick={onClose} className="w-10 h-10 rounded-full bg-surface-50 border border-surface-200 flex items-center justify-center text-text-tertiary hover:text-brand-dark hover:rotate-90 transition-all duration-300"><X size={24} /></button>
         </div>
         
         <div className="flex-1 overflow-y-auto min-h-0 mb-6 custom-scrollbar">
@@ -88,7 +89,7 @@ const ResumeSelectionModal = ({
 const PublicJobView = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { isAuthenticated, accessToken, user } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
   
   const [job, setJob] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -145,45 +146,28 @@ const PublicJobView = () => {
     setProcessing(true);
     try {
       // 1. Create Share Link
-      const shareResponse = await fetch(`${API_BASE}/api/v1/share`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`
-        },
-        body: JSON.stringify({
-          resumeId: resume._id,
-          title: `Application to ${job.company}`,
-          settings: {
-            requireEmail: false,
-            notifyOnView: true,
-            allowDownload: true
-          }
-        })
+      const shareRes = await api.post('/share', {
+        resumeId: resume._id,
+        title: `Application to ${job.company}`,
+        settings: {
+          requireEmail: false,
+          notifyOnView: true,
+          allowDownload: true
+        }
       });
       
-      const shareData = await shareResponse.json();
-      if (!shareData.success) throw new Error('Failed to create tracking link');
+      if (!shareRes.data.success) throw new Error('Failed to create tracking link');
       
-      const trackingUrl = shareData.data.trackingUrl;
+      const shareId = shareRes.data.data.shareId;
+      const trackingUrl = shareRes.data.data.trackingUrl;
 
       // 2. Download Tracked PDF
-      const pdfResponse = await fetch(`${API_BASE}/api/v1/resumes/${resume._id}/download-tracked`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`
-        },
-        body: JSON.stringify({
-          trackingUrl,
-          templateId: resume.templateId || 'template01'
-        })
-      });
+      const pdfRes = await api.post(`/resumes/${resume._id}/download-tracked`, {
+        trackingUrl,
+        templateId: resume.templateId || 'template01'
+      }, { responseType: 'blob' });
 
-      if (!pdfResponse.ok) throw new Error('Failed to generate tracked PDF');
-      
-      const blob = await pdfResponse.blob();
-      const url = window.URL.createObjectURL(blob);
+      const url = window.URL.createObjectURL(new Blob([pdfRes.data]));
       const a = document.createElement('a');
       a.href = url;
       a.download = `${resume.personalInfo.firstName}_${resume.personalInfo.lastName}_${job.company}_Resume.pdf`;
@@ -197,42 +181,32 @@ const PublicJobView = () => {
       });
 
       // 3. Create Job Application Record
-      const appResponse = await fetch(`${API_BASE}/api/v1/job-applications`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`
+      await api.post('/job-applications', {
+        jobTitle: job.title,
+        companyName: job.company,
+        jobDescription: job.description,
+        jobUrl: job.url,
+        jobSource: 'manual',
+        jobLocation: {
+          country: job.country,
+          city: job.location,
+          remote: job.jobType?.toLowerCase().includes('remote') || false
         },
-        body: JSON.stringify({
-          jobTitle: job.title,
-          companyName: job.company,
-          jobDescription: job.description,
-          jobUrl: job.url,
-          jobSource: 'manual',
-          jobLocation: {
-            country: job.country,
-            city: job.location,
-            remote: job.jobType?.toLowerCase().includes('remote') || false
-          },
-          status: 'applied',
-          applicationDate: new Date(),
-          documentsUsed: {
-            resumeId: resume._id,
-            // Store share info in notes or a specific field if available
-            // additionalDocuments: [{ name: 'Tracking Link', url: trackingUrl, type: 'other' }]
-          }
-        })
+        status: 'applied',
+        applicationDate: new Date(),
+        documentsUsed: {
+          resumeId: resume._id,
+          trackingShareId: shareId
+        }
       });
 
-      const appData = await appResponse.json();
-      if (appData.success) {
-        toast.success('Application added to tracker!');
-      }
+      toast.success('Application added to tracker!');
 
-      // 4. Redirect to Job URL
+      // 4. Redirect to Job URL and then back home
       setTimeout(() => {
         window.open(job.url, '_blank', 'noopener,noreferrer');
         setIsResumeModalOpen(false);
+        // Important: Navigate to applications list so it's there when they return
         navigate('/dashboard/applications');
       }, 1500);
 

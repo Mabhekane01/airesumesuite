@@ -7,8 +7,8 @@ const router: Router = express.Router();
 // Public routes
 router.get('/', jobPostingController.getJobs);
 
-// Admin-only job creation
-router.post('/', authMiddleware, requireAdmin, jobPostingController.createJob); 
+// Job creation (Auth required, Admin gets auto-approved)
+router.post('/', authMiddleware, jobPostingController.createJob); 
 
 // Scraper trigger (Admin Protected)
 router.post('/scrape', authMiddleware, requireAdmin, jobPostingController.scrapeJobs);

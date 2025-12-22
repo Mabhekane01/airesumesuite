@@ -37,14 +37,22 @@ export const jobPostingController = {
     }
   },
 
-  // Submit a new job (User)
+  // Submit a new job (User or Admin)
   createJob: async (req: Request, res: Response) => {
     try {
       const { title, company, location, country, description, url, salaryRange, jobType } = req.body;
       
+      // Access user from AuthenticatedRequest (ensure your type definition supports this, or cast req as any for now)
+      const userRole = (req as any).user?.role;
+
       if (!title || !company || !country) {
         return res.status(400).json({ success: false, message: 'Missing required fields' });
       }
+
+      // Admins bypass approval queue
+      const isAdmin = userRole === 'admin';
+      const initialStatus = isAdmin ? 'approved' : 'pending';
+      const initialSource = isAdmin ? 'admin' : 'user';
 
       const newJob = new JobPosting({
         title,
@@ -55,14 +63,18 @@ export const jobPostingController = {
         url,
         salaryRange,
         jobType,
-        source: 'user',
-        status: 'pending', 
+        source: initialSource,
+        status: initialStatus, 
         postedAt: new Date()
       });
 
       await newJob.save();
       
-      res.status(201).json({ success: true, message: 'Job submitted for approval', data: newJob });
+      res.status(201).json({ 
+        success: true, 
+        message: initialStatus === 'approved' ? 'Job published successfully' : 'Job submitted for approval', 
+        data: newJob 
+      });
     } catch (error) {
       res.status(500).json({ success: false, message: 'Failed to submit job', error });
     }

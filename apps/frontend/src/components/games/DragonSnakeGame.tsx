@@ -69,7 +69,7 @@ const DragonSnakeGame: React.FC = () => {
   const createParticles = useCallback(
     (x: number, y: number, color: string, count: number = 5) => {
       const newParticles = Array.from({ length: count }, (_, i) => ({
-        id: Date.now() + i,
+        id: Date.now() + Math.random() + i,
         x: x * 20 + 10,
         y: y * 20 + 10,
         vx: (Math.random() - 0.5) * 4,

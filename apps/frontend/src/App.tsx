@@ -28,6 +28,7 @@ import AccountManager from './components/account/AccountManager';
 import EnterpriseUpgrade from './pages/payment/EnterpriseUpgrade';
 import PaymentSuccess from './pages/payment/PaymentSuccess';
 import DashboardHome from './components/dashboard/DashboardHome';
+import Documents from './pages/Documents';
 import PublicJobView from './pages/PublicJobView';
 import PublicResumeShareView from './pages/PublicResumeShareView';
 
@@ -81,6 +82,7 @@ const AppRoutes = [
     element: <ProtectedRoute><DashboardLayout /></ProtectedRoute>, // DashboardLayout wraps all dashboard child routes
     children: [
       { index: true, element: <DashboardHome /> }, // Default content for /dashboard
+      { path: "documents", element: <Documents /> },
       
       // Resume Builder Routes
       { path: "resume", element: <ResumeBuilder /> },
@@ -96,11 +98,11 @@ const AppRoutes = [
       { path: "cover-letter/conversational", element: <ConversationalCoverLetterPage /> },
 
       // Job Application Tracker Routes
+      { path: "applications", element: <ResumeTrackingDashboard /> },
       { path: "applications/new", element: <CreateJobApplication /> },
       { path: "applications/edit/:id", element: <EditJobApplication /> },
       { path: "applications/:id", element: <JobApplicationDetail /> },
       { path: "analytics", element: <ApplicationAnalytics /> },
-      { path: "analytics/resume-tracking", element: <ResumeTrackingDashboard /> },
       { path: "coach", element: <CareerCoachPage /> },
       { path: "interviews", element: <InterviewScheduler /> },
 

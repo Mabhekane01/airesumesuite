@@ -494,10 +494,11 @@ const JobApplicationSchema = new Schema<IJobApplication>({
     template: String
   }],
   
-  // Documents
+  // Documents & Portfolio
   documentsUsed: {
     resumeId: { type: Schema.Types.ObjectId, ref: 'Resume' },
     resumeContent: { type: String }, // Store resume content for AI matching
+    trackingShareId: { type: String }, // Link to ResumeShare node for tracking
     coverLetterId: { type: Schema.Types.ObjectId, ref: 'CoverLetter' },
     portfolioLinks: [String],
     additionalDocuments: [{
