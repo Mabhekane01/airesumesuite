@@ -735,7 +735,7 @@ export const searchService = new JobApplicationSearchService();
 
 export interface SearchResult {
   id: string;
-  type: 'resume' | 'job_application' | 'cover_letter' | 'skill' | 'company';
+  type: 'resume' | 'job_application' | 'skill' | 'company';
   title: string;
   subtitle: string;
   description: string;
@@ -747,14 +747,12 @@ export interface SearchResult {
 export interface SearchIndex {
   resumes: Resume[];
   jobApplications: JobApplication[];
-  coverLetters: CoverLetter[];
 }
 
 class SearchService {
   private index: SearchIndex = {
     resumes: [],
-    jobApplications: [],
-    coverLetters: []
+    jobApplications: []
   };
 
   private normalizeText(text: string): string {
@@ -799,7 +797,6 @@ class SearchService {
   updateIndex(data: Partial<SearchIndex>) {
     if (data.resumes) this.index.resumes = data.resumes;
     if (data.jobApplications) this.index.jobApplications = data.jobApplications;
-    if (data.coverLetters) this.index.coverLetters = data.coverLetters;
   }
 
   private searchResumes(query: string): SearchResult[] {
@@ -883,30 +880,6 @@ class SearchService {
     return results;
   }
 
-  private searchCoverLetters(query: string): SearchResult[] {
-    const results: SearchResult[] = [];
-
-    this.index.coverLetters.forEach(letter => {
-      const letterText = `${letter.jobTitle} ${letter.companyName} ${letter.content}`;
-      const score = this.calculateRelevanceScore(letterText, query);
-
-      if (score > 0) {
-        results.push({
-          id: letter.id || Math.random().toString(),
-          type: 'cover_letter',
-          title: `Cover Letter for ${letter.jobTitle}`,
-          subtitle: `${letter.companyName} • ${letter.tone} tone`,
-          description: letter.content.substring(0, 150) + '...',
-          data: letter,
-          score,
-          href: `/dashboard/cover-letter/${letter.id}`
-        });
-      }
-    });
-
-    return results;
-  }
-
   private searchQuickActions(query: string): SearchResult[] {
     const quickActions = [
       {
@@ -924,14 +897,6 @@ class SearchService {
         description: 'Add and track a new job application with status updates',
         keywords: 'job application add new track apply',
         href: '/dashboard/applications/new'
-      },
-      {
-        id: 'new-cover-letter',
-        title: 'Generate Cover Letter',
-        subtitle: 'Create a personalized cover letter',
-        description: 'Generate a tailored cover letter for your job applications',
-        keywords: 'cover letter generate create new write',
-        href: '/dashboard/cover-letter/new'
       },
       {
         id: 'analytics',
@@ -977,8 +942,7 @@ class SearchService {
     const allResults = [
       ...this.searchQuickActions(normalizedQuery),
       ...this.searchResumes(normalizedQuery),
-      ...this.searchJobApplications(normalizedQuery),
-      ...this.searchCoverLetters(normalizedQuery)
+      ...this.searchJobApplications(normalizedQuery)
     ];
 
     // Sort by relevance score and return top results
@@ -1009,16 +973,6 @@ class SearchService {
         data: null,
         score: 0,
         href: '/dashboard/applications'
-      },
-      {
-        id: 'suggestion-cover-letter',
-        type: 'skill',
-        title: 'Cover Letters',
-        subtitle: 'Generate cover letters',
-        description: 'Create personalized cover letters',
-        data: null,
-        score: 0,
-        href: '/dashboard/cover-letter'
       },
       {
         id: 'suggestion-analytics',

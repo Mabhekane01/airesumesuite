@@ -166,10 +166,6 @@ const updateApplicationValidation = [
     .optional()
     .isString()
     .withMessage('Resume content must be a string'),
-  body('documentsUsed.coverLetterId')
-    .optional({ checkFalsy: true })
-    .isMongoId()
-    .withMessage('Cover letter ID must be a valid MongoDB ObjectId'),
   // Allow updating application strategy
   body('applicationStrategy')
     .optional()
@@ -470,17 +466,6 @@ router.get(
   '/:applicationId/analysis',
   mongoIdValidation,
   (req: AuthenticatedRequest, res: Response) => jobApplicationController.getJobMatchAnalysis(req, res)
-);
-
-// Generate cover letter
-router.post(
-  '/:applicationId/cover-letter',
-  requireEnterpriseSubscription,
-  subscriptionRateLimit('ai-cover-letter'),
-  trackFeatureUsage('ai-cover-letter-generation'),
-  mongoIdValidation,
-  body('template').optional().isString().withMessage('Template must be a string'),
-  (req: AuthenticatedRequest, res: Response) => jobApplicationController.generateCoverLetter(req, res)
 );
 
 // Get interview prep

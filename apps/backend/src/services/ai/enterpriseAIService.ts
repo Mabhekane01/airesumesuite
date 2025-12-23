@@ -208,42 +208,6 @@ export class EnterpriseAIService {
     );
   }
 
-  async analyzeJobFromUrl(jobUrl: string): Promise<JobMatchingResult['jobDetails']> {
-    try {
-      new URL(jobUrl);
-    } catch {
-      throw new Error('Invalid URL format. Please provide a valid job posting URL.');
-    }
-
-    const prompt = `Extract job info from: ${jobUrl}
-
-Return ONLY this JSON format (no markdown, no text before/after):
-{
-  "title": "job title",
-  "company": "company name", 
-  "description": "brief job description (max 300 chars)",
-  "requirements": ["req1", "req2", "req3"],
-  "responsibilities": ["resp1", "resp2", "resp3"]
-}
-
-Keep description under 300 characters. Limit arrays to max 5 items each. Ensure valid JSON syntax.`;
-
-    return this.executeWithFallback(async (provider) => {
-      const result = await this.callAIProvider(provider, prompt, 'job-analysis');
-      
-      if (!result.title) {
-        throw new Error('Could not extract job details from the provided URL.');
-      }
-      
-      return {
-        title: result.title,
-        company: result.company || 'Company Not Specified',
-        description: result.description || '',
-        requirements: result.requirements || []
-      };
-    }, 'job analysis from URL');
-  }
-
   async analyzeATSCompatibility(resumeData: any, jobDescription?: string): Promise<ATSAnalysisResult> {
     return this.executeWithFallback(async (provider) => {
       const prompt = `
@@ -365,50 +329,6 @@ CRITICAL RULES:
       const result = await this.callAIProvider(provider, prompt, 'summary-generation');
       return Array.isArray(result) ? result : [result];
     }, 'professional summary generation');
-  }
-
-  async optimizeForJobPosting(resumeData: any, jobUrl: string): Promise<JobMatchingResult> {
-    return this.executeWithFallback(async (provider) => {
-      const jobDetails = await this.analyzeJobFromUrl(jobUrl);
-      
-      const prompt = `
-You are a Senior Technical Headhunter and Principal Recruiter. Perform a high-fidelity 'Target Alignment Audit' between this candidate's architecture and the institutional requirements of the role.
-
-CANDIDATE ASSETS:
-${JSON.stringify(resumeData, null, 2)}
-
-TARGET BLUEPRINT:
-Position: ${jobDetails.title}
-Organization: ${jobDetails.company}
-Technical Ecosystem: ${jobDetails.description}
-Critical Nodes: ${jobDetails.requirements?.join(', ') || 'See description'}
-
-REQUIRED AUDIT REPORT:
-1. STRATEGIC POSITIONING: How does the seniority and sector experience align?
-2. SEMANTIC GAP: Identify the top 5 missing technical and soft nodes.
-3. COMPETITIVE ADVANTAGE: What unique achievements make this candidate high-yield?
-
-REQUIRED OUTPUT FORMAT (STRICT PURE JSON):
-{
-  "matchScore": number (0-100 - be realistic),
-  "keywordAlignment": ["Matching critical technical terms"],
-  "missingKeywords": ["High-priority keywords to incorporate"],
-  "recommendations": ["Direct, strategic advice to optimize the fit"],
-  "strategicInsights": ["Market Intelligence on positioning for this specific organizational culture"]
-}
-
-CRITICAL EXECUTION RULES:
-- Use PLAIN TEXT ONLY. NO markdown formatting.
-- Return ONLY the JSON object.
-`;
-
-      const analysis = await this.callAIProvider(provider, prompt, 'job-matching');
-      
-      return {
-        ...analysis,
-        jobDetails
-      };
-    }, 'job posting optimization');
   }
 
   private async callAIProvider(provider: string, prompt: string, type: string): Promise<any> {

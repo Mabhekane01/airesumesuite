@@ -24,7 +24,6 @@ const categoryLabels = {
   resume: 'Resume Builder',
   application: 'Job Applications',
   interview: 'Interviews',
-  cover_letter: 'Cover Letters',
   career_coach: 'Career Coach',
   system: 'System Updates'
 };
@@ -336,7 +335,6 @@ export default function NotificationPreferences({ onClose }: NotificationPrefere
                     {category === 'resume' && 'Resume creation, AI analysis, optimizations'}
                     {category === 'application' && 'Job applications, status updates, match scores'}
                     {category === 'interview' && 'Interview scheduling, reminders, feedback'}
-                    {category === 'cover_letter' && 'Cover letter generation and updates'}
                     {category === 'career_coach' && 'AI career advice and coaching sessions'}
                     {category === 'system' && 'System updates, maintenance, feature announcements'}
                   </p>

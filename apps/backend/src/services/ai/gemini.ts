@@ -19,17 +19,6 @@ export interface ResumeOptimizationParams {
   companyName: string;
 }
 
-export interface CoverLetterParams {
-  personalInfo: any;
-  jobDescription: string;
-  jobTitle: string;
-  companyName: string;
-  tone: 'professional' | 'casual' | 'enthusiastic' | 'conservative';
-  resumeData?: any;
-  keywordOptimization?: boolean;
-  customInstructions?: string;
-}
-
 function cleanAndParseJson(rawText: string): any {
   console.log('🔧 Raw AI response (first 300 chars):', rawText.substring(0, 300));
   
@@ -307,168 +296,6 @@ Respond only with the optimized JSON data, no additional text.
         if (model !== "gemini-1.5-flash") return this.optimizeResume(params);
       }
       throw new Error('Failed to optimize resume');
-    }
-  }
-
-  async generateCoverLetter(options: {
-    jobDescription: string;
-    jobTitle: string;
-    companyName: string;
-    tone: 'professional' | 'casual' | 'enthusiastic' | 'conservative';
-    resumeData?: any;
-    customInstructions?: string;
-    keywordOptimization?: boolean;
-    personalInfo?: {
-      firstName: string;
-      lastName: string;
-      email: string;
-      location: string;
-    };
-  }): Promise<string> {
-    if (!this.client) {
-      throw new Error('Gemini API not configured. Please set GEMINI_API_KEY environment variable.');
-    }
-    
-    const { 
-      jobDescription, 
-      jobTitle, 
-      companyName, 
-      tone, 
-      resumeData,
-      customInstructions,
-      keywordOptimization = true,
-      personalInfo
-    } = options;
-    
-    // Extract key information from resume for intelligent matching
-    const workExperience = resumeData?.workExperience || [];
-    const skills = resumeData?.skills || [];
-    const education = resumeData?.education || [];
-    const achievements = workExperience.flatMap((exp: any) => exp.achievements || []);
-    const applicantName = personalInfo?.firstName ? `${personalInfo.firstName} ${personalInfo.lastName}` : resumeData?.personalInfo?.firstName ? `${resumeData.personalInfo.firstName} ${resumeData.personalInfo.lastName}` : '[Your Name]';
-    
-    // Analyze job description for key requirements
-    const jobKeywords = this.extractJobKeywords(jobDescription);
-    const relevantSkills = skills.filter((skill: any) => 
-      jobKeywords.some(keyword => 
-        skill.name.toLowerCase().includes(keyword.toLowerCase()) ||
-        keyword.toLowerCase().includes(skill.name.toLowerCase())
-      )
-    );
-    
-    // Get tone-specific language patterns
-    const toneGuidelines = this.getToneGuidelines(tone);
-    
-    const prompt = `
-You are an award-winning professional cover letter writer with 15+ years of experience helping candidates secure interviews at top companies. Create an exceptional, highly personalized cover letter that will make this candidate stand out.
-
-🎯 CANDIDATE PROFILE:
-Name: ${applicantName}
-Professional Title: ${resumeData?.personalInfo?.professionalTitle || 'Professional'}
-
-📋 PROFESSIONAL BACKGROUND:
-${resumeData?.professionalSummary ? `Summary: ${resumeData.professionalSummary}` : ''}
-
-Work Experience:
-${workExperience.map((exp: any) => `
-• ${exp.jobTitle} at ${exp.company} (${exp.startDate} - ${exp.isCurrentJob ? 'Present' : exp.endDate})
-  Key Responsibilities: ${exp.responsibilities?.slice(0, 3).join(', ')}
-  Achievements: ${exp.achievements?.slice(0, 2).join(', ')}`).join('')}
-
-Key Skills: ${skills.map((s: any) => s.name).slice(0, 10).join(', ')}
-Education: ${education.map((edu: any) => `${edu.degree} in ${edu.fieldOfStudy} from ${edu.institution}`).join(', ')}
-
-🏢 TARGET POSITION:
-Job Title: ${jobTitle}
-Company: ${companyName}
-
-📄 JOB REQUIREMENTS ANALYSIS:
-${jobDescription}
-
-${keywordOptimization ? `🔑 IDENTIFIED KEY SKILLS MATCH:
-${relevantSkills.map((skill: any) => `• ${skill.name} (${skill.category})`).join('\n')}
-
-📊 QUANTIFIED ACHIEVEMENTS TO HIGHLIGHT:
-${achievements.filter((ach: string) => /\d+/.test(ach)).slice(0, 3).join('\n• ')}
-` : ''}
-
-🎨 TONE & STYLE REQUIREMENTS:
-${toneGuidelines}
-
-${customInstructions ? `✨ CUSTOM INSTRUCTIONS:
-${customInstructions}
-` : ''}
-
-📝 COVER LETTER REQUIREMENTS:
-
-1.  **FULL STRUCTURE**: Generate a complete cover letter. This includes:
-    *   **Your Contact Information**: (Name, Phone, Email - use placeholders if not available in resume data).
-    *   **Date**.
-    *   **Hiring Manager's Information**: (Title, Company Name, Company Address - use placeholders).
-    *   **Salutation**: (e.g., "Dear Hiring Manager,").
-    *   **Body Paragraphs**: (Introduction, value proposition, company alignment).
-    *   **Closing**: (e.g., "Sincerely,").
-    *   **Your Typed Name**.
-
-2. OPENING HOOK (2-3 sentences):
-   - Start with a compelling statement that immediately shows value
-   - Reference specific company knowledge or recent company news/achievements
-   - Clearly state the position and express genuine enthusiasm
-
-3. VALUE PROPOSITION PARAGRAPH (3-4 sentences):
-   - Highlight 2-3 most relevant accomplishments with specific metrics
-   - Draw direct connections between experience and job requirements
-   - Use power words and action verbs
-   - Incorporate relevant keywords naturally
-
-4. COMPANY ALIGNMENT PARAGRAPH (2-3 sentences):
-   - Show research about the company's mission, values, or recent developments
-   - Explain why you're specifically interested in THIS company
-   - Connect your career goals with the company's direction
-
-5. CLOSING CALL-TO-ACTION (2 sentences):
-   - Express confidence in your ability to contribute
-   - Include a specific next step or availability for interview
-
-📐 FORMATTING SPECIFICATIONS:
-- Professional business letter format
-- 280-380 words total length
-- Use active voice throughout
-- Include proper salutation ("Dear Hiring Manager" or "Dear [Specific Name]")
-- Professional closing ("Sincerely" for professional/conservative, "Best regards" for casual/enthusiastic)
-- Signature line with full name
-
-⚡ OPTIMIZATION FEATURES:
-- ATS-friendly formatting (no special characters, proper headers)
-- Strategic keyword placement (${keywordOptimization ? 'ENABLED' : 'DISABLED'})
-- Industry-specific language and terminology
-- Quantified achievements where possible
-- Company-specific customization
-
-🚀 MAKE IT EXCEPTIONAL:
-- Use storytelling elements to create emotional connection
-- Include specific examples that demonstrate problem-solving abilities
-- Show personality while maintaining professionalism
-- Create urgency and desire to interview the candidate
-- End with confidence and forward momentum
-
-Generate the complete cover letter now. Return ONLY the cover letter content with proper business formatting - no explanations, no additional text.
-`;
-
-    try {
-      const response = await this.client.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: prompt,
-      });
-      let coverLetter = response.text;
-      
-      // Post-process for consistency and formatting
-      coverLetter = this.postProcessCoverLetter(coverLetter, resumeData?.personalInfo, tone);
-      
-      return coverLetter;
-    } catch (error) {
-      console.error('Error generating cover letter with Gemini:', error);
-      throw new Error('Failed to generate cover letter');
     }
   }
 
@@ -1177,78 +1004,6 @@ Respond ONLY with the JSON data, no other text.
       .map(([word]) => word);
   }
   
-  private getToneGuidelines(tone: string): string {
-    const guidelines = {
-      professional: `
-• Use formal language and industry terminology
-• Maintain respectful, polished tone throughout
-• Focus on achievements and qualifications
-• Use phrases like "I am pleased to submit", "demonstrated expertise", "proven track record"
-• Avoid contractions and casual expressions`,
-      casual: `
-• Use conversational but respectful language
-• Show personality while remaining appropriate
-• Use contractions naturally (I'm, I'd, you're)
-• Include phrases like "I'm excited about", "I'd love to", "this opportunity really appeals to me"
-• Balance friendliness with professionalism`,
-      enthusiastic: `
-• Express genuine excitement and passion
-• Use energetic, positive language
-• Show eagerness to contribute and learn
-• Include phrases like "I'm thrilled to apply", "incredibly excited", "passionate about"
-• Demonstrate motivation and drive`,
-      conservative: `
-• Use traditional, formal business language
-• Emphasize stability, reliability, and professionalism
-• Focus on long-term value and commitment
-• Use phrases like "I respectfully submit", "I would be honored", "steadfast commitment"
-• Avoid casual expressions or overly enthusiastic language`
-    };
-    
-    return guidelines[tone as keyof typeof guidelines] || guidelines.professional;
-  }
-  
-  private postProcessCoverLetter(coverLetter: string, personalInfo: any, tone: string): string {
-    // Ensure proper formatting and consistency
-    let processed = coverLetter.trim();
-    
-    // Add date if missing
-    if (!processed.includes(new Date().getFullYear().toString())) {
-      const today = new Date().toLocaleDateString('en-US', { 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
-      });
-      processed = `${today}\n\n${processed}`;
-    }
-    
-    // Ensure proper signature
-    const firstName = personalInfo.firstName || 'Your';
-    const lastName = personalInfo.lastName || 'Name';
-    const fullName = `${firstName} ${lastName}`;
-    
-    if (!processed.includes(fullName)) {
-      const closings = {
-        professional: 'Sincerely,',
-        conservative: 'Respectfully,',
-        casual: 'Best regards,',
-        enthusiastic: 'With enthusiasm,'
-      };
-      
-      const closing = closings[tone as keyof typeof closings] || 'Sincerely,';
-      processed += `\n\n${closing}\n${fullName}`;
-    }
-    
-    // Clean up formatting
-    processed = processed
-      .replace(/\n{3,}/g, '\n\n')  // Remove excessive line breaks
-      .replace(/^\s+|\s+$/gm, '') // Trim lines
-      .replace(/\s{2,}/g, ' ')    // Remove excessive spaces
-      .trim();
-    
-    return processed;
-  }
-
   /**
    * Dedicated method for LaTeX generation with enhanced validation
    */
@@ -1323,77 +1078,6 @@ Respond ONLY with the JSON data, no other text.
       console.error('❌ LaTeX generation error:', error);
       throw new Error(`Failed to generate LaTeX: ${error.message}`);
     }
-  }
-
-  async generateAdvancedCoverLetterVariations(options: {
-    personalInfo: any;
-    jobDescription: string;
-    jobTitle: string;
-    companyName: string;
-    resumeData?: any;
-    variationCount?: number;
-  }): Promise<{ tone: string; content: string; strengths: string[]; }[]> {
-    try {
-      const { personalInfo, jobDescription, jobTitle, companyName, resumeData, variationCount = 3 } = options;
-      
-      const tones = ['professional', 'enthusiastic', 'conservative'] as const;
-      const variations = [];
-      
-      for (const tone of tones.slice(0, variationCount)) {
-        const content = await this.generateCoverLetter({
-          personalInfo,
-          jobDescription,
-          jobTitle,
-          companyName,
-          tone,
-          resumeData,
-          keywordOptimization: true
-        });
-        
-        // Analyze strengths of this variation
-        const strengths = this.analyzeCoverLetterStrengths(content, tone, jobDescription);
-        
-        variations.push({ tone, content, strengths });
-      }
-      
-      return variations;
-    } catch (error) {
-      console.error('Error generating cover letter variations:', error);
-      throw new Error('Failed to generate cover letter variations');
-    }
-  }
-  
-  private analyzeCoverLetterStrengths(content: string, tone: string, jobDescription: string): string[] {
-    const strengths = [];
-    const wordCount = content.split(/\s+/).length;
-    
-    // Analyze various aspects
-    if (wordCount >= 250 && wordCount <= 400) {
-      strengths.push('Optimal length for recruiter attention');
-    }
-    
-    if (content.includes('specific') || content.includes('metrics') || /\d+%/.test(content)) {
-      strengths.push('Includes quantified achievements');
-    }
-    
-    if (content.toLowerCase().includes(jobDescription.toLowerCase().split(' ')[0])) {
-      strengths.push('Strong keyword alignment');
-    }
-    
-    const toneStrengths = {
-      professional: 'Maintains professional tone throughout',
-      enthusiastic: 'Shows genuine passion and enthusiasm',
-      conservative: 'Demonstrates reliability and stability',
-      casual: 'Balances friendliness with professionalism'
-    };
-    
-    strengths.push(toneStrengths[tone as keyof typeof toneStrengths]);
-    
-    if (content.includes('research') || content.includes('company')) {
-      strengths.push('Shows company research and interest');
-    }
-    
-    return strengths;
   }
 
   async generateText(prompt: string, retryCount: number = 0): Promise<string> {
@@ -1860,7 +1544,7 @@ ${prompt}
     const { content, jobDescription, focusAreas = [], tone = 'professional' } = options;
 
     const prompt = `
-You are an expert writing coach specializing in professional communication. Enhance this cover letter content to make it more compelling, impactful, and effective.
+You are an expert writing coach specializing in professional communication. Enhance this professional content (e.g., resume section or professional document) to make it more compelling, impactful, and effective.
 
 CURRENT CONTENT:
 ${content}
@@ -1881,7 +1565,7 @@ ${jobDescription ? '7. Better aligning with job requirements' : ''}
 
 Return as JSON in this exact format:
 {
-  "enhancedContent": "The improved cover letter content here...",
+  "enhancedContent": "The improved content here...",
   "improvements": ["specific improvement 1", "specific improvement 2", "specific improvement 3", "specific improvement 4"]
 }
 

@@ -6,6 +6,7 @@ export interface JobAnalysisResult {
   companyName: string;
   location: string;
   jobDescription: string;
+  jobUrl?: string;
   requirements: string[];
   responsibilities: string[];
   skills: string[];
@@ -45,14 +46,16 @@ export class AIJobAnalyzer {
       console.log('🤖 Sending job URL to resilient AI service for analysis:', url);
       const analysis = await geminiService.scrapeJobFromUrl(url, resumeData);
       
+      const cleaned = this.validateAndCleanAnalysis(analysis, url);
+
       // Cache the result for 24 hours
       try {
-        await redisClient.setEx(cacheKey, 86400, JSON.stringify(analysis));
+        await redisClient.setEx(cacheKey, 86400, JSON.stringify(cleaned));
       } catch (cacheError) {
         console.warn('Failed to cache job analysis:', cacheError);
       }
 
-      return analysis as unknown as JobAnalysisResult;
+      return cleaned;
     } catch (error: any) {
       console.error('Error in AI job analysis:', error);
       
@@ -76,6 +79,7 @@ export class AIJobAnalyzer {
       companyName: analysis.companyName || 'Company Not Found', 
       location: analysis.location || 'Location Not Specified',
       jobDescription: analysis.jobDescription || 'Job description not available from this posting.',
+      jobUrl: url,
       requirements: Array.isArray(analysis.requirements) ? analysis.requirements : [],
       responsibilities: Array.isArray(analysis.responsibilities) ? analysis.responsibilities : [],
       skills: Array.isArray(analysis.skills) ? analysis.skills : [],

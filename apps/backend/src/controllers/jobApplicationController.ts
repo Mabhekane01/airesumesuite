@@ -759,36 +759,6 @@ export class JobApplicationController {
     }
   }
 
-  async generateCoverLetter(req: AuthenticatedRequest, res: Response) {
-    try {
-      if (!req.user) {
-        return res.status(401).json({ message: 'Unauthorized' });
-      }
-      const userId = req.user.id;
-      const { applicationId } = req.params;
-      const { template } = req.body;
-
-      const coverLetter = await jobApplicationService.generateCoverLetter(userId, applicationId, template);
-
-      return res.json({
-        success: true,
-        data: { coverLetter }
-      });
-    } catch (error) {
-      console.error('Generate cover letter error:', error);
-      if (error instanceof Error) {
-        return res.status(500).json({
-          success: false,
-          message: error.message || 'Failed to generate cover letter'
-        });
-      }
-      return res.status(500).json({
-        success: false,
-        message: 'An unknown error occurred'
-      });
-    }
-  }
-
   async getInterviewPrep(req: AuthenticatedRequest, res: Response) {
     try {
       if (!req.user) {

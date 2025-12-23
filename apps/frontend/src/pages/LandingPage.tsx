@@ -181,7 +181,6 @@ const pricingPlans = [
       "Unlimited LaTeX Resumes",
       "AI Content Generation",
       "33+ Premium Templates",
-      "Cover Letter Generator",
       "Basic Analytics",
       "PDF/DOCX Downloads",
     ],

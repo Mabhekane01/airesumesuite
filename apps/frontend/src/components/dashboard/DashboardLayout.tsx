@@ -49,11 +49,6 @@ const navigation = [
     icon: DocumentTextIcon,
   },
   {
-    name: "Cover Letters",
-    href: "/dashboard/cover-letter",
-    icon: PencilIcon,
-  },
-  {
     name: "Documents",
     href: "/dashboard/documents",
     icon: Square2StackIcon,

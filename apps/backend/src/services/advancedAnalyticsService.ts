@@ -953,7 +953,7 @@ class AdvancedAnalyticsService {
     const actions: string[] = [];
     
     if (userMetrics.responseRate < 20) {
-      actions.push('Focus on tailoring your resume and cover letter to specific job requirements');
+      actions.push('Focus on tailoring your resume to specific job requirements');
       actions.push('Research companies thoroughly before applying');
     }
     

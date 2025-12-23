@@ -320,10 +320,6 @@ export const businessValidators = {
       throw new Error('AI resume optimization is disabled system-wide');
     }
 
-    if (updates.ai?.coverLetterGeneration?.enabled && !systemSettings.features?.coverLetterGenerator) {
-      throw new Error('AI cover letter generation is disabled system-wide');
-    }
-
     if (updates.ai?.careerCoach?.enabled && !systemSettings.features?.careerCoach) {
       throw new Error('AI career coach is disabled system-wide');
     }

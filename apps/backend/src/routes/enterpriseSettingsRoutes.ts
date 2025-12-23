@@ -302,13 +302,6 @@ router.put('/user',
     body('ai.resumeOptimization.autoUpdate').optional().isBoolean().withMessage('autoUpdate must be boolean'),
     body('ai.resumeOptimization.approvalRequired').optional().isBoolean().withMessage('approvalRequired must be boolean'),
     
-    body('ai.coverLetterGeneration.enabled').optional().isBoolean().withMessage('Cover letter generation enabled must be boolean'),
-    body('ai.coverLetterGeneration.template').optional().isIn(['professional', 'creative', 'technical', 'executive', 'custom']).withMessage('Invalid cover letter template'),
-    body('ai.coverLetterGeneration.personalizationLevel').optional().isIn(['low', 'medium', 'high']).withMessage('Invalid personalization level'),
-    body('ai.coverLetterGeneration.maxLength').optional().isInt({ min: 50, max: 1000 }).withMessage('Max length must be 50-1000 words'),
-    body('ai.coverLetterGeneration.autoGenerate').optional().isBoolean().withMessage('autoGenerate must be boolean'),
-    body('ai.coverLetterGeneration.requireReview').optional().isBoolean().withMessage('requireReview must be boolean'),
-    
     body('ai.careerCoach.enabled').optional().isBoolean().withMessage('Career coach enabled must be boolean'),
     body('ai.careerCoach.proactiveAdvice').optional().isBoolean().withMessage('proactiveAdvice must be boolean'),
     body('ai.careerCoach.communicationStyle').optional().isIn(['direct', 'supportive', 'analytical', 'encouraging']).withMessage('Invalid communication style'),
@@ -458,7 +451,6 @@ router.put('/system/:settingsId',
     
     // System-wide feature toggles
     body('features.aiResumeBuilder').optional().isBoolean().withMessage('AI resume builder must be boolean'),
-    body('features.coverLetterGenerator').optional().isBoolean().withMessage('Cover letter generator must be boolean'),
     body('features.careerCoach').optional().isBoolean().withMessage('Career coach must be boolean'),
     body('features.jobMatching').optional().isBoolean().withMessage('Job matching must be boolean'),
     body('features.analyticsEngine').optional().isBoolean().withMessage('Analytics engine must be boolean'),

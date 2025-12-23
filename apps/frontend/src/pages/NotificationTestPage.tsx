@@ -21,7 +21,6 @@ const testCategories = [
   { value: 'resume', label: 'Resume', description: 'Resume creation, AI analysis' },
   { value: 'application', label: 'Job Applications', description: 'Applications, status updates' },
   { value: 'interview', label: 'Interviews', description: 'Scheduling, reminders' },
-  { value: 'cover_letter', label: 'Cover Letters', description: 'Generation, updates' },
   { value: 'career_coach', label: 'Career Coach', description: 'AI coaching sessions' },
   { value: 'system', label: 'System', description: 'Updates, announcements' }
 ];

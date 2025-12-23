@@ -186,30 +186,32 @@ export interface Resume {
   updatedAt?: string;
 }
 
-// Cover Letter Types
-export interface CoverLetter {
-  id?: string;
-  content: string;
-  jobTitle: string;
-  companyName: string;
-  tone: 'professional' | 'casual' | 'enthusiastic' | 'conservative';
-  createdAt?: string;
-  updatedAt?: string;
-}
-
 // Job Application Types
+
 export interface JobApplication {
+
   id?: string;
+
   jobTitle: string;
+
   companyName: string;
+
   location: string;
+
   jobUrl?: string;
+
   status: 'applied' | 'interviewing' | 'offered' | 'rejected' | 'withdrawn';
+
   appliedDate: string;
+
   salary?: string;
+
   notes?: string;
+
   resumeId?: string;
-  coverLetterId?: string;
+
   createdAt?: string;
+
   updatedAt?: string;
+
 }

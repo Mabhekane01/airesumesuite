@@ -158,7 +158,6 @@ export interface IJobApplication extends Document {
   documentsUsed: {
     resumeId?: mongoose.Types.ObjectId;
     resumeContent?: string; // Store resume content for AI matching
-    coverLetterId?: mongoose.Types.ObjectId;
     trackedResumeUrl?: string; // URL of the tracked resume
     trackingShareId?: string; // Link to ResumeShare node for tracking
     portfolioLinks?: string[];
@@ -502,7 +501,6 @@ const JobApplicationSchema = new Schema<IJobApplication>({
     resumeContent: { type: String }, // Store resume content for AI matching
     trackedResumeUrl: { type: String }, // URL of the tracked resume
     trackingShareId: { type: String }, // Link to ResumeShare node for tracking
-    coverLetterId: { type: Schema.Types.ObjectId, ref: 'CoverLetter' },
     portfolioLinks: [String],
     additionalDocuments: [{
       name: String,

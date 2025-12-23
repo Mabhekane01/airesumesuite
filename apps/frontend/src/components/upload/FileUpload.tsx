@@ -17,7 +17,7 @@ interface FileUploadProps {
   accept?: Record<string, string[]>;
   maxSize?: number;
   multiple?: boolean;
-  uploadType?: 'resume' | 'cover-letter' | 'general';
+  uploadType?: 'resume' | 'general';
 }
 
 interface UploadedFile {

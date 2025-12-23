@@ -91,14 +91,6 @@ const generateResumePDF = async (resumeData: ResumeData, templateId: string) => 
 };
 ```
 
-### 📝 Advanced Cover Letter Generator
-- **Job-Specific Customization**: Tailors tone and content to specific job descriptions
-- **Company Research Integration**: Incorporates company values and culture
-- **Multiple Tone Options**: Professional, casual, enthusiastic, or conservative styles
-- **Variation Generation**: Creates multiple versions for A/B testing
-- **ATS Optimization**: Strategic keyword placement for maximum visibility
-- **Match Analysis**: Scores cover letter alignment with job requirements
-
 ### 📊 Job Application Tracker
 - **Comprehensive Pipeline Management**: Track applications from initial application to final outcome
 - **Automated Status Updates**: Smart status tracking with timeline visualization
@@ -202,7 +194,6 @@ ai-job-suite/
 │   │   │   ├── services/          # Business logic
 │   │   │   │   ├── ai/            # AI integration services
 │   │   │   │   ├── resume-builder/ # Resume generation
-│   │   │   │   ├── cover-letter/  # Cover letter services
 │   │   │   │   └── job-scraper/   # Job scraping logic
 │   │   │   ├── middleware/        # Express middleware
 │   │   │   ├── config/           # Configuration files
@@ -214,7 +205,6 @@ ai-job-suite/
 │       │   ├── components/       # Reusable UI components
 │       │   │   ├── auth/         # Authentication components
 │       │   │   ├── resume/       # Resume builder components
-│       │   │   ├── cover-letter/ # Cover letter components
 │       │   │   ├── applications/ # Job tracking components
 │       │   │   └── career-coach/ # AI coach interface
 │       │   ├── pages/            # Route components

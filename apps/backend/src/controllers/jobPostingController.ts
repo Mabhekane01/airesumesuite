@@ -1,23 +1,27 @@
 import { Request, Response } from 'express';
 import { JobPosting } from '../models/JobPosting';
-import { addScrapeJob } from '../services/job-scraper/jobQueue';
+import { AuthenticatedRequest } from '../middleware/auth';
 
 export const jobPostingController = {
-  // Get all jobs (with filters)
+  // Get all approved jobs (Public & Community)
   getJobs: async (req: Request, res: Response) => {
     try {
-      const { country, source, status } = req.query;
+      const { country, jobType } = req.query;
       
-      const query: any = { status: 'approved' }; // Default to approved
+      const query: any = { status: 'approved' }; 
       
       if (country) query.country = { $regex: new RegExp(country as string, 'i') };
-      if (source) query.source = source;
+      if (jobType) query.jobType = jobType;
       
-      const jobs = await JobPosting.find(query).sort({ postedAt: -1, createdAt: -1 }).limit(100);
+      // Focus on reliability: Return verified community jobs
+      const jobs = await JobPosting.find(query)
+        .populate('postedBy', 'firstName lastName')
+        .sort({ createdAt: -1 })
+        .limit(100);
       
       res.status(200).json({ success: true, count: jobs.length, data: jobs });
     } catch (error) {
-      res.status(500).json({ success: false, message: 'Failed to fetch jobs', error });
+      res.status(500).json({ success: false, message: 'Failed to fetch community jobs', error });
     }
   },
 
@@ -25,10 +29,11 @@ export const jobPostingController = {
   getJobByIdPublic: async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const job = await JobPosting.findOne({ _id: id, status: 'approved' });
+      const job = await JobPosting.findOne({ _id: id, status: 'approved' })
+        .populate('postedBy', 'firstName lastName');
       
       if (!job) {
-        return res.status(404).json({ success: false, message: 'Job not found or not yet approved' });
+        return res.status(404).json({ success: false, message: 'Job not found or awaiting verification' });
       }
       
       res.status(200).json({ success: true, data: job });
@@ -37,22 +42,23 @@ export const jobPostingController = {
     }
   },
 
-  // Submit a new job (User or Admin)
-  createJob: async (req: Request, res: Response) => {
+  // Submit a new job (Community Driven)
+  createJob: async (req: AuthenticatedRequest, res: Response) => {
     try {
       const { title, company, location, country, description, url, salaryRange, jobType } = req.body;
-      
-      // Access user from AuthenticatedRequest (ensure your type definition supports this, or cast req as any for now)
-      const userRole = (req as any).user?.role;
+      const userId = req.user?.id;
+      const userRole = req.user?.role;
 
-      if (!title || !company || !country) {
-        return res.status(400).json({ success: false, message: 'Missing required fields' });
+      if (!title || !company || !country || !description) {
+        return res.status(400).json({ success: false, message: 'Missing required community job fields' });
       }
 
-      // Admins bypass approval queue
+      // BUSINESS LOGIC: 
+      // Admin-posted jobs are trusted and auto-approved.
+      // User-posted jobs are pending until verified for truth and reliability.
       const isAdmin = userRole === 'admin';
-      const initialStatus = isAdmin ? 'approved' : 'pending';
-      const initialSource = isAdmin ? 'admin' : 'user';
+      const status = isAdmin ? 'approved' : 'pending';
+      const source = isAdmin ? 'admin' : 'user';
 
       const newJob = new JobPosting({
         title,
@@ -63,101 +69,104 @@ export const jobPostingController = {
         url,
         salaryRange,
         jobType,
-        source: initialSource,
-        status: initialStatus, 
-        postedAt: new Date()
+        source,
+        status,
+        postedBy: userId,
+        // If admin, they also verify their own job
+        verifiedBy: isAdmin ? userId : undefined,
+        verifiedAt: isAdmin ? new Date() : undefined
       });
 
       await newJob.save();
       
       res.status(201).json({ 
         success: true, 
-        message: initialStatus === 'approved' ? 'Job published successfully' : 'Job submitted for approval', 
+        message: isAdmin ? 'Verified job published' : 'Job submitted for community verification', 
         data: newJob 
       });
     } catch (error) {
-      res.status(500).json({ success: false, message: 'Failed to submit job', error });
+      res.status(500).json({ success: false, message: 'Failed to submit community job', error });
     }
   },
 
-  // Trigger Scraper (Admin or Scheduled)
-  scrapeJobs: async (req: Request, res: Response) => {
-    try {
-      const { country, query } = req.body;
-      
-      // If no country provided, trigger global background refresh
-      if (!country) {
-        // This could be expanded to trigger a batch of jobs for all target countries
-        // For now, we'll just return a message saying explicit country needed for on-demand
-        return res.status(400).json({ success: false, message: 'Country is required for on-demand scrape.' });
-      }
-
-      // Add to robust queue
-      await addScrapeJob(country, query || 'software engineer');
-
-      res.status(200).json({ success: true, message: `Scraping job for "${query || 'software engineer'}" in ${country} added to queue.` });
-    } catch (error) {
-      res.status(500).json({ success: false, message: 'Failed to initiate scrape', error: error.message });
-    }
-  },
-
-  // Admin: Get Pending Jobs
+  // Admin: Get Pending Jobs for Verification
   getPendingJobs: async (req: Request, res: Response) => {
     try {
-      const jobs = await JobPosting.find({ status: 'pending' }).sort({ createdAt: -1 });
+      const jobs = await JobPosting.find({ status: 'pending' })
+        .populate('postedBy', 'firstName lastName email')
+        .sort({ createdAt: 1 });
+      
       res.status(200).json({ success: true, count: jobs.length, data: jobs });
     } catch (error) {
-      res.status(500).json({ success: false, message: 'Failed to fetch pending jobs' });
+      res.status(500).json({ success: false, message: 'Failed to fetch jobs for verification' });
     }
   },
 
-  // Admin: Verify/Reject Job
-  verifyJob: async (req: Request, res: Response) => {
+  // Admin: Verify/Reject Job (Ensuring high quality data)
+  verifyJob: async (req: AuthenticatedRequest, res: Response) => {
     try {
       const { id } = req.params;
-      const { status } = req.body; 
+      const { status, notes } = req.body; 
+      const adminId = req.user?.id;
 
       if (!['approved', 'rejected'].includes(status)) {
-        return res.status(400).json({ success: false, message: 'Invalid status' });
+        return res.status(400).json({ success: false, message: 'Invalid verification status' });
       }
 
-      const job = await JobPosting.findByIdAndUpdate(id, { status }, { new: true });
+      const job = await JobPosting.findByIdAndUpdate(id, { 
+        status,
+        verificationNotes: notes,
+        verifiedBy: adminId,
+        verifiedAt: new Date()
+      }, { new: true });
       
       if (!job) return res.status(404).json({ success: false, message: 'Job not found' });
 
-      res.status(200).json({ success: true, message: `Job ${status}`, data: job });
+      res.status(200).json({ 
+        success: true, 
+        message: `Job ${status === 'approved' ? 'verified and published' : 'rejected'}`, 
+        data: job 
+      });
     } catch (error) {
-      res.status(500).json({ success: false, message: 'Failed to update job status' });
+      res.status(500).json({ success: false, message: 'Verification process failed' });
     }
   },
 
-  // AI: Extract job details from raw text or URL
+  // Admin: Delete Job
+  deleteJob: async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const { id } = req.params;
+      const job = await JobPosting.findByIdAndDelete(id);
+      
+      if (!job) return res.status(404).json({ success: false, message: 'Job not found' });
+
+      res.status(200).json({ success: true, message: 'Job deleted successfully' });
+    } catch (error) {
+      res.status(500).json({ success: false, message: 'Failed to delete job' });
+    }
+  },
+
+  // AI: Community Tool - Assist users in creating high-quality job descriptions
   extractJobDetails: async (req: Request, res: Response) => {
     try {
       const { text, url } = req.body;
       
       if (!text && !url) {
-        return res.status(400).json({ success: false, message: 'Text or URL is required' });
+        return res.status(400).json({ success: false, message: 'Context required for AI assistance' });
       }
 
       const { geminiService } = await import('../services/ai/gemini');
-      
-      let extractionInput = text;
-      
-      // If URL provided, we'd ideally scrape it here. 
-      // For now, let's assume the frontend sends the scraped text or we just use the URL as context.
-      if (url && !text) {
-        // Simple placeholder for scraping logic
-        // In a real app, you'd use cheerio/puppeteer to get the content
-        extractionInput = `Please extract job details from this URL: ${url}`;
-      }
+      let extractionInput = text || `Analyze this job link for community posting: ${url}`;
 
       const extractedData = await geminiService.extractJobDetails(extractionInput);
       
-      res.status(200).json({ success: true, data: extractedData });
+      res.status(200).json({ 
+        success: true, 
+        message: 'AI assistant extracted structured data for your post',
+        data: extractedData 
+      });
     } catch (error) {
-      console.error('Error extracting job details:', error);
-      res.status(500).json({ success: false, message: 'AI extraction failed' });
+      res.status(500).json({ success: false, message: 'AI assistant unavailable' });
     }
   }
 };

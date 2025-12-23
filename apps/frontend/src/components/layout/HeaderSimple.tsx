@@ -38,12 +38,6 @@ const FloatingNavigation = React.memo(() => {
       current: location.pathname.startsWith("/dashboard/resume"),
     },
     {
-      name: "Cover Letters",
-      href: "/dashboard/cover-letter",
-      icon: PencilIcon,
-      current: location.pathname.startsWith("/dashboard/cover-letter"),
-    },
-    {
       name: "Applications",
       href: "/dashboard/applications",
       icon: BriefcaseIcon,

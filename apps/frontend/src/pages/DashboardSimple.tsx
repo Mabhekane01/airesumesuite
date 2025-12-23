@@ -24,14 +24,6 @@ const quickActions = [
     bgColor: 'bg-gray-700'
   },
   {
-    title: 'Generate Cover Letter',
-    description: 'Create a personalized cover letter',
-    icon: PencilIcon,
-    href: '/cover-letter',
-    color: 'from-emerald-500 to-pink-600',
-    bgColor: 'bg-gray-700'
-  },
-  {
     title: 'Add Job Application',
     description: 'Track a new job application',
     icon: BriefcaseIcon,
@@ -97,13 +89,6 @@ const recentActivity = [
     description: 'Scheduled for tomorrow at 2:00 PM',
     time: '2 days ago',
     status: 'scheduled'
-  },
-  {
-    type: 'cover-letter',
-    title: 'Cover Letter for Apple',
-    description: 'Generated for iOS Developer position',
-    time: '3 days ago',
-    status: 'completed'
   }
 ];
 

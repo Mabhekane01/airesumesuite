@@ -244,7 +244,7 @@ export default function ATSCompatibilityChecker({
       return {
         alignment: 'potential' as const,
         message: 'Good fit. You have many of the required skills, but there are some gaps to address.',
-        recommendation: 'Consider highlighting your transferable skills in your cover letter and addressing the missing requirements.'
+        recommendation: 'Consider highlighting your transferable skills and addressing the missing requirements in your application.'
       };
     } else {
       return {

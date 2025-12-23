@@ -58,7 +58,6 @@ export function useFeatureAccess(featureName: string) {
   // Define ALL AI features that require active enterprise subscription
   const aiFeatures = [
     'ai-resume-builder',
-    'ai-cover-letter', 
     'ai-career-coach',
     'ai-interview-prep',
     'ai-job-matching',

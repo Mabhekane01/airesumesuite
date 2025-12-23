@@ -74,7 +74,6 @@ export const storageUtils = {
       'resume-ai-data',
       'user-preferences',
       'job-applications',
-      'cover-letters',
       'interview-data',
       'form-data',
       'draft-data'
@@ -96,7 +95,6 @@ export const storageUtils = {
         `resume-ai-data-${userId}`,
         `user-preferences-${userId}`,
         `job-applications-${userId}`,
-        `cover-letters-${userId}`,
         `interview-data-${userId}`,
         `form-data-${userId}`,
         `draft-data-${userId}`

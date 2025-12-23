@@ -38,18 +38,16 @@ import {
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { resumeService } from '../services/resumeService';
-import { coverLetterService } from '../services/coverLetterService';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 
-type DocType = 'resumes' | 'cover-letters' | 'tracking';
+type DocType = 'resumes' | 'tracking';
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
 
 export default function Documents() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<DocType>('resumes');
   const [resumes, setResumes] = useState<any[]>([]);
-  const [coverLetters, setCoverLetters] = useState<any[]>([]);
   const [shares, setShares] = useState<any[]>([]);
   const [selectedShare, setSelectedShare] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -62,9 +60,8 @@ export default function Documents() {
     try {
       setIsLoading(true);
       const token = localStorage.getItem('token');
-      const [resumeRes, clRes, shareRes] = await Promise.all([
+      const [resumeRes, shareRes] = await Promise.all([
         resumeService.getResumes(),
-        coverLetterService.getCoverLetters(),
         fetch(`${API_BASE}/api/v1/share`, {
           headers: { 'Authorization': `Bearer ${token}` }
         }).then(r => r.json())
@@ -72,9 +69,6 @@ export default function Documents() {
 
       if (resumeRes.success && resumeRes.data) {
         setResumes(resumeRes.data);
-      }
-      if (clRes.success && clRes.data) {
-        setCoverLetters(clRes.data);
       }
       if (shareRes.success) {
         setShares(shareRes.data);
@@ -94,19 +88,6 @@ export default function Documents() {
       if (success) {
         setResumes(prev => prev.filter(r => (r._id || r.id) !== id));
         toast.success('Architecture purged.');
-      }
-    } catch (error) {
-      toast.error('Purge failed.');
-    }
-  };
-
-  const handleDeleteCL = async (id: string) => {
-    if (!confirm('Are you sure you want to purge this communication protocol?')) return;
-    try {
-      const success = await coverLetterService.deleteCoverLetter(id);
-      if (success) {
-        setCoverLetters(prev => prev.filter(cl => cl._id !== id));
-        toast.success('Protocol purged.');
       }
     } catch (error) {
       toast.error('Purge failed.');
@@ -185,16 +166,6 @@ export default function Documents() {
           Resumes <span className="ml-1 opacity-60">({resumes.length})</span>
         </button>
         <button
-          onClick={() => setActiveTab('cover-letters')}
-          className={`px-8 py-3.5 rounded-[1.7rem] text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 ${
-            activeTab === 'cover-letters' 
-              ? 'bg-white text-brand-blue shadow-[0_4px_20px_-2px_rgba(0,0,0,0.1)] border border-surface-100 transform scale-105' 
-              : 'text-text-tertiary hover:text-brand-dark hover:bg-white/60'
-          }`}
-        >
-          Cover Letters <span className="ml-1 opacity-60">({coverLetters.length})</span>
-        </button>
-        <button
           onClick={() => setActiveTab('tracking')}
           className={`px-8 py-3.5 rounded-[1.7rem] text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 ${
             activeTab === 'tracking' 
@@ -251,39 +222,6 @@ export default function Documents() {
                     />
                   );
                 })
-              )}
-            </motion.div>
-          )}
-
-          {activeTab === 'cover-letters' && (
-            <motion.div 
-              key="cls"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 pb-10"
-            >
-              {coverLetters.length === 0 ? (
-                <DocEmptyState 
-                  title="Protocol Stack Empty" 
-                  desc="Generate your first AI-optimized communication protocol."
-                  action={() => navigate('/dashboard/cover-letter/builder')}
-                  icon={PencilIcon}
-                />
-              ) : (
-                coverLetters.map((cl, i) => (
-                  <DocumentCard 
-                    key={cl._id || cl.id}
-                    title={cl.title || 'Untitled Protocol'}
-                    subtitle={`${cl.companyName} • ${cl.jobTitle}`}
-                    date={cl.updatedAt}
-                    type="cl"
-                    onEdit={() => navigate(`/dashboard/cover-letter/builder?edit=${cl._id || cl.id}`)}
-                    onView={() => navigate(`/dashboard/cover-letter/${cl._id || cl.id}`)}
-                    onDelete={() => handleDeleteCL(cl._id || cl.id)}
-                    index={i}
-                  />
-                ))
               )}
             </motion.div>
           )}

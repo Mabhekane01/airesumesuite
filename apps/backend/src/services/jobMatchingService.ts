@@ -69,7 +69,6 @@ export interface JobMatch {
     difficulty: 'low' | 'medium' | 'high';
     timeToApply: 'immediate' | 'within_week' | 'research_needed';
     keyPoints: string[];
-    coverLetterTips: string[];
   };
 }
 
@@ -670,21 +669,17 @@ class JobMatchingService {
       timeToApply = 'research_needed';
     }
 
-    const keyPoints: string[] = [];
-    const coverLetterTips: string[] = [];
+    const keyPoints: string[];
 
     if (difficulty === 'low') {
-      keyPoints.push('Strong match - apply confidently');
-      coverLetterTips.push('Emphasize your matching skills and experience');
+      keyPoints = ['Strong match - apply confidently'];
     } else if (difficulty === 'medium') {
-      keyPoints.push('Good match with some skill gaps to address');
-      coverLetterTips.push('Address skill gaps by highlighting transferable experience');
+      keyPoints = ['Good match with some skill gaps to address'];
     } else {
-      keyPoints.push('Challenging match - requires strategic approach');
-      coverLetterTips.push('Focus on enthusiasm and learning ability');
+      keyPoints = ['Challenging match - requires strategic approach'];
     }
 
-    return { difficulty, timeToApply, keyPoints, coverLetterTips };
+    return { difficulty, timeToApply, keyPoints };
   }
 
   private generatePersonalizedFilters(userProfile: IUserProfile): JobSearchFilters {

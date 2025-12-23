@@ -1,7 +1,7 @@
 {
   "name": "ai-job-suite",
   "version": "1.0.0",
-  "description": "AI-powered job application suite with resume builder, cover letter generator, and job tracking",
+  "description": "AI-powered job application suite with resume builder and job tracking",
   "private": true,
   "packageManager": "pnpm@8.15.0",
   "workspaces": [

@@ -70,11 +70,10 @@ export default function SubscriptionModal({
 
   const features = [
     'AI-powered resume optimization',
-    'AI cover letter generation', 
     'AI career coaching',
     'Advanced job matching',
     'ATS compatibility analysis',
-    'Unlimited resumes & cover letters',
+    'Unlimited resumes',
     'Priority support',
     'Advanced analytics'
   ];

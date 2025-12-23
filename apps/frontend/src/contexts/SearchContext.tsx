@@ -1,12 +1,11 @@
 import React, { createContext, useContext, useEffect, ReactNode } from 'react';
 import { globalSearchService as searchService } from '../services/searchService';
-import { Resume, JobApplication, CoverLetter } from '../types';
+import { Resume, JobApplication } from '../types';
 
 interface SearchContextType {
   updateSearchIndex: (data: {
     resumes?: Resume[];
     jobApplications?: JobApplication[];
-    coverLetters?: CoverLetter[];
   }) => void;
 }
 
@@ -28,7 +27,6 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
   const updateSearchIndex = (data: {
     resumes?: Resume[];
     jobApplications?: JobApplication[];
-    coverLetters?: CoverLetter[];
   }) => {
     searchService.updateIndex(data);
   };
@@ -127,16 +125,7 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
           salary: '$160,000 - $200,000',
           notes: 'Application submitted via company website'
         }
-      ] as JobApplication[],
-      coverLetters: [
-        {
-          id: '1',
-          content: 'Dear Hiring Manager, I am writing to express my strong interest in the Senior Frontend Developer position at Meta. With over 8 years of experience in software development and a passion for creating exceptional user experiences...',
-          jobTitle: 'Senior Frontend Developer',
-          companyName: 'Meta',
-          tone: 'professional' as const
-        }
-      ] as CoverLetter[]
+      ] as JobApplication[]
     };
 
     updateSearchIndex(sampleData);

@@ -13,7 +13,6 @@ import { configurePassport } from './config/passport';
 import passport from 'passport';
 import resumeRoutes from './routes/resumeRoutes';
 import fileUploadRoutes from './routes/fileUploadRoutes';
-import coverLetterRoutes from './routes/coverLetterRoutes';
 import authRoutes from './routes/authRoutes';
 import jobApplicationRoutes from './routes/jobApplicationRoutes';
 import simpleAnalyticsRoutes from './routes/simpleAnalyticsRoutes';
@@ -264,7 +263,6 @@ app.use('/api/v1', publicRoutes); // Public routes are not behind auth
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/resumes', resumeRoutes);
 app.use('/api/v1/upload', fileUploadRoutes);
-app.use('/api/v1/cover-letters', coverLetterRoutes);
 app.use('/api/v1/job-applications', jobApplicationRoutes);
 app.use('/api/v1/analytics', simpleAnalyticsRoutes);
 app.use('/api/v1/account', accountRoutes);

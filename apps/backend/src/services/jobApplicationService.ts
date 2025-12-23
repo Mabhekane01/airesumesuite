@@ -66,7 +66,6 @@ export interface CreateJobApplicationData {
   documentsUsed?: {
     resumeId?: string;
     resumeContent?: string;
-    coverLetterId?: string;
     trackedResumeUrl?: string;
     trackingShareId?: string;
   };
@@ -118,7 +117,6 @@ export interface UpdateJobApplicationData {
   documentsUsed?: {
     resumeId?: string;
     resumeContent?: string;
-    coverLetterId?: string;
   };
   applicationStrategy?: {
     whyInterested?: string;
@@ -210,9 +208,6 @@ class JobApplicationService {
           ...applicationData.documentsUsed,
           resumeId: applicationData.documentsUsed.resumeId ? 
             new mongoose.Types.ObjectId(applicationData.documentsUsed.resumeId) : 
-            undefined,
-          coverLetterId: applicationData.documentsUsed.coverLetterId ? 
-            new mongoose.Types.ObjectId(applicationData.documentsUsed.coverLetterId) : 
             undefined
         } : undefined
       };
@@ -625,27 +620,22 @@ class JobApplicationService {
       // Update other fields
       if (updates.priority) application.priority = updates.priority as any;
       if (updates.tags) application.tags = updates.tags;
-      if (updates.documentsUsed) {
-        // Handle ObjectId conversion for resumeId and coverLetterId
-        const processedDocumentsUsed = {
-          ...application.documentsUsed,
-          ...updates.documentsUsed
-        };
-        
-        if (updates.documentsUsed.resumeId) {
-          processedDocumentsUsed.resumeId = typeof updates.documentsUsed.resumeId === 'string' 
-            ? new mongoose.Types.ObjectId(updates.documentsUsed.resumeId)
-            : updates.documentsUsed.resumeId;
-        }
-        if (updates.documentsUsed.coverLetterId) {
-          processedDocumentsUsed.coverLetterId = typeof updates.documentsUsed.coverLetterId === 'string'
-            ? new mongoose.Types.ObjectId(updates.documentsUsed.coverLetterId)
-            : updates.documentsUsed.coverLetterId;
-        }
-        
-        application.documentsUsed = processedDocumentsUsed as any;
-      }
-      if (updates.applicationStrategy) {
+            if (updates.documentsUsed) {
+              // Handle ObjectId conversion for resumeId
+              const processedDocumentsUsed = {
+                ...application.documentsUsed,
+                ...updates.documentsUsed
+              };
+              
+                      if (updates.documentsUsed.resumeId) {
+                        processedDocumentsUsed.resumeId = typeof updates.documentsUsed.resumeId === 'string'
+                          ? new mongoose.Types.ObjectId(updates.documentsUsed.resumeId)
+                          : updates.documentsUsed.resumeId;
+                      }
+                      
+                      application.documentsUsed = processedDocumentsUsed as any;
+                    }
+            if (updates.applicationStrategy) {
         application.applicationStrategy = {
           ...application.applicationStrategy,
           ...updates.applicationStrategy
@@ -1266,32 +1256,6 @@ class JobApplicationService {
         throw new Error(`Failed to get job match analysis: ${error.message}`);
       }
       throw new Error('Failed to get job match analysis');
-    }
-  }
-
-  async generateCoverLetter(userId: string, applicationId: string, template?: string): Promise<string> {
-    try {
-      const application = await JobApplication.findOne({
-        _id: applicationId,
-        userId: new mongoose.Types.ObjectId(userId)
-      });
-
-      if (!application) {
-        throw new Error('Job application not found');
-      }
-
-      const user = await User.findById(userId);
-      if (!user) {
-        throw new Error('User profile not found');
-      }
-
-      const coverLetter = await aiOptimizationService.optimizeCoverLetter(userToProfile(user), application, template);
-      return coverLetter;
-    } catch (error) {
-      if (error instanceof Error) {
-        throw new Error(`Failed to generate cover letter: ${error.message}`);
-      }
-      throw new Error('Failed to generate cover letter');
     }
   }
 

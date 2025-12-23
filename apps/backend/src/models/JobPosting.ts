@@ -9,10 +9,12 @@ export interface IJobPosting extends Document {
   url?: string;
   salaryRange?: string;
   jobType?: string; // Full-time, Part-time, Contract
-  source: 'scraper' | 'user';
+  source: 'user' | 'admin';
   status: 'pending' | 'approved' | 'rejected';
-  postedBy?: mongoose.Types.ObjectId;
-  externalId?: string; // For scraped jobs to avoid duplicates
+  postedBy: mongoose.Types.ObjectId;
+  verifiedBy?: mongoose.Types.ObjectId;
+  verifiedAt?: Date;
+  verificationNotes?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -27,15 +29,17 @@ const jobPostingSchema = new Schema<IJobPosting>(
     url: { type: String },
     salaryRange: { type: String },
     jobType: { type: String },
-    source: { type: String, enum: ['scraper', 'user'], required: true },
+    source: { type: String, enum: ['user', 'admin'], required: true },
     status: { 
       type: String, 
       enum: ['pending', 'approved', 'rejected'], 
       default: 'pending',
       index: true 
     },
-    postedBy: { type: Schema.Types.ObjectId, ref: 'User' },
-    externalId: { type: String, unique: true, sparse: true }
+    postedBy: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    verifiedBy: { type: Schema.Types.ObjectId, ref: 'User' },
+    verifiedAt: { type: Date },
+    verificationNotes: { type: String }
   },
   { timestamps: true }
 );

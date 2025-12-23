@@ -43,12 +43,6 @@ export default function Header() {
       current: location.pathname.startsWith("/resume-builder"),
     },
     {
-      name: "Cover Letters",
-      href: "/cover-letter",
-      icon: PencilIcon,
-      current: location.pathname.startsWith("/cover-letter"),
-    },
-    {
       name: "Job Tracker",
       href: "/job-tracker",
       icon: BriefcaseIcon,

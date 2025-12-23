@@ -99,7 +99,6 @@ export const requireFeatureAccess = (featureName: string) => {
       // Define enterprise-only features
       const enterpriseFeatures = [
         'ai-resume-builder',
-        'ai-cover-letter',
         'ai-career-coach',
         'ai-interview-prep',
         'unlimited-resumes',
@@ -201,14 +200,40 @@ export const subscriptionRateLimit = (feature: string) => {
       // Define rate limits per tier
       const rateLimits: { [key: string]: { [key: string]: number } } = {
         free: {
-          'ai-career-coach': 5, // Allow 5 free requests for preview
+          'ai-career-coach': 5,
           'ai-resume-builder': 10,
-          'ai-cover-letter': 5
+          'ai-job-matching': 10,
+          'ai-interview-prep': 5,
+          'ai-analytics': 3,
+          'ai-recommendations': 5,
+          'ai-bulk-analysis': 2,
+          'ai-insights': 5,
+          'ai-optimization': 5,
+          'ai-batch-user-analysis': 2
+        },
+        premium: {
+          'ai-career-coach': 100,
+          'ai-resume-builder': 50,
+          'ai-job-matching': 100,
+          'ai-interview-prep': 50,
+          'ai-analytics': 25,
+          'ai-recommendations': 50,
+          'ai-bulk-analysis': 10,
+          'ai-insights': 50,
+          'ai-optimization': 50,
+          'ai-batch-user-analysis': 10
         },
         enterprise: {
-          'ai-career-coach': 100, // 100 requests per hour
-          'ai-resume-builder': 50,
-          'ai-cover-letter': 50
+          'ai-career-coach': 1000,
+          'ai-resume-builder': 500,
+          'ai-job-matching': 1000,
+          'ai-interview-prep': 500,
+          'ai-analytics': 250,
+          'ai-recommendations': 500,
+          'ai-bulk-analysis': 100,
+          'ai-insights': 500,
+          'ai-optimization': 500,
+          'ai-batch-user-analysis': 100
         }
       };
 

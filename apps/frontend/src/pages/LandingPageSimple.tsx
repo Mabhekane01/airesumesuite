@@ -626,7 +626,7 @@ export default function LandingPageSimple() {
             </div>
             
             {[
-              { title: "Platform", links: ["Resume Builder", "Job Intelligence", "Cover Letters", "Career Tracking"] },
+              { title: "Platform", links: ["Resume Builder", "Job Intelligence", "Career Tracking"] },
               { title: "Governance", links: ["Privacy Center", "Security Protocol", "Terms of Use", "Data Standards"] },
               { title: "Success", links: ["Case Studies", "Market Data", "Help Center", "API Access"] }
             ].map((col, i) => (

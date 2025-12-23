@@ -4,13 +4,27 @@ import { storageUtils } from '../utils/storageUtils';
 // Try multiple common backend URLs 
 const API_BASE_URLS = [
   (import.meta as any).env.VITE_API_BASE_URL,
+  'https://airesumesuite.onrender.com', // Production Render URL
   'http://localhost:3001',
   'http://127.0.0.1:3001',
   'http://localhost:3000',
   'http://127.0.0.1:3000'
 ].filter(Boolean);
 
-const API_BASE_URL = API_BASE_URLS[0] || 'http://localhost:3001';
+// Intelligent base URL selection
+const getBaseUrl = () => {
+  if ((import.meta as any).env.VITE_API_BASE_URL) return (import.meta as any).env.VITE_API_BASE_URL;
+  
+  const hostname = window.location.hostname;
+  // If running on firebase or custom domain, prefer production backend
+  if (hostname.includes('web.app') || hostname.includes('firebaseapp.com') || hostname !== 'localhost') {
+    return 'https://airesumesuite.onrender.com';
+  }
+  
+  return 'http://localhost:3001';
+};
+
+const API_BASE_URL = getBaseUrl();
 
 // Create axios instance with default config
 const api = axios.create({
@@ -553,16 +567,6 @@ export const jobApplicationAPI = {
     };
   }> {
     const response = await api.get(`/job-applications/${id}/analysis`);
-    return response.data;
-  },
-
-  async generateCoverLetter(id: string, template?: string): Promise<{
-    success: boolean;
-    data?: {
-      coverLetter: string;
-    };
-  }> {
-    const response = await api.post(`/job-applications/${id}/cover-letter`, { template });
     return response.data;
   },
 

@@ -354,57 +354,6 @@ CRITICAL EXECUTION RULES:
     }
   }
 
-  async optimizeCoverLetter(
-    userProfile: IUserProfile,
-    jobApplication: IJobApplication,
-    template?: string
-  ): Promise<string> {
-    try {
-      const prompt = `
-You are an Elite Executive Copywriter specializing in high-stakes job applications. Synthesize a compelling, narrative-driven cover letter that bridges the gap between the candidate's mastery and the organization's mission.
-
-CANDIDATE MASTERY:
-${JSON.stringify({
-        headline: (userProfile as any).headline,
-        bio: (userProfile as any).bio,
-        topSkills: userProfile.technicalSkills.slice(0, 8)
-      }, null, 2)}
-
-ORGANIZATIONAL MISSION:
-${JSON.stringify({
-        jobTitle: jobApplication.jobTitle,
-        companyName: jobApplication.companyName,
-        requirements: jobApplication.jobDescription,
-        intelligence: jobApplication.companyIntelligence
-      }, null, 2)}
-
-REQUIRED EXECUTION:
-- Tone: ${(userProfile as any).aiOptimizationPreferences.tonePreference}
-- Narrative Hook: Start with a powerful statement of impact or shared values.
-- Strategic Value: Connect candidate achievements directly to the company's pain points.
-- Executive Closure: A confident, high-value call to action.
-
-CRITICAL RULES:
-- Use PLAIN TEXT ONLY. NO markdown formatting (**bold**, *italics*, etc).
-- Length: 300-450 words of high-impact content.
-- Do NOT be generic. Use specific references to the candidate and company.
-- Return ONLY the letter content.
-`;
-
-      const result = await geminiService.generateContent({
-        model: 'gemini-3-pro-preview', // Use Pro for complex copywriting
-        contents: prompt,
-      });
-      if (!result) {
-        throw new Error('AI service not available');
-      }
-      return result?.text?.trim() || this.getFallbackCoverLetter(userProfile, jobApplication);
-    } catch (error) {
-      console.error('Cover letter optimization error:', error);
-      return this.getFallbackCoverLetter(userProfile, jobApplication);
-    }
-  }
-
   async generateInterviewQuestions(
     jobApplication: IJobApplication,
     interviewType: 'behavioral' | 'technical' | 'case_study' | 'general'
@@ -556,21 +505,6 @@ CRITICAL RULES:
       industryOutlook: 'Stable growth expected',
       recommendedCertifications: ['Industry-standard certifications']
     }));
-  }
-
-  private getFallbackCoverLetter(userProfile: IUserProfile, jobApplication: IJobApplication): string {
-    return `Dear Hiring Manager,
-
-I am writing to express my strong interest in the ${jobApplication.jobTitle} position at ${jobApplication.companyName}. With ${userProfile.yearsOfExperience} years of experience and expertise in ${userProfile.technicalSkills.slice(0, 3).map(s => s.name).join(', ')}, I am confident I would be a valuable addition to your team.
-
-${(userProfile as any).bio}
-
-I am particularly excited about this opportunity because it aligns perfectly with my career goals and expertise. I would welcome the chance to discuss how my background and skills can contribute to ${jobApplication.companyName}'s continued success.
-
-Thank you for your consideration.
-
-Sincerely,
-[Your Name]`;
   }
 
   private getFallbackInterviewQuestions(type: string): {

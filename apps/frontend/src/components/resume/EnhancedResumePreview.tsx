@@ -29,7 +29,6 @@ import ATSCompatibilityChecker from './ATSCompatibilityChecker';
 import EnhancementFeedbackModal from './EnhancementFeedbackModal';
 import { useResume } from '../../contexts/ResumeContext';
 import TemplateRenderer from './TemplateRenderer';
-import CoverLetterIntegration from './CoverLetterIntegration';
 import PDFPreview from './PDFPreview';
 import { resumeService } from '../../services/resumeService';
 import { useSubscriptionModal } from '../../hooks/useSubscriptionModal';
@@ -78,7 +77,6 @@ export default function EnhancedResumePreview({
   const [originalResume, setOriginalResume] = useState<any>(null);
   const [aiLoading, setAiLoading] = useState<string | null>(null);
   const [aiSuggestions, setAiSuggestions] = useState<string[]>(aiData.aiSuggestions || []);
-  const [showCoverLetterModal, setShowCoverLetterModal] = useState(false);
   
   const template = getTemplateById(resume.template) || resumeTemplates[0];
   const currentAtsScore = atsScore || aiData.atsScore;
@@ -310,12 +308,6 @@ export default function EnhancedResumePreview({
             >
               Initialize AI Layer
             </button>
-            <button 
-              onClick={() => setShowCoverLetterModal(true)}
-              className="px-8 py-3.5 rounded-xl bg-brand-dark text-white text-[10px] font-black uppercase tracking-[0.15em] shadow-xl hover:bg-black hover:shadow-2xl transition-all active:scale-95 hover:-translate-y-1 border border-transparent hover:border-surface-700"
-            >
-              Generate Correspondence
-            </button>
           </div>
         </div>
       </div>
@@ -357,12 +349,6 @@ export default function EnhancedResumePreview({
           setShowComparison(true);
           setShowEnhancementModal(false);
         }}
-      />
-
-      <CoverLetterIntegration
-        resume={resume}
-        isOpen={showCoverLetterModal}
-        onClose={() => setShowCoverLetterModal(false)}
       />
 
       <SubscriptionModal isOpen={isModalOpen} onClose={closeModal} {...modalProps} />

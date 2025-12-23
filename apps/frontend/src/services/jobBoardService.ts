@@ -36,6 +36,25 @@ class JobBoardService {
     }
   }
 
+  // Admin: Approve/Verify job
+  async approveJob(id: string, status: 'approved' | 'rejected' = 'approved'): Promise<JobPosting> {
+    try {
+      const response = await api.put(`/jobs/${id}/verify`, { status });
+      return response.data.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Failed to verify job');
+    }
+  }
+
+  // Admin: Delete job
+  async deleteJob(id: string): Promise<void> {
+    try {
+      await api.delete(`/jobs/${id}`);
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Failed to delete job');
+    }
+  }
+
   // Admin: Trigger scrape
   async triggerScrape(country: string): Promise<any> {
     try {

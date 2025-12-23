@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useSearch } from '../contexts/SearchContext';
-import { Resume, JobApplication, CoverLetter } from '../types';
+import { Resume, JobApplication } from '../types';
 
 /**
  * Hook to sync real data with the search index
@@ -17,14 +17,9 @@ export const useSearchData = () => {
     updateSearchIndex({ jobApplications });
   };
 
-  const syncCoverLetters = (coverLetters: CoverLetter[]) => {
-    updateSearchIndex({ coverLetters });
-  };
-
   const syncAllData = (data: {
     resumes?: Resume[];
     jobApplications?: JobApplication[];
-    coverLetters?: CoverLetter[];
   }) => {
     updateSearchIndex(data);
   };
@@ -32,7 +27,6 @@ export const useSearchData = () => {
   return {
     syncResumes,
     syncJobApplications,
-    syncCoverLetters,
     syncAllData
   };
 };
@@ -44,13 +38,12 @@ export const useSearchData = () => {
 export const useAutoSyncSearch = (data: {
   resumes?: Resume[];
   jobApplications?: JobApplication[];
-  coverLetters?: CoverLetter[];
 }) => {
   const { updateSearchIndex } = useSearch();
 
   useEffect(() => {
-    if (data.resumes || data.jobApplications || data.coverLetters) {
+    if (data.resumes || data.jobApplications) {
       updateSearchIndex(data);
     }
-  }, [data.resumes, data.jobApplications, data.coverLetters, updateSearchIndex]);
+  }, [data.resumes, data.jobApplications, updateSearchIndex]);
 };

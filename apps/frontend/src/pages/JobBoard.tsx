@@ -2,14 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { useJobBoardStore } from '../stores/jobBoardStore';
 import { useAuthStore } from '../stores/authStore';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Briefcase, Building, Plus, Search, ExternalLink, RefreshCw, X, Globe, Cpu, Clock, ChevronRight } from 'lucide-react';
+import { MapPin, Briefcase, Building, Plus, Search, ExternalLink, RefreshCw, X, Globe, Cpu, Clock, ChevronRight, Trash2, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { locationService } from '../services/locationService';
 
 // --- Components ---
 
-const JobCard = ({ job }: { job: any }) => (
+const JobCard = ({ job, isAdmin, onApprove, onDelete }: { job: any, isAdmin?: boolean, onApprove?: (id: string) => void, onDelete?: (id: string) => void }) => (
   <motion.div 
     initial={{ opacity: 0, y: 10 }}
     animate={{ opacity: 1, y: 0 }}
@@ -35,6 +35,33 @@ const JobCard = ({ job }: { job: any }) => (
         </div>
       </div>
       <div className="flex flex-col items-end gap-2.5">
+         {isAdmin && job.status === 'pending' && (
+           <div className="flex gap-2">
+             <button 
+               onClick={() => onApprove?.(job._id)}
+               className="p-2 rounded-xl bg-brand-success/10 text-brand-success hover:bg-brand-success hover:text-white transition-all shadow-sm"
+               title="Approve Node"
+             >
+               <CheckCircle2 size={18} strokeWidth={2.5} />
+             </button>
+             <button 
+               onClick={() => onDelete?.(job._id)}
+               className="p-2 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all shadow-sm"
+               title="Purge Node"
+             >
+               <Trash2 size={18} strokeWidth={2.5} />
+             </button>
+           </div>
+         )}
+         {isAdmin && job.status === 'approved' && (
+           <button 
+             onClick={() => onDelete?.(job._id)}
+             className="p-2 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all shadow-sm"
+             title="Delete Node"
+           >
+             <Trash2 size={18} strokeWidth={2.5} />
+           </button>
+         )}
          {(() => {
            if (job.source === 'scraper') {
              return (
@@ -192,13 +219,16 @@ const SubmitJobModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
 // --- Main Page ---
 
 const JobBoard = () => {
-  const { jobs, isLoading, fetchJobs } = useJobBoardStore();
+  const { jobs, pendingJobs, isLoading, fetchJobs, fetchPendingJobs, approveJob, deleteJob } = useJobBoardStore();
   const { user } = useAuthStore();
   const [country, setCountry] = useState('');
   const [keyword, setKeyword] = useState('');
   const [filteredJobs, setFilteredJobs] = useState<any[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isScraping, setIsScraping] = useState(false);
+  const [activeTab, setActiveTab] = useState<'approved' | 'pending'>('approved');
+
+  const isAdmin = user?.role === 'admin';
 
   useEffect(() => {
     const detectAndFetch = async () => {
@@ -207,24 +237,27 @@ const JobBoard = () => {
         const initialCountry = loc.country || 'United States';
         setCountry(initialCountry);
         fetchJobs(initialCountry);
+        if (isAdmin) fetchPendingJobs();
       } catch (e) {
         setCountry('United States');
         fetchJobs('United States');
+        if (isAdmin) fetchPendingJobs();
       }
     };
     detectAndFetch();
-  }, [fetchJobs]);
+  }, [fetchJobs, fetchPendingJobs, isAdmin]);
 
   useEffect(() => {
     const lowerKeyword = keyword.toLowerCase();
-    const filtered = jobs.filter(job => 
+    const sourceData = activeTab === 'approved' ? jobs : pendingJobs;
+    const filtered = sourceData.filter(job => 
       !lowerKeyword || 
       job.title.toLowerCase().includes(lowerKeyword) ||
       job.company.toLowerCase().includes(lowerKeyword) ||
       job.description.toLowerCase().includes(lowerKeyword)
     );
     setFilteredJobs(filtered);
-  }, [keyword, jobs]);
+  }, [keyword, jobs, pendingJobs, activeTab]);
 
   const handleCountrySearch = () => country && fetchJobs(country);
 
@@ -232,11 +265,31 @@ const JobBoard = () => {
     setIsScraping(true);
     try {
       await fetchJobs(country);
+      if (isAdmin) await fetchPendingJobs();
       toast.success('Archive Resynchronized.');
     } catch (e) {
       toast.error('Sync failure.');
     } finally {
       setIsScraping(false);
+    }
+  };
+
+  const handleApprove = async (id: string) => {
+    try {
+      await approveJob(id);
+      toast.success('Node verified and published.');
+    } catch (error) {
+      toast.error('Verification failed.');
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to purge this architectural node?')) return;
+    try {
+      await deleteJob(id);
+      toast.success('Node purged from grid.');
+    } catch (error) {
+      toast.error('Purge failed.');
     }
   };
 
@@ -312,10 +365,38 @@ const JobBoard = () => {
         </div>
       </div>
 
+      {/* --- ADMIN TABS --- */}
+      {isAdmin && (
+        <div className="flex flex-wrap items-center gap-2 bg-surface-50/80 backdrop-blur-md border border-surface-200 p-1.5 rounded-[2rem] w-fit shadow-inner">
+          <button
+            onClick={() => setActiveTab('approved')}
+            className={`px-8 py-3.5 rounded-[1.7rem] text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 ${
+              activeTab === 'approved' 
+                ? 'bg-white text-brand-blue shadow-[0_4px_20px_-2px_rgba(0,0,0,0.1)] border border-surface-100 transform scale-105' 
+                : 'text-text-tertiary hover:text-brand-dark hover:bg-white/60'
+            }`}
+          >
+            Active Nodes <span className="ml-1 opacity-60">({jobs.length})</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('pending')}
+            className={`px-8 py-3.5 rounded-[1.7rem] text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 ${
+              activeTab === 'pending' 
+                ? 'bg-white text-brand-blue shadow-[0_4px_20px_-2px_rgba(0,0,0,0.1)] border border-surface-100 transform scale-105' 
+                : 'text-text-tertiary hover:text-brand-dark hover:bg-white/60'
+            }`}
+          >
+            Pending Verification <span className="ml-1 opacity-60">({pendingJobs.length})</span>
+          </button>
+        </div>
+      )}
+
       <div className="flex items-center justify-between px-2">
         <div className="flex items-center gap-3">
           <div className="w-2 h-2 rounded-full bg-brand-blue animate-pulse" />
-          <h2 className="text-[10px] font-black text-text-tertiary uppercase tracking-[0.3em]">Detection Grid: {filteredJobs.length} Active Nodes</h2>
+          <h2 className="text-[10px] font-black text-text-tertiary uppercase tracking-[0.3em]">
+            {activeTab === 'approved' ? 'Detection Grid' : 'Verification Queue'}: {filteredJobs.length} {activeTab === 'approved' ? 'Active' : 'Pending'} Nodes
+          </h2>
         </div>
         <div className="flex gap-2">
           <div className="px-3 py-1 rounded-lg bg-surface-50 border border-surface-200 text-[9px] font-bold text-text-tertiary uppercase tracking-widest">
@@ -335,7 +416,13 @@ const JobBoard = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
           <AnimatePresence>
             {filteredJobs.map((job: any) => (
-              <JobCard key={job._id || job.id} job={job} />
+              <JobCard 
+                key={job._id || job.id} 
+                job={job} 
+                isAdmin={isAdmin}
+                onApprove={handleApprove}
+                onDelete={handleDelete}
+              />
             ))}
           </AnimatePresence>
         </div>

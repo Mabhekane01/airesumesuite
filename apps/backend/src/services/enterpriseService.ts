@@ -407,7 +407,7 @@ class EnterpriseService {
       actions.push('Complete profile optimization to increase visibility');
     }
     if (userAnalytics.applicationMetrics.responseRate < 25) {
-      actions.push('Optimize resume and cover letter templates');
+      actions.push('Optimize resume templates and tailoring');
     }
     if (userAnalytics.applicationMetrics.totalApplications < 10) {
       actions.push('Increase application volume to 15-20 per month');
@@ -742,7 +742,7 @@ class EnterpriseService {
         strategy: 'Enhance Application Quality',
         currentRate: userAnalytics.applicationMetrics.responseRate,
         targetRate: 30,
-        tactics: ['Personalize cover letters', 'Optimize resume keywords', 'Research company culture'],
+        tactics: ['Optimize resume keywords', 'Research company culture', 'Tailor experience bullet points'],
         impact: 'High',
         timeframe: '2-3 weeks'
       });

@@ -12,9 +12,6 @@ import ComprehensiveResumeBuilder from './pages/resume-builder/ComprehensiveResu
 import TemplateSelection from './pages/resume-builder/TemplateSelection';
 import ResumePreviewPage from './pages/resume-builder/ResumePreviewPage';
 import UploadResume from './pages/resume-builder/UploadResume';
-import CoverLetterDashboard from './pages/cover-letter/CoverLetterDashboard';
-import CoverLetterGenerator from './pages/cover-letter/CoverLetterGenerator';
-import ConversationalCoverLetterPage from './pages/cover-letter/ConversationalCoverLetterPage';
 import EditJobApplication from './pages/job-tracker/EditJobApplication';
 import JobApplicationDetail from './pages/job-tracker/JobApplicationDetail';
 import CreateJobApplication from './pages/job-tracker/CreateJobApplication';
@@ -91,11 +88,6 @@ const AppRoutes = [
       { path: "resume/upload", element: <UploadResume /> },
       { path: "resume/preview/:id", element: <ResumePreviewPage /> },
       { path: "resume/edit/:id", element: <ComprehensiveResumeBuilder /> },
-
-      // Cover Letter Routes
-      { path: "cover-letter", element: <CoverLetterDashboard /> },
-      { path: "cover-letter/generator", element: <CoverLetterGenerator /> },
-      { path: "cover-letter/conversational", element: <ConversationalCoverLetterPage /> },
 
       // Job Application Tracker Routes
       { path: "applications", element: <ResumeTrackingDashboard /> },

@@ -3,6 +3,7 @@ import { jobBoardService, JobPosting } from '../services/jobBoardService';
 
 interface JobBoardState {
   jobs: JobPosting[];
+  pendingJobs: JobPosting[];
   isLoading: boolean;
   error: string | null;
   filters: {
@@ -10,6 +11,10 @@ interface JobBoardState {
   };
   
   fetchJobs: (country?: string) => Promise<void>;
+  fetchPendingJobs: () => Promise<void>;
+  approveJob: (id: string) => Promise<void>;
+  rejectJob: (id: string) => Promise<void>;
+  deleteJob: (id: string) => Promise<void>;
   submitJob: (data: any) => Promise<void>;
   triggerScrape: (country: string) => Promise<void>;
   setCountryFilter: (country: string) => void;
@@ -17,6 +22,7 @@ interface JobBoardState {
 
 export const useJobBoardStore = create<JobBoardState>((set, get) => ({
   jobs: [],
+  pendingJobs: [],
   isLoading: false,
   error: null,
   filters: {
@@ -36,6 +42,50 @@ export const useJobBoardStore = create<JobBoardState>((set, get) => ({
       set({ jobs, isLoading: false });
     } catch (error: any) {
       set({ error: error.message, isLoading: false });
+    }
+  },
+
+  fetchPendingJobs: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await api.get('/jobs/pending');
+      set({ pendingJobs: response.data.data, isLoading: false });
+    } catch (error: any) {
+      set({ error: error.message, isLoading: false });
+    }
+  },
+
+  approveJob: async (id: string) => {
+    try {
+      await jobBoardService.approveJob(id, 'approved');
+      // Refresh both lists
+      await get().fetchJobs();
+      await get().fetchPendingJobs();
+    } catch (error: any) {
+      set({ error: error.message });
+      throw error;
+    }
+  },
+
+  rejectJob: async (id: string) => {
+    try {
+      await jobBoardService.approveJob(id, 'rejected');
+      await get().fetchPendingJobs();
+    } catch (error: any) {
+      set({ error: error.message });
+      throw error;
+    }
+  },
+
+  deleteJob: async (id: string) => {
+    try {
+      await jobBoardService.deleteJob(id);
+      // Refresh list
+      await get().fetchJobs();
+      await get().fetchPendingJobs();
+    } catch (error: any) {
+      set({ error: error.message });
+      throw error;
     }
   },
 

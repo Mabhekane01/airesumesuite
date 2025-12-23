@@ -11,7 +11,6 @@ export interface ISystemSettings extends Document {
   // Feature Flags
   features: {
     aiResumeBuilder: boolean;
-    coverLetterGenerator: boolean;
     jobScraping: boolean;
     careerCoach: boolean;
     advancedAnalytics: boolean;
@@ -320,7 +319,6 @@ const SystemSettingsSchema = new Schema<ISystemSettings>(
 
     features: {
       aiResumeBuilder: { type: Boolean, default: true },
-      coverLetterGenerator: { type: Boolean, default: true },
       jobScraping: { type: Boolean, default: true },
       careerCoach: { type: Boolean, default: true },
       advancedAnalytics: { type: Boolean, default: false },
