@@ -1086,6 +1086,70 @@ Respond only with the JSON data, no additional text.
       throw new Error('Failed to extract resume data');
     }
   }
+
+  /**
+   * Extract structured job details from raw text or a URL
+   */
+  async extractJobDetails(input: string): Promise<{
+    title: string;
+    company: string;
+    location: string;
+    description: string;
+    requirements: string[];
+    responsibilities: string[];
+    salaryRange?: string;
+    jobType?: string;
+    keywords: string[];
+  }> {
+    if (!this.client) {
+      throw new Error('Gemini API not configured');
+    }
+
+    const prompt = `
+You are an expert job market analyst. Extract structured job information from the provided input (which could be a job description or a URL reference).
+
+Input:
+${input}
+
+Please extract and structure the following:
+1. Job Title
+2. Company Name
+3. Location (include city, state, country, and remote/hybrid status)
+4. Full Job Description (cleaned and formatted)
+5. Requirements (as a list of strings)
+6. Responsibilities (as a list of strings)
+7. Salary Range (if mentioned)
+8. Job Type (Full-time, Contract, etc.)
+9. Top 10 Keywords for ATS optimization
+
+Return the data in this EXACT JSON structure:
+{
+  "title": "",
+  "company": "",
+  "location": "",
+  "description": "",
+  "requirements": [],
+  "responsibilities": [],
+  "salaryRange": "",
+  "jobType": "",
+  "keywords": []
+}
+
+Respond ONLY with the JSON data, no other text.
+`;
+
+    try {
+      const response = await this.client.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: prompt,
+      });
+      const text = response.text;
+      return cleanAndParseJson(text);
+    } catch (error) {
+      console.error('Error extracting job details with Gemini:', error);
+      throw new Error('Failed to extract job details');
+    }
+  }
   
   private extractJobKeywords(jobDescription: string): string[] {
     // Extract meaningful keywords from job description
@@ -1895,6 +1959,12 @@ Respond only with the JSON object, no additional text.
     qualifications?: string[];
     keywords?: string[];
     recommendations?: string[];
+    strategicInsights?: string[];
+    companyInfo?: {
+      industry?: string;
+      size?: string;
+      description?: string;
+    };
     _resilience?: any;
   }> {
     if (!this.client) {

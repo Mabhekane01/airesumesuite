@@ -136,7 +136,8 @@ export const optionalAuthMiddleware = async (req: AuthenticatedRequest, res: Res
         req.user = {
           id: (user as any)._id.toString(),
           email: user.email,
-          tier: user.tier || 'free'
+          tier: user.tier || 'free',
+          role: (user as any).role || 'user'
         };
       }
     }

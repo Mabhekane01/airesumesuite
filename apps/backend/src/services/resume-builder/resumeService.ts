@@ -5,6 +5,7 @@ import { templateRenderer } from './templateRenderer';
 import mongoose from 'mongoose';
 import puppeteer from 'puppeteer';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
+import QRCode from 'qrcode';
 import path from 'path';
 import fs from 'fs/promises';
 import { resumeTemplates, getTemplateById } from '../../data/resumeTemplates';
@@ -1441,55 +1442,92 @@ export class ResumeService {
    * Use pdf-lib to overlay tracking information onto an existing PDF
    * This is much more reliable and faster than regenerating from LaTeX
    * especially for external job applications.
+   * Now includes QR code embedding and advanced metadata tracking.
    */
-  async attachTrackingToPDF(pdfBuffer: Buffer, trackingUrl: string): Promise<Buffer> {
+  async attachTrackingToPDF(pdfBuffer: Buffer, trackingUrl: string, options?: { 
+    showQrCode?: boolean;
+    watermarkText?: string;
+  }): Promise<Buffer> {
     try {
-      console.log('🔗 [PDF-LIB] Attaching tracking layer to existing PDF...');
+      console.log('🔗 [PDF-LIB] Attaching advanced tracking layer to PDF...');
       const pdfDoc = await PDFDocument.load(pdfBuffer);
       const helveticaFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
       const pages = pdfDoc.getPages();
       
-      const footerText = `INTELLIGENCE TRACKING ACTIVE: ${trackingUrl}`;
+      // 1. Embed Metadata (Advanced tracking)
+      pdfDoc.setProducer('AI Resume Suite Intelligence');
+      pdfDoc.setCreator('AI Resume Suite');
+      pdfDoc.setKeywords(['tracked', 'verified', trackingUrl]);
+      pdfDoc.setTitle(`Resume Tracked - ${trackingUrl.split('/').pop()}`);
       
+      const footerText = options?.watermarkText || `VERIFIED AUTHENTIC: ${trackingUrl}`;
+      
+      // 2. Generate QR Code if requested
+      let qrImageEmbed = null;
+      if (options?.showQrCode) {
+        const qrCodeDataUrl = await QRCode.toDataURL(trackingUrl, { margin: 1, width: 100 });
+        const qrImageBytes = Buffer.from(qrCodeDataUrl.split(',')[1], 'base64');
+        qrImageEmbed = await pdfDoc.embedPng(qrImageBytes);
+      }
+
       for (const page of pages) {
         const { width, height } = page.getSize();
         
-        // Add a subtle white background rectangle for the footer to ensure readability
-        // regardless of resume content background
+        // Subtle footer background
         page.drawRectangle({
           x: 0,
           y: 0,
           width: width,
-          height: 25,
-          color: rgb(1, 1, 1),
-          opacity: 0.95,
+          height: 30,
+          color: rgb(0.98, 0.98, 0.98),
+          opacity: 0.9,
         });
 
-        // Draw the tracking text in brand blue
+        // Draw tracking text
         page.drawText(footerText, {
           x: 40,
-          y: 10,
+          y: 12,
           size: 7,
           font: helveticaFont,
-          color: rgb(0.1, 0.57, 0.94), // #1a91f0 Brand Blue
+          color: rgb(0.1, 0.4, 0.8), 
         });
         
+        // Add QR Code if available (Bottom Right)
+        if (qrImageEmbed) {
+          page.drawImage(qrImageEmbed, {
+            x: width - 70,
+            y: 5,
+            width: 20,
+            height: 20,
+          });
+        }
+
         // Add a tiny decorative line
         page.drawLine({
-          start: { x: 40, y: 20 },
-          end: { x: width - 40, y: 20 },
-          thickness: 0.5,
-          color: rgb(0.9, 0.9, 0.9),
-          opacity: 0.5
+          start: { x: 40, y: 22 },
+          end: { x: width - 40, y: 22 },
+          thickness: 0.3,
+          color: rgb(0.8, 0.8, 0.8),
+        });
+
+        // Hidden tracking pixel (tiny white dot on white background)
+        // Some PDF viewers might trigger a network request if this was an external image,
+        // but for standard PDFs, we rely on the link.
+        page.drawCircle({
+          x: 1,
+          y: 1,
+          size: 0.1,
+          color: rgb(1, 1, 1),
+          opacity: 0.01
         });
       }
       
       const modifiedPdfBytes = await pdfDoc.save();
-      console.log(`✅ [PDF-LIB] Tracking layer synthesized successfully (${modifiedPdfBytes.length} bytes)`);
+      console.log(`✅ [PDF-LIB] Advanced tracking layer synthesized (${modifiedPdfBytes.length} bytes)`);
       return Buffer.from(modifiedPdfBytes);
     } catch (error) {
       console.error('❌ Failed to attach tracking to PDF:', error);
-      return pdfBuffer; // Return original if modification fails to prevent total failure
+      return pdfBuffer;
     }
   }
 

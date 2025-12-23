@@ -419,6 +419,13 @@ router.patch(
   (req: AuthenticatedRequest, res: Response) => jobApplicationController.archiveApplication(req, res)
 );
 
+// Download tracked resume
+router.get(
+  '/:applicationId/download-tracked',
+  mongoIdValidation,
+  (req: AuthenticatedRequest, res: Response) => jobApplicationController.downloadTrackedResume(req, res)
+);
+
 // Test Gemini connection
 router.get(
   '/test-gemini',

@@ -129,5 +129,35 @@ export const jobPostingController = {
     } catch (error) {
       res.status(500).json({ success: false, message: 'Failed to update job status' });
     }
+  },
+
+  // AI: Extract job details from raw text or URL
+  extractJobDetails: async (req: Request, res: Response) => {
+    try {
+      const { text, url } = req.body;
+      
+      if (!text && !url) {
+        return res.status(400).json({ success: false, message: 'Text or URL is required' });
+      }
+
+      const { geminiService } = await import('../services/ai/gemini');
+      
+      let extractionInput = text;
+      
+      // If URL provided, we'd ideally scrape it here. 
+      // For now, let's assume the frontend sends the scraped text or we just use the URL as context.
+      if (url && !text) {
+        // Simple placeholder for scraping logic
+        // In a real app, you'd use cheerio/puppeteer to get the content
+        extractionInput = `Please extract job details from this URL: ${url}`;
+      }
+
+      const extractedData = await geminiService.extractJobDetails(extractionInput);
+      
+      res.status(200).json({ success: true, data: extractedData });
+    } catch (error) {
+      console.error('Error extracting job details:', error);
+      res.status(500).json({ success: false, message: 'AI extraction failed' });
+    }
   }
 };

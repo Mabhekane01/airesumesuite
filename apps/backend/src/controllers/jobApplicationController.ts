@@ -819,6 +819,65 @@ export class JobApplicationController {
     }
   }
 
+  async downloadTrackedResume(req: AuthenticatedRequest, res: Response) {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
+      const userId = req.user.id;
+      const { applicationId } = req.params;
+
+      const application = await jobApplicationService.getApplication(userId, applicationId);
+      if (!application) {
+        return res.status(404).json({ success: false, message: 'Application not found' });
+      }
+
+      const resumeId = application.documentsUsed?.resumeId;
+      const trackingUrl = application.documentsUsed?.trackedResumeUrl;
+
+      if (!resumeId || !trackingUrl) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Tracking is not enabled for this application. Please enable tracking first.' 
+        });
+      }
+
+      const { resumeService } = await import('../services/resume-builder/resumeService');
+      const resume = await resumeService.getResumeById(resumeId.toString(), userId);
+      
+      if (!resume) {
+        return res.status(404).json({ success: false, message: 'Original resume not found' });
+      }
+
+      // Get the PDF buffer - either from saved generatedFiles or generate it fresh
+      let pdfBuffer: Buffer;
+      if (resume.generatedFiles?.pdf?.data) {
+        pdfBuffer = resume.generatedFiles.pdf.data;
+      } else {
+        // Fallback: generate it if it doesn't exist
+        pdfBuffer = await resumeService.generateResumeFile(resume.toObject(), 'pdf', {
+          templateId: resume.templateId
+        });
+      }
+
+      // Attach tracking
+      const trackedPdfBuffer = await resumeService.attachTrackingToPDF(pdfBuffer, trackingUrl, {
+        showQrCode: true,
+        watermarkText: `VERIFIED FOR ${application.companyName.toUpperCase()} - ${trackingUrl}`
+      });
+
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="${resume.personalInfo.firstName}_${resume.personalInfo.lastName}_Resume_Tracked.pdf"`);
+      return res.send(trackedPdfBuffer);
+    } catch (error) {
+      console.error('Download tracked resume error:', error);
+      return res.status(500).json({
+        success: false,
+        message: error instanceof Error ? error.message : 'Failed to download tracked resume'
+      });
+    }
+  }
+
   async archiveApplication(req: AuthenticatedRequest, res: Response) {
     try {
       if (!req.user) {

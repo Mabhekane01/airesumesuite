@@ -556,7 +556,7 @@ export class StandardizedResumeController {
 
         console.log('🔍 [LATEX-DEBUG] Generated LaTeX for unsaved preview:', latex);
 
-        pdfBuffer = await resumeService.generateLatexResumePDF(resumeData, {
+        let pdfBuffer = await resumeService.generateLatexResumePDF(resumeData, {
         templateId,
         outputFormat,
         cleanup: true,

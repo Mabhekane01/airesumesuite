@@ -3,7 +3,10 @@ import { AuthenticatedRequest } from '../middleware/auth';
 import { ResumeShare } from '../models/ResumeShare';
 import { Resume } from '../models/Resume';
 import crypto from 'crypto';
+import QRCode from 'qrcode';
 import { resumeService as builderResumeService } from '../services/resume-builder/resumeService';
+import { geoService } from '../services/geoService';
+import { userAgentService } from '../services/userAgentService';
 
 export class ResumeShareController {
   private generateShortId(length: number = 10): string {
@@ -17,7 +20,7 @@ export class ResumeShareController {
    */
   async createShare(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
-      const { resumeId, title, recipientEmail, recipientName, expiresAt, settings } = req.body;
+      const { resumeId, title, recipientEmail, recipientName, expiresAt, settings, trackingType } = req.body;
       const userId = req.user?.id;
 
       if (!resumeId) {
@@ -32,6 +35,13 @@ export class ResumeShareController {
       }
 
       const shareId = this.generateShortId();
+      const trackingUrl = `${process.env.FRONTEND_URL}/share/r/${shareId}`;
+      
+      let qrCodeDataUrl = '';
+      if (trackingType === 'qr_code') {
+        qrCodeDataUrl = await QRCode.toDataURL(trackingUrl);
+      }
+
       const newShare = new ResumeShare({
         userId,
         resumeId,
@@ -40,10 +50,13 @@ export class ResumeShareController {
         recipientEmail,
         recipientName,
         expiresAt,
+        trackingType: trackingType || 'link',
         settings: settings || {
           requireEmail: false,
           notifyOnView: true,
-          allowDownload: true
+          allowDownload: true,
+          showWatermark: true,
+          trackLocation: true
         }
       });
 
@@ -53,7 +66,8 @@ export class ResumeShareController {
         success: true,
         data: {
           shareId,
-          trackingUrl: `${process.env.FRONTEND_URL}/share/r/${shareId}`,
+          trackingUrl,
+          qrCodeDataUrl,
           ...newShare.toObject()
         }
       });
@@ -119,14 +133,29 @@ export class ResumeShareController {
         return;
       }
 
+      // Advanced tracking logic
+      const ip = req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+      const uaString = req.headers['user-agent'] || '';
+      const parsedUA = userAgentService.parse(uaString);
+      
+      let location = undefined;
+      if (share.settings.trackLocation) {
+        location = await geoService.resolveIp(ip);
+      }
+
       // Track view
       const view = {
-        ipAddress: req.ip,
-        userAgent: req.headers['user-agent'],
+        ipAddress: ip,
+        userAgent: uaString,
+        browser: parsedUA.browser,
+        os: parsedUA.os,
+        device: parsedUA.device,
+        location: location || undefined,
+        referrer: req.headers['referer'] || req.headers['referrer'],
         viewedAt: new Date()
       };
 
-      share.views.push(view);
+      share.views.push(view as any);
       share.viewCount += 1;
       share.lastViewedAt = new Date();
       await share.save();
@@ -139,12 +168,12 @@ export class ResumeShareController {
       }
 
       // Return resume data for the shared view
-      // In a real production app, we might render the PDF or a specific tracking page
       res.json({
         success: true,
         data: {
           resume: resume.toObject(),
-          settings: share.settings
+          settings: share.settings,
+          trackingId: share.shareId
         }
       });
     } catch (error) {

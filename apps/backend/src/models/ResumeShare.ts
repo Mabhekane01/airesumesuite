@@ -13,15 +13,28 @@ export interface IResumeShare extends Document {
   downloadCount: number;
   lastDownloadedAt?: Date;
   status: 'active' | 'expired' | 'revoked';
+  trackingType: 'link' | 'pdf_embed' | 'qr_code';
   settings: {
     requireEmail: boolean;
     notifyOnView: boolean;
     allowDownload: boolean;
+    showWatermark: boolean;
+    trackLocation: boolean;
   };
   views: {
     ipAddress?: string;
     userAgent?: string;
-    location?: string;
+    browser?: string;
+    os?: string;
+    device?: string;
+    location?: {
+      country?: string;
+      city?: string;
+      region?: string;
+      timezone?: string;
+      coordinates?: [number]; // [longitude, latitude]
+    };
+    referrer?: string;
     viewedAt: Date;
   }[];
   createdAt: Date;
@@ -46,15 +59,32 @@ const resumeShareSchema = new Schema<IResumeShare>(
       enum: ['active', 'expired', 'revoked'], 
       default: 'active' 
     },
+    trackingType: {
+      type: String,
+      enum: ['link', 'pdf_embed', 'qr_code'],
+      default: 'link'
+    },
     settings: {
       requireEmail: { type: Boolean, default: false },
       notifyOnView: { type: Boolean, default: true },
-      allowDownload: { type: Boolean, default: true }
+      allowDownload: { type: Boolean, default: true },
+      showWatermark: { type: Boolean, default: true },
+      trackLocation: { type: Boolean, default: true }
     },
     views: [{
       ipAddress: String,
       userAgent: String,
-      location: String,
+      browser: String,
+      os: String,
+      device: String,
+      location: {
+        country: String,
+        city: String,
+        region: String,
+        timezone: String,
+        coordinates: [Number]
+      },
+      referrer: String,
       viewedAt: { type: Date, default: Date.now }
     }]
   },

@@ -27,7 +27,7 @@ export interface JobAnalysisResult {
 
 export class AIJobAnalyzer {
   
-  async analyzeJobFromUrl(url: string): Promise<JobAnalysisResult> {
+  async analyzeJobFromUrl(url: string, resumeData?: any): Promise<JobAnalysisResult> {
     // Check cache first
     const cacheKey = `ai-job-analysis:${Buffer.from(url).toString('base64')}`;
     try {

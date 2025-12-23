@@ -2,8 +2,12 @@ import { JobApplication, IJobApplication } from '../models/JobApplication';
 import { User, IUser } from '../models/User';
 import { IUserProfile } from '../models';
 import { Resume } from '../models/Resume';
+import { ResumeShare } from '../models/ResumeShare';
 import { aiOptimizationService } from './aiOptimizationService';
+import { resumeService as builderResumeService } from './resume-builder/resumeService';
 import mongoose from 'mongoose';
+import crypto from 'crypto';
+import { v4 as uuidv4 } from 'uuid';
 
 // Helper function to convert IUser to IUserProfile
 function userToProfile(user: IUser): IUserProfile {
@@ -23,7 +27,6 @@ function userToProfile(user: IUser): IUserProfile {
     preferredIndustries: user.profile?.preferredIndustries
   };
 }
-import { v4 as uuidv4 } from 'uuid';
 
 export interface CreateJobApplicationData {
   jobTitle: string;
@@ -31,6 +34,11 @@ export interface CreateJobApplicationData {
   jobDescription: string;
   jobUrl?: string;
   jobSource?: string;
+  enableTracking?: boolean;
+  trackingSettings?: {
+    showQrCode?: boolean;
+    showWatermark?: boolean;
+  };
   jobLocation: {
     city?: string;
     state?: string;
@@ -59,6 +67,8 @@ export interface CreateJobApplicationData {
     resumeId?: string;
     resumeContent?: string;
     coverLetterId?: string;
+    trackedResumeUrl?: string;
+    trackingShareId?: string;
   };
   referralContact?: {
     name: string;
@@ -315,6 +325,40 @@ class JobApplicationService {
       
       application.metrics.applicationScore = matchScore;
       
+      // ENTERPRISE FEATURE: Auto-generate tracked resume for this specific application
+      if (applicationData.enableTracking && application.documentsUsed?.resumeId) {
+        try {
+          console.log(`🚀 [TRACKING] Initializing auto-tracking for application to ${applicationData.companyName}`);
+          
+          const shareId = crypto.randomBytes(5).toString('hex');
+          const trackingUrl = `${process.env.FRONTEND_URL}/share/r/${shareId}`;
+          
+          const newShare = new ResumeShare({
+            userId: new mongoose.Types.ObjectId(userId),
+            resumeId: application.documentsUsed.resumeId,
+            shareId,
+            title: `Auto-track: ${applicationData.jobTitle} at ${applicationData.companyName}`,
+            status: 'active',
+            trackingType: applicationData.trackingSettings?.showQrCode ? 'qr_code' : 'pdf_embed',
+            settings: {
+              requireEmail: false,
+              notifyOnView: true,
+              allowDownload: true,
+              showWatermark: applicationData.trackingSettings?.showWatermark !== false,
+              trackLocation: true
+            }
+          });
+          
+          await newShare.save();
+          console.log(`✅ [TRACKING] Created ResumeShare record: ${shareId}`);
+          
+          application.documentsUsed.trackedResumeUrl = trackingUrl;
+          application.documentsUsed.trackingShareId = shareId;
+        } catch (trackingError) {
+          console.warn(`⚠️ [TRACKING] Failed to initialize tracking:`, trackingError.message);
+        }
+      }
+      
       console.log(`📝 Application created with match score: ${matchScore}%`);
       console.log(`🎯 Job: ${application.jobTitle} at ${application.companyName}`);
       console.log(`📄 Has job description: ${application.jobDescription?.length > 0 ? 'Yes' : 'No'} (${application.jobDescription?.length || 0} chars)`);
@@ -451,12 +495,31 @@ class JobApplicationService {
     }
   }
 
-  async getApplication(userId: string, applicationId: string): Promise<IJobApplication | null> {
+  async getApplication(userId: string, applicationId: string): Promise<any> {
     try {
       const application = await JobApplication.findOne({
         _id: applicationId,
         userId: new mongoose.Types.ObjectId(userId)
-      });
+      }).lean();
+
+      if (application && application.documentsUsed?.trackingShareId) {
+        // Fetch tracking stats
+        const share = await ResumeShare.findOne({ 
+          shareId: application.documentsUsed.trackingShareId,
+          userId: new mongoose.Types.ObjectId(userId)
+        }).lean();
+
+        if (share) {
+          return {
+            ...application,
+            trackingStats: {
+              viewCount: share.viewCount,
+              lastViewedAt: share.lastViewedAt,
+              views: share.views.slice(-5) // Get latest 5 views
+            }
+          };
+        }
+      }
 
       return application;
     } catch (error) {
@@ -1291,6 +1354,11 @@ class JobApplicationService {
     topCompanies: { name: string; count: number }[];
     statusBreakdown: { [key: string]: number };
     monthlyTrend: { month: string; applications: number; interviews: number; offers: number }[];
+    trackingIntelligence?: {
+      totalViews: number;
+      activeTrackingLinks: number;
+      topTrackedApplications: { title: string; views: number; lastView?: Date }[];
+    };
   }> {
     try {
       const applications = await JobApplication.find({ userId: new mongoose.Types.ObjectId(userId) });
@@ -1364,6 +1432,11 @@ class JobApplicationService {
         });
       }
 
+      // Tracking Intelligence
+      const trackingShares = await ResumeShare.find({ userId: new mongoose.Types.ObjectId(userId) });
+      const totalViews = trackingShares.reduce((sum, share) => sum + share.viewCount, 0);
+      const activeTrackingLinks = trackingShares.filter(s => s.status === 'active').length;
+
       return {
         totalApplications,
         responseRate: Math.round(responseRate),
@@ -1373,7 +1446,15 @@ class JobApplicationService {
         averageTimeToInterview: Math.round(averageTimeToInterview),
         topCompanies,
         statusBreakdown,
-        monthlyTrend
+        monthlyTrend,
+        trackingIntelligence: {
+          totalViews,
+          activeTrackingLinks,
+          topTrackedApplications: trackingShares
+            .sort((a, b) => b.viewCount - a.viewCount)
+            .slice(0, 5)
+            .map(s => ({ title: s.title, views: s.viewCount, lastView: s.lastViewedAt }))
+        }
       };
     } catch (error) {
       if (error instanceof Error) {
