@@ -171,9 +171,9 @@ export default function OverleafTemplateGallery({
   };
 
   return (
-    <div className="w-full space-y-16">
+    <div className="w-full space-y-8 md:space-y-16">
       {/* --- ADVANCED FILTER CONSOLE --- */}
-      <div className="bg-white border border-surface-200 rounded-[2.5rem] p-4 shadow-sm relative overflow-hidden group">
+      <div className="bg-white border border-surface-200 rounded-[1.5rem] md:rounded-[2.5rem] p-3 md:p-4 shadow-sm relative overflow-hidden group">
         <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:20px_20px] opacity-[0.15]" />
         
         <div className="relative z-10 flex flex-col lg:flex-row gap-6 items-stretch lg:items-center">

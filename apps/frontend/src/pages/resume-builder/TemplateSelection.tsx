@@ -59,16 +59,16 @@ export default function TemplateSelection() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAFAFB] py-12 px-4 relative overflow-hidden animate-slide-up-soft">
+    <div className="min-h-screen bg-[#FAFAFB] py-8 md:py-12 px-3 md:px-4 relative overflow-hidden animate-slide-up-soft">
       {/* Background Ambience */}
       <div className="absolute top-0 left-0 w-full h-[600px] pointer-events-none -z-10 overflow-hidden">
         <div className="absolute top-[-10%] right-[-5%] w-[800px] h-[800px] bg-brand-blue/[0.03] rounded-full blur-[140px]" />
         <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:32px_32px] opacity-40" />
       </div>
 
-      <div className="max-w-7xl mx-auto space-y-16 relative z-10">
+      <div className="max-w-7xl mx-auto space-y-8 md:space-y-16 relative z-10">
         {/* --- HEADER --- */}
-        <div className="text-center space-y-8 max-w-3xl mx-auto">
+        <div className="text-center space-y-6 md:space-y-8 max-w-3xl mx-auto">
           <div className="flex justify-center">
             <button
               onClick={() => navigate(-1)}
@@ -79,27 +79,27 @@ export default function TemplateSelection() {
             </button>
           </div>
           
-          <div className="space-y-4">
-            <div className="inline-flex items-center gap-3 px-5 py-2 rounded-full bg-white border border-surface-200 text-brand-blue font-black uppercase tracking-[0.3em] text-[10px] shadow-sm">
-              <CpuChipIcon className="w-4 h-4" />
+          <div className="space-y-3 md:space-y-4">
+            <div className="inline-flex items-center gap-3 px-4 md:px-5 py-1.5 md:py-2 rounded-full bg-white border border-surface-200 text-brand-blue font-black uppercase tracking-[0.3em] text-[9px] md:text-[10px] shadow-sm">
+              <CpuChipIcon className="w-3.5 h-3.5 md:w-4 md:h-4" />
               Architecture Selection Protocol
             </div>
-            <h1 className="text-5xl md:text-7xl font-display font-black text-brand-dark tracking-tighter leading-none">
+            <h1 className="text-3xl md:text-7xl font-display font-black text-brand-dark tracking-tighter leading-none">
               Deploy Your <br /><span className="text-brand-blue">Interface.</span>
             </h1>
-            <p className="text-xl text-text-secondary font-bold opacity-80 leading-relaxed">
-              Initialize a high-fidelity LaTeX deployment. Every architecture is validated for typographic precision and global ATS compliance.
+            <p className="text-base md:text-xl text-text-secondary font-bold opacity-80 leading-relaxed px-4 md:px-0">
+              Initialize a high-fidelity LaTeX deployment. Every architecture is validated for typographic precision.
             </p>
           </div>
 
-          <div className="flex flex-wrap justify-center items-center gap-10 opacity-60">
+          <div className="flex flex-wrap justify-center items-center gap-6 md:gap-10 opacity-60 px-4">
             {[
               { icon: ShieldCheckIcon, label: "ATS Validator v4.2" },
               { icon: CommandLineIcon, label: "Vector Source Core" },
               { icon: SparklesIcon, label: "Semantic Optimization" }
             ].map((stat, i) => (
-              <div key={i} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-brand-dark">
-                <stat.icon className="w-4 h-4 text-brand-blue" />
+              <div key={i} className="flex items-center gap-2 text-[9px] md:text-[10px] font-black uppercase tracking-widest text-brand-dark">
+                <stat.icon className="w-3.5 h-3.5 md:w-4 md:h-4 text-brand-blue" />
                 {stat.label}
               </div>
             ))}
@@ -135,18 +135,18 @@ export default function TemplateSelection() {
         </div>
 
         {/* --- SYSTEM STATS --- */}
-        <div className="grid md:grid-cols-3 gap-8 pt-10 border-t border-surface-100">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 pt-8 md:pt-10 border-t border-surface-100 px-4 md:px-0">
           {[
             { title: "Vector Precision", desc: "Typeset-quality font rendering for absolute clarity." },
             { title: "Node Compatibility", desc: "Certified parsing across 200+ institutional ATS models." },
             { title: "Direct Export", desc: "Secure deployment to professional PDF and LaTeX formats." }
           ].map((item, i) => (
-            <div key={i} className="space-y-3">
-              <h4 className="text-sm font-black text-brand-dark uppercase tracking-widest flex items-center gap-2">
+            <div key={i} className="space-y-2 md:space-y-3">
+              <h4 className="text-[11px] md:text-sm font-black text-brand-dark uppercase tracking-widest flex items-center gap-2">
                 <div className="w-1 h-1 rounded-full bg-brand-blue" />
                 {item.title}
               </h4>
-              <p className="text-xs font-bold text-text-secondary leading-relaxed opacity-70">{item.desc}</p>
+              <p className="text-[10px] md:text-xs font-bold text-text-secondary leading-relaxed opacity-70">{item.desc}</p>
             </div>
           ))}
         </div>
