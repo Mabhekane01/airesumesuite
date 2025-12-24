@@ -1118,7 +1118,7 @@ ${p.technologies ? `\\\\\\textit{Technologies:} ${escape(p.technologies.join(", 
         lowerSource.includes('compile with xelatex') ||
         lowerSource.includes('xelatex required')) {
       console.log('🔍 Detected XeLaTeX requirement from template comments');
-      return "C:\\texlive\\2025\\bin\\windows\\xelatex.exe";
+      return "xelatex";
     }
     
     // Check for explicit LuaLaTeX requirements (avoid comments, look for actual usage)
@@ -1127,7 +1127,7 @@ ${p.technologies ? `\\\\\\textit{Technologies:} ${escape(p.technologies.join(", 
         lowerSource.includes('\\directlua') ||
         lowerSource.includes('\\luacode')) {
       console.log('🔍 Detected LuaLaTeX requirement from template');
-      return "C:\\texlive\\2025\\bin\\windows\\lualatex.exe";
+      return "lualatex";
     }
     
     // Check for packages that require XeLaTeX (more specific detection)
@@ -1136,7 +1136,7 @@ ${p.technologies ? `\\\\\\textit{Technologies:} ${escape(p.technologies.join(", 
       if (lowerSource.includes(`\\usepackage{${pkg}}`) || 
           (lowerSource.includes(`\\usepackage[`) && lowerSource.includes(`${pkg}`))) {
         console.log(`🔍 Detected XeLaTeX requirement due to package: ${pkg}`);
-        return "C:\\texlive\\2025\\bin\\windows\\xelatex.exe";
+        return "xelatex";
       }
     }
     
