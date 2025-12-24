@@ -83,13 +83,99 @@ const STATUS_CONFIG: Record<string, any> = {
   no_show: { label: 'No Show', color: 'text-text-tertiary bg-surface-100 border-surface-200' },
 };
 
-export default function InterviewScheduler() {
+// --- Supporting Components ---
+
+const CalendarGridView = ({ interviews, onSelectInterview }: { interviews: Interview[], onSelectInterview: (i: Interview) => void }) => {
+  const [currentDate, setCurrentDate] = useState(new Date());
+  
+  const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
+  const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay();
+  
+  const days = [];
+  for (let i = 0; i < firstDayOfMonth; i++) {
+    days.push(null);
+  }
+  for (let i = 1; i <= daysInMonth; i++) {
+    days.push(i);
+  }
+
+  const prevMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1));
+  const nextMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1));
+
+  const getInterviewsForDay = (day: number) => {
+    return interviews.filter(interview => {
+      const date = new Date(interview.scheduledDate);
+      return date.getDate() === day && 
+             date.getMonth() === currentDate.getMonth() && 
+             date.getFullYear() === currentDate.getFullYear();
+    });
+  };
+
+  return (
+    <div className="space-y-8">
+      <div className="flex items-center justify-between">
+        <h3 className="text-xl font-black text-brand-dark uppercase tracking-tight">
+          {currentDate.toLocaleString('default', { month: 'long' })} {currentDate.getFullYear()}
+        </h3>
+        <div className="flex gap-2">
+          <button onClick={prevMonth} className="p-2 hover:bg-surface-50 rounded-lg border border-surface-200 transition-colors">
+            <XMarkIcon className="w-5 h-5 rotate-45" /> {/* Just using XMark as placeholder for arrow for now, or use actual arrows */}
+          </button>
+          <button onClick={nextMonth} className="p-2 hover:bg-surface-50 rounded-lg border border-surface-200 transition-colors">
+            <ChevronRightIcon className="w-5 h-5" />
+          </button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-7 gap-px bg-surface-200 border border-surface-200 rounded-2xl overflow-hidden shadow-sm">
+        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+          <div key={day} className="bg-surface-50 py-3 text-center text-[10px] font-black text-text-tertiary uppercase tracking-widest border-b border-surface-200">
+            {day}
+          </div>
+        ))}
+        {days.map((day, idx) => {
+          const dayInterviews = day ? getInterviewsForDay(day) : [];
+          const isToday = day === new Date().getDate() && 
+                          currentDate.getMonth() === new Date().getMonth() && 
+                          currentDate.getFullYear() === new Date().getFullYear();
+
+          return (
+            <div key={idx} className={`min-h-[120px] bg-white p-2 transition-colors ${day ? 'hover:bg-surface-50/50' : 'bg-surface-50/20'}`}>
+              {day && (
+                <div className="space-y-2">
+                  <span className={`inline-flex w-7 h-7 items-center justify-center text-xs font-black rounded-full ${
+                    isToday ? 'bg-brand-blue text-white shadow-lg shadow-brand-blue/30' : 'text-text-secondary'
+                  }`}>
+                    {day}
+                  </span>
+                  <div className="space-y-1">
+                    {dayInterviews.map(iv => (
+                      <button
+                        key={iv.id}
+                        onClick={() => onSelectInterview(iv)}
+                        className="w-full text-left p-1.5 rounded-lg bg-brand-blue/10 border border-brand-blue/20 text-[9px] font-bold text-brand-blue truncate hover:bg-brand-blue/20 transition-all"
+                      >
+                        {iv.jobTitle}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+export default function InterviewScheduler({ defaultView = 'list' }: { defaultView?: 'calendar' | 'list' }) {
   const [interviews, setInterviews] = useState<Interview[]>([]);
   const [applications, setApplications] = useState<JobApplication[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedInterview, setSelectedInterview] = useState<Interview | null>(null);
-  const [viewMode, setViewMode] = useState<'calendar' | 'list'>('list');
+  const [viewMode, setViewMode] = useState<'calendar' | 'list'>(defaultView);
   const [filterStatus, setFilterStatus] = useState<string>('all');
 
   useEffect(() => {
@@ -263,116 +349,125 @@ export default function InterviewScheduler() {
         </div>
       </div>
 
-      {/* Timeline List */}
+      {/* Timeline List or Calendar */}
       <div className="space-y-6">
-        {filteredInterviews.length === 0 ? (
-          <div className="bg-white border border-dashed border-surface-200 rounded-[3rem] py-24 text-center space-y-6">
-            <div className="w-20 h-20 rounded-[2rem] bg-surface-50 border border-surface-200 flex items-center justify-center mx-auto text-text-tertiary opacity-30 shadow-inner">
-              <CalendarIcon className="w-10 h-10" />
+        {viewMode === 'list' ? (
+          filteredInterviews.length === 0 ? (
+            <div className="bg-white border border-dashed border-surface-200 rounded-[3rem] py-24 text-center space-y-6">
+              <div className="w-20 h-20 rounded-[2rem] bg-surface-50 border border-surface-200 flex items-center justify-center mx-auto text-text-tertiary opacity-30 shadow-inner">
+                <CalendarIcon className="w-10 h-10" />
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-2xl font-black text-brand-dark tracking-tight">Timeline Clear.</h3>
+                <p className="text-text-secondary font-bold max-w-sm mx-auto opacity-70">Initialize your first interview protocol to begin synchronization.</p>
+              </div>
+              <button 
+                onClick={() => setShowCreateModal(true)}
+                className="text-sm font-black text-brand-blue uppercase tracking-widest hover:underline"
+              >
+                Schedule Session →
+              </button>
             </div>
-            <div className="space-y-2">
-              <h3 className="text-2xl font-black text-brand-dark tracking-tight">Timeline Clear.</h3>
-              <p className="text-text-secondary font-bold max-w-sm mx-auto opacity-70">Initialize your first interview protocol to begin synchronization.</p>
-            </div>
-            <button 
-              onClick={() => setShowCreateModal(true)}
-              className="text-sm font-black text-brand-blue uppercase tracking-widest hover:underline"
-            >
-              Schedule Session →
-            </button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 gap-6">
-            {filteredInterviews.map((interview) => {
-              const typeConfig = INTERVIEW_TYPES.find(t => t.value === interview.type);
-              const statusConfig = STATUS_CONFIG[interview.status];
-              const isToday = new Date(interview.scheduledDate).toDateString() === new Date().toDateString();
+          ) : (
+            <div className="grid grid-cols-1 gap-6">
+              {filteredInterviews.map((interview) => {
+                const typeConfig = INTERVIEW_TYPES.find(t => t.value === interview.type);
+                const statusConfig = STATUS_CONFIG[interview.status];
+                const isToday = new Date(interview.scheduledDate).toDateString() === new Date().toDateString();
 
-              return (
-                <motion.div
-                  layout
-                  key={interview.id}
-                  className={`bg-white border-2 rounded-[2rem] p-8 shadow-sm group hover:shadow-xl transition-all duration-500 relative overflow-hidden ${
-                    isToday ? 'border-brand-blue/30 bg-brand-blue/[0.01]' : 'border-surface-200 hover:border-brand-blue/20'
-                  }`}
-                >
-                  {isToday && <div className="absolute top-0 left-0 bottom-0 w-1.5 bg-brand-blue" />}
-                  
-                  <div className="flex flex-col lg:flex-row gap-10">
-                    <div className="flex-1 space-y-6">
-                      <div className="flex items-center gap-4">
-                        <div className={`w-14 h-14 rounded-2xl bg-surface-50 flex items-center justify-center border border-surface-200 group-hover:scale-110 group-hover:border-brand-blue/20 transition-all duration-500`}>
-                          {typeConfig && <typeConfig.icon className="w-7 h-7 text-brand-blue opacity-70 group-hover:opacity-100" />}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <h3 className="text-2xl font-black text-brand-dark tracking-tight group-hover:text-brand-blue transition-colors truncate">
-                            {interview.jobTitle} <span className="text-text-tertiary mx-2">/</span> {typeConfig?.label}
-                          </h3>
-                          <p className="text-[11px] font-black text-text-tertiary uppercase tracking-widest mt-1">{interview.companyName} <span className="mx-2 opacity-30">—</span> Round {interview.round}</p>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-6 border-t border-surface-100">
-                        <div className="flex items-center gap-3">
-                          <CalendarIcon className="w-4 h-4 text-brand-blue" />
-                          <span className="text-xs font-bold text-text-secondary uppercase tracking-widest">{new Date(interview.scheduledDate).toLocaleDateString()}</span>
-                        </div>
-                        <div className="flex items-center gap-3 border-l-0 sm:border-l border-surface-100 sm:pl-6">
-                          <ClockIcon className="w-4 h-4 text-brand-orange" />
-                          <span className="text-xs font-bold text-text-secondary uppercase tracking-widest">{new Date(interview.scheduledDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-                        </div>
-                        <div className="flex items-center gap-3 border-l-0 sm:border-l border-surface-100 sm:pl-6">
-                          <div className="w-4 h-4 rounded-md border-2 border-brand-success flex items-center justify-center text-[8px] font-black text-brand-success italic">D</div>
-                          <span className="text-xs font-bold text-text-secondary uppercase tracking-widest">{interview.duration} Minutes</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="lg:w-64 flex flex-col justify-between gap-6">
-                      <div className="flex flex-wrap lg:justify-end gap-2">
-                        <div className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border ${statusConfig.color}`}>
-                          {statusConfig.label}
-                        </div>
-                        {isToday && (
-                          <div className="px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest bg-brand-success text-white shadow-lg shadow-brand-success/20">
-                            Active Session
+                return (
+                  <motion.div
+                    layout
+                    key={interview.id}
+                    className={`bg-white border-2 rounded-[2rem] p-8 shadow-sm group hover:shadow-xl transition-all duration-500 relative overflow-hidden ${
+                      isToday ? 'border-brand-blue/30 bg-brand-blue/[0.01]' : 'border-surface-200 hover:border-brand-blue/20'
+                    }`}
+                  >
+                    {isToday && <div className="absolute top-0 left-0 bottom-0 w-1.5 bg-brand-blue" />}
+                    
+                    <div className="flex flex-col lg:flex-row gap-10">
+                      <div className="flex-1 space-y-6">
+                        <div className="flex items-center gap-4">
+                          <div className={`w-14 h-14 rounded-2xl bg-surface-50 flex items-center justify-center border border-surface-200 group-hover:scale-110 group-hover:border-brand-blue/20 transition-all duration-500`}>
+                            {typeConfig && <typeConfig.icon className="w-7 h-7 text-brand-blue opacity-70 group-hover:opacity-100" />}
                           </div>
-                        )}
+                          <div className="min-w-0 flex-1">
+                            <h3 className="text-2xl font-black text-brand-dark tracking-tight group-hover:text-brand-blue transition-colors truncate">
+                              {interview.jobTitle} <span className="text-text-tertiary mx-2">/</span> {typeConfig?.label}
+                            </h3>
+                            <p className="text-[11px] font-black text-text-tertiary uppercase tracking-widest mt-1">{interview.companyName} <span className="mx-2 opacity-30">—</span> Round {interview.round}</p>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-6 border-t border-surface-100">
+                          <div className="flex items-center gap-3">
+                            <CalendarIcon className="w-4 h-4 text-brand-blue" />
+                            <span className="text-xs font-bold text-text-secondary uppercase tracking-widest">{new Date(interview.scheduledDate).toLocaleDateString()}</span>
+                          </div>
+                          <div className="flex items-center gap-3 border-l-0 sm:border-l border-surface-100 sm:pl-6">
+                            <ClockIcon className="w-4 h-4 text-brand-orange" />
+                            <span className="text-xs font-bold text-text-secondary uppercase tracking-widest">{new Date(interview.scheduledDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                          </div>
+                          <div className="flex items-center gap-3 border-l-0 sm:border-l border-surface-100 sm:pl-6">
+                            <div className="w-4 h-4 rounded-md border-2 border-brand-success flex items-center justify-center text-[8px] font-black text-brand-success italic">D</div>
+                            <span className="text-xs font-bold text-text-secondary uppercase tracking-widest">{interview.duration} Minutes</span>
+                          </div>
+                        </div>
                       </div>
 
-                      <div className="flex lg:justify-end gap-3">
-                        {interview.status === 'scheduled' && (
+                      <div className="lg:w-64 flex flex-col justify-between gap-6">
+                        <div className="flex flex-wrap lg:justify-end gap-2">
+                          <div className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border ${statusConfig.color}`}>
+                            {statusConfig.label}
+                          </div>
+                          {isToday && (
+                            <div className="px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest bg-brand-success text-white shadow-lg shadow-brand-success/20">
+                              Active Session
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex lg:justify-end gap-3">
+                          {interview.status === 'scheduled' && (
+                            <button
+                              onClick={() => updateInterviewStatus(interview.id, 'completed')}
+                              className="p-3 bg-surface-50 border border-surface-200 rounded-xl text-text-tertiary hover:text-brand-success hover:bg-white hover:border-brand-success/20 transition-all shadow-sm"
+                              title="Log Success"
+                            >
+                              <CheckCircleIcon className="w-5 h-5" />
+                            </button>
+                          )}
                           <button
-                            onClick={() => updateInterviewStatus(interview.id, 'completed')}
-                            className="p-3 bg-surface-50 border border-surface-200 rounded-xl text-text-tertiary hover:text-brand-success hover:bg-white hover:border-brand-success/20 transition-all shadow-sm"
-                            title="Log Success"
+                            onClick={() => setSelectedInterview(interview)}
+                            className="p-3 bg-surface-50 border border-surface-200 rounded-xl text-text-tertiary hover:text-brand-blue hover:bg-white hover:border-brand-blue/20 transition-all shadow-sm"
+                            title="Technical Parameters"
                           >
-                            <CheckCircleIcon className="w-5 h-5" />
+                            <PencilIcon className="w-5 h-5" />
                           </button>
-                        )}
-                        <button
-                          onClick={() => setSelectedInterview(interview)}
-                          className="p-3 bg-surface-50 border border-surface-200 rounded-xl text-text-tertiary hover:text-brand-blue hover:bg-white hover:border-brand-blue/20 transition-all shadow-sm"
-                          title="Technical Parameters"
-                        >
-                          <PencilIcon className="w-5 h-5" />
-                        </button>
-                        {interview.meetingLink && (
-                          <a
-                            href={interview.meetingLink}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-2 px-6 py-3 bg-brand-dark text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg hover:bg-slate-800 transition-all"
-                          >
-                            Join Terminal
-                          </a>
-                        )}
+                          {interview.meetingLink && (
+                            <a
+                              href={interview.meetingLink}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2 px-6 py-3 bg-brand-dark text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg hover:bg-slate-800 transition-all"
+                            >
+                              Join Terminal
+                            </a>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </motion.div>
-              );
-            })}
+                  </motion.div>
+                );
+              })}
+            </div>
+          )
+        ) : (
+          <div className="bg-white border border-surface-200 rounded-[3rem] p-10 shadow-sm overflow-hidden relative">
+            <div className="absolute inset-0 bg-[radial-gradient(#3b82f6_1px,transparent_1px)] [background-size:32px_32px] opacity-[0.02]" />
+            <div className="relative z-10">
+              <CalendarGridView interviews={filteredInterviews} onSelectInterview={setSelectedInterview} />
+            </div>
           </div>
         )}
       </div>

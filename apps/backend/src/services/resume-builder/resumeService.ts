@@ -4,7 +4,7 @@ import { redisClient } from '../../config/redis';
 import { templateRenderer } from './templateRenderer';
 import mongoose from 'mongoose';
 import puppeteer from 'puppeteer';
-import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
+import { PDFDocument, rgb, StandardFonts, PDFName, PDFString } from 'pdf-lib';
 import QRCode from 'qrcode';
 import path from 'path';
 import fs from 'fs/promises';
@@ -1461,10 +1461,11 @@ export class ResumeService {
       pdfDoc.setTitle(`Resume Tracked - ${trackingUrl.split('/').pop()}`);
       
       const footerText = options?.watermarkText || `VERIFIED AUTHENTIC: ${trackingUrl}`;
+      const showQrCode = options?.showQrCode !== false; // Default to true
       
       // 2. Generate QR Code if requested
       let qrImageEmbed = null;
-      if (options?.showQrCode) {
+      if (showQrCode) {
         const qrCodeDataUrl = await QRCode.toDataURL(trackingUrl, { margin: 1, width: 100 });
         const qrImageBytes = Buffer.from(qrCodeDataUrl.split(',')[1], 'base64');
         qrImageEmbed = await pdfDoc.embedPng(qrImageBytes);
@@ -1492,10 +1493,33 @@ export class ResumeService {
           color: rgb(0.1, 0.4, 0.8), 
         });
         
+        // Add Link Annotation over the footer
+        const linkAnnotation = pdfDoc.context.register(
+          pdfDoc.context.obj({
+            Type: 'Annot',
+            Subtype: 'Link',
+            Rect: [0, 0, width, 30],
+            Border: [0, 0, 0],
+            C: [0, 0, 1],
+            A: {
+              Type: 'Action',
+              S: 'URI',
+              URI: PDFString.of(trackingUrl),
+            },
+          }),
+        );
+
+        let existingAnnots = page.node.Annots();
+        if (!existingAnnots) {
+            existingAnnots = pdfDoc.context.obj([]);
+            page.node.set(PDFName.of('Annots'), existingAnnots);
+        }
+        existingAnnots.push(linkAnnotation);
+        
         // Add QR Code if available (Bottom Right)
         if (qrImageEmbed) {
           page.drawImage(qrImageEmbed, {
-            x: width - 70,
+            x: width - 60,
             y: 5,
             width: 20,
             height: 20,
@@ -1508,17 +1532,6 @@ export class ResumeService {
           end: { x: width - 40, y: 22 },
           thickness: 0.3,
           color: rgb(0.8, 0.8, 0.8),
-        });
-
-        // Hidden tracking pixel (tiny white dot on white background)
-        // Some PDF viewers might trigger a network request if this was an external image,
-        // but for standard PDFs, we rely on the link.
-        page.drawCircle({
-          x: 1,
-          y: 1,
-          size: 0.1,
-          color: rgb(1, 1, 1),
-          opacity: 0.01
         });
       }
       

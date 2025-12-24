@@ -2,49 +2,28 @@ import React, { useState, useEffect } from 'react';
 import {
   StarIcon,
   CheckIcon,
-  XMarkIcon,
-  ShieldCheckIcon,
-  BoltIcon,
   SparklesIcon,
-  ArrowRightIcon,
   CurrencyDollarIcon,
   MapPinIcon,
-  InformationCircleIcon,
-  ClockIcon,
-  GlobeAltIcon,
   LockClosedIcon,
-  FireIcon,
   RocketLaunchIcon,
-  HeartIcon,
-  CommandLineIcon,
-  CpuChipIcon,
-  ChevronRightIcon,
-  ChartBarIcon,
-  CheckCircleIcon
+  BoltIcon,
+  DocumentTextIcon,
+  CreditCardIcon,
+  BuildingOfficeIcon
 } from '@heroicons/react/24/outline';
-import { CheckIcon as CheckIconSolid, StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
+import { CheckIcon as CheckIconSolid } from '@heroicons/react/24/solid';
 import { toast } from 'sonner';
 import { useAuthStore } from '../../stores/authStore';
 import { locationCurrencyService, PricingData } from '../../services/locationCurrencyService';
 import { paystackService } from '../../services/paystackService';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 export default function EnterpriseUpgrade() {
   const [loading, setLoading] = useState(true);
   const [pricing, setPricing] = useState<PricingData | null>(null);
-  const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('yearly');
   const [processing, setProcessing] = useState(false);
-  const [locationDetecting, setLocationDetecting] = useState(true);
   const { user, isAuthenticated, accessToken } = useAuthStore();
-
-  const enterpriseFeatures = [
-    { icon: <RocketLaunchIcon />, title: 'Unlimited AI Generation', desc: 'Continuous optimization logic' },
-    { icon: <SparklesIcon />, title: 'Advanced Semantic Sync', desc: 'Deep ATS matching protocols' },
-    { icon: <BoltIcon />, title: 'Real-time Career Coach', desc: 'Cognitive trajectory planning' },
-    { icon: <ShieldCheckIcon />, title: 'Encryption Tier-1', desc: 'Institutional data protection' },
-    { icon: <GlobeAltIcon />, title: 'Global Market Grid', desc: 'Direct node scraping access' },
-    { icon: <ChartBarIcon />, title: 'Institutional Analytics', desc: 'Success delta visualization' }
-  ];
 
   useEffect(() => {
     fetchPricingData();
@@ -55,21 +34,27 @@ export default function EnterpriseUpgrade() {
       setLoading(true);
       const pricingData = await locationCurrencyService.calculatePricing();
       setPricing(pricingData);
-      toast.success(`Node Identified: ${pricingData.location.country}`);
     } catch (error) {
       toast.error('Failed to load local pricing.');
     } finally {
       setLoading(false);
-      setLocationDetecting(false);
     }
   };
 
-  const handleUpgrade = async () => {
+  const handlePurchase = async (type: 'subscription' | 'credits', planId: string, amount: number, description: string) => {
     if (!pricing || !user?.email || !isAuthenticated || !accessToken) return;
     try {
       setProcessing(true);
-      const amount = selectedPlan === 'monthly' ? pricing.localMonthly : pricing.localYearly;
-      const response = await paystackService.processEnterpriseUpgrade(selectedPlan, amount, pricing.currency, user.email, pricing.location);
+      
+      // Pass metadata to identify if it's a subscription or credit purchase
+      const response = await paystackService.processEnterpriseUpgrade(
+        planId, 
+        amount, 
+        pricing.currency, 
+        user.email, 
+        pricing.location
+      );
+      
       window.location.href = `/dashboard/upgrade/success?reference=${response.reference}`;
     } catch (error: any) {
       if (error.message !== 'Payment cancelled by user') toast.error('Transaction failed.');
@@ -92,8 +77,22 @@ export default function EnterpriseUpgrade() {
 
   if (!pricing) return null;
 
+  // Calculate local prices for credit packs based on base ZAR rates
+  // 5 Credits = R50 (~$2.70), 15 Credits = R120 (~$6.50), 50 Credits = R350 (~$19)
+  // We'll use the currency ratio from the service if available, or rough estimates
+  const getPrice = (zarPrice: number) => {
+    if (pricing.currency === 'ZAR') return zarPrice;
+    return Math.ceil(zarPrice / 18); // Rough conversion to USD/EUR if not ZAR
+  };
+
+  const creditPacks = [
+    { credits: 5, price: getPrice(50), label: "Starter Pack", desc: "Perfect for a single application." },
+    { credits: 15, price: getPrice(120), label: "Career Pack", desc: "Best value for active job seekers.", popular: true },
+    { credits: 50, price: getPrice(350), label: "Power Pack", desc: "For serious career pivots." }
+  ];
+
   return (
-    <div className="max-w-6xl mx-auto space-y-12 pb-20 animate-slide-up-soft relative">
+    <div className="max-w-6xl mx-auto space-y-16 pb-20 animate-slide-up-soft relative">
       {/* Background Glow */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[600px] pointer-events-none -z-10">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-brand-blue/[0.02] rounded-full blur-[140px]" />
@@ -102,155 +101,169 @@ export default function EnterpriseUpgrade() {
       {/* --- HEADER --- */}
       <div className="text-center space-y-6 max-w-3xl mx-auto pt-10">
         <div className="inline-flex items-center gap-3 px-5 py-2 rounded-full bg-white border border-surface-200 text-brand-blue font-black uppercase tracking-[0.3em] text-[10px] shadow-sm shadow-brand-blue/5">
-          <StarIconSolid className="w-4 h-4 animate-pulse" />
-          Enterprise Deployment Layer
+          <RocketLaunchIcon className="w-4 h-4 animate-pulse" />
+          Career Acceleration
         </div>
         <h1 className="text-5xl md:text-7xl font-display font-black text-brand-dark tracking-tighter leading-none">
-          Scale Your <span className="text-brand-blue">Impact.</span>
+          Invest in Your <span className="text-brand-blue">Future.</span>
         </h1>
         <p className="text-xl text-text-secondary font-bold opacity-80 leading-relaxed">
-          Initialize the complete career engineering stack. 
-          Unlimited deployments, institutional intelligence, and real-time trajectory optimization.
+          Flexible options designed for your career stage. Pay per document or unlock full access.
         </p>
       </div>
 
       {/* --- LOCATION CONSOLE --- */}
-      <div className="bg-white border border-surface-200 p-6 rounded-[2rem] shadow-sm flex flex-col md:flex-row items-center justify-center gap-10">
+      <div className="bg-white border border-surface-200 p-6 rounded-[2rem] shadow-sm flex flex-col md:flex-row items-center justify-center gap-10 max-w-2xl mx-auto">
         <div className="flex items-center gap-3">
           <MapPinIcon className="w-5 h-5 text-brand-blue opacity-60" />
-          <span className="text-xs font-black text-brand-dark uppercase tracking-widest">{pricing.location.country} Node</span>
+          <span className="text-xs font-black text-brand-dark uppercase tracking-widest">{pricing.location.country} Pricing</span>
         </div>
         <div className="w-px h-4 bg-surface-200 hidden md:block" />
         <div className="flex items-center gap-3">
           <CurrencyDollarIcon className="w-5 h-5 text-brand-success opacity-60" />
-          <span className="text-xs font-black text-brand-dark uppercase tracking-widest">Active Currency: {pricing.currency}</span>
+          <span className="text-xs font-black text-brand-dark uppercase tracking-widest">Currency: {pricing.currency}</span>
         </div>
         <div className="w-px h-4 bg-surface-200 hidden md:block" />
         <div className="flex items-center gap-3">
           <LockClosedIcon className="w-5 h-5 text-text-tertiary opacity-60" />
-          <span className="text-xs font-black text-text-tertiary uppercase tracking-widest">SSL Encrypted Terminal</span>
+          <span className="text-xs font-black text-text-tertiary uppercase tracking-widest">Secure Payment</span>
         </div>
       </div>
 
-      {/* --- PRICING ARCHITECTURE --- */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-        {/* Monthly */}
-        <div 
-          onClick={() => setSelectedPlan('monthly')}
-          className={`cursor-pointer group relative p-1 transition-all duration-500 rounded-[3rem] ${selectedPlan === 'monthly' ? 'bg-surface-200 shadow-2xl' : 'hover:bg-surface-100'}`}
-        >
-          <div className="bg-white p-12 rounded-[2.85rem] border border-surface-200 h-full flex flex-col items-center text-center space-y-8 relative overflow-hidden">
-            <div className={`absolute top-0 left-0 w-full h-1 transition-all duration-500 ${selectedPlan === 'monthly' ? 'bg-brand-blue' : 'bg-transparent'}`} />
+      {/* --- SUBSCRIPTION OPTIONS --- */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+        {/* Free Tier */}
+        <div className="bg-white p-10 rounded-[3rem] border border-surface-200 relative overflow-hidden group hover:border-surface-300 transition-all">
+          <div className="relative z-10 space-y-8">
             <div>
-              <p className="text-[10px] font-black text-text-tertiary uppercase tracking-[0.3em] mb-4">Standard Protocol</p>
-              <h3 className="text-2xl font-black text-brand-dark">Monthly Sync</h3>
+              <h3 className="text-2xl font-black text-brand-dark mb-2">Basic Access</h3>
+              <p className="text-sm font-bold text-text-tertiary uppercase tracking-widest">Zero Cost</p>
             </div>
-            <div className="space-y-1">
-              <div className="text-6xl font-black text-brand-dark tracking-tighter">
-                {pricing.currencySymbol}{pricing.localMonthly}
-              </div>
-              <p className="text-[10px] font-black text-text-tertiary uppercase tracking-widest">Per 30-Day Cycle</p>
+            <div className="text-5xl font-black text-text-secondary tracking-tighter">
+              Free
             </div>
-            <button className={`w-full py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-xs transition-all ${selectedPlan === 'monthly' ? 'bg-brand-blue text-white shadow-xl shadow-brand-blue/20' : 'bg-surface-50 text-text-tertiary border border-surface-200'}`}>
-              {selectedPlan === 'monthly' ? 'Initialized' : 'Select Protocol'}
+            <ul className="space-y-4">
+              {[
+                '1 Basic Resume Template',
+                'Manual Content Editing',
+                'Limited AI Summary (1/mo)',
+                'Watermarked PDF Export'
+              ].map((item, i) => (
+                <li key={i} className="flex items-center gap-3 text-sm font-bold text-text-secondary">
+                  <CheckIcon className="w-5 h-5 text-text-tertiary" />
+                  {item}
+                </li>
+              ))}
+            </ul>
+            <button disabled className="w-full py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-xs bg-surface-100 text-text-tertiary cursor-default">
+              Current Plan
             </button>
           </div>
         </div>
 
-        {/* Yearly */}
-        <div 
-          onClick={() => setSelectedPlan('yearly')}
-          className={`cursor-pointer group relative p-1 transition-all duration-500 rounded-[3.5rem] ${selectedPlan === 'yearly' ? 'bg-brand-blue shadow-[0_40px_80px_-20px_rgba(26,145,240,0.3)] scale-[1.02]' : 'hover:bg-brand-blue/10 shadow-xl'}`}
-        >
-          <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-20">
-            <div className="bg-brand-orange text-white text-[9px] font-black px-4 py-1.5 rounded-full shadow-lg uppercase tracking-widest border-2 border-white">Maximum Yield</div>
-          </div>
-          <div className="bg-white p-12 rounded-[3.35rem] border border-surface-200 h-full flex flex-col items-center text-center space-y-8 relative overflow-hidden">
-            <div className="absolute inset-0 bg-brand-blue/[0.02] pointer-events-none" />
-            <div>
-              <p className="text-[10px] font-black text-brand-blue uppercase tracking-[0.3em] mb-4">Priority Architecture</p>
-              <h3 className="text-2xl font-black text-brand-dark">Annual Deployment</h3>
-            </div>
-            <div className="space-y-1">
-              <div className="text-6xl font-black text-brand-blue tracking-tighter">
-                {pricing.currencySymbol}{pricing.localYearly}
+        {/* Pro Subscription */}
+        <div className="bg-brand-dark p-10 rounded-[3rem] border border-brand-dark relative overflow-hidden group shadow-2xl">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(26,145,240,0.2),transparent_60%)]" />
+          <div className="relative z-10 space-y-8 text-white">
+            <div className="flex justify-between items-start">
+              <div>
+                <h3 className="text-2xl font-black mb-2">Career Boost</h3>
+                <p className="text-sm font-bold text-brand-blue uppercase tracking-widest">Monthly Subscription</p>
               </div>
-              <p className="text-[10px] font-black text-text-tertiary uppercase tracking-widest">Per 365-Day Cycle</p>
-              <div className="mt-4 px-4 py-1.5 bg-brand-success/10 text-brand-success text-[10px] font-black uppercase tracking-widest rounded-full border border-brand-success/20">
-                Save {pricing.savingsPercentage}% Logic Overhead
-              </div>
+              <SparklesIcon className="w-8 h-8 text-brand-blue" />
             </div>
-            <button className={`w-full py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-xs transition-all ${selectedPlan === 'yearly' ? 'bg-brand-blue text-white shadow-xl shadow-brand-blue/30' : 'bg-surface-50 text-text-tertiary border border-surface-200'}`}>
-              {selectedPlan === 'yearly' ? 'System Primed' : 'Select Protocol'}
+            <div className="text-5xl font-black tracking-tighter">
+              {pricing.currencySymbol}{pricing.localMonthly}<span className="text-lg font-bold text-white/40">/mo</span>
+            </div>
+            <ul className="space-y-4">
+              {[
+                'Unlimited AI Resume Tailoring',
+                'Custom Cover Letters',
+                'ATS Keyword Optimization',
+                'Job Matching Analysis',
+                'No Watermarks'
+              ].map((item, i) => (
+                <li key={i} className="flex items-center gap-3 text-sm font-bold">
+                  <CheckIcon className="w-5 h-5 text-brand-success" />
+                  {item}
+                </li>
+              ))}
+            </ul>
+            <button 
+              onClick={() => handlePurchase('subscription', 'monthly', pricing.localMonthly, 'Monthly Career Boost')}
+              disabled={processing}
+              className="w-full py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-xs bg-brand-blue text-white hover:bg-blue-600 transition-all shadow-lg shadow-brand-blue/20"
+            >
+              {processing ? 'Processing...' : 'Activate Boost'}
             </button>
           </div>
         </div>
       </div>
 
-      {/* --- FEATURE MATRIX --- */}
-      <div className="bg-white border border-surface-200 rounded-[3rem] p-12 md:p-20 shadow-sm relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:24px_24px] opacity-[0.15]" />
-        
-        <div className="relative z-10 grid grid-cols-1 lg:grid-cols-3 gap-12">
-          <div className="lg:col-span-1 space-y-6">
-            <h2 className="text-3xl font-black text-brand-dark tracking-tight leading-tight">Institutional <br />Capabilities.</h2>
-            <p className="text-base font-bold text-text-secondary opacity-80 leading-relaxed">
-              Unlock the core AI infrastructure designed for high-performance career scale.
-            </p>
-            <div className="pt-6">
-              <div className="flex items-center gap-3 text-brand-success">
-                <CheckCircleIcon className="w-5 h-5" />
-                <span className="text-[10px] font-black uppercase tracking-widest">Verified System Integrity</span>
-              </div>
-            </div>
-          </div>
-          
-          <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
-            {enterpriseFeatures.map((f, i) => (
-              <div key={i} className="p-6 bg-surface-50 border border-surface-200 rounded-[2rem] group hover:border-brand-blue/30 hover:bg-white transition-all duration-500 shadow-sm hover:shadow-lg">
-                <div className="w-10 h-10 rounded-xl bg-white border border-surface-200 flex items-center justify-center text-brand-blue mb-4 shadow-inner group-hover:scale-110 group-hover:rotate-3 transition-all">
-                  {React.cloneElement(f.icon as any, { className: "w-5 h-5" })}
+      {/* --- CREDIT PACKS --- */}
+      <div className="max-w-5xl mx-auto pt-10 border-t border-surface-200">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-black text-brand-dark tracking-tight mb-4">Pay As You Go.</h2>
+          <p className="text-text-secondary font-bold max-w-xl mx-auto">
+            Prefer no commitment? Buy credits to use AI features whenever you need them.
+            <br /><span className="text-brand-blue">1 Credit = 1 AI Action (Resume or Cover Letter)</span>
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {creditPacks.map((pack, i) => (
+            <div key={i} className={`bg-white border rounded-[2.5rem] p-8 relative overflow-hidden transition-all duration-300 hover:shadow-xl ${pack.popular ? 'border-brand-blue/30 shadow-lg scale-105 z-10' : 'border-surface-200 hover:border-brand-blue/20'}`}>
+              {pack.popular && (
+                <div className="absolute top-0 left-0 w-full bg-brand-blue text-white text-[9px] font-black uppercase tracking-widest text-center py-1.5">
+                  Most Popular
                 </div>
-                <h4 className="text-base font-black text-brand-dark tracking-tight mb-1">{f.title}</h4>
-                <p className="text-[11px] font-bold text-text-secondary opacity-70 leading-relaxed">{f.desc}</p>
+              )}
+              <div className="space-y-6 mt-4">
+                <div className="w-12 h-12 rounded-xl bg-brand-blue/5 flex items-center justify-center text-brand-blue mb-4">
+                  <BoltIcon className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-black text-brand-dark">{pack.label}</h3>
+                  <p className="text-xs font-bold text-text-tertiary mt-1">{pack.desc}</p>
+                </div>
+                <div className="text-3xl font-black text-brand-dark tracking-tighter">
+                  {pricing.currencySymbol}{pack.price}
+                </div>
+                <div className="pt-4 border-t border-surface-100">
+                  <div className="flex items-center justify-between text-xs font-bold mb-4">
+                    <span className="text-text-secondary">{pack.credits} AI Credits</span>
+                    <span className="text-brand-success">{(pack.price / pack.credits).toFixed(0)} {pricing.currency}/credit</span>
+                  </div>
+                  <button 
+                    onClick={() => handlePurchase('credits', `credits-${pack.credits}`, pack.price, `${pack.credits} AI Credits`)}
+                    disabled={processing}
+                    className={`w-full py-3 rounded-xl font-black uppercase tracking-[0.15em] text-[10px] transition-all ${
+                      pack.popular 
+                        ? 'bg-brand-dark text-white hover:bg-slate-800' 
+                        : 'bg-surface-50 text-brand-dark hover:bg-surface-100 border border-surface-200'
+                    }`}
+                  >
+                    Buy Pack
+                  </button>
+                </div>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* --- FINAL ACTION --- */}
-      <div className="max-w-4xl mx-auto">
-        <button
-          onClick={handleUpgrade}
-          disabled={processing}
-          className="w-full bg-brand-dark text-white p-8 rounded-[2rem] flex items-center justify-between group shadow-2xl hover:bg-slate-800 transition-all active:scale-[0.99] disabled:opacity-50"
-        >
-          <div className="flex items-center gap-6">
-            <div className="w-16 h-16 rounded-2xl bg-brand-blue flex items-center justify-center text-white shadow-lg group-hover:scale-110 group-hover:rotate-6 transition-transform">
-              <RocketLaunchIcon className="w-8 h-8" />
-            </div>
-            <div className="text-left">
-              <p className="text-[10px] font-black text-brand-blue uppercase tracking-[0.3em] mb-1">Execute Protocol</p>
-              <h3 className="text-3xl font-black tracking-tight">Deploy Enterprise.</h3>
-            </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="text-right hidden sm:block">
-              <p className="text-[10px] font-black text-surface-400 uppercase tracking-widest leading-none mb-1">Secure Transaction</p>
-              <p className="text-xl font-black text-brand-blue tracking-tighter">
-                {pricing.currencySymbol}{selectedPlan === 'monthly' ? pricing.localMonthly : pricing.localYearly}
-              </p>
-            </div>
-            <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-brand-blue group-hover:border-brand-blue transition-all">
-              {processing ? <div className="w-5 h-5 border-3 border-white/30 border-t-white rounded-full animate-spin" /> : <ChevronRightIcon className="w-6 h-6 stroke-[3]" />}
-            </div>
-          </div>
-        </button>
-        <div className="mt-8 flex justify-center gap-8 text-[10px] font-black text-text-tertiary uppercase tracking-widest">
-          <div className="flex items-center gap-2"><div className="w-1 h-1 rounded-full bg-brand-success" /> No Hidden Nodes</div>
-          <div className="flex items-center gap-2"><div className="w-1 h-1 rounded-full bg-brand-success" /> 30-Day Satisfaction Delta</div>
-          <div className="flex items-center gap-2"><div className="w-1 h-1 rounded-full bg-brand-success" /> Abort Anytime</div>
+      {/* --- INSTITUTIONAL --- */}
+      <div className="max-w-4xl mx-auto mt-20 bg-surface-50 border border-surface-200 rounded-[3rem] p-10 md:p-12 text-center relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(#3b82f6_1px,transparent_1px)] [background-size:24px_24px] opacity-[0.05]" />
+        <div className="relative z-10 space-y-6">
+          <BuildingOfficeIcon className="w-12 h-12 text-text-tertiary mx-auto opacity-50" />
+          <h3 className="text-2xl font-black text-brand-dark">Are you an Institution or Recruiter?</h3>
+          <p className="text-text-secondary font-bold max-w-lg mx-auto">
+            We offer bulk credit packages, white-label dashboards, and API access for colleges, NGOs, and recruitment agencies.
+          </p>
+          <button className="text-sm font-black text-brand-blue uppercase tracking-widest hover:underline flex items-center justify-center gap-2 mx-auto">
+            Contact Institutional Sales <RocketLaunchIcon className="w-4 h-4" />
+          </button>
         </div>
       </div>
     </div>

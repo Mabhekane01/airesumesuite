@@ -2,7 +2,7 @@ import { Router, Response, NextFunction } from 'express';
 import { body, param, query } from 'express-validator';
 import { jobApplicationController } from '../controllers/jobApplicationController';
 import { authMiddleware as authenticateToken, AuthenticatedRequest, requireSubscription } from '../middleware/auth';
-import { requireEnterpriseSubscription, trackFeatureUsage, subscriptionRateLimit } from '../middleware/subscriptionValidation';
+import { trackFeatureUsage, requireFeatureAccess } from '../middleware/subscriptionValidation';
 
 const router: Router = Router();
 
@@ -444,8 +444,7 @@ router.post(
 // Calculate AI match score
 router.post(
   '/:applicationId/match-score',
-  requireEnterpriseSubscription,
-  subscriptionRateLimit('ai-job-matching'),
+  requireFeatureAccess('ai-job-matching'),
   trackFeatureUsage('ai-job-matching'),
   mongoIdValidation,
   (req: AuthenticatedRequest, res: Response) => jobApplicationController.calculateMatchScore(req, res)
@@ -454,8 +453,7 @@ router.post(
 // Batch calculate match scores for applications with missing scores
 router.post(
   '/batch/match-scores',
-  requireEnterpriseSubscription,
-  subscriptionRateLimit('ai-job-matching'),
+  requireFeatureAccess('ai-job-matching'),
   trackFeatureUsage('ai-batch-matching'),
   query('limit').optional().isInt({ min: 1, max: 50 }).withMessage('Limit must be between 1 and 50'),
   (req: AuthenticatedRequest, res: Response) => jobApplicationController.batchCalculateMatchScores(req, res)
@@ -464,6 +462,7 @@ router.post(
 // Get job match analysis
 router.get(
   '/:applicationId/analysis',
+  requireFeatureAccess('ai-job-matching'),
   mongoIdValidation,
   (req: AuthenticatedRequest, res: Response) => jobApplicationController.getJobMatchAnalysis(req, res)
 );
@@ -471,8 +470,7 @@ router.get(
 // Get interview prep
 router.get(
   '/:applicationId/interview-prep',
-  requireEnterpriseSubscription,
-  subscriptionRateLimit('ai-interview-prep'),
+  requireFeatureAccess('ai-interview-prep'),
   trackFeatureUsage('ai-interview-prep'),
   mongoIdValidation,
   query('interviewType')

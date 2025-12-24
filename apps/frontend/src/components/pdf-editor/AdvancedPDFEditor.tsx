@@ -5,8 +5,12 @@ import {
   Upload, Save, Download, Type, Highlighter, MousePointer, 
   Hand, ZoomIn, ZoomOut, RotateCw, Move, Trash2, Edit3
 } from 'lucide-react';
+import { clsx } from 'clsx';
 import ErrorDisplay from './ErrorDisplay';
 import { parseApiError, handleApiError, validatePdfFile } from './utils/errorUtils';
+import RealTimeEditingEngine from './RealTimeEditingEngine';
+import ProfessionalToolbar from './ProfessionalToolbar';
+import EnterpriseFeatures from './EnterpriseFeatures';
 
 // Configure PDF.js worker
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
@@ -38,11 +42,7 @@ interface EditingState {
   tool: 'select' | 'text' | 'highlight' | 'move';
   activeChange: string | null;
   isEditing: boolean;
-} from 'lucide-react';
-import { clsx } from 'clsx';
-import RealTimeEditingEngine from './RealTimeEditingEngine';
-import ProfessionalToolbar from './ProfessionalToolbar';
-import EnterpriseFeatures from './EnterpriseFeatures';
+}
 
 interface PDFFile {
   file: File;

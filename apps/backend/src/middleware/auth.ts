@@ -99,6 +99,19 @@ export const requireSubscription = (tier: 'free' | 'premium' | 'enterprise') => 
       const requiredLevel = tierHierarchy[tier];
       const userLevel = tierHierarchy[userTier as keyof typeof tierHierarchy] || 0;
 
+      // Bypass for admins
+      if (req.user.role === 'admin') {
+        return next();
+      }
+
+      // Bypass for development environment
+      if (process.env.NODE_ENV !== 'production') {
+        if (userLevel < requiredLevel) {
+          console.log(`⚠️  DEV MODE: Bypassing subscription check for ${tier}. User tier: ${userTier}`);
+        }
+        return next();
+      }
+
       if (userLevel < requiredLevel) {
         return res.status(403).json({
           success: false,

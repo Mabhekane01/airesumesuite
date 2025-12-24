@@ -46,6 +46,7 @@ interface EnhancedResumePreviewProps {
   onResumeUpdate?: (updatedResume: Resume) => void;
   atsScore?: number;
   aiGenerated?: boolean;
+  readOnly?: boolean;
 }
 
 export default function EnhancedResumePreview({ 
@@ -57,7 +58,8 @@ export default function EnhancedResumePreview({
   onJobOptimization,
   onResumeUpdate,
   atsScore,
-  aiGenerated = false
+  aiGenerated = false,
+  readOnly = false
 }: EnhancedResumePreviewProps) {
   const { 
     aiData, 
@@ -108,32 +110,37 @@ export default function EnhancedResumePreview({
     }
   };
 
-  const tabs = [
+  const allTabs = [
     { id: 'preview', label: 'Architecture', icon: EyeIcon },
     { id: 'ai-insights', label: 'Intelligence', icon: SparklesIcon },
     { id: 'ats-analysis', label: 'Validation', icon: ShieldCheckIcon },
     { id: 'downloads', label: 'Deployment', icon: ArrowDownTrayIcon }
   ];
 
+  // Filter tabs based on readOnly prop
+  const tabs = readOnly ? allTabs.filter(t => t.id === 'preview') : allTabs;
+
   return (
     <div className="space-y-10">
       {/* --- TAB NAVIGATION --- */}
-      <div className="flex flex-wrap gap-2 bg-surface-50/80 backdrop-blur-md border border-surface-200 p-1.5 rounded-[2rem] shadow-inner max-w-fit mx-auto md:mx-0 relative z-20">
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id as any)}
-            className={`flex items-center gap-2.5 px-6 py-3.5 rounded-[1.7rem] text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 ${
-              activeTab === tab.id
-                ? 'bg-white text-brand-blue shadow-[0_4px_20px_-2px_rgba(0,0,0,0.1)] border border-surface-100 transform scale-105'
-                : 'text-text-tertiary hover:text-brand-dark hover:bg-white/60'
-            }`}
-          >
-            <tab.icon className={`w-4 h-4 ${activeTab === tab.id ? 'stroke-[2.5px]' : 'stroke-2'}`} />
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      {!readOnly && (
+        <div className="flex flex-wrap gap-2 bg-surface-50/80 backdrop-blur-md border border-surface-200 p-1.5 rounded-[2rem] shadow-inner max-w-fit mx-auto md:mx-0 relative z-20">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              className={`flex items-center gap-2.5 px-6 py-3.5 rounded-[1.7rem] text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 ${
+                activeTab === tab.id
+                  ? 'bg-white text-brand-blue shadow-[0_4px_20px_-2px_rgba(0,0,0,0.1)] border border-surface-100 transform scale-105'
+                  : 'text-text-tertiary hover:text-brand-dark hover:bg-white/60'
+              }`}
+            >
+              <tab.icon className={`w-4 h-4 ${activeTab === tab.id ? 'stroke-[2.5px]' : 'stroke-2'}`} />
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* --- TAB CONTENT AREA --- */}
       <div className="relative min-h-[600px]">
@@ -157,7 +164,7 @@ export default function EnhancedResumePreview({
                   className="w-full rounded-[2.5rem] shadow-2xl border border-surface-200 overflow-hidden bg-white"
                   onPdfGenerated={(url, blob) => setCachedPdf(url, generateResumeHash(), blob)}
                 />
-                {aiGenerated && (
+                {aiGenerated && !readOnly && (
                   <div className="absolute top-8 right-8 bg-white/80 backdrop-blur-md border border-brand-success/20 rounded-xl px-4 py-2.5 flex items-center gap-2.5 z-20 shadow-xl animate-pulse ring-1 ring-brand-success/10">
                     <SparklesIcon className="w-4 h-4 text-brand-success stroke-[2.5px]" />
                     <span className="text-[10px] font-black text-brand-success uppercase tracking-[0.2em]">Optimized Layer Active</span>
@@ -166,7 +173,7 @@ export default function EnhancedResumePreview({
               </div>
             )}
 
-            {activeTab === 'ai-insights' && (
+            {activeTab === 'ai-insights' && !readOnly && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="bg-white border border-surface-200 p-10 rounded-[3rem] shadow-lg space-y-10 relative overflow-hidden group hover:border-brand-blue/20 transition-colors duration-500">
                   <div className="absolute inset-0 bg-[radial-gradient(#3b82f6_1px,transparent_1px)] [background-size:24px_24px] opacity-[0.03]" />
@@ -238,7 +245,7 @@ export default function EnhancedResumePreview({
               </div>
             )}
 
-            {activeTab === 'ats-analysis' && (
+            {activeTab === 'ats-analysis' && !readOnly && (
               <div className="bg-white border border-surface-200 rounded-[3rem] p-12 md:p-24 shadow-lg relative overflow-hidden group">
                 <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:24px_24px] opacity-[0.2]" />
                 <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-brand-blue/5 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2" />
@@ -265,7 +272,7 @@ export default function EnhancedResumePreview({
               </div>
             )}
 
-            {activeTab === 'downloads' && (
+            {activeTab === 'downloads' && !readOnly && (
               <div className="bg-white border border-surface-200 rounded-[3rem] p-10 md:p-14 shadow-lg">
                 <ResumeDownloadManager 
                   resumeData={resume} 
@@ -279,38 +286,40 @@ export default function EnhancedResumePreview({
       </div>
 
       {/* --- QUICK ACTION BAR --- */}
-      <div className="bg-white border border-surface-200 p-6 rounded-[2.5rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] relative overflow-hidden group">
-        <div className="absolute inset-0 bg-brand-blue/[0.02] pointer-events-none group-hover:bg-brand-blue/[0.04] transition-colors duration-500" />
-        <div className="relative z-10 flex flex-col xl:flex-row items-center justify-between gap-8">
-          <div className="flex flex-wrap justify-center items-center gap-6">
-            <div className="flex items-center gap-3 px-5 py-2.5 bg-brand-success/5 border border-brand-success/10 rounded-2xl shadow-sm">
-              <CheckCircleIcon className="w-5 h-5 text-brand-success stroke-[2.5px]" />
-              <span className="text-[10px] font-black text-brand-dark uppercase tracking-[0.2em]">Logic Integrity Verified</span>
-            </div>
-            {currentAtsScore && (
-              <div className="flex items-center gap-3 px-5 py-2.5 bg-brand-blue/5 border border-brand-blue/10 rounded-2xl shadow-sm">
-                <ChartBarIcon className="w-5 h-5 text-brand-blue stroke-[2.5px]" />
-                <span className="text-[10px] font-black text-brand-dark uppercase tracking-[0.2em]">ATS INDEX: {currentAtsScore}%</span>
+      {!readOnly && (
+        <div className="bg-white border border-surface-200 p-6 rounded-[2.5rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] relative overflow-hidden group">
+          <div className="absolute inset-0 bg-brand-blue/[0.02] pointer-events-none group-hover:bg-brand-blue/[0.04] transition-colors duration-500" />
+          <div className="relative z-10 flex flex-col xl:flex-row items-center justify-between gap-8">
+            <div className="flex flex-wrap justify-center items-center gap-6">
+              <div className="flex items-center gap-3 px-5 py-2.5 bg-brand-success/5 border border-brand-success/10 rounded-2xl shadow-sm">
+                <CheckCircleIcon className="w-5 h-5 text-brand-success stroke-[2.5px]" />
+                <span className="text-[10px] font-black text-brand-dark uppercase tracking-[0.2em]">Logic Integrity Verified</span>
               </div>
-            )}
-          </div>
-          
-          <div className="flex flex-wrap justify-center items-center gap-4">
-            <button 
-              onClick={() => setActiveTab('downloads')}
-              className="px-8 py-3.5 rounded-xl border-2 border-surface-200 text-[10px] font-black uppercase tracking-[0.15em] text-brand-dark hover:border-brand-dark hover:bg-surface-50 transition-all shadow-sm active:scale-95"
-            >
-              Rapid Export
-            </button>
-            <button 
-              onClick={() => setActiveTab('ai-insights')}
-              className="btn-primary px-8 py-3.5 text-[10px] font-black uppercase tracking-[0.15em] shadow-xl shadow-brand-blue/20 active:scale-95 transition-all hover:-translate-y-1"
-            >
-              Initialize AI Layer
-            </button>
+              {currentAtsScore && (
+                <div className="flex items-center gap-3 px-5 py-2.5 bg-brand-blue/5 border border-brand-blue/10 rounded-2xl shadow-sm">
+                  <ChartBarIcon className="w-5 h-5 text-brand-blue stroke-[2.5px]" />
+                  <span className="text-[10px] font-black text-brand-dark uppercase tracking-[0.2em]">ATS INDEX: {currentAtsScore}%</span>
+                </div>
+              )}
+            </div>
+            
+            <div className="flex flex-wrap justify-center items-center gap-4">
+              <button 
+                onClick={() => setActiveTab('downloads')}
+                className="px-8 py-3.5 rounded-xl border-2 border-surface-200 text-[10px] font-black uppercase tracking-[0.15em] text-brand-dark hover:border-brand-dark hover:bg-surface-50 transition-all shadow-sm active:scale-95"
+              >
+                Rapid Export
+              </button>
+              <button 
+                onClick={() => setActiveTab('ai-insights')}
+                className="btn-primary px-8 py-3.5 text-[10px] font-black uppercase tracking-[0.15em] shadow-xl shadow-brand-blue/20 active:scale-95 transition-all hover:-translate-y-1"
+              >
+                Initialize AI Layer
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       <JobOptimizationModal
         isOpen={isJobOptimizationOpen}

@@ -101,6 +101,13 @@ const PublicJobView = () => {
   const [isResumeModalOpen, setIsResumeModalOpen] = useState(false);
 
   useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    if (searchParams.get('autoTrack') === 'true') {
+      setIsResumeModalOpen(true);
+    }
+  }, []);
+
+  useEffect(() => {
     const fetchJob = async () => {
       try {
         const response = await fetch(`${API_BASE}/api/v1/shared/job/${id}`);
@@ -123,6 +130,27 @@ const PublicJobView = () => {
 
   const handleApplyClick = () => {
     if (!job) return;
+
+    // Save to pending applications in localStorage so user can add it later if they return
+    const pendingApps = JSON.parse(localStorage.getItem('pendingJobApplications') || '[]');
+    const jobData = {
+      id: job._id || job.id,
+      title: job.title,
+      company: job.company,
+      location: job.location,
+      country: job.country,
+      description: job.description,
+      url: job.url,
+      timestamp: new Date().getTime()
+    };
+    
+    // Avoid duplicates
+    if (!pendingApps.find((a: any) => a.id === jobData.id)) {
+      pendingApps.push(jobData);
+      // Keep only last 5 pending apps
+      if (pendingApps.length > 5) pendingApps.shift();
+      localStorage.setItem('pendingJobApplications', JSON.stringify(pendingApps));
+    }
 
     if (trackApplication && !isAuthenticated) {
       toast.info('Please sign in to track this application', {
@@ -201,6 +229,11 @@ const PublicJobView = () => {
       });
 
       toast.success('Application added to tracker!');
+
+      // Remove from pending applications
+      const pendingApps = JSON.parse(localStorage.getItem('pendingJobApplications') || '[]');
+      const filteredApps = pendingApps.filter((a: any) => a.id !== (job._id || job.id));
+      localStorage.setItem('pendingJobApplications', JSON.stringify(filteredApps));
 
       // 4. Redirect to Job URL and then back home
       setTimeout(() => {

@@ -19,6 +19,8 @@ import { useAuthStore } from "../../stores/authStore";
 import { jobApplicationAPI, analyticsAPI } from "../../services/api";
 import { motion } from "framer-motion";
 
+import { PendingApplicationsWidget } from "./PendingApplicationsWidget";
+
 // Fetcher function for dashboard data
 const fetchDashboardData = async () => {
   const [statsRes, eventsRes, insightsRes] = await Promise.all([
@@ -203,6 +205,8 @@ export default function DashboardHome() {
           </div>
         </div>
       </motion.div>
+
+      <PendingApplicationsWidget />
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">

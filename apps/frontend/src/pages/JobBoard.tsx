@@ -4,7 +4,7 @@ import { useAuthStore } from '../stores/authStore';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MapPin, Briefcase, Building, Plus, Search, ExternalLink, RefreshCw, X, Globe, Cpu, Clock, ChevronRight, Trash2, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { locationService } from '../services/locationService';
 
 // --- Components ---
@@ -221,6 +221,7 @@ const SubmitJobModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
 const JobBoard = () => {
   const { jobs, pendingJobs, isLoading, fetchJobs, fetchPendingJobs, approveJob, deleteJob } = useJobBoardStore();
   const { user } = useAuthStore();
+  const location = useLocation();
   const [country, setCountry] = useState('');
   const [keyword, setKeyword] = useState('');
   const [filteredJobs, setFilteredJobs] = useState<any[]>([]);
@@ -229,6 +230,7 @@ const JobBoard = () => {
   const [activeTab, setActiveTab] = useState<'approved' | 'pending'>('approved');
 
   const isAdmin = user?.role === 'admin';
+  const isDashboard = location.pathname.startsWith('/dashboard');
 
   useEffect(() => {
     const detectAndFetch = async () => {
@@ -293,7 +295,7 @@ const JobBoard = () => {
     }
   };
 
-  return (
+  const boardContent = (
     <div className="w-full space-y-12 pb-24 animate-slide-up-soft">
       {/* --- HEADER --- */}
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 pb-6 border-b border-surface-200/60">
@@ -451,6 +453,14 @@ const JobBoard = () => {
       )}
 
       <SubmitJobModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+    </div>
+  );
+
+  return isDashboard ? (
+    boardContent
+  ) : (
+    <div className="max-w-[1600px] mx-auto px-6 sm:px-10 lg:px-12 py-20 relative z-10">
+      {boardContent}
     </div>
   );
 };

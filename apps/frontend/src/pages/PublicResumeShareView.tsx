@@ -63,7 +63,7 @@ const PublicResumeShareView = () => {
       <div className="min-h-screen flex items-center justify-center bg-[#FAFAFB]">
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 border-4 border-brand-blue/20 border-t-brand-blue rounded-full animate-spin" />
-          <p className="text-[10px] font-black text-brand-dark uppercase tracking-widest">Decrypting Share Node...</p>
+          <p className="text-[10px] font-black text-brand-dark uppercase tracking-widest">Loading Resume...</p>
         </div>
       </div>
     );
@@ -74,10 +74,10 @@ const PublicResumeShareView = () => {
       <div className="min-h-screen flex items-center justify-center bg-[#FAFAFB] p-6">
         <div className="bg-white border border-surface-200 rounded-[3rem] p-12 text-center max-w-lg shadow-xl">
           <AlertCircle size={48} className="text-brand-orange mx-auto mb-6" />
-          <h2 className="text-2xl font-black text-brand-dark mb-4 uppercase">Link Compromised.</h2>
+          <h2 className="text-2xl font-black text-brand-dark mb-4 uppercase">Link Unavailable.</h2>
           <p className="text-text-secondary font-bold mb-8">{error || 'This tracking node has been deactivated or expired.'}</p>
           <div className="p-6 bg-surface-50 rounded-2xl border border-surface-200 text-xs font-bold text-text-tertiary">
-            The institutional share link you are attempting to access is no longer broadcasting data.
+            The resume link you are attempting to access is no longer active.
           </div>
         </div>
       </div>
@@ -96,8 +96,8 @@ const PublicResumeShareView = () => {
             <div className="w-16 h-16 rounded-2xl bg-brand-blue/10 flex items-center justify-center text-brand-blue mx-auto">
               <ShieldCheck size={32} />
             </div>
-            <h2 className="text-2xl font-black text-brand-dark uppercase tracking-tighter">Access Protocol.</h2>
-            <p className="text-sm font-bold text-text-secondary opacity-70">Please provide your institutional email to view this architecture.</p>
+            <h2 className="text-2xl font-black text-brand-dark uppercase tracking-tighter">Resume Access</h2>
+            <p className="text-sm font-bold text-text-secondary opacity-70">Please provide your email to view this document.</p>
           </div>
 
           <form onSubmit={handleEmailSubmit} className="space-y-6">
@@ -116,7 +116,7 @@ const PublicResumeShareView = () => {
               </div>
             </div>
             <button type="submit" className="btn-primary w-full py-5 text-xs font-black uppercase tracking-widest shadow-xl">
-              Initialize Decryption
+              View Resume
             </button>
           </form>
         </motion.div>
@@ -136,7 +136,7 @@ const PublicResumeShareView = () => {
               <FileText size={20} />
             </div>
             <div>
-              <h1 className="text-sm font-black text-brand-dark uppercase tracking-tight">Shared Architecture.</h1>
+              <h1 className="text-sm font-black text-brand-dark uppercase tracking-tight">Shared Resume</h1>
               <p className="text-[10px] font-bold text-text-tertiary uppercase tracking-widest">{resume.personalInfo?.firstName} {resume.personalInfo?.lastName}</p>
             </div>
           </div>
@@ -166,9 +166,9 @@ const PublicResumeShareView = () => {
         {/* --- FOOTER --- */}
         <div className="text-center space-y-4">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-success/5 border border-brand-success/10 text-[9px] font-black text-brand-success uppercase tracking-widest">
-            <ShieldCheck size={12} /> Secure Protocol Verified
+            <ShieldCheck size={12} /> Secure & Verified
           </div>
-          <p className="text-[10px] font-bold text-text-tertiary uppercase tracking-[0.2em]">Powered by AI Job Suite Architecture</p>
+          <p className="text-[10px] font-bold text-text-tertiary uppercase tracking-[0.2em]">Powered by AI Job Suite</p>
         </div>
       </div>
     </div>

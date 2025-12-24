@@ -66,7 +66,7 @@ const navigation = [
 const quickActions = [
   {
     name: "New Application",
-    href: "/dashboard/applications/new",
+    href: "/dashboard/job-posting",
     icon: PlusIcon,
     color: "bg-brand-blue",
   },

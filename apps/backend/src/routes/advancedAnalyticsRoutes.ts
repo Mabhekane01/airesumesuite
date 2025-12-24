@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { advancedAnalyticsController } from '../controllers/advancedAnalyticsController';
 import { authMiddleware as authenticateToken, AuthenticatedRequest, requireSubscription } from '../middleware/auth';
+import { requireFeatureAccess } from '../middleware/subscriptionValidation';
 import { query } from 'express-validator';
 
 const router: Router = Router();
@@ -9,68 +10,68 @@ const router: Router = Router();
 router.get(
   '/comprehensive',
   authenticateToken,
-  requireSubscription('premium'),
-  (req: AuthenticatedRequest, res) => advancedAnalyticsController.getComprehensiveAnalytics(req, res)
+  requireFeatureAccess('advanced-analytics'),
+  (req: AuthenticatedRequest, res) => { advancedAnalyticsController.getComprehensiveAnalytics(req, res); }
 );
 
 // Get company-specific analysis
 router.get(
   '/companies',
   authenticateToken,
-  requireSubscription('premium'),
-  (req: AuthenticatedRequest, res) => advancedAnalyticsController.getCompanyAnalysis(req, res)
+  requireFeatureAccess('advanced-analytics'),
+  (req: AuthenticatedRequest, res) => { advancedAnalyticsController.getCompanyAnalysis(req, res); }
 );
 
 // Get skill gap analysis
 router.get(
   '/skills/gap-analysis',
   authenticateToken,
-  requireSubscription('premium'),
-  (req: AuthenticatedRequest, res) => advancedAnalyticsController.getSkillGapAnalysis(req, res)
+  requireFeatureAccess('advanced-analytics'),
+  (req: AuthenticatedRequest, res) => { advancedAnalyticsController.getSkillGapAnalysis(req, res); }
 );
 
 // Get job matching insights
 router.get(
   '/job-matching',
   authenticateToken,
-  requireSubscription('premium'),
-  (req: AuthenticatedRequest, res) => advancedAnalyticsController.getJobMatchingInsights(req, res)
+  requireFeatureAccess('advanced-analytics'),
+  (req: AuthenticatedRequest, res) => { advancedAnalyticsController.getJobMatchingInsights(req, res); }
 );
 
 // Get predictive insights
 router.get(
   '/predictive',
   authenticateToken,
-  requireSubscription('premium'),
-  (req: AuthenticatedRequest, res) => advancedAnalyticsController.getPredictiveInsights(req, res)
+  requireFeatureAccess('advanced-analytics'),
+  (req: AuthenticatedRequest, res) => { advancedAnalyticsController.getPredictiveInsights(req, res); }
 );
 
 // Get analytics summary (dashboard overview)
 router.get(
   '/summary',
   authenticateToken,
-  requireSubscription('premium'),
-  (req: AuthenticatedRequest, res) => advancedAnalyticsController.getAnalyticsSummary(req, res)
+  requireFeatureAccess('advanced-analytics'),
+  (req: AuthenticatedRequest, res) => { advancedAnalyticsController.getAnalyticsSummary(req, res); }
 );
 
 // Get performance trends
 router.get(
   '/trends',
   authenticateToken,
-  requireSubscription('premium'),
+  requireFeatureAccess('advanced-analytics'),
   query('timeframe')
     .optional()
     .isIn(['3months', '6months', '12months'])
     .withMessage('Invalid timeframe'),
-  (req: AuthenticatedRequest, res) => advancedAnalyticsController.getPerformanceTrends(req, res)
+  (req: AuthenticatedRequest, res) => { advancedAnalyticsController.getPerformanceTrends(req, res); }
 );
 
 // Get market insights
 router.get(
   '/market',
   authenticateToken,
-  requireSubscription('premium'),
-  (req: AuthenticatedRequest, res) => advancedAnalyticsController.getMarketInsights(req, res)
+  requireFeatureAccess('advanced-analytics'),
+  (req: AuthenticatedRequest, res) => { advancedAnalyticsController.getMarketInsights(req, res); }
 );
 
 // Production monitoring endpoints (no auth required for health checks)

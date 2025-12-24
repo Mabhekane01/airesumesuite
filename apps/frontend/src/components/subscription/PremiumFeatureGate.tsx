@@ -17,7 +17,7 @@ interface PremiumFeatureGateProps {
   children: (isAccessGranted: boolean, openModal: () => void) => React.ReactNode;
   feature: string;
   description?: string;
-  requiresEnterprise?: boolean;
+  requiresPremium?: boolean;
   actionButtonLabel?: string;
 }
 
@@ -25,16 +25,16 @@ export default function PremiumFeatureGate({
   children, 
   feature, 
   description, 
-  requiresEnterprise = true,
-  actionButtonLabel = 'Upgrade to Enterprise'
+  requiresPremium = true,
+  actionButtonLabel = 'Get Career Boost'
 }: PremiumFeatureGateProps) {
-  const { hasActiveSubscription } = useSubscription();
+  const { canUseAI, tier, credits } = useSubscription();
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   const isAccessGranted = useMemo(() => {
-    if (!requiresEnterprise) return true;
-    return hasActiveSubscription;
-  }, [requiresEnterprise, hasActiveSubscription]);
+    if (!requiresPremium) return true;
+    return canUseAI;
+  }, [requiresPremium, canUseAI]);
 
   const openModal = useCallback(() => setShowUpgradeModal(true), []);
   const closeModal = useCallback(() => setShowUpgradeModal(false), []);
@@ -69,11 +69,11 @@ export default function PremiumFeatureGate({
                   Access Restricted.
                 </h3>
                 <p className="text-text-secondary text-lg font-bold leading-relaxed max-w-sm mx-auto">
-                  This module requires an <span className="text-brand-blue underline decoration-brand-blue/30 decoration-4">Enterprise Tier</span> authorization protocol to initiate.
+                  This module requires a <span className="text-brand-blue underline decoration-brand-blue/30 decoration-4">subscription or AI credits</span> to initiate.
                 </p>
                 <div className="flex items-center justify-center gap-2 px-4 py-2 bg-brand-blue/5 border border-brand-blue/10 rounded-full text-brand-blue text-[10px] font-black uppercase tracking-widest">
                   <CpuChipIcon className="w-4 h-4" />
-                  {description || `${feature} requires Enterprise Tier.`}
+                  {description || `${feature} requires higher clearance.`}
                 </div>
               </div>
               
@@ -86,9 +86,15 @@ export default function PremiumFeatureGate({
                   {actionButtonLabel} <ChevronRightIcon className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                 </Link>
                 
-                <div className="flex items-center justify-center gap-3 text-[10px] font-black text-text-tertiary uppercase tracking-widest">
-                  <StarIcon className="w-3 h-3 text-brand-orange" />
-                  Unlock unlimited AI cycles
+                <div className="flex flex-col items-center gap-2 text-[10px] font-black text-text-tertiary uppercase tracking-widest">
+                  <div className="flex items-center gap-2">
+                    <StarIcon className="w-3.5 h-3.5 text-brand-orange" />
+                    <span>Your current tier: {tier}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <BoltIcon className="w-3.5 h-3.5 text-brand-blue" />
+                    <span>Your credits: {credits}</span>
+                  </div>
                 </div>
               </div>
             </motion.div>

@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { User } from '../models/User';
 import { logger } from '../utils/logger';
+import { subscriptionService } from '../services/subscriptionService';
 
 interface AuthenticatedRequest extends Request {
   user?: {
@@ -82,7 +83,7 @@ export const requireEnterpriseSubscription = async (
   }
 };
 
-// Feature-specific subscription checks
+// Feature-specific subscription checks (New Hybrid Model)
 export const requireFeatureAccess = (featureName: string) => {
   return async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
@@ -96,38 +97,23 @@ export const requireFeatureAccess = (featureName: string) => {
         });
       }
 
-      // Define enterprise-only features
-      const enterpriseFeatures = [
-        'ai-resume-builder',
-        'ai-career-coach',
-        'ai-interview-prep',
-        'unlimited-resumes',
-        'priority-support',
-        'advanced-analytics',
-        'job-optimization',
-        'bulk-operations'
-      ];
+      // Map feature name to action type
+      const actionType = featureName.includes('resume') && featureName.includes('export') 
+        ? 'resume_exports' 
+        : 'ai_actions';
 
-      const user = await User.findById(userId).select('tier');
-      
-      if (!user) {
-        return res.status(404).json({
+      const allowed = await subscriptionService.checkUsageLimit(userId, actionType);
+
+      if (!allowed) {
+        return res.status(403).json({
           success: false,
-          message: 'User not found',
-          code: 'USER_NOT_FOUND'
+          message: 'Usage limit reached. Please upgrade your plan or purchase credits.',
+          code: 'LIMIT_EXCEEDED',
+          data: {
+            upgradeUrl: '/dashboard/upgrade',
+            actionType
+          }
         });
-      }
-
-      // Check if feature requires enterprise subscription
-      if (enterpriseFeatures.includes(featureName) && user.tier !== 'enterprise') {
-        logger.info(`Allowing free user to preview feature: ${featureName}`, {
-          userId,
-          tier: user.tier,
-          endpoint: req.path
-        });
-        
-        // Allow access for preview
-        return next();
       }
 
       next();
@@ -157,17 +143,19 @@ export const trackFeatureUsage = (featureName: string) => {
       // Track usage asynchronously without blocking the request
       setImmediate(async () => {
         try {
+          const actionType = featureName.includes('resume') && featureName.includes('export') 
+            ? 'resume_exports' 
+            : 'ai_actions';
+            
+          await subscriptionService.recordUsage(userId, actionType);
+
           logger.info('Feature usage tracked', {
             userId,
             feature: featureName,
+            actionType,
             endpoint: req.path,
-            timestamp: new Date().toISOString(),
-            ip: req.ip,
-            userAgent: req.get('User-Agent')
+            timestamp: new Date().toISOString()
           });
-
-          // Here you could implement usage analytics storage
-          // await analyticsService.trackFeatureUsage(userId, featureName, req.path);
         } catch (error) {
           logger.error('Feature usage tracking failed:', {
             error: error instanceof Error ? error.message : 'Unknown error',

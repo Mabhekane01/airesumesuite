@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Allow: /jobs
+Allow: /templates
+Allow: /share/r/
+Disallow: /dashboard/
+Disallow: /auth/
+Disallow: /api/
+
+Sitemap: https://aijobsuite.bankhosa.com/sitemap.xml

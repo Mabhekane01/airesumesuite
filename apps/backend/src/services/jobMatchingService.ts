@@ -669,16 +669,15 @@ class JobMatchingService {
       timeToApply = 'research_needed';
     }
 
-    const keyPoints: string[];
-
-    if (difficulty === 'low') {
-      keyPoints = ['Strong match - apply confidently'];
-    } else if (difficulty === 'medium') {
-      keyPoints = ['Good match with some skill gaps to address'];
-    } else {
-      keyPoints = ['Challenging match - requires strategic approach'];
-    }
-
+            let keyPoints: string[];
+    
+            if (difficulty === 'low') {
+              keyPoints = ['Strong match - apply confidently'];
+            } else if (difficulty === 'medium') {
+              keyPoints = ['Good match with some skill gaps to address'];
+            } else {
+              keyPoints = ['Challenging match - requires strategic approach'];
+            }
     return { difficulty, timeToApply, keyPoints };
   }
 

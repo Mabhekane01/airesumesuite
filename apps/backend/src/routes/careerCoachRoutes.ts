@@ -1,24 +1,22 @@
-import { Router } from 'express';
+import express, { Router, Request, Response } from 'express';
 import { careerCoachController } from '../controllers/careerCoachController';
-import { authMiddleware } from '../middleware/auth';
-import { requireEnterpriseSubscription, trackFeatureUsage, subscriptionRateLimit } from '../middleware/subscriptionValidation';
+import { authMiddleware as authenticateToken, AuthenticatedRequest } from '../middleware/auth';
+import { requireFeatureAccess, trackFeatureUsage } from '../middleware/subscriptionValidation';
 
-const router: Router = Router();
+const router: Router = express.Router();
 
-// Chat with AI career coach
+// Health check for the career coach service
+router.get('/health', (req: Request, res: Response) => careerCoachController.checkHealth(req, res));
+
+// All other routes require authentication
+router.use(authenticateToken);
+
+// Start or continue a coaching conversation
 router.post(
   '/chat',
-  authMiddleware,
-  requireEnterpriseSubscription,
-  subscriptionRateLimit('ai-career-coach'),
+  requireFeatureAccess('ai-career-coach'),
   trackFeatureUsage('ai-career-coach'),
-  careerCoachController.chatWithCoach
-);
-
-// Health check endpoint
-router.get(
-  '/health',
-  careerCoachController.checkHealth
+  (req: AuthenticatedRequest, res: Response) => careerCoachController.chatWithCoach(req, res)
 );
 
 export default router;

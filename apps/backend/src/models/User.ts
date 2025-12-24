@@ -31,7 +31,13 @@ export interface IUser extends Document {
   emailVerificationToken?: string;
   emailVerificationExpires?: Date;
   emailVerificationAttempts?: number;
-  tier?: string;
+  tier?: 'free' | 'pro' | 'enterprise';
+  credits: number;
+  usage: {
+    ai_actions_count: number;
+    resume_exports_count: number;
+    last_reset_date: Date;
+  };
   role: 'user' | 'admin';
   subscription_status?: string;
   subscription_end_date?: Date;
@@ -111,7 +117,17 @@ const UserSchema = new Schema<IUser>({
   },
   tier: {
     type: String,
+    enum: ['free', 'pro', 'enterprise'],
     default: 'free'
+  },
+  credits: {
+    type: Number,
+    default: 0
+  },
+  usage: {
+    ai_actions_count: { type: Number, default: 0 },
+    resume_exports_count: { type: Number, default: 0 },
+    last_reset_date: { type: Date, default: Date.now }
   },
   role: {
     type: String,

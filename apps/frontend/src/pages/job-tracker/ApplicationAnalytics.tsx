@@ -24,7 +24,7 @@ import {
   SimplePieChart as PieChart,
   SimpleResponsiveContainer as ResponsiveContainer,
 } from '../../components/charts/SimpleCharts';
-import { analyticsAPI } from '../../services/api';
+import { analyticsAPI, advancedAnalyticsAPI } from '../../services/api';
 import DragonSnakeGame from '../../components/games/DragonSnakeGame';
 import { motion } from 'framer-motion';
 
@@ -50,6 +50,13 @@ interface AnalyticsData {
     viewsOverTime: Array<{
       date: string;
       views: number;
+    }>;
+    recentViews?: Array<{
+      documentTitle: string;
+      viewedAt: string;
+      ipAddress: string;
+      userAgent: string;
+      location?: string;
     }>;
   };
   trends: {
@@ -118,6 +125,7 @@ import {
 export default function ApplicationAnalytics() {
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [timeRange, setTimeRange] = useState('3m');
   const [selectedTrendMetric, setSelectedTrendMetric] = useState('applications');
   const [selectedMonthlyMetric, setSelectedMonthlyMetric] = useState('applications');
@@ -129,12 +137,45 @@ export default function ApplicationAnalytics() {
   const loadAnalytics = async () => {
     try {
       setLoading(true);
-      const response = await analyticsAPI.getComprehensiveAnalytics();
-      if (response.success && response.data) {
-        setAnalyticsData(response.data);
+      setError(null);
+      let loaded = false;
+
+      // Try advanced analytics first (Premium)
+      try {
+        const response = await advancedAnalyticsAPI.getComprehensiveAnalytics();
+        console.log('Advanced Analytics Response:', response);
+        if (response.success && response.data && response.data.analytics) {
+          console.log('Analytics Data to set (Advanced):', response.data.analytics);
+          setAnalyticsData(response.data.analytics);
+          loaded = true;
+        }
+      } catch (advancedError: any) {
+        console.warn('Advanced analytics failed, attempting fallback:', advancedError?.message || advancedError);
       }
-    } catch (error) {
-      console.error('Failed to load analytics:', error);
+
+      // Fallback to standard analytics (Free)
+      if (!loaded) {
+        console.log('Falling back to standard analytics API...');
+        try {
+          const response = await analyticsAPI.getApplicationAnalytics({ timeRange });
+          console.log('Standard Analytics Response:', response);
+          if (response.success && response.data) {
+            // Standard API returns the data directly, not wrapped in 'analytics' property
+            console.log('Analytics Data to set (Standard):', response.data);
+            setAnalyticsData(response.data);
+            loaded = true;
+          } else {
+            console.warn('Standard Analytics API returned success=false or no data');
+            setError('Standard analytics returned no data.');
+          }
+        } catch (standardError: any) {
+          console.error('Standard analytics also failed:', standardError);
+          setError(standardError?.message || 'Failed to load analytics data.');
+        }
+      }
+    } catch (error: any) {
+      console.error('Failed to load analytics (all attempts):', error);
+      setError(error?.message || 'An unexpected error occurred.');
     } finally {
       setLoading(false);
     }
@@ -154,17 +195,50 @@ export default function ApplicationAnalytics() {
     );
   }
 
-  if (!analyticsData) {
+  if (!analyticsData || !analyticsData.overview) {
     return (
       <div className="text-center py-20 bg-white border border-surface-200 rounded-[3rem] shadow-sm">
         <ChartBarIcon className="w-20 h-20 text-text-tertiary mx-auto mb-6 opacity-20" />
         <h2 className="text-2xl font-black text-brand-dark mb-2 tracking-tight">Null Analytics Data.</h2>
-        <p className="text-text-secondary font-bold max-w-sm mx-auto">Start your application protocols to generate real-time metrics.</p>
+        {error && (
+          <div className="mt-4 p-4 bg-red-50 text-red-600 rounded-xl max-w-md mx-auto">
+            <p className="font-bold text-sm">System Error:</p>
+            <p className="text-xs font-mono mt-1">{error}</p>
+          </div>
+        )}
+        <p className="text-text-secondary font-bold max-w-sm mx-auto mt-4">Start your application protocols to generate real-time metrics.</p>
       </div>
     );
   }
 
-  const { overview, trends, insights, performance, documentEngagement } = analyticsData;
+  const { 
+    overview = {
+      totalApplications: 0,
+      activeApplications: 0,
+      responseRate: 0,
+      interviewRate: 0,
+      offerRate: 0,
+      averageResponseTime: 0
+    }, 
+    trends = {
+      applicationsOverTime: [],
+      statusDistribution: [],
+      applicationsTrend: 0,
+      responseRateTrend: 0,
+      interviewRateTrend: 0,
+      responseTimeTrend: 0
+    }, 
+    insights = {
+      topCompanies: [],
+      applicationsBySource: [],
+      salaryAnalysis: { averageMin: 0, averageMax: 0, byLocation: [] }
+    }, 
+    performance = {
+      monthlyStats: [],
+      conversionFunnel: []
+    }, 
+    documentEngagement 
+  } = analyticsData;
 
   return (
     <div className="space-y-12 animate-slide-up-soft pb-24">
@@ -302,6 +376,54 @@ export default function ApplicationAnalytics() {
               </div>
             </div>
           </div>
+          
+          {documentEngagement.recentViews && documentEngagement.recentViews.length > 0 && (
+            <div className="bg-white border border-surface-200 rounded-[3rem] p-10 shadow-lg relative overflow-hidden mt-8">
+              <div className="flex items-center justify-between mb-8">
+                <div className="space-y-1">
+                  <h3 className="text-2xl font-display font-black text-brand-dark tracking-tight leading-none uppercase">Signal Access Logs.</h3>
+                  <p className="text-xs font-bold text-text-tertiary uppercase tracking-widest">Real-time recruiter interactions</p>
+                </div>
+              </div>
+              
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-surface-100 text-left">
+                      <th className="pb-4 text-[10px] font-black text-text-tertiary uppercase tracking-widest pl-4">Document Node</th>
+                      <th className="pb-4 text-[10px] font-black text-text-tertiary uppercase tracking-widest">Source IP / Location</th>
+                      <th className="pb-4 text-[10px] font-black text-text-tertiary uppercase tracking-widest">Client Signature</th>
+                      <th className="pb-4 text-[10px] font-black text-text-tertiary uppercase tracking-widest text-right pr-4">Timestamp</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-surface-100">
+                    {documentEngagement.recentViews.map((view, idx) => (
+                      <tr key={idx} className="group hover:bg-surface-50 transition-colors">
+                        <td className="py-4 pl-4">
+                          <div className="font-bold text-brand-dark text-sm">{view.documentTitle}</div>
+                        </td>
+                        <td className="py-4">
+                          <div className="flex flex-col">
+                            <span className="font-mono text-xs text-brand-blue bg-brand-blue/5 px-2 py-0.5 rounded w-fit mb-1">{view.ipAddress}</span>
+                            {view.location && typeof view.location === 'string' && (
+                              <span className="text-[10px] font-bold text-text-tertiary uppercase tracking-wider">{view.location}</span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="py-4">
+                          <div className="text-xs text-text-secondary max-w-xs truncate" title={view.userAgent}>{view.userAgent}</div>
+                        </td>
+                        <td className="py-4 text-right pr-4">
+                          <div className="font-bold text-brand-dark text-xs">{new Date(view.viewedAt).toLocaleDateString()}</div>
+                          <div className="text-[10px] text-text-tertiary font-mono">{new Date(view.viewedAt).toLocaleTimeString()}</div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -370,10 +492,10 @@ export default function ApplicationAnalytics() {
           </div>
           <div className="h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart 
+              <BarChart 
                 data={trends.applicationsOverTime} 
                 dataKey={selectedTrendMetric}
-                strokeColor="#1a91f0"
+                fillColor="#3B82F6"
               />
             </ResponsiveContainer>
           </div>
@@ -435,13 +557,26 @@ export default function ApplicationAnalytics() {
         </div>
 
         <div className="lg:col-span-5 bg-white border border-surface-200 rounded-[2.5rem] p-10 shadow-sm">
-          <div className="flex items-center gap-4 mb-10">
+          <div className="flex items-center gap-4 mb-6">
             <div className="w-12 h-12 rounded-2xl bg-brand-blue/10 text-brand-blue flex items-center justify-center">
               <CpuChipIcon className="w-6 h-6" />
             </div>
             <div>
               <h3 className="text-2xl font-black text-brand-dark tracking-tight leading-none mb-1">Source Dynamics.</h3>
               <p className="text-[10px] font-black text-text-tertiary uppercase tracking-widest">Platform conversion metrics</p>
+            </div>
+          </div>
+
+          <div className="mb-8">
+            <h4 className="text-sm font-black text-brand-dark mb-4 uppercase tracking-wider">Top Target Companies</h4>
+            <div className="h-[200px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart 
+                  data={insights.topCompanies.map(c => ({ name: c.company, applications: c.applications }))}
+                  dataKey="applications"
+                  fillColor="#8B5CF6"
+                />
+              </ResponsiveContainer>
             </div>
           </div>
 

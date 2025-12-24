@@ -4,6 +4,7 @@ import { logger } from '../utils/logger';
 import { paystackService } from './paystackService';
 import { notificationService } from './notificationService';
 import { User } from '../models/User';
+import { SUBSCRIPTION_PLANS, AI_COSTS } from '../config/subscriptionPlans';
 
 export class SubscriptionService {
   private db: Database;
@@ -38,8 +39,140 @@ export class SubscriptionService {
       await this.processAutomaticRenewals();
     });
 
+    // Run monthly on the 1st at 1 AM to reset usage limits
+    cron.schedule('0 1 1 * *', async () => {
+      logger.info('Running monthly usage reset');
+      await this.resetMonthlyUsage();
+    });
+
     this.isJobsScheduled = true;
     logger.info('Subscription management jobs scheduled successfully');
+  }
+
+  /**
+   * Check if a user can perform an action based on their plan limits or available credits.
+   */
+  public async checkUsageLimit(userId: string, actionType: 'ai_actions' | 'resume_exports'): Promise<boolean> {
+    try {
+      const user = await User.findById(userId);
+      if (!user) return false;
+
+      const tier = user.tier || 'free';
+      const planLimits = SUBSCRIPTION_PLANS[tier as keyof typeof SUBSCRIPTION_PLANS].limits;
+      
+      const usageKey = actionType === 'ai_actions' ? 'ai_actions_count' : 'resume_exports_count';
+      const currentUsage = user.usage?.[usageKey] || 0;
+      const limit = actionType === 'ai_actions' ? planLimits.ai_actions : planLimits.resume_exports;
+
+      // 1. Check if within plan limit
+      if (currentUsage < limit) {
+        return true;
+      }
+
+      // 2. If limit reached, check if they have credits (only for AI actions usually, but could be for exports too)
+      if (actionType === 'ai_actions' && user.credits > 0) {
+        return true;
+      }
+
+      return false;
+    } catch (error) {
+      logger.error('Error checking usage limit:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Deduct credits from a user's account.
+   */
+  public async deductCredits(userId: string, amount: number): Promise<boolean> {
+    try {
+      const user = await User.findById(userId);
+      if (!user) return false;
+
+      if (user.credits < amount) {
+        return false;
+      }
+
+      user.credits -= amount;
+      await user.save();
+      return true;
+    } catch (error) {
+      logger.error('Error deducting credits:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Record usage for an action. Deducts credits if plan limit is exceeded.
+   */
+  public async recordUsage(userId: string, actionType: 'ai_actions' | 'resume_exports', cost: number = 1): Promise<void> {
+    try {
+      const user = await User.findById(userId);
+      if (!user) return;
+
+      const tier = user.tier || 'free';
+      const planLimits = SUBSCRIPTION_PLANS[tier as keyof typeof SUBSCRIPTION_PLANS].limits;
+      
+      const usageKey = actionType === 'ai_actions' ? 'ai_actions_count' : 'resume_exports_count';
+      const currentUsage = user.usage?.[usageKey] || 0;
+      const limit = actionType === 'ai_actions' ? planLimits.ai_actions : planLimits.resume_exports;
+
+      // Increment usage counter
+      if (!user.usage) {
+        user.usage = { ai_actions_count: 0, resume_exports_count: 0, last_reset_date: new Date() };
+      }
+      user.usage[usageKey] = currentUsage + 1;
+
+      // If we are OVER the limit, we must have burned a credit (validated by checkUsageLimit previously)
+      // Only for AI actions do we burn credits typically
+      if (actionType === 'ai_actions' && currentUsage >= limit) {
+        if (user.credits >= cost) {
+          user.credits -= cost;
+          logger.info(`Burned ${cost} credits for user ${userId} (Plan limit exceeded)`);
+        } else {
+          // This should strictly not happen if checkUsageLimit was called, but safety net
+          logger.warn(`User ${userId} exceeded limit and has no credits, but action proceeded.`);
+        }
+      }
+
+      await user.save();
+    } catch (error) {
+      logger.error('Error recording usage:', error);
+    }
+  }
+
+  /**
+   * Add credits to a user (e.g. after purchase)
+   */
+  public async addCredits(userId: string, amount: number): Promise<void> {
+    try {
+        await User.findByIdAndUpdate(userId, {
+            $inc: { credits: amount }
+        });
+        logger.info(`Added ${amount} credits to user ${userId}`);
+    } catch (error) {
+        logger.error('Error adding credits:', error);
+        throw error;
+    }
+  }
+
+  /**
+   * Reset usage counts for all users (Monthly)
+   */
+  public async resetMonthlyUsage(): Promise<void> {
+    try {
+      logger.info('Resetting monthly usage for all users...');
+      await User.updateMany({}, {
+        $set: {
+          'usage.ai_actions_count': 0,
+          'usage.resume_exports_count': 0,
+          'usage.last_reset_date': new Date()
+        }
+      });
+      logger.info('Monthly usage reset complete.');
+    } catch (error) {
+      logger.error('Error resetting monthly usage:', error);
+    }
   }
 
   // Check for expired subscriptions and downgrade users

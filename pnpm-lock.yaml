@@ -280,6 +280,9 @@ importers:
       react-dropzone:
         specifier: ^14.2.3
         version: 14.3.8(react@18.3.1)
+      react-helmet-async:
+        specifier: ^2.0.5
+        version: 2.0.5(react@18.3.1)
       react-hook-form:
         specifier: ^7.49.2
         version: 7.61.1(react@18.3.1)
@@ -4788,6 +4791,12 @@ packages:
     engines: {node: '>=12'}
     dev: false
 
+  /invariant@2.2.4:
+    resolution: {integrity: sha512-phJfQVBuaJM5raOpJjSfkiD6BpbCE4Ns//LaXl6wGYtUBY83nWS6Rf9tXm2e8VaK60JEjYldbPif/A2B1C2gNA==}
+    dependencies:
+      loose-envify: 1.4.0
+    dev: false
+
   /ioredis@5.6.1:
     resolution: {integrity: sha512-UxC0Yv1Y4WRJiGQxQkP0hfdL0/5/6YvdfOOClRgJ0qppSarkhneSa6UvkMkms0AkdGimSH3Ikqm+6mkMmX7vGA==}
     engines: {node: '>=12.22.0'}
@@ -6795,6 +6804,21 @@ packages:
       react: 18.3.1
     dev: false
 
+  /react-fast-compare@3.2.2:
+    resolution: {integrity: sha512-nsO+KSNgo1SbJqJEYRE9ERzo7YtYbou/OqjSQKxV7jcKox7+usiUVZOAC+XnDOABXggQTno0Y1CpVnuWEc1boQ==}
+    dev: false
+
+  /react-helmet-async@2.0.5(react@18.3.1):
+    resolution: {integrity: sha512-rYUYHeus+i27MvFE+Jaa4WsyBKGkL6qVgbJvSBoX8mbsWoABJXdEO0bZyi0F6i+4f0NuIb8AvqPMj3iXFHkMwg==}
+    peerDependencies:
+      react: ^16.6.0 || ^17.0.0 || ^18.0.0
+    dependencies:
+      invariant: 2.2.4
+      react: 18.3.1
+      react-fast-compare: 3.2.2
+      shallowequal: 1.1.0
+    dev: false
+
   /react-hook-form@7.61.1(react@18.3.1):
     resolution: {integrity: sha512-2vbXUFDYgqEgM2RcXcAT2PwDW/80QARi+PKmHy5q2KhuKvOlG8iIYgf7eIlIANR5trW9fJbP4r5aub3a4egsew==}
     engines: {node: '>=18.0.0'}
@@ -7232,6 +7256,10 @@ packages:
       kind-of: 2.0.1
       lazy-cache: 0.2.7
       mixin-object: 2.0.1
+    dev: false
+
+  /shallowequal@1.1.0:
+    resolution: {integrity: sha512-y0m1JoUZSlPAjXVtPPW70aZWfIL/dSP7AFkRnniLCrK/8MDKog3TySTBmckD+RObVxH0v4Tox67+F14PdED2oQ==}
     dev: false
 
   /shebang-command@2.0.0:

@@ -11,7 +11,13 @@ export interface User {
   lastName: string;
   provider: 'local' | 'google';
   isEmailVerified: boolean;
-  tier: 'free' | 'enterprise';
+  tier: 'free' | 'pro' | 'enterprise';
+  credits: number;
+  usage: {
+    ai_actions_count: number;
+    resume_exports_count: number;
+    last_reset_date: string;
+  };
   role: 'user' | 'admin';
   subscriptionStatus?: 'active' | 'cancelled' | 'expired' | 'past_due';
   subscription_status?: 'active' | 'cancelled' | 'expired' | 'past_due';

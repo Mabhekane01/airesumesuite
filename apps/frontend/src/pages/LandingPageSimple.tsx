@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import SEO from "../components/seo/SEO"; // Import SEO component
 import {
   DocumentTextIcon,
   PencilIcon,
@@ -190,6 +191,11 @@ export default function LandingPageSimple() {
 
   return (
     <div className="min-h-screen bg-white text-text-primary selection:bg-brand-blue/30 overflow-x-hidden font-sans">
+      <SEO 
+        title="AI Job Suite | Intelligent Career Engineering"
+        description="Automate your job search with AI Job Suite by Bankhosa. Access real-time job market intelligence, AI resume builder, and career trajectory optimization."
+        keywords={['Job Board', 'Resume Builder', 'AI Career Coach', 'Job Scraper', 'Bankhosa', 'Career Automation', 'Tech Jobs']}
+      />
       
       {/* --- HERO SECTION --- */}
       <section className="relative min-h-screen flex flex-col items-center justify-center px-4 overflow-hidden pt-20">

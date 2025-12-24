@@ -208,6 +208,45 @@ export class EnterpriseAIService {
     );
   }
 
+  async optimizeForJobPosting(resumeData: any, jobUrl: string): Promise<JobMatchingResult> {
+    return this.executeWithFallback(async (provider) => {
+      console.log(`🎯 Optimizing for job URL: ${jobUrl}`);
+      
+      const prompt = `
+You are a Senior Technical Recruiter. Analyze this resume against the job posting at the provided URL.
+
+RESUME DATA:
+${JSON.stringify(resumeData, null, 2)}
+
+JOB URL: ${jobUrl}
+
+REQUIRED EXECUTION:
+1. Infer the role and requirements from the URL context and general industry knowledge for such positions.
+2. Evaluate the match between the resume and the inferred job requirements.
+3. Identify keyword alignment and gaps.
+
+REQUIRED OUTPUT FORMAT (STRICT PURE JSON):
+{
+  "matchScore": number (0-100),
+  "keywordAlignment": ["keyword 1", "keyword 2"],
+  "missingKeywords": ["missing 1", "missing 2"],
+  "recommendations": ["rec 1", "rec 2"],
+  "jobDetails": {
+    "title": "inferred title",
+    "company": "inferred company",
+    "description": "brief inferred summary",
+    "requirements": ["req 1", "req 2"]
+  }
+}
+
+CRITICAL RULES:
+- Return ONLY the JSON object.
+`;
+
+      return this.callAIProvider(provider, prompt, 'job-matching');
+    }, 'job posting optimization');
+  }
+
   async analyzeATSCompatibility(resumeData: any, jobDescription?: string): Promise<ATSAnalysisResult> {
     return this.executeWithFallback(async (provider) => {
       const prompt = `

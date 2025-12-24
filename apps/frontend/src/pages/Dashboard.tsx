@@ -230,7 +230,7 @@ export default function Dashboard() {
             </div>
             <h2 className="text-base xs:text-lg sm:text-xl lg:text-2xl font-bold text-text-primary gradient-text-dark">Quick Actions</h2>
           </div>
-          <div className="grid grid-cols-1 xs:grid-cols-1 sm:flex sm:overflow-x-auto sm:space-x-3 md:space-x-4 lg:grid lg:grid-cols-3 lg:overflow-x-visible lg:space-x-0 gap-2 xs:gap-3 sm:gap-0 lg:gap-6 scrollbar-thin scrollbar-thumb-dark-border sm:pb-2 lg:pb-0"
+          <div className="grid grid-cols-1 xs:grid-cols-1 sm:flex sm:overflow-x-auto sm:space-x-3 md:space-x-4 lg:grid lg:grid-cols-3 lg:overflow-x-visible lg:space-x-0 gap-2 xs:gap-3 sm:gap-0 lg:gap-6 scrollbar-thin scrollbar-thumb-dark-border sm:pb-2 lg:pb-0">
             {quickActions.map((action, index) => {
               const Icon = action.icon;
               return (

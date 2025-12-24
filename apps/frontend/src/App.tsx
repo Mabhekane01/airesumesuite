@@ -30,6 +30,8 @@ import PublicJobView from './pages/PublicJobView';
 import PublicResumeShareView from './pages/PublicResumeShareView';
 
 
+import { GlobalPendingJobModal } from './components/ui/GlobalPendingJobModal';
+
 import './utils/apiDebug'; // Load API debug tools
 
 
@@ -41,7 +43,12 @@ function ProtectedRoute({ children }: { children?: React.ReactNode }) {
   }
   // If children are provided (like DashboardLayout), render them.
   // Otherwise render Outlet for nested routes.
-  return children ? <>{children}</> : <Outlet />;
+  return (
+    <>
+      {children ? children : <Outlet />}
+      <GlobalPendingJobModal />
+    </>
+  );
 }
 
 // Define and export routes array
@@ -91,12 +98,13 @@ const AppRoutes = [
 
       // Job Application Tracker Routes
       { path: "applications", element: <ResumeTrackingDashboard /> },
-      { path: "applications/new", element: <CreateJobApplication /> },
+      { path: "applications/new", element: <Navigate to="/dashboard/job-posting" replace /> },
       { path: "applications/edit/:id", element: <EditJobApplication /> },
       { path: "applications/:id", element: <JobApplicationDetail /> },
       { path: "analytics", element: <ApplicationAnalytics /> },
       { path: "coach", element: <CareerCoachPage /> },
       { path: "interviews", element: <InterviewScheduler /> },
+      { path: "calendar", element: <InterviewScheduler defaultView="calendar" /> },
 
       // Account & Payment Routes
       { path: "account", element: <AccountManager /> },

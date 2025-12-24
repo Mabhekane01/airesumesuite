@@ -27,7 +27,10 @@ import {
   ShieldCheckIcon,
   ChevronRightIcon,
   XMarkIcon,
-  CheckIcon
+  CheckIcon,
+  GlobeAltIcon as GlobeIcon,
+  DevicePhoneMobileIcon as SmartphoneIcon,
+  ComputerDesktopIcon as MonitorIcon
 } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
 import { jobApplicationAPI, interviewAPI } from '../../services/api';
@@ -68,6 +71,16 @@ interface JobApplication {
     whyInterested: string;
     keySellingPoints: string[];
     uniqueValueProposition: string;
+  };
+  trackingStats?: {
+    viewCount: number;
+    lastViewedAt?: string;
+    views: Array<{
+      viewedAt: string;
+      ipAddress?: string;
+      userAgent?: string;
+      location?: string;
+    }>;
   };
 }
 

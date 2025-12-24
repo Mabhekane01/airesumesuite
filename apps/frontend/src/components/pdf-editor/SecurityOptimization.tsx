@@ -1,1 +1,512 @@
-import React, { useState } from 'react';\nimport { Button } from '../ui/Button';\nimport { \n  Shield, Lock, Unlock, Eye, EyeOff, Key, Download, Upload,\n  Zap, Minimize, FileText, Image, Settings, AlertTriangle,\n  CheckCircle, Clock, Percent, FileSize, Cpu, HardDrive\n} from 'lucide-react';\nimport { clsx } from 'clsx';\n\ninterface SecuritySettings {\n  password: string;\n  confirmPassword: string;\n  permissions: {\n    print: boolean;\n    copy: boolean;\n    edit: boolean;\n    annotate: boolean;\n    fillForms: boolean;\n    extract: boolean;\n    assemble: boolean;\n    quality: boolean;\n  };\n  encryption: '40bit' | '128bit' | '256bit';\n}\n\ninterface OptimizationSettings {\n  quality: 'low' | 'medium' | 'high' | 'maximum';\n  colorSpace: 'rgb' | 'grayscale' | 'monochrome';\n  dpi: number;\n  compressImages: boolean;\n  compressText: boolean;\n  removeMetadata: boolean;\n  removeBookmarks: boolean;\n  removeComments: boolean;\n  linearize: boolean;\n}\n\ninterface SecurityOptimizationProps {\n  onSecureDocument: (settings: SecuritySettings) => void;\n  onOptimizeDocument: (settings: OptimizationSettings) => void;\n  onAnalyzeDocument: () => void;\n  documentInfo?: {\n    size: number;\n    pages: number;\n    images: number;\n    fonts: number;\n    metadata: Record<string, any>;\n  };\n  isProcessing: boolean;\n}\n\nexport default function SecurityOptimization({\n  onSecureDocument,\n  onOptimizeDocument,\n  onAnalyzeDocument,\n  documentInfo,\n  isProcessing\n}: SecurityOptimizationProps) {\n  const [activeTab, setActiveTab] = useState<'security' | 'optimize' | 'analyze'>('security');\n  const [securitySettings, setSecuritySettings] = useState<SecuritySettings>({\n    password: '',\n    confirmPassword: '',\n    permissions: {\n      print: true,\n      copy: true,\n      edit: false,\n      annotate: true,\n      fillForms: true,\n      extract: false,\n      assemble: false,\n      quality: true\n    },\n    encryption: '256bit'\n  });\n  \n  const [optimizationSettings, setOptimizationSettings] = useState<OptimizationSettings>({\n    quality: 'high',\n    colorSpace: 'rgb',\n    dpi: 150,\n    compressImages: true,\n    compressText: true,\n    removeMetadata: false,\n    removeBookmarks: false,\n    removeComments: false,\n    linearize: true\n  });\n  \n  const [showPassword, setShowPassword] = useState(false);\n  const [analysisResult, setAnalysisResult] = useState<any>(null);\n\n  const tabs = [\n    { id: 'security', label: 'Security', icon: Shield, color: 'from-red-500 to-orange-600' },\n    { id: 'optimize', label: 'Optimize', icon: Zap, color: 'from-green-500 to-emerald-600' },\n    { id: 'analyze', label: 'Analyze', icon: FileText, color: 'from-blue-500 to-cyan-600' }\n  ] as const;\n\n  const formatFileSize = (bytes: number) => {\n    const sizes = ['Bytes', 'KB', 'MB', 'GB'];\n    if (bytes === 0) return '0 Bytes';\n    const i = Math.floor(Math.log(bytes) / Math.log(1024));\n    return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];\n  };\n\n  const getQualityDescription = (quality: string) => {\n    const descriptions = {\n      low: 'Smallest file size, lowest quality',\n      medium: 'Balanced size and quality',\n      high: 'Good quality, moderate compression',\n      maximum: 'Best quality, minimal compression'\n    };\n    return descriptions[quality as keyof typeof descriptions];\n  };\n\n  const getEstimatedSavings = () => {\n    if (!documentInfo) return 0;\n    let savings = 0;\n    if (optimizationSettings.compressImages) savings += 30;\n    if (optimizationSettings.compressText) savings += 10;\n    if (optimizationSettings.removeMetadata) savings += 5;\n    if (optimizationSettings.colorSpace === 'grayscale') savings += 15;\n    if (optimizationSettings.colorSpace === 'monochrome') savings += 40;\n    return Math.min(savings, 80);\n  };\n\n  return (\n    <div className=\"space-y-6\">\n      {/* Tab Navigation */}\n      <div className=\"bg-white/20 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl p-2\">\n        <div className=\"flex gap-2\">\n          {tabs.map(({ id, label, icon: Icon, color }) => (\n            <button\n              key={id}\n              onClick={() => setActiveTab(id)}\n              className={clsx(\n                'flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-semibold transition-all duration-300',\n                activeTab === id\n                  ? `bg-gradient-to-r ${color} text-white shadow-lg`\n                  : 'text-gray-300 hover:text-white hover:bg-white/10'\n              )}\n            >\n              <Icon size={18} />\n              <span className=\"hidden sm:inline\">{label}</span>\n            </button>\n          ))}\n        </div>\n      </div>\n\n      {/* Security Tab */}\n      {activeTab === 'security' && (\n        <div className=\"space-y-6\">\n          {/* Password Protection */}\n          <div className=\"bg-white/20 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl p-6\">\n            <h3 className=\"text-white font-semibold mb-4 flex items-center gap-2\">\n              <Lock size={20} className=\"text-red-400\" />\n              Password Protection\n            </h3>\n            \n            <div className=\"space-y-4\">\n              <div className=\"relative\">\n                <label className=\"text-sm text-gray-300 mb-2 block\">Document Password</label>\n                <div className=\"relative\">\n                  <input\n                    type={showPassword ? 'text' : 'password'}\n                    value={securitySettings.password}\n                    onChange={(e) => setSecuritySettings({\n                      ...securitySettings,\n                      password: e.target.value\n                    })}\n                    className=\"w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white pr-12 focus:outline-none focus:ring-2 focus:ring-red-500\"\n                    placeholder=\"Enter password to protect document\"\n                  />\n                  <button\n                    type=\"button\"\n                    onClick={() => setShowPassword(!showPassword)}\n                    className=\"absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors\"\n                  >\n                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}\n                  </button>\n                </div>\n              </div>\n              \n              <div>\n                <label className=\"text-sm text-gray-300 mb-2 block\">Confirm Password</label>\n                <input\n                  type={showPassword ? 'text' : 'password'}\n                  value={securitySettings.confirmPassword}\n                  onChange={(e) => setSecuritySettings({\n                    ...securitySettings,\n                    confirmPassword: e.target.value\n                  })}\n                  className={clsx(\n                    'w-full bg-white/10 border rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2',\n                    securitySettings.password && securitySettings.confirmPassword &&\n                    securitySettings.password !== securitySettings.confirmPassword\n                      ? 'border-red-500 focus:ring-red-500'\n                      : 'border-white/20 focus:ring-red-500'\n                  )}\n                  placeholder=\"Confirm password\"\n                />\n                {securitySettings.password && securitySettings.confirmPassword &&\n                 securitySettings.password !== securitySettings.confirmPassword && (\n                  <p className=\"text-red-400 text-sm mt-1\">Passwords do not match</p>\n                )}\n              </div>\n              \n              <div>\n                <label className=\"text-sm text-gray-300 mb-2 block\">Encryption Level</label>\n                <select\n                  value={securitySettings.encryption}\n                  onChange={(e) => setSecuritySettings({\n                    ...securitySettings,\n                    encryption: e.target.value as SecuritySettings['encryption']\n                  })}\n                  className=\"w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-500\"\n                >\n                  <option value=\"40bit\" className=\"bg-surface-50\">40-bit (Basic)</option>\n                  <option value=\"128bit\" className=\"bg-surface-50\">128-bit (Standard)</option>\n                  <option value=\"256bit\" className=\"bg-surface-50\">256-bit (Military Grade)</option>\n                </select>\n              </div>\n            </div>\n          </div>\n          \n          {/* Permissions */}\n          <div className=\"bg-white/20 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl p-6\">\n            <h3 className=\"text-white font-semibold mb-4 flex items-center gap-2\">\n              <Key size={20} className=\"text-yellow-400\" />\n              Document Permissions\n            </h3>\n            \n            <div className=\"grid grid-cols-2 gap-4\">\n              {Object.entries(securitySettings.permissions).map(([key, value]) => {\n                const labels = {\n                  print: 'Allow Printing',\n                  copy: 'Allow Copy Text',\n                  edit: 'Allow Editing',\n                  annotate: 'Allow Annotations',\n                  fillForms: 'Allow Form Filling',\n                  extract: 'Allow Content Extraction',\n                  assemble: 'Allow Document Assembly',\n                  quality: 'Allow High Quality Printing'\n                };\n                \n                return (\n                  <label key={key} className=\"flex items-center gap-3 p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors cursor-pointer\">\n                    <input\n                      type=\"checkbox\"\n                      checked={value}\n                      onChange={(e) => setSecuritySettings({\n                        ...securitySettings,\n                        permissions: {\n                          ...securitySettings.permissions,\n                          [key]: e.target.checked\n                        }\n                      })}\n                      className=\"w-4 h-4 text-red-500 bg-white/10 border-white/20 rounded focus:ring-red-500\"\n                    />\n                    <span className=\"text-sm text-gray-300\">\n                      {labels[key as keyof typeof labels]}\n                    </span>\n                  </label>\n                );\n              })}\n            </div>\n            \n            <div className=\"mt-6 pt-4 border-t border-white/10\">\n              <Button\n                onClick={() => onSecureDocument(securitySettings)}\n                disabled={!securitySettings.password || securitySettings.password !== securitySettings.confirmPassword || isProcessing}\n                isLoading={isProcessing}\n                className=\"w-full bg-gradient-to-r from-red-500 to-orange-600 hover:from-red-600 hover:to-orange-700\"\n              >\n                <Shield size={18} />\n                Apply Security Settings\n              </Button>\n            </div>\n          </div>\n        </div>\n      )}\n\n      {/* Optimization Tab */}\n      {activeTab === 'optimize' && (\n        <div className=\"space-y-6\">\n          {/* Quality Settings */}\n          <div className=\"bg-white/20 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl p-6\">\n            <h3 className=\"text-white font-semibold mb-4 flex items-center gap-2\">\n              <Settings size={20} className=\"text-green-400\" />\n              Optimization Settings\n            </h3>\n            \n            <div className=\"space-y-6\">\n              <div>\n                <label className=\"text-sm text-gray-300 mb-3 block\">Quality Level</label>\n                <div className=\"space-y-3\">\n                  {(['low', 'medium', 'high', 'maximum'] as const).map((quality) => (\n                    <label key={quality} className=\"flex items-center gap-3 p-4 bg-white/5 rounded-lg hover:bg-white/10 transition-colors cursor-pointer\">\n                      <input\n                        type=\"radio\"\n                        name=\"quality\"\n                        checked={optimizationSettings.quality === quality}\n                        onChange={() => setOptimizationSettings({\n                          ...optimizationSettings,\n                          quality\n                        })}\n                        className=\"w-4 h-4 text-green-500 bg-white/10 border-white/20 focus:ring-green-500\"\n                      />\n                      <div className=\"flex-1\">\n                        <div className=\"flex items-center justify-between\">\n                          <span className=\"text-white font-medium capitalize\">{quality} Quality</span>\n                          <span className=\"text-xs text-gray-400\">\n                            {quality === 'low' && '~80% reduction'}\n                            {quality === 'medium' && '~50% reduction'}\n                            {quality === 'high' && '~30% reduction'}\n                            {quality === 'maximum' && '~10% reduction'}\n                          </span>\n                        </div>\n                        <p className=\"text-sm text-gray-400 mt-1\">\n                          {getQualityDescription(quality)}\n                        </p>\n                      </div>\n                    </label>\n                  ))}\n                </div>\n              </div>\n              \n              <div>\n                <label className=\"text-sm text-gray-300 mb-3 block\">Color Space</label>\n                <div className=\"grid grid-cols-3 gap-3\">\n                  {(['rgb', 'grayscale', 'monochrome'] as const).map((colorSpace) => (\n                    <button\n                      key={colorSpace}\n                      onClick={() => setOptimizationSettings({\n                        ...optimizationSettings,\n                        colorSpace\n                      })}\n                      className={clsx(\n                        'p-3 rounded-lg transition-all duration-300 text-center',\n                        optimizationSettings.colorSpace === colorSpace\n                          ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white'\n                          : 'bg-white/5 hover:bg-white/10 text-gray-300'\n                      )}\n                    >\n                      <span className=\"text-sm font-medium capitalize\">{colorSpace}</span>\n                    </button>\n                  ))}\n                </div>\n              </div>\n              \n              <div>\n                <label className=\"text-sm text-gray-300 mb-3 block\">\n                  Image DPI: {optimizationSettings.dpi}\n                </label>\n                <input\n                  type=\"range\"\n                  min=\"72\"\n                  max=\"300\"\n                  step=\"1\"\n                  value={optimizationSettings.dpi}\n                  onChange={(e) => setOptimizationSettings({\n                    ...optimizationSettings,\n                    dpi: parseInt(e.target.value)\n                  })}\n                  className=\"w-full h-2 bg-white/20 rounded-lg appearance-none cursor-pointer\"\n                />\n                <div className=\"flex justify-between text-xs text-gray-400 mt-1\">\n                  <span>72 DPI (Web)</span>\n                  <span>150 DPI (Standard)</span>\n                  <span>300 DPI (Print)</span>\n                </div>\n              </div>\n            </div>\n          </div>\n          \n          {/* Advanced Options */}\n          <div className=\"bg-white/20 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl p-6\">\n            <h3 className=\"text-white font-semibold mb-4 flex items-center gap-2\">\n              <Cpu size={20} className=\"text-teal-400\" />\n              Advanced Options\n            </h3>\n            \n            <div className=\"grid grid-cols-2 gap-4\">\n              {[\n                { key: 'compressImages', label: 'Compress Images', icon: Image },\n                { key: 'compressText', label: 'Compress Text', icon: FileText },\n                { key: 'removeMetadata', label: 'Remove Metadata', icon: HardDrive },\n                { key: 'removeBookmarks', label: 'Remove Bookmarks', icon: FileText },\n                { key: 'removeComments', label: 'Remove Comments', icon: FileText },\n                { key: 'linearize', label: 'Optimize for Web', icon: Zap }\n              ].map(({ key, label, icon: Icon }) => (\n                <label key={key} className=\"flex items-center gap-3 p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors cursor-pointer\">\n                  <input\n                    type=\"checkbox\"\n                    checked={optimizationSettings[key as keyof OptimizationSettings] as boolean}\n                    onChange={(e) => setOptimizationSettings({\n                      ...optimizationSettings,\n                      [key]: e.target.checked\n                    })}\n                    className=\"w-4 h-4 text-green-500 bg-white/10 border-white/20 rounded focus:ring-green-500\"\n                  />\n                  <Icon size={16} className=\"text-teal-400\" />\n                  <span className=\"text-sm text-gray-300\">{label}</span>\n                </label>\n              ))}\n            </div>\n            \n            {/* Estimated Savings */}\n            <div className=\"mt-6 p-4 bg-gradient-to-r from-green-500/20 to-emerald-600/20 rounded-lg border border-green-500/30\">\n              <div className=\"flex items-center justify-between\">\n                <div className=\"flex items-center gap-2\">\n                  <Percent size={18} className=\"text-green-400\" />\n                  <span className=\"text-white font-medium\">Estimated File Size Reduction</span>\n                </div>\n                <span className=\"text-2xl font-bold text-green-400\">{getEstimatedSavings()}%</span>\n              </div>\n              {documentInfo && (\n                <p className=\"text-sm text-gray-300 mt-2\">\n                  Current: {formatFileSize(documentInfo.size)} → \n                  Estimated: {formatFileSize(documentInfo.size * (1 - getEstimatedSavings() / 100))}\n                </p>\n              )}\n            </div>\n            \n            <div className=\"mt-6 pt-4 border-t border-white/10\">\n              <Button\n                onClick={() => onOptimizeDocument(optimizationSettings)}\n                isLoading={isProcessing}\n                className=\"w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700\"\n              >\n                <Zap size={18} />\n                Optimize Document\n              </Button>\n            </div>\n          </div>\n        </div>\n      )}\n\n      {/* Analysis Tab */}\n      {activeTab === 'analyze' && (\n        <div className=\"space-y-6\">\n          <div className=\"bg-white/20 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl p-6\">\n            <h3 className=\"text-white font-semibold mb-4 flex items-center gap-2\">\n              <FileText size={20} className=\"text-teal-400\" />\n              Document Analysis\n            </h3>\n            \n            <Button\n              onClick={onAnalyzeDocument}\n              isLoading={isProcessing}\n              className=\"w-full mb-6 bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700\"\n            >\n              <FileText size={18} />\n              Analyze Document\n            </Button>\n            \n            {documentInfo && (\n              <div className=\"grid grid-cols-2 gap-4\">\n                <div className=\"bg-white/5 rounded-lg p-4\">\n                  <div className=\"flex items-center gap-2 mb-2\">\n                    <FileSize size={16} className=\"text-teal-400\" />\n                    <span className=\"text-sm text-gray-300\">File Size</span>\n                  </div>\n                  <span className=\"text-xl font-bold text-white\">{formatFileSize(documentInfo.size)}</span>\n                </div>\n                \n                <div className=\"bg-white/5 rounded-lg p-4\">\n                  <div className=\"flex items-center gap-2 mb-2\">\n                    <FileText size={16} className=\"text-green-400\" />\n                    <span className=\"text-sm text-gray-300\">Pages</span>\n                  </div>\n                  <span className=\"text-xl font-bold text-white\">{documentInfo.pages}</span>\n                </div>\n                \n                <div className=\"bg-white/5 rounded-lg p-4\">\n                  <div className=\"flex items-center gap-2 mb-2\">\n                    <Image size={16} className=\"text-emerald-400\" />\n                    <span className=\"text-sm text-gray-300\">Images</span>\n                  </div>\n                  <span className=\"text-xl font-bold text-white\">{documentInfo.images}</span>\n                </div>\n                \n                <div className=\"bg-white/5 rounded-lg p-4\">\n                  <div className=\"flex items-center gap-2 mb-2\">\n                    <Type size={16} className=\"text-yellow-400\" />\n                    <span className=\"text-sm text-gray-300\">Fonts</span>\n                  </div>\n                  <span className=\"text-xl font-bold text-white\">{documentInfo.fonts}</span>\n                </div>\n              </div>\n            )}\n            \n            {analysisResult && (\n              <div className=\"mt-6 space-y-4\">\n                <h4 className=\"text-white font-medium\">Optimization Recommendations</h4>\n                <div className=\"space-y-2\">\n                  <div className=\"flex items-center gap-2 p-3 bg-yellow-500/20 rounded-lg border border-yellow-500/30\">\n                    <AlertTriangle size={16} className=\"text-yellow-400\" />\n                    <span className=\"text-sm text-gray-300\">Large images detected - consider compression</span>\n                  </div>\n                  <div className=\"flex items-center gap-2 p-3 bg-green-500/20 rounded-lg border border-green-500/30\">\n                    <CheckCircle size={16} className=\"text-green-400\" />\n                    <span className=\"text-sm text-gray-300\">Document structure is optimized</span>\n                  </div>\n                </div>\n              </div>\n            )}\n          </div>\n        </div>\n      )}\n    </div>\n  );\n}
+import React, { useState } from 'react';
+import { Button } from '../ui/Button';
+import { 
+  Shield, Lock, Unlock, Eye, EyeOff, Key, Download, Upload,
+  Zap, Minimize, FileText, Image, Settings, AlertTriangle,
+  CheckCircle, Clock, Percent, FileSize, Cpu, HardDrive
+} from 'lucide-react';
+import { clsx } from 'clsx';
+
+interface SecuritySettings {
+  password: string;
+  confirmPassword: string;
+  permissions: {
+    print: boolean;
+    copy: boolean;
+    edit: boolean;
+    annotate: boolean;
+    fillForms: boolean;
+    extract: boolean;
+    assemble: boolean;
+    quality: boolean;
+  };
+  encryption: '40bit' | '128bit' | '256bit';
+}
+
+interface OptimizationSettings {
+  quality: 'low' | 'medium' | 'high' | 'maximum';
+  colorSpace: 'rgb' | 'grayscale' | 'monochrome';
+  dpi: number;
+  compressImages: boolean;
+  compressText: boolean;
+  removeMetadata: boolean;
+  removeBookmarks: boolean;
+  removeComments: boolean;
+  linearize: boolean;
+}
+
+interface SecurityOptimizationProps {
+  onSecureDocument: (settings: SecuritySettings) => void;
+  onOptimizeDocument: (settings: OptimizationSettings) => void;
+  onAnalyzeDocument: () => void;
+  documentInfo?: {
+    size: number;
+    pages: number;
+    images: number;
+    fonts: number;
+    metadata: Record<string, any>;
+  };
+  isProcessing: boolean;
+}
+
+export default function SecurityOptimization({
+  onSecureDocument,
+  onOptimizeDocument,
+  onAnalyzeDocument,
+  documentInfo,
+  isProcessing
+}: SecurityOptimizationProps) {
+  const [activeTab, setActiveTab] = useState<'security' | 'optimize' | 'analyze'>('security');
+  const [securitySettings, setSecuritySettings] = useState<SecuritySettings>({
+    password: '',
+    confirmPassword: '',
+    permissions: {
+      print: true,
+      copy: true,
+      edit: false,
+      annotate: true,
+      fillForms: true,
+      extract: false,
+      assemble: false,
+      quality: true
+    },
+    encryption: '256bit'
+  });
+  
+  const [optimizationSettings, setOptimizationSettings] = useState<OptimizationSettings>({
+    quality: 'high',
+    colorSpace: 'rgb',
+    dpi: 150,
+    compressImages: true,
+    compressText: true,
+    removeMetadata: false,
+    removeBookmarks: false,
+    removeComments: false,
+    linearize: true
+  });
+  
+  const [showPassword, setShowPassword] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState<any>(null);
+
+  const tabs = [
+    { id: 'security', label: 'Security', icon: Shield, color: 'from-red-500 to-orange-600' },
+    { id: 'optimize', label: 'Optimize', icon: Zap, color: 'from-green-500 to-emerald-600' },
+    { id: 'analyze', label: 'Analyze', icon: FileText, color: 'from-blue-500 to-cyan-600' }
+  ] as const;
+
+  const formatFileSize = (bytes: number) => {
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    if (bytes === 0) return '0 Bytes';
+    const i = Math.floor(Math.log(bytes) / Math.log(1024));
+    return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];
+  };
+
+  const getQualityDescription = (quality: string) => {
+    const descriptions = {
+      low: 'Smallest file size, lowest quality',
+      medium: 'Balanced size and quality',
+      high: 'Good quality, moderate compression',
+      maximum: 'Best quality, minimal compression'
+    };
+    return descriptions[quality as keyof typeof descriptions];
+  };
+
+  const getEstimatedSavings = () => {
+    if (!documentInfo) return 0;
+    let savings = 0;
+    if (optimizationSettings.compressImages) savings += 30;
+    if (optimizationSettings.compressText) savings += 10;
+    if (optimizationSettings.removeMetadata) savings += 5;
+    if (optimizationSettings.colorSpace === 'grayscale') savings += 15;
+    if (optimizationSettings.colorSpace === 'monochrome') savings += 40;
+    return Math.min(savings, 80);
+  };
+
+  return (
+    <div className=\"space-y-6\">
+      {/* Tab Navigation */}
+      <div className=\"bg-white/20 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl p-2\">
+        <div className=\"flex gap-2\">
+          {tabs.map(({ id, label, icon: Icon, color }) => (
+            <button
+              key={id}
+              onClick={() => setActiveTab(id)}
+              className={clsx(
+                'flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-semibold transition-all duration-300',
+                activeTab === id
+                  ? `bg-gradient-to-r ${color} text-white shadow-lg`
+                  : 'text-gray-300 hover:text-white hover:bg-white/10'
+              )}
+            >
+              <Icon size={18} />
+              <span className=\"hidden sm:inline\">{label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Security Tab */}
+      {activeTab === 'security' && (
+        <div className=\"space-y-6\">
+          {/* Password Protection */}
+          <div className=\"bg-white/20 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl p-6\">
+            <h3 className=\"text-white font-semibold mb-4 flex items-center gap-2\">
+              <Lock size={20} className=\"text-red-400\" />
+              Password Protection
+            </h3>
+            
+            <div className=\"space-y-4\">
+              <div className=\"relative\">
+                <label className=\"text-sm text-gray-300 mb-2 block\">Document Password</label>
+                <div className=\"relative\">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={securitySettings.password}
+                    onChange={(e) => setSecuritySettings({
+                      ...securitySettings,
+                      password: e.target.value
+                    })}
+                    className=\"w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white pr-12 focus:outline-none focus:ring-2 focus:ring-red-500\"
+                    placeholder=\"Enter password to protect document\"
+                  />
+                  <button
+                    type=\"button\"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className=\"absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors\"
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+              </div>
+              
+              <div>
+                <label className=\"text-sm text-gray-300 mb-2 block\">Confirm Password</label>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={securitySettings.confirmPassword}
+                  onChange={(e) => setSecuritySettings({
+                    ...securitySettings,
+                    confirmPassword: e.target.value
+                  })}
+                  className={clsx(
+                    'w-full bg-white/10 border rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2',
+                    securitySettings.password && securitySettings.confirmPassword &&
+                    securitySettings.password !== securitySettings.confirmPassword
+                      ? 'border-red-500 focus:ring-red-500'
+                      : 'border-white/20 focus:ring-red-500'
+                  )}
+                  placeholder=\"Confirm password\"
+                />
+                {securitySettings.password && securitySettings.confirmPassword &&
+                 securitySettings.password !== securitySettings.confirmPassword && (
+                  <p className=\"text-red-400 text-sm mt-1\">Passwords do not match</p>
+                )}
+              </div>
+              
+              <div>
+                <label className=\"text-sm text-gray-300 mb-2 block\">Encryption Level</label>
+                <select
+                  value={securitySettings.encryption}
+                  onChange={(e) => setSecuritySettings({
+                    ...securitySettings,
+                    encryption: e.target.value as SecuritySettings['encryption']
+                  })}
+                  className=\"w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-500\"
+                >
+                  <option value=\"40bit\" className=\"bg-surface-50\">40-bit (Basic)</option>
+                  <option value=\"128bit\" className=\"bg-surface-50\">128-bit (Standard)</option>
+                  <option value=\"256bit\" className=\"bg-surface-50\">256-bit (Military Grade)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          
+          {/* Permissions */}
+          <div className=\"bg-white/20 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl p-6\">
+            <h3 className=\"text-white font-semibold mb-4 flex items-center gap-2\">
+              <Key size={20} className=\"text-yellow-400\" />
+              Document Permissions
+            </h3>
+            
+            <div className=\"grid grid-cols-2 gap-4\">
+              {Object.entries(securitySettings.permissions).map(([key, value]) => {
+                const labels = {
+                  print: 'Allow Printing',
+                  copy: 'Allow Copy Text',
+                  edit: 'Allow Editing',
+                  annotate: 'Allow Annotations',
+                  fillForms: 'Allow Form Filling',
+                  extract: 'Allow Content Extraction',
+                  assemble: 'Allow Document Assembly',
+                  quality: 'Allow High Quality Printing'
+                };
+                
+                return (
+                  <label key={key} className=\"flex items-center gap-3 p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors cursor-pointer\">
+                    <input
+                      type=\"checkbox\"
+                      checked={value}
+                      onChange={(e) => setSecuritySettings({
+                        ...securitySettings,
+                        permissions: {
+                          ...securitySettings.permissions,
+                          [key]: e.target.checked
+                        }
+                      })}
+                      className=\"w-4 h-4 text-red-500 bg-white/10 border-white/20 rounded focus:ring-red-500\"
+                    />
+                    <span className=\"text-sm text-gray-300\">
+                      {labels[key as keyof typeof labels]}
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+            
+            <div className=\"mt-6 pt-4 border-t border-white/10\">
+              <Button
+                onClick={() => onSecureDocument(securitySettings)}
+                disabled={!securitySettings.password || securitySettings.password !== securitySettings.confirmPassword || isProcessing}
+                isLoading={isProcessing}
+                className=\"w-full bg-gradient-to-r from-red-500 to-orange-600 hover:from-red-600 hover:to-orange-700\"
+              >
+                <Shield size={18} />
+                Apply Security Settings
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Optimization Tab */}
+      {activeTab === 'optimize' && (
+        <div className=\"space-y-6\">
+          {/* Quality Settings */}
+          <div className=\"bg-white/20 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl p-6\">
+            <h3 className=\"text-white font-semibold mb-4 flex items-center gap-2\">
+              <Settings size={20} className=\"text-green-400\" />
+              Optimization Settings
+            </h3>
+            
+            <div className=\"space-y-6\">
+              <div>
+                <label className=\"text-sm text-gray-300 mb-3 block\">Quality Level</label>
+                <div className=\"space-y-3\">
+                  {(['low', 'medium', 'high', 'maximum'] as const).map((quality) => (
+                    <label key={quality} className=\"flex items-center gap-3 p-4 bg-white/5 rounded-lg hover:bg-white/10 transition-colors cursor-pointer\">
+                      <input
+                        type=\"radio\"
+                        name=\"quality\"
+                        checked={optimizationSettings.quality === quality}
+                        onChange={() => setOptimizationSettings({
+                          ...optimizationSettings,
+                          quality
+                        })}
+                        className=\"w-4 h-4 text-green-500 bg-white/10 border-white/20 focus:ring-green-500\"
+                      />
+                      <div className=\"flex-1\">
+                        <div className=\"flex items-center justify-between\">
+                          <span className=\"text-white font-medium capitalize\">{quality} Quality</span>
+                          <span className=\"text-xs text-gray-400\">
+                            {quality === 'low' && '~80% reduction'}
+                            {quality === 'medium' && '~50% reduction'}
+                            {quality === 'high' && '~30% reduction'}
+                            {quality === 'maximum' && '~10% reduction'}
+                          </span>
+                        </div>
+                        <p className=\"text-sm text-gray-400 mt-1\">
+                          {getQualityDescription(quality)}
+                        </p>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+              
+              <div>
+                <label className=\"text-sm text-gray-300 mb-3 block\">Color Space</label>
+                <div className=\"grid grid-cols-3 gap-3\">
+                  {(['rgb', 'grayscale', 'monochrome'] as const).map((colorSpace) => (
+                    <button
+                      key={colorSpace}
+                      onClick={() => setOptimizationSettings({
+                        ...optimizationSettings,
+                        colorSpace
+                      })}
+                      className={clsx(
+                        'p-3 rounded-lg transition-all duration-300 text-center',
+                        optimizationSettings.colorSpace === colorSpace
+                          ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white'
+                          : 'bg-white/5 hover:bg-white/10 text-gray-300'
+                      )}
+                    >
+                      <span className=\"text-sm font-medium capitalize\">{colorSpace}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              
+              <div>
+                <label className=\"text-sm text-gray-300 mb-3 block\">
+                  Image DPI: {optimizationSettings.dpi}
+                </label>
+                <input
+                  type=\"range\"
+                  min=\"72\"
+                  max=\"300\"
+                  step=\"1\"
+                  value={optimizationSettings.dpi}
+                  onChange={(e) => setOptimizationSettings({
+                    ...optimizationSettings,
+                    dpi: parseInt(e.target.value)
+                  })}
+                  className=\"w-full h-2 bg-white/20 rounded-lg appearance-none cursor-pointer\"
+                />
+                <div className=\"flex justify-between text-xs text-gray-400 mt-1\">
+                  <span>72 DPI (Web)</span>
+                  <span>150 DPI (Standard)</span>
+                  <span>300 DPI (Print)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Advanced Options */}
+          <div className=\"bg-white/20 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl p-6\">
+            <h3 className=\"text-white font-semibold mb-4 flex items-center gap-2\">
+              <Cpu size={20} className=\"text-teal-400\" />
+              Advanced Options
+            </h3>
+            
+            <div className=\"grid grid-cols-2 gap-4\">
+              {[
+                { key: 'compressImages', label: 'Compress Images', icon: Image },
+                { key: 'compressText', label: 'Compress Text', icon: FileText },
+                { key: 'removeMetadata', label: 'Remove Metadata', icon: HardDrive },
+                { key: 'removeBookmarks', label: 'Remove Bookmarks', icon: FileText },
+                { key: 'removeComments', label: 'Remove Comments', icon: FileText },
+                { key: 'linearize', label: 'Optimize for Web', icon: Zap }
+              ].map(({ key, label, icon: Icon }) => (
+                <label key={key} className=\"flex items-center gap-3 p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors cursor-pointer\">
+                  <input
+                    type=\"checkbox\"
+                    checked={optimizationSettings[key as keyof OptimizationSettings] as boolean}
+                    onChange={(e) => setOptimizationSettings({
+                      ...optimizationSettings,
+                      [key]: e.target.checked
+                    })}
+                    className=\"w-4 h-4 text-green-500 bg-white/10 border-white/20 rounded focus:ring-green-500\"
+                  />
+                  <Icon size={16} className=\"text-teal-400\" />
+                  <span className=\"text-sm text-gray-300\">{label}</span>
+                </label>
+              ))}
+            </div>
+            
+            {/* Estimated Savings */}
+            <div className=\"mt-6 p-4 bg-gradient-to-r from-green-500/20 to-emerald-600/20 rounded-lg border border-green-500/30\">
+              <div className=\"flex items-center justify-between\">
+                <div className=\"flex items-center gap-2\">
+                  <Percent size={18} className=\"text-green-400\" />
+                  <span className=\"text-white font-medium\">Estimated File Size Reduction</span>
+                </div>
+                <span className=\"text-2xl font-bold text-green-400\">{getEstimatedSavings()}%</span>
+              </div>
+              {documentInfo && (
+                <p className=\"text-sm text-gray-300 mt-2\">
+                  Current: {formatFileSize(documentInfo.size)} → 
+                  Estimated: {formatFileSize(documentInfo.size * (1 - getEstimatedSavings() / 100))}
+                </p>
+              )}
+            </div>
+            
+            <div className=\"mt-6 pt-4 border-t border-white/10\">
+              <Button
+                onClick={() => onOptimizeDocument(optimizationSettings)}
+                isLoading={isProcessing}
+                className=\"w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700\"
+              >
+                <Zap size={18} />
+                Optimize Document
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Analysis Tab */}
+      {activeTab === 'analyze' && (
+        <div className=\"space-y-6\">
+          <div className=\"bg-white/20 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl p-6\">
+            <h3 className=\"text-white font-semibold mb-4 flex items-center gap-2\">
+              <FileText size={20} className=\"text-teal-400\" />
+              Document Analysis
+            </h3>
+            
+            <Button
+              onClick={onAnalyzeDocument}
+              isLoading={isProcessing}
+              className=\"w-full mb-6 bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700\"
+            >
+              <FileText size={18} />
+              Analyze Document
+            </Button>
+            
+            {documentInfo && (
+              <div className=\"grid grid-cols-2 gap-4\">
+                <div className=\"bg-white/5 rounded-lg p-4\">
+                  <div className=\"flex items-center gap-2 mb-2\">
+                    <FileSize size={16} className=\"text-teal-400\" />
+                    <span className=\"text-sm text-gray-300\">File Size</span>
+                  </div>
+                  <span className=\"text-xl font-bold text-white\">{formatFileSize(documentInfo.size)}</span>
+                </div>
+                
+                <div className=\"bg-white/5 rounded-lg p-4\">
+                  <div className=\"flex items-center gap-2 mb-2\">
+                    <FileText size={16} className=\"text-green-400\" />
+                    <span className=\"text-sm text-gray-300\">Pages</span>
+                  </div>
+                  <span className=\"text-xl font-bold text-white\">{documentInfo.pages}</span>
+                </div>
+                
+                <div className=\"bg-white/5 rounded-lg p-4\">
+                  <div className=\"flex items-center gap-2 mb-2\">
+                    <Image size={16} className=\"text-emerald-400\" />
+                    <span className=\"text-sm text-gray-300\">Images</span>
+                  </div>
+                  <span className=\"text-xl font-bold text-white\">{documentInfo.images}</span>
+                </div>
+                
+                <div className=\"bg-white/5 rounded-lg p-4\">
+                  <div className=\"flex items-center gap-2 mb-2\">
+                    <Type size={16} className=\"text-yellow-400\" />
+                    <span className=\"text-sm text-gray-300\">Fonts</span>
+                  </div>
+                  <span className=\"text-xl font-bold text-white\">{documentInfo.fonts}</span>
+                </div>
+              </div>
+            )}
+            
+            {analysisResult && (
+              <div className=\"mt-6 space-y-4\">
+                <h4 className=\"text-white font-medium\">Optimization Recommendations</h4>
+                <div className=\"space-y-2\">
+                  <div className=\"flex items-center gap-2 p-3 bg-yellow-500/20 rounded-lg border border-yellow-500/30\">
+                    <AlertTriangle size={16} className=\"text-yellow-400\" />
+                    <span className=\"text-sm text-gray-300\">Large images detected - consider compression</span>
+                  </div>
+                  <div className=\"flex items-center gap-2 p-3 bg-green-500/20 rounded-lg border border-green-500/30\">
+                    <CheckCircle size={16} className=\"text-green-400\" />
+                    <span className=\"text-sm text-gray-300\">Document structure is optimized</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+

@@ -73,6 +73,7 @@ export interface AnalyticsMetrics {
     engagementRate: number;
     topDocuments: any[];
     viewsOverTime: any[];
+    recentViews: any[];
   };
   
   // Trend analysis
@@ -152,57 +153,109 @@ class AdvancedAnalyticsService {
     }
   }
   
-  async getComprehensiveAnalytics(userId: string): Promise<AnalyticsMetrics> {
+  async getComprehensiveAnalytics(userId: string): Promise<any> {
     return this.withTracking('getComprehensiveAnalytics', userId, async () => {
       // Check cache first for expensive operation
-      const cacheKey = `comprehensive_analytics_${userId}`;
+      const cacheKey = `comprehensive_analytics_v2_${userId}`;
       const cached = AdvancedAnalyticsCache.get(cacheKey);
       if (cached) {
         return cached;
       }
       
       try {
-      const applications = await JobApplication.find({ 
-        userId: new mongoose.Types.ObjectId(userId) 
-      }).sort({ applicationDate: -1 });
+        const applications = await JobApplication.find({ 
+          userId: new mongoose.Types.ObjectId(userId) 
+        }).sort({ applicationDate: -1 });
 
-      if (applications.length === 0) {
-        return this.getEmptyMetrics();
+        if (applications.length === 0) {
+          return this.getEmptyAnalyticsData();
+        }
+
+        const coreMetrics = await this.calculateCoreMetrics(applications);
+        const trendAnalysis = await this.calculateTrendAnalysis(applications);
+        const documentEngagement = await this.getDocumentAnalytics(userId);
+        
+        // Calculate overview
+        const activeApplications = applications.filter(app => 
+          !['rejected', 'withdrawn', 'ghosted', 'offer_accepted', 'offer_declined'].includes(app.status) && !app.archived
+        ).length;
+
+        const overview = {
+          totalApplications: applications.length,
+          activeApplications,
+          responseRate: coreMetrics.responseRate || 0,
+          interviewRate: coreMetrics.interviewConversionRate || 0,
+          offerRate: coreMetrics.offerConversionRate || 0,
+          averageResponseTime: coreMetrics.timeToResponse || 0
+        };
+
+        // Calculate trends
+        const statusDistribution = this.calculateStatusDistribution(applications);
+        
+        // Calculate trends comparison (vs previous period)
+        const trends = {
+          applicationsOverTime: trendAnalysis.map(t => ({
+            date: t.period,
+            applications: t.applications,
+            responses: t.responses,
+            interviews: t.interviews
+          })),
+          statusDistribution,
+          applicationsTrend: this.calculateMetricTrend(applications, 'applications'),
+          responseRateTrend: this.calculateMetricTrend(applications, 'responseRate'),
+          interviewRateTrend: this.calculateMetricTrend(applications, 'interviewRate'),
+          responseTimeTrend: this.calculateMetricTrend(applications, 'responseTime')
+        };
+
+        // Calculate insights
+        const companyAnalysis = await this.getCompanyAnalysis(userId); // Reusing existing method logic but reshaping result
+        const topCompanies = companyAnalysis.slice(0, 5).map(c => ({
+          company: c.companyName,
+          applications: c.applicationCount,
+          successRate: c.successRate
+        }));
+
+        const applicationsBySource = this.calculateApplicationsBySource(applications);
+        const salaryAnalysis = this.calculateSalaryAnalysis(applications);
+
+        const insights = {
+          topCompanies,
+          applicationsBySource,
+          salaryAnalysis
+        };
+
+        // Calculate performance
+        const monthlyStats = trendAnalysis.map(t => ({
+          month: t.period,
+          applications: t.applications,
+          interviews: t.interviews,
+          offers: t.offers,
+          rejections: t.rejections
+        }));
+
+        const conversionFunnel = this.calculateConversionFunnel(applications);
+
+        const performance = {
+          monthlyStats,
+          conversionFunnel
+        };
+
+        const result = {
+          overview,
+          trends,
+          insights,
+          performance,
+          documentEngagement
+        };
+        
+        // Cache expensive comprehensive analytics for 10 minutes
+        AdvancedAnalyticsCache.set(cacheKey, result, 10 * 60 * 1000);
+        return result;
+        
+      } catch (error) {
+        console.error('Error generating comprehensive analytics:', error);
+        throw new Error('Failed to generate analytics');
       }
-
-      const coreMetrics = await this.calculateCoreMetrics(applications);
-      const advancedMetrics = await this.calculateAdvancedMetrics(applications);
-      const trendAnalysis = await this.calculateTrendAnalysis(applications);
-      const seasonalPatterns = await this.calculateSeasonalPatterns(applications);
-      const performanceImprovement = await this.calculatePerformanceImprovement(applications);
-      const documentEngagement = await this.getDocumentAnalytics(userId);
-
-      const result = {
-        applicationEffectiveness: coreMetrics.applicationEffectiveness || 0,
-        responseRate: coreMetrics.responseRate || 0,
-        interviewConversionRate: coreMetrics.interviewConversionRate || 0,
-        offerConversionRate: coreMetrics.offerConversionRate || 0,
-        timeToResponse: coreMetrics.timeToResponse || 0,
-        timeToInterview: coreMetrics.timeToInterview || 0,
-        timeToOffer: coreMetrics.timeToOffer || 0,
-        successPredictionScore: advancedMetrics.successPredictionScore || 0,
-        marketCompetitiveness: advancedMetrics.marketCompetitiveness || 0,
-        applicationOptimizationScore: advancedMetrics.applicationOptimizationScore || 0,
-        industryBenchmark: advancedMetrics.industryBenchmark || 0,
-        applicationTrends: trendAnalysis,
-        seasonalPatterns,
-        performanceImprovement,
-        documentEngagement
-      };
-      
-      // Cache expensive comprehensive analytics for 10 minutes
-      AdvancedAnalyticsCache.set(cacheKey, result, 10 * 60 * 1000);
-      return result;
-      
-    } catch (error) {
-      console.error('Error generating comprehensive analytics:', error);
-      throw new Error('Failed to generate analytics');
-    }
     });
   }
 
@@ -215,6 +268,7 @@ class AdvancedAnalyticsService {
       let totalDownloads = 0;
       const uniqueIps = new Set();
       const viewsOverTimeMap: Record<string, number> = {};
+      const recentViews: any[] = [];
 
       shares.forEach(share => {
         totalViews += share.viewCount;
@@ -225,8 +279,20 @@ class AdvancedAnalyticsService {
           
           const date = new Date(view.viewedAt).toISOString().split('T')[0];
           viewsOverTimeMap[date] = (viewsOverTimeMap[date] || 0) + 1;
+
+          recentViews.push({
+            documentTitle: share.title,
+            documentId: share._id,
+            viewedAt: view.viewedAt,
+            ipAddress: view.ipAddress,
+            userAgent: view.userAgent,
+            location: (view as any).location
+          });
         });
       });
+
+      // Sort recent views by date desc
+      recentViews.sort((a, b) => new Date(b.viewedAt).getTime() - new Date(a.viewedAt).getTime());
 
       const topDocuments = shares
         .sort((a, b) => b.viewCount - a.viewCount)
@@ -250,7 +316,8 @@ class AdvancedAnalyticsService {
         uniqueViewers: uniqueIps.size,
         engagementRate,
         topDocuments,
-        viewsOverTime
+        viewsOverTime,
+        recentViews
       };
     } catch (error) {
       console.error('Error in getDocumentAnalytics:', error);
@@ -596,6 +663,180 @@ class AdvancedAnalyticsService {
       applicationTrends: [],
       seasonalPatterns: [],
       performanceImprovement: 0,
+    };
+  }
+
+  private calculateStatusDistribution(applications: any[]): Array<{ status: string, count: number, percentage: number }> {
+    const total = applications.length;
+    if (total === 0) return [];
+    
+    const counts: Record<string, number> = {};
+    applications.forEach(app => {
+      counts[app.status] = (counts[app.status] || 0) + 1;
+    });
+
+    return Object.entries(counts)
+      .map(([status, count]) => ({
+        status,
+        count,
+        percentage: Math.round((count / total) * 100)
+      }))
+      .sort((a, b) => b.count - a.count);
+  }
+
+  private calculateMetricTrend(applications: any[], metric: string): number {
+    // Simple comparison between first half and second half of sorted applications
+    if (applications.length < 2) return 0;
+    
+    const sorted = [...applications].sort((a, b) => new Date(a.applicationDate).getTime() - new Date(b.applicationDate).getTime());
+    const mid = Math.floor(sorted.length / 2);
+    const recent = sorted.slice(mid);
+    const previous = sorted.slice(0, mid);
+
+    const calculateValue = (apps: any[]) => {
+      if (apps.length === 0) return 0;
+      switch (metric) {
+        case 'applications': return apps.length;
+        case 'responseRate': 
+          return (apps.filter(a => !['applied', 'rejected', 'withdrawn'].includes(a.status)).length / apps.length) * 100;
+        case 'interviewRate':
+          const responses = apps.filter(a => !['applied', 'rejected', 'withdrawn'].includes(a.status)).length;
+          return responses > 0 ? (apps.filter(a => a.interviews?.length > 0).length / responses) * 100 : 0;
+        case 'responseTime':
+          return this.calculateAverageTimeToResponse(apps);
+        default: return 0;
+      }
+    };
+
+    const recentVal = calculateValue(recent);
+    const prevVal = calculateValue(previous);
+    
+    if (prevVal === 0) return recentVal > 0 ? 100 : 0;
+    return Math.round(((recentVal - prevVal) / prevVal) * 100);
+  }
+
+  private calculateApplicationsBySource(applications: any[]): Array<{ source: string, count: number, conversionRate: number }> {
+    const sources = new Map<string, { count: number, successful: number }>();
+    
+    applications.forEach(app => {
+      const source = app.jobSource || 'unknown';
+      if (!sources.has(source)) {
+        sources.set(source, { count: 0, successful: 0 });
+      }
+      
+      const stats = sources.get(source)!;
+      stats.count++;
+      
+      if (['offer_received', 'offer_accepted', 'first_interview', 'second_interview', 'final_interview'].includes(app.status)) {
+        stats.successful++;
+      }
+    });
+
+    return Array.from(sources.entries())
+      .map(([source, stats]) => ({
+        source,
+        count: stats.count,
+        conversionRate: stats.count > 0 ? (stats.successful / stats.count) * 100 : 0
+      }))
+      .sort((a, b) => b.conversionRate - a.conversionRate);
+  }
+
+  private calculateSalaryAnalysis(applications: any[]): { averageMin: number, averageMax: number, byLocation: any[] } {
+    let totalMin = 0;
+    let totalMax = 0;
+    let count = 0;
+    const locationSalaries = new Map<string, { total: number, count: number }>();
+
+    applications.forEach(app => {
+      if (app.compensation?.salaryRange) {
+        const { min, max } = app.compensation.salaryRange;
+        if (min && max) {
+          totalMin += min;
+          totalMax += max;
+          count++;
+
+          if (app.jobLocation?.city) {
+            const loc = `${app.jobLocation.city}, ${app.jobLocation.state || ''}`;
+            if (!locationSalaries.has(loc)) locationSalaries.set(loc, { total: 0, count: 0 });
+            const locStat = locationSalaries.get(loc)!;
+            locStat.total += (min + max) / 2;
+            locStat.count++;
+          }
+        }
+      }
+    });
+
+    return {
+      averageMin: count > 0 ? Math.round(totalMin / count) : 0,
+      averageMax: count > 0 ? Math.round(totalMax / count) : 0,
+      byLocation: Array.from(locationSalaries.entries())
+        .map(([location, stats]) => ({
+          location,
+          averageSalary: Math.round(stats.total / stats.count),
+          count: stats.count
+        }))
+        .sort((a, b) => b.averageSalary - a.averageSalary)
+        .slice(0, 5)
+    };
+  }
+
+  private calculateConversionFunnel(applications: any[]): Array<{ stage: string, count: number, percentage: number }> {
+    const total = applications.length;
+    if (total === 0) return [];
+
+    const stages = [
+      { name: 'Applied', filter: () => true },
+      { name: 'Screening', filter: (a: any) => !['applied', 'rejected'].includes(a.status) },
+      { name: 'Interview', filter: (a: any) => a.interviews && a.interviews.length > 0 },
+      { name: 'Offer', filter: (a: any) => ['offer_received', 'offer_accepted', 'offer_declined'].includes(a.status) },
+      { name: 'Accepted', filter: (a: any) => a.status === 'offer_accepted' }
+    ];
+
+    return stages.map(stage => {
+      const count = applications.filter(stage.filter).length;
+      return {
+        stage: stage.name,
+        count,
+        percentage: Math.round((count / total) * 100)
+      };
+    });
+  }
+
+  private getEmptyAnalyticsData(): any {
+    return {
+      overview: {
+        totalApplications: 0,
+        activeApplications: 0,
+        responseRate: 0,
+        interviewRate: 0,
+        offerRate: 0,
+        averageResponseTime: 0
+      },
+      trends: {
+        applicationsOverTime: [],
+        statusDistribution: [],
+        applicationsTrend: 0,
+        responseRateTrend: 0,
+        interviewRateTrend: 0,
+        responseTimeTrend: 0
+      },
+      insights: {
+        topCompanies: [],
+        applicationsBySource: [],
+        salaryAnalysis: { averageMin: 0, averageMax: 0, byLocation: [] }
+      },
+      performance: {
+        monthlyStats: [],
+        conversionFunnel: []
+      },
+      documentEngagement: {
+        totalViews: 0,
+        totalDownloads: 0,
+        uniqueViewers: 0,
+        engagementRate: 0,
+        topDocuments: [],
+        viewsOverTime: []
+      }
     };
   }
 

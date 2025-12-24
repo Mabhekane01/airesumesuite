@@ -5,7 +5,7 @@ import {
   resumeUpdateValidation
 } from '../controllers/resumeController';
 import { authMiddleware, AuthenticatedRequest, optionalAuthMiddleware } from '../middleware/auth';
-import { trackFeatureUsage } from '../middleware/subscriptionValidation';
+import { trackFeatureUsage, requireFeatureAccess } from '../middleware/subscriptionValidation';
 
 const router: Router = express.Router();
 
@@ -58,7 +58,8 @@ router.post('/generate-summary',
 
 // POST /api/v1/resumes/:id/enhance - Comprehensive AI enhancement
 router.post('/:id/enhance',
-  authMiddleware, 
+  authMiddleware,
+  requireFeatureAccess('ai-resume-enhancement'),
   trackFeatureUsage('ai-resume-enhancement'), 
   (req: AuthenticatedRequest, res: Response) => resumeController.enhanceResumeComprehensively(req, res)
 );
@@ -66,6 +67,7 @@ router.post('/:id/enhance',
 // POST /api/v1/resumes/enhance-unsaved - Enhance unsaved resume
 router.post('/enhance-unsaved',
   authMiddleware,
+  requireFeatureAccess('ai-resume-enhancement'),
   trackFeatureUsage('ai-resume-enhancement'),
   (req: Request, res: Response) => resumeController.enhanceUnsavedResume(req, res)
 );
@@ -73,6 +75,7 @@ router.post('/enhance-unsaved',
 // POST /api/v1/resumes/enhance-with-latex - Enhance resume and return PDF
 router.post('/enhance-with-latex',
   authMiddleware,
+  requireFeatureAccess('ai-resume-enhancement'),
   trackFeatureUsage('ai-resume-enhancement-pdf'),
   (req: Request, res: Response) => resumeController.enhanceResumeWithLatexPDF(req, res)
 );
@@ -80,6 +83,7 @@ router.post('/enhance-with-latex',
 // POST /api/v1/resumes/enhance-with-latex-stream - Enhance resume with streaming progress
 router.post('/enhance-with-latex-stream',
   authMiddleware,
+  requireFeatureAccess('ai-resume-enhancement'),
   trackFeatureUsage('ai-resume-enhancement-pdf-stream'),
   (req: Request, res: Response) => resumeController.enhanceResumeWithLatexStreamPDF(req, res)
 );
@@ -87,6 +91,7 @@ router.post('/enhance-with-latex-stream',
 // POST /api/v1/resumes/enhance-content-only - Get AI enhancements without PDF generation
 router.post('/enhance-content-only',
   authMiddleware,
+  requireFeatureAccess('ai-resume-enhancement'),
   trackFeatureUsage('ai-resume-enhancement-preview'),
   (req: Request, res: Response) => resumeController.enhanceResumeContentOnly(req, res)
 );
@@ -103,6 +108,7 @@ router.post('/generate-preview-pdf',
 // POST /api/v1/resumes/:id/optimize-for-job - Optimize saved resume for specific job
 router.post('/:id/optimize-for-job', 
   authMiddleware,
+  requireFeatureAccess('ai-job-optimization'),
   trackFeatureUsage('ai-job-optimization'),
   (req: AuthenticatedRequest, res: Response) => resumeController.optimizeResumeWithStandardizedTemplate(req, res)      
 );
@@ -110,6 +116,7 @@ router.post('/:id/optimize-for-job',
 // POST /api/v1/resumes/optimize-for-job - Optimize unsaved resume for job (JSON response)
 router.post('/optimize-for-job',
   authMiddleware,
+  requireFeatureAccess('ai-job-optimization'),
   trackFeatureUsage('ai-job-optimization'),
   (req: AuthenticatedRequest, res: Response) => resumeController.optimizeUnsavedResumeForJob(req, res)
 );
@@ -117,6 +124,7 @@ router.post('/optimize-for-job',
 // POST /api/v1/resumes/optimize-for-job-pdf - Generate PDF for job-optimized resume
 router.post('/optimize-for-job-pdf', 
   authMiddleware,
+  requireFeatureAccess('ai-job-optimization'),
   trackFeatureUsage('ai-job-optimization'),
   (req: AuthenticatedRequest, res: Response) => resumeController.optimizeUnsavedResumeForJobPDF(req, res)
 );
@@ -124,6 +132,7 @@ router.post('/optimize-for-job-pdf',
 // POST /api/v1/resumes/optimize-for-job-preview - Get job optimization suggestions without PDF generation
 router.post('/optimize-for-job-preview',
   authMiddleware,
+  requireFeatureAccess('ai-job-optimization'),
   trackFeatureUsage('ai-job-optimization-preview'),
   (req: Request, res: Response) => resumeController.optimizeForJobPreview(req, res)
 );
@@ -131,6 +140,7 @@ router.post('/optimize-for-job-preview',
 // POST /api/v1/resumes/:id/optimize-with-url - Optimize resume using job URL
 router.post('/:id/optimize-with-url', 
   authMiddleware,
+  requireFeatureAccess('ai-job-optimization'),
   trackFeatureUsage('ai-job-optimization'),
   (req: AuthenticatedRequest, res: Response) => resumeController.optimizeResumeWithJobUrl(req, res)
 );
@@ -159,6 +169,7 @@ router.post('/:id/job-match-score',
 // POST /api/v1/resumes/:id/ats-analysis - Analyze ATS compatibility
 router.post('/:id/ats-analysis',
   authMiddleware,
+  requireFeatureAccess('ai-ats-analysis'),
   trackFeatureUsage('ai-ats-analysis'),
   (req: AuthenticatedRequest, res: Response) => resumeController.analyzeATSCompatibility(req, res)
 );
@@ -166,6 +177,7 @@ router.post('/:id/ats-analysis',
 // POST /api/v1/resumes/ats-analysis-unsaved - ATS analysis for unsaved resume
 router.post('/ats-analysis-unsaved',
   authMiddleware,
+  requireFeatureAccess('ai-ats-analysis'),
   trackFeatureUsage('ai-ats-analysis-preview'),
   (req: Request, res: Response) => resumeController.analyzeATSCompatibilityUnsaved(req, res)
 );

@@ -1,242 +1,255 @@
 import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  BarChart3, 
-  Eye, 
-  Clock, 
+  Briefcase, 
   MapPin, 
+  Building, 
+  Search, 
+  Plus, 
   Trash2, 
   ExternalLink, 
-  Share2,
-  AlertCircle,
-  TrendingUp,
-  Globe,
-  Smartphone,
-  Monitor,
-  Mail
+  Calendar, 
+  Clock, 
+  ChevronRight,
+  CheckCircle2,
+  XCircle,
+  Eye,
+  MoreHorizontal
 } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Button } from '../../components/ui/Button';
-import { Card } from '../../components/ui/Card';
+import { jobApplicationAPI } from '../../services/api';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+// --- Components ---
+
+const STATUS_CONFIG: Record<string, any> = {
+  applied: { label: 'Applied', color: 'text-brand-blue bg-brand-blue/10 border-brand-blue/20', icon: Clock },
+  under_review: { label: 'In Review', color: 'text-brand-orange bg-brand-orange/10 border-brand-orange/20', icon: Eye },
+  interview: { label: 'Interview', color: 'text-brand-purple bg-brand-purple/10 border-brand-purple/20', icon: Calendar },
+  offer: { label: 'Offer', color: 'text-brand-success bg-brand-success/10 border-brand-success/20', icon: CheckCircle2 },
+  rejected: { label: 'Rejected', color: 'text-red-500 bg-red-50 border-red-100', icon: XCircle },
+};
+
+const ApplicationCard = ({ application, onDelete }: { application: any, onDelete: (id: string) => void }) => {
+  const statusConfig = STATUS_CONFIG[application.status] || STATUS_CONFIG.applied;
+  
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={{ y: -6 }}
+      className="bg-white border border-surface-200 rounded-[2.5rem] p-8 shadow-sm hover:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.1)] hover:border-brand-blue/20 transition-all duration-500 group relative overflow-hidden flex flex-col h-full"
+    >
+      <div className="absolute top-0 right-0 w-32 h-32 bg-brand-blue/[0.02] rounded-full -mr-16 -mt-16 group-hover:bg-brand-blue/[0.05] transition-colors duration-700" />
+      
+      <div className="relative z-10 flex justify-between items-start mb-8">
+        <div className="min-w-0 flex-1">
+          <h3 className="text-2xl font-display font-black text-brand-dark tracking-tighter leading-[1.1] group-hover:text-brand-blue transition-colors duration-300 line-clamp-2">
+            {application.jobTitle}
+          </h3>
+          <div className="flex flex-wrap items-center gap-5 mt-4">
+            <div className="flex items-center gap-2 text-[10px] font-black text-text-tertiary uppercase tracking-[0.15em] bg-surface-50 px-3 py-1.5 rounded-lg border border-surface-100 group-hover:bg-white transition-colors">
+              <Building size={14} className="text-brand-blue" /> 
+              {application.companyName}
+            </div>
+            {application.jobLocation && (
+              <div className="flex items-center gap-2 text-[10px] font-black text-text-tertiary uppercase tracking-[0.15em] bg-surface-50 px-3 py-1.5 rounded-lg border border-surface-100 group-hover:bg-white transition-colors">
+                <MapPin size={14} className="text-brand-blue" /> 
+                {application.jobLocation.city || 'Remote'}
+              </div>
+            )}
+          </div>
+        </div>
+        <div className="flex flex-col items-end gap-2.5">
+           <div className={`px-3.5 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] border shadow-sm ${statusConfig.color}`}>
+             <span className="flex items-center gap-1.5">
+               <statusConfig.icon size={12} strokeWidth={3} />
+               {statusConfig.label}
+             </span>
+           </div>
+           
+           <div className="flex items-center gap-1.5 text-[9px] font-bold text-text-tertiary uppercase tracking-widest bg-surface-50 px-2 py-1 rounded-md border border-surface-100">
+             <Clock size={10} />
+             {new Date(application.applicationDate).toLocaleDateString()}
+           </div>
+           
+           <button 
+             onClick={(e) => { e.preventDefault(); onDelete(application._id); }}
+             className="p-2 rounded-xl text-text-tertiary hover:bg-red-50 hover:text-red-500 transition-all opacity-0 group-hover:opacity-100"
+             title="Remove Application"
+           >
+             <Trash2 size={16} />
+           </button>
+        </div>
+      </div>
+      
+      {/* Description Snippet or Notes */}
+      <p className="relative z-10 text-text-secondary text-sm font-medium leading-relaxed opacity-80 mb-10 line-clamp-3 italic">
+        "{application.applicationStrategy?.whyInterested || application.jobDescription || 'No notes available.'}"
+      </p>
+
+      <div className="relative z-10 flex items-center justify-between mt-auto pt-6 border-t border-surface-100/60">
+        <div className="flex flex-col">
+          <span className="text-[9px] font-black text-text-tertiary uppercase tracking-[0.2em] mb-1 opacity-60">Status Update</span>
+          <span className="text-sm font-black text-brand-dark tracking-tight flex items-center gap-2">
+             {application.communications?.length || 0} Logs / {application.interviews?.length || 0} Sessions
+          </span>
+        </div>
+        <Link 
+          to={`/dashboard/applications/${application._id}`} 
+          className="btn-primary px-8 py-3.5 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-brand-blue/20 flex items-center gap-2.5 hover:scale-105 transition-transform duration-300"
+        >
+          Manage Protocol <ChevronRight size={16} className="stroke-[3]" />
+        </Link>
+      </div>
+    </motion.div>
+  );
+};
+
+// --- Main Page ---
 
 const ResumeTrackingDashboard = () => {
-  const [shares, setShares] = useState<any[]>([]);
+  const navigate = useNavigate();
+  const [applications, setApplications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedShare, setSelectedShare] = useState<any>(null);
+  const [keyword, setKeyword] = useState('');
 
   useEffect(() => {
-    fetchShares();
+    fetchApplications();
   }, []);
 
-  const fetchShares = async () => {
+  const fetchApplications = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${API_BASE}/api/v1/share`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      const data = await response.json();
-      if (data.success) {
-        setShares(data.data);
-        if (data.data.length > 0) {
-          setSelectedShare(data.data[0]);
-        }
+      setLoading(true);
+      const response = await jobApplicationAPI.getApplications();
+      if (response.success && response.data) {
+        setApplications(response.data.applications);
       }
     } catch (error) {
-      toast.error('Failed to load tracking data.');
+      toast.error('Failed to load active protocols.');
     } finally {
       setLoading(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to revoke this tracking node?')) return;
-    
+    if (!confirm('Execute purge protocol for this application?')) return;
     try {
-      const token = localStorage.getItem('token');
-      await fetch(`${API_BASE}/api/v1/share/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      toast.success('Node Revoked.');
-      fetchShares();
+      await jobApplicationAPI.deleteApplication(id);
+      setApplications(prev => prev.filter(app => app._id !== id));
+      toast.success('Application purged.');
     } catch (error) {
-      toast.error('Revocation failed.');
+      toast.error('Purge failed.');
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-[400px] flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-10 h-10 border-4 border-brand-blue/20 border-t-brand-blue rounded-full animate-spin" />
-          <p className="text-[10px] font-black text-brand-dark uppercase tracking-widest">Aggregating Analysis Nodes...</p>
-        </div>
-      </div>
-    );
-  }
+  const filteredApplications = applications.filter(app => 
+    !keyword || 
+    app.jobTitle.toLowerCase().includes(keyword.toLowerCase()) ||
+    app.companyName.toLowerCase().includes(keyword.toLowerCase())
+  );
 
   return (
-    <div className="space-y-10 animate-slide-up-soft">
+    <div className="w-full space-y-12 pb-24 animate-slide-up-soft">
       {/* --- HEADER --- */}
-      <div className="flex items-center justify-between">
-        <div className="space-y-2">
-          <h1 className="text-4xl font-display font-black text-brand-dark tracking-tighter">Engagement Analysis.</h1>
-          <p className="text-lg text-text-secondary font-bold opacity-70">Real-time intelligence on institutional architecture views.</p>
+      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 pb-6 border-b border-surface-200/60">
+        <div className="space-y-4">
+          <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-brand-blue/5 text-brand-blue border border-brand-blue/10 shadow-sm backdrop-blur-sm">
+            <Briefcase className="w-4 h-4" />
+            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Application Control Grid</span>
+          </div>
+          <div className="space-y-1">
+            <h1 className="text-4xl md:text-6xl font-display font-black text-brand-dark tracking-tighter">
+              Active <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-blue to-brand-purple">Deployments.</span>
+            </h1>
+            <p className="text-lg md:text-xl text-text-secondary font-medium max-w-2xl leading-relaxed">
+              Monitor and manage your active job application nodes.
+            </p>
+          </div>
         </div>
         
-        <div className="flex items-center gap-4 bg-white border border-surface-200 px-6 py-3 rounded-2xl shadow-sm">
-          <TrendingUp className="text-brand-success" size={20} />
-          <div className="flex flex-col">
-            <span className="text-[9px] font-black text-text-tertiary uppercase tracking-widest leading-none">Total Delta</span>
-            <span className="text-xl font-black text-brand-dark leading-none mt-1">
-              {shares.reduce((sum, s) => sum + s.viewCount, 0)} Views
-            </span>
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={() => navigate('/jobs')}
+            className="btn-primary shadow-2xl shadow-brand-blue/20 px-8 py-4 font-black uppercase tracking-[0.15em] text-xs hover:scale-105 transition-transform duration-300 flex items-center gap-3"
+          >
+            <Plus size={20} strokeWidth={3} />
+            Deploy New
+          </button>
+        </div>
+      </div>
+
+      {/* --- FILTERS --- */}
+      <div className="bg-white border border-surface-200 rounded-[3rem] p-6 shadow-xl relative overflow-hidden group">
+        <div className="absolute inset-0 bg-[radial-gradient(#3b82f6_1px,transparent_1px)] [background-size:32px_32px] opacity-[0.03]" />
+        
+        <div className="relative z-10 flex flex-col lg:flex-row gap-6 items-stretch lg:items-center">
+          <div className="flex-1 relative group">
+            <div className="absolute left-6 top-1/2 -translate-y-1/2 w-10 h-10 rounded-xl bg-surface-50 flex items-center justify-center group-focus-within:bg-brand-blue group-focus-within:text-white transition-all border border-surface-100 group-focus-within:border-brand-blue shadow-inner">
+              <Search size={18} strokeWidth={2.5} />
+            </div>
+            <input 
+              type="text" 
+              placeholder="Filter active protocols by role or company..." 
+              className="w-full bg-surface-50/50 border border-surface-200 rounded-2xl py-5 pl-20 pr-8 text-sm font-black text-brand-dark focus:ring-8 focus:ring-brand-blue/5 focus:border-brand-blue outline-none transition-all placeholder:text-text-tertiary placeholder:font-bold tracking-tight"
+              value={keyword}
+              onChange={(e) => setKeyword(e.target.value)}
+            />
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-        {/* --- SHARE LIST --- */}
-        <div className="lg:col-span-4 space-y-4">
-          <h3 className="text-[10px] font-black text-text-tertiary uppercase tracking-[0.3em] px-2">Active Tracking Nodes</h3>
-          <div className="space-y-3">
-            {shares.length === 0 ? (
-              <div className="bg-white border border-dashed border-surface-200 rounded-[2rem] p-10 text-center">
-                <p className="text-xs font-bold text-text-tertiary">Zero active signals detected.</p>
-              </div>
-            ) : (
-              shares.map((share) => (
-                <div 
-                  key={share._id}
-                  onClick={() => setSelectedShare(share)}
-                  className={`p-6 border rounded-[2rem] cursor-pointer transition-all duration-300 ${selectedShare?._id === share._id ? 'bg-brand-blue border-brand-blue text-white shadow-xl shadow-brand-blue/20 scale-[1.02]' : 'bg-white border-surface-200 hover:border-brand-blue/30 shadow-sm'}`}
-                >
-                  <div className="flex justify-between items-start mb-4">
-                    <div className={`p-2 rounded-xl ${selectedShare?._id === share._id ? 'bg-white/20' : 'bg-brand-blue/5 text-brand-blue'}`}>
-                      <Share2 size={16} />
-                    </div>
-                    <span className={`text-[9px] font-black uppercase tracking-widest ${selectedShare?._id === share._id ? 'text-white/60' : 'text-text-tertiary'}`}>
-                      {share.viewCount} Views
-                    </span>
-                  </div>
-                  <h4 className="text-sm font-black truncate mb-1">{share.title}</h4>
-                  <p className={`text-[10px] font-bold uppercase tracking-tighter ${selectedShare?._id === share._id ? 'text-white/60' : 'text-text-tertiary'}`}>
-                    Last view: {share.lastViewedAt ? new Date(share.lastViewedAt).toLocaleDateString() : 'Never'}
-                  </p>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-
-        {/* --- STATS PANEL --- */}
-        <div className="lg:col-span-8">
-          {selectedShare ? (
-            <div className="bg-white border border-surface-200 rounded-[3rem] p-10 md:p-16 shadow-xl relative overflow-hidden h-full">
-              <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:24px_24px] opacity-[0.15]" />
-              
-              <div className="relative z-10 space-y-12">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
-                  <div className="space-y-2">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-blue/10 text-brand-blue border border-brand-blue/20">
-                      <BarChart3 className="w-3.5 h-3.5" />
-                      <span className="text-[10px] font-black uppercase tracking-widest">Intelligence Node: {selectedShare.shareId}</span>
-                    </div>
-                    <h2 className="text-3xl font-black text-brand-dark tracking-tighter uppercase">{selectedShare.title}</h2>
-                  </div>
-                  
-                  <div className="flex gap-2">
-                    <button 
-                      onClick={() => window.open(`${window.location.origin}/share/r/${selectedShare.shareId}`, '_blank')}
-                      className="p-4 bg-surface-50 border border-surface-200 rounded-2xl text-text-tertiary hover:text-brand-blue transition-all"
-                    >
-                      <ExternalLink size={20} />
-                    </button>
-                    <button 
-                      onClick={() => handleDelete(selectedShare._id)}
-                      className="p-4 bg-surface-50 border border-surface-200 rounded-2xl text-text-tertiary hover:text-red-500 transition-all"
-                    >
-                      <Trash2 size={20} />
-                    </button>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="p-8 bg-surface-50 border border-surface-200 rounded-[2rem] space-y-2">
-                    <Eye size={24} className="text-brand-blue mb-4" />
-                    <div className="text-3xl font-black text-brand-dark">{selectedShare.viewCount}</div>
-                    <div className="text-[10px] font-black text-text-tertiary uppercase tracking-widest">Total Engagements</div>
-                  </div>
-                  <div className="p-8 bg-surface-50 border border-surface-200 rounded-[2rem] space-y-2">
-                    <Clock size={24} className="text-brand-blue mb-4" />
-                    <div className="text-3xl font-black text-brand-dark">
-                      {selectedShare.views.length > 0 ? 'Active' : 'Idle'}
-                    </div>
-                    <div className="text-[10px] font-black text-text-tertiary uppercase tracking-widest">Signal Status</div>
-                  </div>
-                  <div className="p-8 bg-surface-50 border border-surface-200 rounded-[2rem] space-y-2">
-                    <Globe size={24} className="text-brand-blue mb-4" />
-                    <div className="text-3xl font-black text-brand-dark">
-                      {new Set(selectedShare.views.map((v: any) => v.ipAddress)).size}
-                    </div>
-                    <div className="text-[10px] font-black text-text-tertiary uppercase tracking-widest">Unique Clusters</div>
-                  </div>
-                </div>
-
-                <div className="space-y-6">
-                  <h4 className="text-[10px] font-black text-text-tertiary uppercase tracking-[0.3em] px-2">Access Logs</h4>
-                  <div className="space-y-3">
-                    {selectedShare.views.length === 0 ? (
-                      <div className="p-10 border border-dashed border-surface-200 rounded-[2rem] text-center">
-                        <p className="text-xs font-bold text-text-tertiary opacity-60 italic">Waiting for signal reception...</p>
-                      </div>
-                    ) : (
-                      selectedShare.views.slice().reverse().map((view: any, idx: number) => (
-                        <div key={idx} className="flex items-center justify-between p-6 bg-white border border-surface-100 rounded-2xl shadow-sm group hover:shadow-md transition-all">
-                          <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 rounded-xl bg-surface-50 flex items-center justify-center text-text-tertiary group-hover:text-brand-blue transition-colors">
-                              {view.userAgent?.includes('Mobile') ? <Smartphone size={18} /> : <Monitor size={18} />}
-                            </div>
-                            <div>
-                              <div className="text-sm font-black text-brand-dark">
-                                {view.ipAddress || 'Internal Hub'}
-                              </div>
-                              <div className="text-[10px] font-bold text-text-tertiary uppercase tracking-widest">
-                                {view.userAgent?.substring(0, 40)}...
-                              </div>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <div className="text-xs font-black text-brand-dark">
-                              {new Date(view.viewedAt).toLocaleTimeString()}
-                            </div>
-                            <div className="text-[10px] font-bold text-text-tertiary uppercase tracking-widest">
-                              {new Date(view.viewedAt).toLocaleDateString()}
-                            </div>
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="h-full flex items-center justify-center bg-white border border-dashed border-surface-200 rounded-[3rem] p-20 text-center opacity-50">
-              <div className="space-y-4">
-                <AlertCircle size={48} className="mx-auto text-text-tertiary" />
-                <p className="text-sm font-black text-text-tertiary uppercase tracking-widest">Select a node to initialize analysis.</p>
-              </div>
-            </div>
-          )}
+      <div className="flex items-center justify-between px-2">
+        <div className="flex items-center gap-3">
+          <div className="w-2 h-2 rounded-full bg-brand-blue animate-pulse" />
+          <h2 className="text-[10px] font-black text-text-tertiary uppercase tracking-[0.3em]">
+            Active Grid: {filteredApplications.length} Deployment Nodes
+          </h2>
         </div>
       </div>
+
+      {/* --- GRID --- */}
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-pulse">
+          {[1, 2, 3, 4].map(i => (
+            <div key={i} className="h-80 bg-white border border-surface-200 rounded-[2.5rem] shadow-sm" />
+          ))}
+        </div>
+      ) : filteredApplications.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+          <AnimatePresence>
+            {filteredApplications.map((app: any) => (
+              <ApplicationCard 
+                key={app._id} 
+                application={app} 
+                onDelete={handleDelete}
+              />
+            ))}
+          </AnimatePresence>
+        </div>
+      ) : (
+        <div className="bg-white border border-surface-200 rounded-[3rem] py-32 text-center space-y-8 relative overflow-hidden shadow-sm group">
+          <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:32px_32px] opacity-[0.3]" />
+          <div className="relative z-10 flex flex-col items-center">
+            <div className="w-24 h-24 bg-surface-50 rounded-[2.5rem] flex items-center justify-center shadow-inner text-text-tertiary mb-6 group-hover:scale-110 transition-transform duration-500 ring-8 ring-white">
+              <Briefcase className="w-10 h-10 opacity-50 group-hover:opacity-100 transition-opacity" />
+            </div>
+            <div className="space-y-3 max-w-md mx-auto px-4">
+              <h3 className="text-3xl font-display font-black text-brand-dark tracking-tight">Zero Active Deployments.</h3>
+              <p className="text-text-secondary font-medium leading-relaxed">Your application grid is empty. Initialize new protocols to begin tracking.</p>
+            </div>
+            <div className="mt-8">
+              <button 
+                onClick={() => navigate('/jobs')}
+                className="btn-primary px-10 py-4 text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-brand-blue/20 hover:scale-105 transition-transform flex items-center gap-3 group/btn"
+              >
+                <Plus size={16} strokeWidth={3} />
+                Deploy New Application
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
