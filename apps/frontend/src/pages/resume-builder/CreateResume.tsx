@@ -147,7 +147,7 @@ export default function CreateResume() {
   const CurrentStepComponent = steps[currentStep].component;
 
   return (
-    <div className="min-h-screen gradient-dark py-8 animate-slide-up-soft">
+    <div className="min-h-screen gradient-dark py-4 md:py-8 animate-slide-up-soft">
       <div className="max-w-4xl mx-auto px-4">
         {/* Header */}
         <div className="mb-8">
@@ -193,7 +193,7 @@ export default function CreateResume() {
 
         {/* Form */}
         <form onSubmit={form.handleSubmit(onSubmit)}>
-          <Card className="card-dark p-6 mb-8">
+          <Card className="card-dark p-4 md:p-6 mb-8">
             <CurrentStepComponent
               form={form}
               data={form.watch('professionalSummary')}

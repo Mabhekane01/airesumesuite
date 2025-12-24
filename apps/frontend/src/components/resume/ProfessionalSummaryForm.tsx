@@ -88,7 +88,7 @@ export function ProfessionalSummaryForm() {
       </div>
 
       {/* AI Synthesis Layer (Now Unrestricted for preview) */}
-      <div className="bg-white border border-surface-200 rounded-[2.5rem] p-8 shadow-sm relative overflow-hidden group">
+      <div className="bg-white border border-surface-200 rounded-2xl md:rounded-[2.5rem] p-6 md:p-8 shadow-sm relative overflow-hidden group">
         <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:24px_24px] opacity-[0.1]" />
         
         <div className="relative z-10 space-y-8">
@@ -145,8 +145,8 @@ export function ProfessionalSummaryForm() {
       </div>
 
       {/* Logic Guidelines */}
-      <div className="grid md:grid-cols-2 gap-8 pt-10 border-t border-surface-100">
-        <div className="p-8 bg-brand-success/[0.03] border border-brand-success/10 rounded-[2rem] space-y-4">
+      <div className="grid md:grid-cols-2 gap-4 md:gap-8 pt-10 border-t border-surface-100">
+        <div className="p-6 md:p-8 bg-brand-success/[0.03] border border-brand-success/10 rounded-2xl md:rounded-[2rem] space-y-4">
           <h4 className="text-[10px] font-black text-brand-success uppercase tracking-[0.2em] flex items-center gap-2">
             <CheckCircleIcon className="w-4 h-4" /> Recommended Vectors
           </h4>
@@ -158,7 +158,7 @@ export function ProfessionalSummaryForm() {
           </ul>
         </div>
 
-        <div className="p-8 bg-red-50/50 border border-red-100 rounded-[2rem] space-y-4">
+        <div className="p-6 md:p-8 bg-red-50/50 border border-red-100 rounded-2xl md:rounded-[2rem] space-y-4">
           <h4 className="text-[10px] font-black text-red-500 uppercase tracking-[0.2em] flex items-center gap-2">
             <CommandLineIcon className="w-4 h-4" /> Logic Constraints
           </h4>

@@ -395,28 +395,28 @@ export default function ApplicationTracker() {
   }
 
   return (
-    <div className="space-y-10 animate-slide-up-soft pb-20">
+    <div className="space-y-6 md:space-y-10 animate-slide-up-soft pb-20">
       {/* Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 md:gap-8">
         <div className="space-y-2">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-blue/10 text-brand-blue border border-brand-blue/20">
             <BriefcaseIcon className="w-3.5 h-3.5" />
             <span className="text-[10px] font-black uppercase tracking-widest">Pipeline Explorer</span>
           </div>
-          <h1 className="text-4xl md:text-5xl font-display font-black text-brand-dark tracking-tighter">Job Applications.</h1>
-          <p className="text-lg text-text-secondary font-bold opacity-70">Unified management system for your active deployments.</p>
+          <h1 className="text-3xl md:text-5xl font-display font-black text-brand-dark tracking-tighter">Job Applications.</h1>
+          <p className="text-base md:text-lg text-text-secondary font-bold opacity-70">Unified management system for your active deployments.</p>
         </div>
         
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap gap-2 md:gap-3">
           <button 
             onClick={() => updatePreferences({ viewMode: viewMode === "kanban" ? "list" : "kanban" })}
-            className="btn-secondary px-6 py-3 font-black text-[10px] uppercase tracking-[0.2em] border-2 shadow-sm"
+            className="flex-1 sm:flex-none btn-secondary px-4 md:px-6 py-3 font-black text-[9px] md:text-[10px] uppercase tracking-[0.2em] border-2 shadow-sm"
           >
             {viewMode === "kanban" ? "Switch to List" : "Switch to Kanban"}
           </button>
           <Link
             to="/dashboard/applications/new"
-            className="btn-primary px-8 py-3 font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-brand-blue/20 flex items-center gap-2"
+            className="flex-[1.5] sm:flex-none btn-primary px-6 md:px-8 py-3 font-black text-[9px] md:text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-brand-blue/20 flex items-center justify-center gap-2"
           >
             <PlusIcon className="w-4 h-4 stroke-[3]" />
             New Application
@@ -425,10 +425,10 @@ export default function ApplicationTracker() {
       </div>
 
       {/* Control Console */}
-      <div className="bg-white border border-surface-200 rounded-[2.5rem] p-4 shadow-sm relative overflow-hidden group">
+      <div className="bg-white border border-surface-200 rounded-[1.5rem] md:rounded-[2.5rem] p-3 md:p-4 shadow-sm relative overflow-hidden group">
         <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:24px_24px] opacity-[0.15]" />
         
-        <div className="relative z-10 flex flex-col lg:flex-row gap-6 items-stretch lg:items-center">
+        <div className="relative z-10 flex flex-col lg:flex-row gap-4 md:gap-6 items-stretch lg:items-center">
           <div className="flex-[1.5] relative group">
             <MagnifyingGlassIcon className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-text-tertiary group-focus-within:text-brand-blue transition-colors" />
             <input 
@@ -436,14 +436,14 @@ export default function ApplicationTracker() {
               value={activeFilters.location || ''}
               onChange={(e) => setActiveFilters(prev => ({ ...prev, location: e.target.value }))}
               placeholder="Filter by location, company, or role architecture..."
-              className="w-full bg-surface-50 border border-surface-200 rounded-2xl py-4 pl-14 pr-6 text-sm font-bold text-brand-dark focus:ring-4 focus:ring-brand-blue/5 focus:border-brand-blue outline-none transition-all placeholder:text-text-tertiary placeholder:font-bold shadow-inner"
+              className="w-full bg-surface-50 border border-surface-200 rounded-xl md:rounded-2xl py-3.5 md:py-4 pl-14 pr-6 text-sm font-bold text-brand-dark focus:ring-4 focus:ring-brand-blue/5 focus:border-brand-blue outline-none transition-all placeholder:text-text-tertiary placeholder:font-bold shadow-inner"
             />
           </div>
 
-          <div className="flex-1 flex gap-4">
+          <div className="flex-1 flex gap-3 md:gap-4">
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className={`flex-1 flex items-center justify-center gap-2 rounded-2xl border-2 py-4 text-[10px] font-black uppercase tracking-widest transition-all ${
+              className={`flex-1 flex items-center justify-center gap-2 rounded-xl md:rounded-2xl border-2 py-3.5 md:py-4 text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all ${
                 showFilters ? 'bg-brand-dark border-brand-dark text-white shadow-lg' : 'bg-white border-surface-200 text-brand-dark hover:border-brand-blue/30 shadow-sm'
               }`}
             >
@@ -455,7 +455,7 @@ export default function ApplicationTracker() {
                 setActiveFilters({});
                 toast.success("Filters Reset.");
               }}
-              className="px-6 rounded-2xl border border-surface-200 text-text-tertiary hover:text-brand-dark hover:bg-surface-50 transition-all shadow-sm"
+              className="px-5 md:px-6 rounded-xl md:rounded-2xl border border-surface-200 text-text-tertiary hover:text-brand-dark hover:bg-surface-50 transition-all shadow-sm"
             >
               <ArrowPathIcon className="w-5 h-5" />
             </button>
@@ -471,14 +471,14 @@ export default function ApplicationTracker() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="grid grid-cols-1 lg:grid-cols-3 gap-8"
+            className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8"
           >
             {KANBAN_COLUMNS.map((column) => {
               const columnApps = getApplicationsByColumn(column.statuses);
               return (
-                <div key={column.id} className="space-y-6">
-                  <div className="flex items-center justify-between px-4">
-                    <h3 className="text-sm font-black text-brand-dark uppercase tracking-[0.2em] flex items-center gap-2">
+                <div key={column.id} className="space-y-4 md:space-y-6">
+                  <div className="flex items-center justify-between px-2 md:px-4">
+                    <h3 className="text-xs md:text-sm font-black text-brand-dark uppercase tracking-[0.2em] flex items-center gap-2">
                       <div className="w-1.5 h-1.5 rounded-full bg-brand-blue" />
                       {column.title}
                     </h3>
@@ -486,10 +486,10 @@ export default function ApplicationTracker() {
                       {columnApps.length}
                     </span>
                   </div>
-                  <div className="space-y-4 min-h-[400px] p-2 rounded-[2rem] bg-brand-dark/[0.01] border border-brand-dark/[0.03] shadow-inner">
+                  <div className="space-y-3 md:space-y-4 min-h-[400px] p-2 rounded-[1.5rem] md:rounded-[2rem] bg-brand-dark/[0.01] border border-brand-dark/[0.03] shadow-inner">
                     {columnApps.map(renderApplicationCard)}
                     {columnApps.length === 0 && (
-                      <div className="h-40 border-2 border-dashed border-surface-200 rounded-[2rem] flex items-center justify-center text-[10px] font-black text-text-tertiary uppercase tracking-widest">
+                      <div className="h-40 border-2 border-dashed border-surface-200 rounded-[1.5rem] md:rounded-[2rem] flex items-center justify-center text-[10px] font-black text-text-tertiary uppercase tracking-widest">
                         Null Cluster
                       </div>
                     )}
@@ -504,38 +504,38 @@ export default function ApplicationTracker() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="bg-white border border-surface-200 rounded-[2.5rem] shadow-sm overflow-hidden"
+            className="bg-white border border-surface-200 rounded-[1.5rem] md:rounded-[2.5rem] shadow-sm overflow-hidden"
           >
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead className="bg-surface-50 border-b border-surface-200">
                   <tr>
-                    <th className="px-8 py-5 text-[10px] font-black text-text-tertiary uppercase tracking-widest">Architecture</th>
-                    <th className="px-8 py-5 text-[10px] font-black text-text-tertiary uppercase tracking-widest">Status</th>
-                    <th className="px-8 py-5 text-[10px] font-black text-text-tertiary uppercase tracking-widest text-right">Actions</th>
+                    <th className="px-4 md:px-8 py-4 md:py-5 text-[9px] md:text-[10px] font-black text-text-tertiary uppercase tracking-widest">Architecture</th>
+                    <th className="px-4 md:px-8 py-4 md:py-5 text-[9px] md:text-[10px] font-black text-text-tertiary uppercase tracking-widest">Status</th>
+                    <th className="px-4 md:px-8 py-4 md:py-5 text-[9px] md:text-[10px] font-black text-text-tertiary uppercase tracking-widest text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-surface-100">
                   {filteredApplications.map((app) => (
                     <tr key={app._id} className="group hover:bg-surface-50/50 transition-colors">
-                      <td className="px-8 py-6">
+                      <td className="px-4 md:px-8 py-4 md:py-6">
                         <div>
-                          <p className="text-base font-black text-brand-dark tracking-tight leading-none mb-1 group-hover:text-brand-blue transition-colors">{app.jobTitle}</p>
-                          <p className="text-[10px] font-bold text-text-tertiary uppercase tracking-widest">{app.companyName || app.company}</p>
+                          <p className="text-sm md:text-base font-black text-brand-dark tracking-tight leading-none mb-1 group-hover:text-brand-blue transition-colors">{app.jobTitle}</p>
+                          <p className="text-[9px] md:text-[10px] font-bold text-text-tertiary uppercase tracking-widest">{app.companyName || app.company}</p>
                         </div>
                       </td>
-                      <td className="px-8 py-6">
-                        <span className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border ${STATUS_CONFIG[app.status]?.color || 'bg-surface-50 text-text-tertiary border-surface-200'}`}>
+                      <td className="px-4 md:px-8 py-4 md:py-6">
+                        <span className={`px-2 md:px-2.5 py-1 rounded-lg text-[8px] md:text-[9px] font-black uppercase tracking-widest border ${STATUS_CONFIG[app.status]?.color || 'bg-surface-50 text-text-tertiary border-surface-200'}`}>
                           {STATUS_CONFIG[app.status]?.label || app.status}
                         </span>
                       </td>
-                      <td className="px-8 py-6 text-right">
-                        <div className="flex justify-end gap-2">
-                          <Link to={`/dashboard/applications/${app._id}`} className="p-2.5 bg-surface-50 rounded-xl text-text-tertiary hover:text-brand-blue hover:bg-white border border-transparent hover:border-brand-blue/20 transition-all shadow-sm">
-                            <EyeIcon className="w-4 h-4" />
+                      <td className="px-4 md:px-8 py-4 md:py-6 text-right">
+                        <div className="flex justify-end gap-1.5 md:gap-2">
+                          <Link to={`/dashboard/applications/${app._id}`} className="p-2 md:p-2.5 bg-surface-50 rounded-lg md:rounded-xl text-text-tertiary hover:text-brand-blue hover:bg-white border border-transparent hover:border-brand-blue/20 transition-all shadow-sm">
+                            <EyeIcon className="w-3.5 h-3.5 md:w-4 md:h-4" />
                           </Link>
-                          <button onClick={() => deleteApplication(app._id)} className="p-2.5 bg-surface-50 rounded-xl text-text-tertiary hover:text-red-500 hover:bg-white border border-transparent hover:border-red-100 transition-all shadow-sm">
-                            <TrashIcon className="w-4 h-4" />
+                          <button onClick={() => deleteApplication(app._id)} className="p-2 md:p-2.5 bg-surface-50 rounded-lg md:rounded-xl text-text-tertiary hover:text-red-500 hover:bg-white border border-transparent hover:border-red-100 transition-all shadow-sm">
+                            <TrashIcon className="w-3.5 h-3.5 md:w-4 md:h-4" />
                           </button>
                         </div>
                       </td>

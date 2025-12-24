@@ -169,38 +169,38 @@ export default function DashboardHome() {
   ];
 
   return (
-    <div className="space-y-10 pb-20">
+    <div className="space-y-6 md:space-y-10 pb-20">
       {/* Welcome Section */}
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-brand-dark rounded-[2.5rem] p-10 md:p-16 text-white shadow-2xl relative overflow-hidden group"
+        className="bg-brand-dark rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-16 text-white shadow-2xl relative overflow-hidden group"
       >
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(26,145,240,0.2),transparent_60%)] group-hover:scale-110 transition-transform duration-1000" />
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.03] pointer-events-none" />
         
-        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-10">
-          <div className="space-y-6">
+        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-8 md:gap-10">
+          <div className="space-y-4 md:space-y-6">
             <div className="inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-white/10 border border-white/10 text-brand-blue font-black uppercase tracking-[0.2em] text-[10px]">
               <RocketLaunchIcon className="w-4 h-4" /> System Operational
             </div>
-            <h1 className="text-4xl md:text-6xl font-display font-black tracking-tighter leading-none">
+            <h1 className="text-3xl md:text-6xl font-display font-black tracking-tighter leading-none">
               Welcome Back, <br /><span className="text-brand-blue">{user?.firstName}.</span>
             </h1>
-            <p className="text-surface-300 text-lg font-bold leading-relaxed max-w-xl opacity-80">
+            <p className="text-surface-300 text-base md:text-lg font-bold leading-relaxed max-w-xl opacity-80">
               Identity mapping is synchronized. Your career architecture is currently outperforming 85% of market benchmarks.
             </p>
           </div>
           
-          <div className="flex items-center gap-12 bg-white/5 border border-white/10 p-10 rounded-[2rem] backdrop-blur-sm shadow-inner">
-            <div className="text-center space-y-2">
-              <div className="text-5xl font-black text-white tracking-tighter">{stats.totalApplications}</div>
-              <div className="text-[10px] font-black text-surface-400 uppercase tracking-widest">Global Apps</div>
+          <div className="flex items-center gap-8 md:gap-12 bg-white/5 border border-white/10 p-6 md:p-10 rounded-[1.5rem] md:rounded-[2rem] backdrop-blur-sm shadow-inner">
+            <div className="text-center space-y-1 md:space-y-2">
+              <div className="text-3xl md:text-5xl font-black text-white tracking-tighter">{stats.totalApplications}</div>
+              <div className="text-[9px] md:text-[10px] font-black text-surface-400 uppercase tracking-widest">Global Apps</div>
             </div>
-            <div className="w-px h-16 bg-white/10"></div>
-            <div className="text-center space-y-2">
-              <div className="text-5xl font-black text-brand-blue tracking-tighter">{stats.interviewsScheduled}</div>
-              <div className="text-[10px] font-black text-surface-400 uppercase tracking-widest">Active Stages</div>
+            <div className="w-px h-12 md:h-16 bg-white/10"></div>
+            <div className="text-center space-y-1 md:space-y-2">
+              <div className="text-3xl md:text-5xl font-black text-brand-blue tracking-tighter">{stats.interviewsScheduled}</div>
+              <div className="text-[9px] md:text-[10px] font-black text-surface-400 uppercase tracking-widest">Active Stages</div>
             </div>
           </div>
         </div>
@@ -209,7 +209,7 @@ export default function DashboardHome() {
       <PendingApplicationsWidget />
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
         {statCards.map((stat, index) => (
           <motion.div
             key={index}
@@ -217,14 +217,14 @@ export default function DashboardHome() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
             whileHover={{ y: -5 }}
-            className="bg-white border border-surface-200 p-8 rounded-[2rem] shadow-sm hover:shadow-xl transition-all duration-500 group"
+            className="bg-white border border-surface-200 p-5 md:p-8 rounded-[1.5rem] md:rounded-[2rem] shadow-sm hover:shadow-xl transition-all duration-500 group"
           >
-            <div className="flex items-start justify-between mb-6">
-              <div className={`w-12 h-12 rounded-2xl ${stat.bg} ${stat.color} flex items-center justify-center border border-current opacity-80 group-hover:scale-110 group-hover:opacity-100 transition-all duration-500`}>
-                <stat.icon className="w-6 h-6" />
+            <div className="flex items-start justify-between mb-4 md:mb-6">
+              <div className={`w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl ${stat.bg} ${stat.color} flex items-center justify-center border border-current opacity-80 group-hover:scale-110 group-hover:opacity-100 transition-all duration-500`}>
+                <stat.icon className="w-5 h-5 md:w-6 md:h-6" />
               </div>
               <div className="text-right">
-                <span className={`text-[10px] font-black uppercase tracking-widest ${
+                <span className={`text-[9px] md:text-[10px] font-black uppercase tracking-widest ${
                   stat.changeType === "positive" ? "text-brand-success" : "text-text-tertiary"
                 }`}>
                   {stat.change}
@@ -232,72 +232,72 @@ export default function DashboardHome() {
               </div>
             </div>
             <div>
-              <p className="text-[11px] font-black text-text-tertiary uppercase tracking-widest mb-1">{stat.title}</p>
-              <p className="text-4xl font-black text-brand-dark tracking-tighter group-hover:text-brand-blue transition-colors">{stat.value}</p>
+              <p className="text-[10px] md:text-[11px] font-black text-text-tertiary uppercase tracking-widest mb-1">{stat.title}</p>
+              <p className="text-3xl md:text-4xl font-black text-brand-dark tracking-tighter group-hover:text-brand-blue transition-colors">{stat.value}</p>
             </div>
           </motion.div>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8">
         {/* Quick Actions Container */}
-        <div className="lg:col-span-8 space-y-8">
-          <div className="bg-white border border-surface-200 rounded-[2.5rem] p-10 shadow-sm relative overflow-hidden">
+        <div className="lg:col-span-8 space-y-6 md:space-y-8">
+          <div className="bg-white border border-surface-200 rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 shadow-sm relative overflow-hidden">
             <div className="absolute top-0 right-0 p-8 opacity-[0.02] pointer-events-none">
               <PlusIcon className="w-64 h-64 text-brand-dark" />
             </div>
-            <h2 className="text-2xl font-black text-brand-dark tracking-tight mb-8 flex items-center gap-3">
+            <h2 className="text-xl md:text-2xl font-black text-brand-dark tracking-tight mb-6 md:mb-8 flex items-center gap-3">
               <div className="w-2 h-2 rounded-full bg-brand-blue animate-pulse" />
               Deployment Console
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
               {quickActions.map((action, index) => (
                 <Link
                   key={index}
                   to={action.href}
-                  className="bg-surface-50 border border-surface-200 p-6 rounded-2xl flex items-center justify-between group hover:border-brand-blue/30 hover:bg-white transition-all duration-300 shadow-sm hover:shadow-lg"
+                  className="bg-surface-50 border border-surface-200 p-5 md:p-6 rounded-2xl flex items-center justify-between group hover:border-brand-blue/30 hover:bg-white transition-all duration-300 shadow-sm hover:shadow-lg"
                 >
-                  <div className="flex items-center gap-5">
-                    <div className={`w-12 h-12 rounded-xl ${action.color} text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform`}>
-                      <action.icon className="w-6 h-6" />
+                  <div className="flex items-center gap-4 md:gap-5">
+                    <div className={`w-10 h-10 md:w-12 md:h-12 rounded-xl ${action.color} text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform`}>
+                      <action.icon className="w-5 h-5 md:w-6 md:h-6" />
                     </div>
                     <div>
                       <p className="text-sm font-black text-brand-dark leading-none mb-1">{action.title}</p>
-                      <p className="text-xs font-bold text-text-tertiary uppercase tracking-widest">{action.desc}</p>
+                      <p className="text-[10px] md:text-xs font-bold text-text-tertiary uppercase tracking-widest">{action.desc}</p>
                     </div>
                   </div>
-                  <ChevronRightIcon className="w-5 h-5 text-text-tertiary group-hover:text-brand-blue group-hover:translate-x-1 transition-all" />
+                  <ChevronRightIcon className="w-4 h-4 md:w-5 md:h-5 text-text-tertiary group-hover:text-brand-blue group-hover:translate-x-1 transition-all" />
                 </Link>
               ))}
             </div>
           </div>
 
           {/* AI Insights Layer */}
-          <div className="bg-white border border-surface-200 rounded-[2.5rem] p-10 shadow-sm overflow-hidden relative">
+          <div className="bg-white border border-surface-200 rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 shadow-sm overflow-hidden relative">
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(26,145,240,0.03),transparent_70%)]" />
             <div className="relative z-10">
-              <div className="flex items-center justify-between mb-8">
-                <h2 className="text-2xl font-black text-brand-dark tracking-tight flex items-center gap-3">
+              <div className="flex items-center justify-between mb-6 md:mb-8">
+                <h2 className="text-xl md:text-2xl font-black text-brand-dark tracking-tight flex items-center gap-3">
                   <div className="w-8 h-8 rounded-xl bg-brand-blue/10 flex items-center justify-center">
                     <CpuChipIcon className="w-5 h-5 text-brand-blue" />
                   </div>
                   Semantic Intelligence
                 </h2>
-                <Link to="/dashboard/coach" className="text-[10px] font-black text-brand-blue uppercase tracking-[0.2em] hover:underline">Full Report →</Link>
+                <Link to="/dashboard/coach" className="text-[9px] md:text-[10px] font-black text-brand-blue uppercase tracking-[0.2em] hover:underline">Full Report →</Link>
               </div>
-              <div className="space-y-4">
+              <div className="space-y-3 md:space-y-4">
                 {aiInsights.map((insight, index) => (
                   <motion.div
                     key={index}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.15 }}
-                    className="flex items-start gap-5 p-6 bg-surface-50 border border-surface-200 rounded-2xl hover:border-brand-blue/20 transition-colors group"
+                    className="flex items-start gap-4 md:gap-5 p-4 md:p-6 bg-surface-50 border border-surface-200 rounded-2xl hover:border-brand-blue/20 transition-colors group"
                   >
                     <div className="w-6 h-6 rounded-lg bg-white border border-surface-200 flex items-center justify-center text-brand-blue font-black text-[10px] shadow-sm group-hover:bg-brand-blue group-hover:text-white transition-all">
                       0{index + 1}
                     </div>
-                    <p className="text-base font-bold text-text-secondary leading-relaxed flex-1 opacity-90 group-hover:opacity-100">
+                    <p className="text-sm md:text-base font-bold text-text-secondary leading-relaxed flex-1 opacity-90 group-hover:opacity-100">
                       {insight}
                     </p>
                   </motion.div>
@@ -308,11 +308,11 @@ export default function DashboardHome() {
         </div>
 
         {/* Sidebar Style Content (Right Column) */}
-        <div className="lg:col-span-4 space-y-8">
+        <div className="lg:col-span-4 space-y-6 md:space-y-8">
           {/* Upcoming Events Module */}
-          <div className="bg-white border border-surface-200 rounded-[2.5rem] p-8 shadow-sm h-full flex flex-col">
-            <h2 className="text-xl font-black text-brand-dark tracking-tight mb-8 flex items-center gap-3">
-              <CalendarIcon className="w-6 h-6 text-brand-blue" />
+          <div className="bg-white border border-surface-200 rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-8 shadow-sm h-full flex flex-col">
+            <h2 className="text-lg md:text-xl font-black text-brand-dark tracking-tight mb-6 md:mb-8 flex items-center gap-3">
+              <CalendarIcon className="w-5 h-5 md:w-6 md:h-6 text-brand-blue" />
               Event Timeline
             </h2>
             

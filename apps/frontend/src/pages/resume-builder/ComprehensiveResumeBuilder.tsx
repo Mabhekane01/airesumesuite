@@ -378,7 +378,7 @@ const ComprehensiveResumeBuilderContent: React.FC = () => {
       <div className="bg-white border-b border-surface-200 shadow-sm relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:24px_24px] opacity-[0.15]" />
         
-        <div className="max-w-7xl mx-auto px-6 sm:px-10 h-20 flex items-center justify-between relative z-10">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 md:px-10 h-20 flex items-center justify-between relative z-10">
           <div className="flex items-center gap-6">
             <button
               onClick={handleDashboardNavigation}
@@ -424,12 +424,12 @@ const ComprehensiveResumeBuilderContent: React.FC = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 sm:px-10">
-        <div className={`grid grid-cols-1 gap-10 ${currentStep === steps.length - 1 ? 'lg:grid-cols-1' : 'lg:grid-cols-12'}`}>
+      <div className="max-w-7xl mx-auto px-2 sm:px-6 md:px-10">
+        <div className={`grid grid-cols-1 gap-2 lg:gap-10 ${currentStep === steps.length - 1 ? 'lg:grid-cols-1' : 'lg:grid-cols-12'}`}>
           
           {/* Side Navigation */}
           {currentStep !== steps.length - 1 && (
-            <div className="lg:col-span-4">
+            <div className="lg:col-span-4 hidden lg:block">
               <div className="bg-white border border-surface-200 rounded-[2.5rem] p-6 shadow-sm sticky top-24">
                 <div className="px-4 mb-6">
                   <h3 className="text-[10px] font-black text-text-tertiary uppercase tracking-[0.3em]">Architecture Nodes</h3>
@@ -467,11 +467,11 @@ const ComprehensiveResumeBuilderContent: React.FC = () => {
 
           {/* Main Content Node */}
           <div className={currentStep === steps.length - 1 ? 'lg:col-span-1' : 'lg:col-span-8'}>
-            <div className="bg-white border border-surface-200 rounded-[3rem] p-10 md:p-16 shadow-sm relative overflow-hidden group min-h-[600px] flex flex-col">
+            <div className="bg-white border border-surface-200 rounded-xl md:rounded-[3rem] p-3 md:p-16 shadow-sm relative overflow-hidden group min-h-[500px] flex flex-col">
               <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:32px:32px] opacity-[0.05] pointer-events-none" />
               
               <div className="relative z-10 flex-1 flex flex-col">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-12">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-6 mb-4 md:mb-12">
                   <div className="space-y-2">
                     <div className="flex items-center gap-4">
                       <div className="w-14 h-14 rounded-2xl bg-brand-blue/10 flex items-center justify-center text-brand-blue shadow-inner group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
@@ -500,19 +500,19 @@ const ComprehensiveResumeBuilderContent: React.FC = () => {
                 </div>
 
                 {/* Internal Navigation Buttons */}
-                <div className="mt-16 pt-10 border-t border-surface-100 flex items-center justify-between">
+                <div className="mt-8 md:mt-16 pt-6 md:pt-10 border-t border-surface-100 flex flex-col-reverse sm:flex-row items-center justify-between gap-4 sm:gap-0">
                   <button
                     onClick={handlePrevious}
                     disabled={currentStep === 0}
-                    className="px-8 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-text-tertiary hover:text-brand-dark disabled:opacity-30 transition-all flex items-center gap-2"
+                    className="w-full sm:w-auto px-4 py-3 md:px-8 md:py-4 text-[10px] font-black uppercase tracking-[0.2em] text-text-tertiary hover:text-brand-dark disabled:opacity-30 transition-all flex items-center justify-center sm:justify-start gap-2"
                   >
-                    ← Previous Node
+                    ← Previous
                   </button>
                   
                   {currentStep < steps.length - 1 ? (
                     <button
                       onClick={handleNext}
-                      className="btn-primary px-10 py-4 text-sm font-black uppercase tracking-[0.2em] shadow-xl shadow-brand-blue/20 flex items-center gap-3 group active:scale-95 transition-all"
+                      className="w-full sm:w-auto btn-primary px-6 py-3 md:px-10 md:py-4 text-xs md:text-sm font-black uppercase tracking-[0.2em] shadow-xl shadow-brand-blue/20 flex items-center justify-center gap-3 group active:scale-95 transition-all"
                     >
                       Process & Next <ChevronRightIcon className="w-4 h-4 stroke-[3] group-hover:translate-x-1 transition-transform" />
                     </button>
@@ -520,10 +520,10 @@ const ComprehensiveResumeBuilderContent: React.FC = () => {
                     <button
                       onClick={handleSaveResume}
                       disabled={isLoading}
-                      className="btn-primary px-12 py-4 text-sm font-black uppercase tracking-[0.2em] shadow-xl shadow-brand-blue/20 flex items-center gap-3 active:scale-95 transition-all"
+                      className="w-full sm:w-auto btn-primary px-6 py-3 md:px-12 md:py-4 text-xs md:text-sm font-black uppercase tracking-[0.2em] shadow-xl shadow-brand-blue/20 flex items-center justify-center gap-3 active:scale-95 transition-all"
                     >
                       <CloudIcon className="w-5 h-5 stroke-[2.5]" />
-                      Finalize Architecture
+                      Finalize
                     </button>
                   )}
                 </div>

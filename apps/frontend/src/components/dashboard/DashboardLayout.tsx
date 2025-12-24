@@ -284,7 +284,7 @@ export default function DashboardLayout() {
       <div className="flex-1 flex flex-col min-w-0 relative overflow-hidden">
         {/* Top header */}
         <header className="bg-white/80 backdrop-blur-md border-b border-surface-200 h-20 flex-shrink-0 relative z-[50]">
-          <div className="flex items-center justify-between h-full px-6 sm:px-10">
+          <div className="flex items-center justify-between h-full px-4 sm:px-10">
             <div className="flex items-center gap-6 flex-1">
               <button
                 onClick={() => setSidebarOpen(true)}
@@ -337,7 +337,7 @@ export default function DashboardLayout() {
                       initial={{ opacity: 0, y: 15, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 15, scale: 0.95 }}
-                      className="absolute right-0 top-full mt-4 w-80 sm:w-96 bg-white border border-surface-200 rounded-[2rem] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.1)] overflow-hidden z-[100]"
+                      className="fixed left-4 right-4 top-24 w-auto sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-4 sm:w-96 bg-white border border-surface-200 rounded-[2rem] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.1)] overflow-hidden z-[100]"
                     >
                       <div className="p-6 border-b border-surface-100 bg-surface-50/50">
                         <div className="flex items-center justify-between mb-4">
@@ -520,7 +520,7 @@ export default function DashboardLayout() {
         {/* Page content */}
         <main className="flex-1 overflow-auto custom-scrollbar relative">
           <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:32px_32px] opacity-20 pointer-events-none" />
-          <div className="relative z-10 p-6 sm:p-10 lg:p-12 max-w-[1600px] mx-auto">
+          <div className="relative z-10 p-4 sm:p-10 lg:p-12 max-w-[1600px] mx-auto">
             {/* The Outlet will render the matched child route component here */}
             <Outlet />
           </div>

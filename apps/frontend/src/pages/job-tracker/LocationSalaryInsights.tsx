@@ -252,58 +252,58 @@ export default function LocationSalaryInsights() {
     const confidence = salaryInsights?.confidence || 0;
 
     return (
-      <div className="space-y-6 animate-slide-up-soft">
+      <div className="space-y-4 md:space-y-6 animate-slide-up-soft">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold gradient-text-dark">Location-Based Salary Insights</h1>
-            <p className="text-text-secondary">Compare salaries across different cities and markets</p>
+            <h1 className="text-xl md:text-2xl font-bold gradient-text-dark">Location-Based Salary Insights</h1>
+            <p className="text-sm md:text-base text-text-secondary">Compare salaries across different cities and markets</p>
           </div>
         </div>
 
         {/* Real User Data Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="card-dark rounded-lg border border-surface-200 p-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+          <div className="card-dark rounded-xl border border-surface-200 p-4">
             <div className="text-center">
-              <div className="text-2xl font-bold text-dark-accent">{realUserData.totalActiveUsers}</div>
-              <div className="text-sm text-text-secondary">Active Users</div>
+              <div className="text-xl md:text-2xl font-bold text-dark-accent">{realUserData.totalActiveUsers}</div>
+              <div className="text-[10px] md:text-sm text-text-secondary uppercase tracking-widest font-black">Active Users</div>
             </div>
           </div>
-          <div className="card-dark rounded-lg border border-surface-200 p-4">
+          <div className="card-dark rounded-xl border border-surface-200 p-4">
             <div className="text-center">
-              <div className="text-2xl font-bold text-dark-accent">{realUserData.totalActiveLocations}</div>
-              <div className="text-sm text-text-secondary">Cities Represented</div>
+              <div className="text-xl md:text-2xl font-bold text-dark-accent">{realUserData.totalActiveLocations}</div>
+              <div className="text-[10px] md:text-sm text-text-secondary uppercase tracking-widest font-black">Cities Represented</div>
             </div>
           </div>
-          <div className="card-dark rounded-lg border border-surface-200 p-4">
+          <div className="card-dark rounded-xl border border-surface-200 p-4">
             <div className="text-center">
-              <div className="text-2xl font-bold text-dark-accent">{realUserData.totalActiveSessions}</div>
-              <div className="text-sm text-text-secondary">Active Sessions</div>
+              <div className="text-xl md:text-2xl font-bold text-dark-accent">{realUserData.totalActiveSessions}</div>
+              <div className="text-[10px] md:text-sm text-text-secondary uppercase tracking-widest font-black">Active Sessions</div>
             </div>
           </div>
         </div>
 
         {/* Salary Comparison */}
-        <div className="card-dark rounded-lg border border-surface-200 p-6">
-          <h3 className="text-lg font-semibold text-text-primary mb-6">Salary Comparison - South African Cities</h3>
-          <div className="space-y-4">
+        <div className="card-dark rounded-2xl md:rounded-lg border border-surface-200 p-5 md:p-6">
+          <h3 className="text-base md:text-lg font-semibold text-text-primary mb-4 md:mb-6 uppercase tracking-tight">Salary Comparison - Local Nodes</h3>
+          <div className="space-y-3 md:space-y-4">
             {locationComparison.map((location, index) => (
-              <div key={location.location} className="flex items-center justify-between p-4 rounded-lg hover:bg-surface-50/10">
-                <div className="flex items-center space-x-4">
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold bg-teal-500/20 text-teal-400">
+              <div key={location.location} className="flex items-center justify-between p-3 md:p-4 rounded-xl hover:bg-surface-50/10 border border-transparent hover:border-surface-200 transition-all">
+                <div className="flex items-center space-x-3 md:space-x-4">
+                  <div className="w-7 h-7 md:w-8 md:h-8 rounded-full flex items-center justify-center text-xs font-bold bg-teal-500/20 text-teal-400">
                     {index + 1}
                   </div>
                   <div>
-                    <div className="font-medium text-text-primary">{location.location}</div>
-                    <div className="text-sm text-dark-text-muted capitalize">{location.trend} trend</div>
+                    <div className="font-bold text-sm md:text-base text-text-primary">{location.location}</div>
+                    <div className="text-[10px] md:text-sm text-dark-text-muted capitalize">{location.trend} trend</div>
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-lg font-bold text-text-primary">
+                  <div className="text-base md:text-lg font-bold text-text-primary">
                     ${location.averageSalary.toLocaleString()}
                   </div>
-                  <div className="text-xs text-dark-text-muted">
-                    {location.userCount} users, {location.sessionCount} sessions
+                  <div className="text-[9px] md:text-xs text-dark-text-muted">
+                    {location.userCount} users
                   </div>
                 </div>
               </div>
@@ -381,13 +381,13 @@ export default function LocationSalaryInsights() {
   }
 
   return (
-    <div className="space-y-6 animate-slide-up-soft">
+    <div className="space-y-4 md:space-y-6 animate-slide-up-soft">
       {/* Debug Info - Remove this in production */}
       {import.meta.env.DEV && (
-        <div className="bg-surface-50 p-4 rounded-lg text-xs">
+        <div className="bg-surface-50 p-3 md:p-4 rounded-xl text-[10px]">
           <details>
-            <summary className="text-yellow-400 cursor-pointer mb-2">🐛 Debug: API Response Data</summary>
-            <pre className="text-gray-300 overflow-auto max-h-60">
+            <summary className="text-yellow-400 cursor-pointer mb-2 font-bold uppercase tracking-widest">🐛 Debug: System Data</summary>
+            <pre className="text-gray-300 overflow-auto max-h-60 font-mono">
               {JSON.stringify({
                 userLocation,
                 userLocationHistory: userLocationHistory?.length || 0,
@@ -405,29 +405,29 @@ export default function LocationSalaryInsights() {
       )}
 
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold gradient-text-dark">Location-Based Salary Insights</h1>
-          <p className="text-text-secondary">
-            Compare salaries across different cities and markets
+          <h1 className="text-xl md:text-2xl font-black text-brand-dark tracking-tighter uppercase leading-none">Market Intelligence.</h1>
+          <p className="text-sm md:text-base text-text-secondary font-bold mt-1 opacity-70">
+            Compare salary architectures across global markets.
           </p>
           {/* Show notification based on actual data availability */}
           {(!locationComparison || locationComparison.length === 0) && (
-            <div className="mt-2 text-sm text-yellow-400 bg-yellow-400/10 px-3 py-1 rounded-full inline-block">
-              📍 No location data available - Enable location services for insights
+            <div className="mt-3 text-[10px] font-black uppercase tracking-widest text-yellow-600 bg-yellow-400/10 px-3 py-1.5 rounded-lg inline-block border border-yellow-400/20">
+              📍 No location data available
             </div>
           )}
           {locationComparison && locationComparison.length > 0 && !userLocation && (
-            <div className="mt-2 text-sm text-teal-400 bg-blue-400/10 px-3 py-1 rounded-full inline-block">
-              📍 Showing global data - Login with location for personalized insights
+            <div className="mt-3 text-[10px] font-black uppercase tracking-widest text-brand-blue bg-brand-blue/5 px-3 py-1.5 rounded-lg inline-block border border-brand-blue/10">
+              📍 Showing global node data
             </div>
           )}
         </div>
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center w-full sm:w-auto">
           <select
             value={jobTitle}
             onChange={(e) => setJobTitle(e.target.value)}
-            className="input-field-dark px-3 py-2 rounded-lg"
+            className="w-full sm:w-auto bg-white border border-surface-200 px-4 py-2.5 rounded-xl text-xs font-black text-brand-dark uppercase tracking-widest outline-none shadow-sm focus:ring-4 focus:ring-brand-blue/5 transition-all"
           >
             <option value="Software Engineer">Software Engineer</option>
             <option value="Product Manager">Product Manager</option>
@@ -439,37 +439,37 @@ export default function LocationSalaryInsights() {
       </div>
 
       {/* Real User Data Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="card-dark rounded-lg border border-surface-200 p-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+        <div className="bg-white rounded-xl md:rounded-2xl border border-surface-200 p-4 md:p-5 shadow-sm">
           <div className="text-center">
-            <div className="text-2xl font-bold text-dark-accent">1</div>
-            <div className="text-sm text-text-secondary">Active Users</div>
+            <div className="text-xl md:text-2xl font-black text-brand-dark tracking-tighter">1</div>
+            <div className="text-[9px] md:text-[10px] font-black text-text-tertiary uppercase tracking-widest">Active Users</div>
           </div>
         </div>
-        <div className="card-dark rounded-lg border border-surface-200 p-4">
+        <div className="bg-white rounded-xl md:rounded-2xl border border-surface-200 p-4 md:p-5 shadow-sm">
           <div className="text-center">
-            <div className="text-2xl font-bold text-dark-accent">2</div>
-            <div className="text-sm text-text-secondary">Cities Represented</div>
+            <div className="text-xl md:text-2xl font-black text-brand-dark tracking-tighter">2</div>
+            <div className="text-[9px] md:text-[10px] font-black text-text-tertiary uppercase tracking-widest">Global Nodes</div>
           </div>
         </div>
-        <div className="card-dark rounded-lg border border-surface-200 p-4">
+        <div className="bg-white rounded-xl md:rounded-2xl border border-surface-200 p-4 md:p-5 shadow-sm">
           <div className="text-center">
-            <div className="text-2xl font-bold text-dark-accent">4</div>
-            <div className="text-sm text-text-secondary">Active Sessions</div>
+            <div className="text-xl md:text-2xl font-black text-brand-dark tracking-tighter">4</div>
+            <div className="text-[9px] md:text-[10px] font-black text-text-tertiary uppercase tracking-widest">Active Sessions</div>
           </div>
         </div>
       </div>
 
       {/* User Location Info */}
       {userLocation && (
-        <div className="card-dark rounded-lg border border-surface-200 p-6">
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="p-3 bg-dark-accent/20 rounded-lg">
-              <MapPinIcon className="w-6 h-6 text-dark-accent" />
+        <div className="bg-white rounded-2xl md:rounded-[2rem] border border-surface-200 p-5 md:p-8 shadow-sm">
+          <div className="flex items-center space-x-4 mb-6">
+            <div className="p-3 bg-brand-blue/10 rounded-xl">
+              <MapPinIcon className="w-6 h-6 text-brand-blue" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-text-primary">Your Current Location</h3>
-              <p className="text-text-secondary">
+              <h3 className="text-base md:text-lg font-black text-brand-dark uppercase tracking-tight">Active Node</h3>
+              <p className="text-sm md:text-base text-text-secondary font-bold opacity-80">
                 {userLocation.city && userLocation.country 
                   ? `${userLocation.city}, ${userLocation.country}`
                   : userLocation.country || 'Location detected'
@@ -477,17 +477,18 @@ export default function LocationSalaryInsights() {
               </p>
             </div>
           </div>
-          <div className="text-sm text-dark-text-muted">
-            Last login: {userLocation.timestamp ? new Date(userLocation.timestamp).toLocaleDateString() : 'Recently'}
+          <div className="text-[9px] md:text-[10px] font-black text-text-tertiary uppercase tracking-widest bg-surface-50 px-3 py-1.5 rounded-lg w-fit">
+            Last Sync: {userLocation.timestamp ? new Date(userLocation.timestamp).toLocaleDateString() : 'Recently'}
           </div>
           
           {userLocationHistory && userLocationHistory.length > 1 && (
-            <div className="mt-4">
-              <h4 className="text-sm font-medium text-text-secondary mb-2">Recent Login Locations</h4>
-              <div className="space-y-1">
+            <div className="mt-6 pt-6 border-t border-surface-100">
+              <h4 className="text-[10px] font-black text-brand-dark uppercase tracking-[0.2em] mb-3">Sync History</h4>
+              <div className="space-y-2">
                 {userLocationHistory.slice(1, 4).map((location, index) => (
-                  <div key={index} className="text-xs text-dark-text-muted">
-                    {location.city}, {location.country} - {new Date(location.loginTime).toLocaleDateString()}
+                  <div key={index} className="text-[10px] font-bold text-text-tertiary uppercase tracking-widest flex items-center gap-2">
+                    <div className="w-1 h-1 rounded-full bg-surface-300" />
+                    {location.city}, {location.country} • {new Date(location.loginTime).toLocaleDateString()}
                   </div>
                 ))}
               </div>
@@ -497,88 +498,77 @@ export default function LocationSalaryInsights() {
       )}
 
       {/* Salary Comparison - Top 5 Cities */}
-      <div className="card-dark rounded-lg border border-surface-200 p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-semibold text-text-primary">Salary Comparison - Top Cities</h3>
-          <div className="text-sm text-dark-text-muted">
-            Confidence: {Math.round(confidence * 100)}%
+      <div className="bg-white rounded-2xl md:rounded-[2.5rem] border border-surface-200 p-5 md:p-8 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 md:mb-8 gap-3">
+          <h3 className="text-base md:text-lg font-black text-brand-dark uppercase tracking-tight">Architectural Benchmarks</h3>
+          <div className="text-[9px] md:text-[10px] font-black text-text-tertiary uppercase tracking-widest bg-surface-50 px-3 py-1 rounded-lg border border-surface-100">
+            Confidence Index: {Math.round(confidence * 100)}%
           </div>
         </div>
         
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 gap-3 md:gap-4">
           {locationComparison && locationComparison.length > 0 ? locationComparison.map((location, index) => (
             <div 
               key={location.location || `location-${index}`} 
-              className={`flex items-center justify-between p-4 rounded-lg transition-all ${
+              className={`flex items-center justify-between p-4 md:p-5 rounded-2xl transition-all border ${
                 location.isUserLocation ? 
-                  'bg-dark-accent/10 border border-dark-accent/30' : 
-                  'hover:bg-surface-50/10'
+                  'bg-brand-blue/5 border-brand-blue/30 shadow-md' : 
+                  'bg-surface-50/50 border-surface-200 hover:border-brand-blue/20 hover:bg-white hover:shadow-lg group'
               }`}
             >
               <div className="flex items-center space-x-4">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                <div className={`w-8 h-8 md:w-10 md:h-10 rounded-xl flex items-center justify-center text-xs font-black shadow-sm ${
                   location.isUserLocation ? 
-                    'bg-dark-accent/20 text-dark-accent' :
-                    index === 0 ? 'bg-yellow-500/20 text-yellow-400' :
-                    index === 1 ? 'bg-gray-400/20 text-gray-400' :
-                    index === 2 ? 'bg-orange-500/20 text-orange-400' :
-                    'bg-teal-500/20 text-teal-400'
+                    'bg-brand-blue text-white' :
+                    index === 0 ? 'bg-yellow-500/10 text-yellow-600' :
+                    index === 1 ? 'bg-slate-100 text-slate-600' :
+                    index === 2 ? 'bg-orange-500/10 text-orange-600' :
+                    'bg-brand-blue/10 text-brand-blue'
                 }`}>
                   {location.isUserLocation ? '📍' : index + 1}
                 </div>
                 <div>
                   <div className="flex items-center space-x-2">
-                    <span className={`font-medium ${
-                      location.isUserLocation ? 'text-dark-accent' : 'text-text-primary'
+                    <span className={`font-black text-sm md:text-base tracking-tight ${
+                      location.isUserLocation ? 'text-brand-blue' : 'text-brand-dark'
                     }`}>
                       {location.location}
                     </span>
                     {location.isUserLocation && (
-                      <span className="text-xs px-2 py-1 bg-dark-accent/20 text-dark-accent rounded-full">
-                        Your Location
+                      <span className="text-[8px] md:text-[9px] px-2 py-0.5 bg-brand-blue text-white rounded-md font-black uppercase tracking-widest">
+                        Your Node
                       </span>
                     )}
                   </div>
                   <div className="flex items-center space-x-2 mt-1">
-                    <TrendingUpIcon className={`w-4 h-4 ${
-                      location.trend === 'rising' ? 'text-green-400' :
-                      location.trend === 'declining' ? 'text-red-400' :
-                      'text-yellow-400'
+                    <TrendingUpIcon className={`w-3.5 h-3.5 ${
+                      location.trend === 'rising' ? 'text-brand-success' :
+                      location.trend === 'declining' ? 'text-red-500' :
+                      'text-brand-orange'
                     }`} />
-                    <span className="text-sm text-dark-text-muted capitalize">
+                    <span className="text-[10px] md:text-xs font-bold text-text-tertiary uppercase tracking-widest">
                       {location.trend} trend
                     </span>
                   </div>
                 </div>
               </div>
               <div className="text-right">
-                <div className={`text-lg font-bold ${
-                  location.isUserLocation ? 'text-dark-accent' : 'text-text-primary'
+                <div className={`text-lg md:text-xl font-black tracking-tighter ${
+                  location.isUserLocation ? 'text-brand-blue' : 'text-brand-dark'
                 }`}>
                   ${location.averageSalary ? location.averageSalary.toLocaleString() : 'N/A'}
                 </div>
-                {location.isUserLocation && (
-                  <div className="text-xs text-dark-accent/80">Market Rate</div>
-                )}
-                <div className="text-xs text-dark-text-muted">
-                  {location.userCount || 0} users, {location.sessionCount || 0} sessions
+                <div className="text-[9px] md:text-[10px] font-black text-text-tertiary uppercase tracking-widest opacity-60">
+                  {location.userCount || 0} Nodes
                 </div>
               </div>
             </div>
           )) : (
-            <div className="text-center py-8">
-              <div className="text-dark-text-muted mb-2">No location comparison data available</div>
-              <div className="text-sm text-text-secondary mb-4">
-                Try logging out and back in to refresh location data
+            <div className="text-center py-12 bg-surface-50 rounded-2xl border border-dashed border-surface-200">
+              <div className="text-[10px] font-black text-text-tertiary uppercase tracking-widest mb-2">Null Benchmark Data</div>
+              <div className="text-xs font-bold text-text-secondary">
+                Synchronize location services to refresh grid.
               </div>
-              {/* Debug info for troubleshooting */}
-              {import.meta.env.DEV && (
-                <div className="text-xs text-gray-500 bg-surface-50 p-2 rounded">
-                  Debug: locationComparison length = {locationComparison?.length || 'undefined'}<br/>
-                  salaryInsights exists = {salaryInsights ? 'yes' : 'no'}<br/>
-                  Raw locationComparison = {JSON.stringify(locationComparison)}
-                </div>
-              )}
             </div>
           )}
         </div>
@@ -586,13 +576,18 @@ export default function LocationSalaryInsights() {
 
       {/* Recommendations */}
       {recommendations && recommendations.length > 0 && (
-        <div className="card-dark rounded-lg border border-surface-200 p-6">
-          <h3 className="text-lg font-semibold text-text-primary mb-4">Recommendations</h3>
+        <div className="bg-white rounded-2xl md:rounded-[2.5rem] border border-surface-200 p-5 md:p-8 shadow-sm">
+          <h3 className="text-base md:text-lg font-black text-brand-dark uppercase tracking-tight mb-6 flex items-center gap-3">
+            <div className="w-1.5 h-1.5 rounded-full bg-brand-success" />
+            System Directives
+          </h3>
           <div className="space-y-3">
             {recommendations.map((recommendation, index) => (
-              <div key={index} className="flex items-start space-x-3">
-                <div className="w-2 h-2 bg-dark-accent rounded-full mt-2 flex-shrink-0"></div>
-                <p className="text-text-secondary">{recommendation}</p>
+              <div key={index} className="flex items-start space-x-4 p-4 bg-surface-50 border border-surface-100 rounded-xl hover:border-brand-success/30 transition-colors group">
+                <div className="w-6 h-6 rounded-lg bg-white border border-surface-200 flex items-center justify-center text-brand-success shadow-sm flex-shrink-0 mt-0.5 group-hover:scale-110 transition-transform">
+                  <CheckCircleIcon className="w-4 h-4" />
+                </div>
+                <p className="text-sm font-bold text-text-secondary leading-relaxed">{recommendation}</p>
               </div>
             ))}
           </div>
@@ -600,74 +595,60 @@ export default function LocationSalaryInsights() {
       )}
 
       {/* Market Trends */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="card-dark rounded-lg border border-surface-200 p-6">
-          <h3 className="text-lg font-semibold text-text-primary mb-4">Market Trends</h3>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+        <div className="bg-white rounded-2xl md:rounded-[2.5rem] border border-surface-200 p-5 md:p-8 shadow-sm">
+          <h3 className="text-base md:text-lg font-black text-brand-dark uppercase tracking-tight mb-6">Market Pulse</h3>
           <div className="space-y-4">
             {locationTrends.length > 0 ? locationTrends.slice(0, 3).map((trend, index) => (
-              <div key={trend.location || `trend-${index}`} className="flex items-center justify-between">
+              <div key={trend.location || `trend-${index}`} className="flex items-center justify-between p-3 md:p-4 bg-surface-50 rounded-xl">
                 <div>
-                  <p className="font-medium text-text-primary">{trend.location}</p>
-                  <p className="text-sm text-dark-text-muted">
-                    {trend.dataPoints} data points
+                  <p className="font-black text-sm md:text-base text-brand-dark tracking-tight">{trend.location}</p>
+                  <p className="text-[9px] md:text-[10px] font-bold text-text-tertiary uppercase tracking-widest">
+                    {trend.dataPoints} signals
                   </p>
                 </div>
                 <div className="text-right">
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center justify-end space-x-2">
                     <TrendingUpIcon className={`w-4 h-4 ${
-                      trend.trend === 'rising' ? 'text-green-400' :
-                      trend.trend === 'declining' ? 'text-red-400' :
-                      'text-yellow-400'
+                      trend.trend === 'rising' ? 'text-brand-success' :
+                      trend.trend === 'declining' ? 'text-red-500' :
+                      'text-brand-orange'
                     }`} />
-                    <span className={`text-sm font-medium capitalize ${
-                      trend.trend === 'rising' ? 'text-green-400' :
-                      trend.trend === 'declining' ? 'text-red-400' :
-                      'text-yellow-400'
+                    <span className={`text-[10px] md:text-xs font-black uppercase tracking-widest ${
+                      trend.trend === 'rising' ? 'text-brand-success' :
+                      trend.trend === 'declining' ? 'text-red-500' :
+                      'text-brand-orange'
                     }`}>
                       {trend.trend}
                     </span>
                   </div>
-                  <div className="text-sm text-dark-text-muted">
-                    {Math.round((trend.confidence || 0) * 100)}% confidence
+                  <div className="text-[9px] font-black text-text-tertiary uppercase tracking-tighter mt-1">
+                    {Math.round((trend.confidence || 0) * 100)}% Confidence
                   </div>
                 </div>
               </div>
             )) : (
-              <div className="text-center py-4">
-                <div className="text-dark-text-muted">No trend data available</div>
+              <div className="text-center py-8 bg-surface-50 rounded-xl">
+                <div className="text-[10px] font-black text-text-tertiary uppercase tracking-widest">Null Trend Signals</div>
               </div>
             )}
           </div>
         </div>
 
-        <div className="card-dark rounded-lg border border-surface-200 p-6">
-          <h3 className="text-lg font-semibold text-text-primary mb-4">Quick Stats</h3>
+        <div className="bg-white rounded-2xl md:rounded-[2.5rem] border border-surface-200 p-5 md:p-8 shadow-sm">
+          <h3 className="text-base md:text-lg font-black text-brand-dark uppercase tracking-tight mb-6">System Health</h3>
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-text-secondary">Average Global Salary</span>
-              <span className="font-bold text-text-primary">
-                {locationTrends.length > 0 
-                  ? `$${Math.round(locationTrends.reduce((sum, t) => sum + (t.averageSalary || 0), 0) / locationTrends.length).toLocaleString()}`
-                  : 'N/A'
-                }
-              </span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-text-secondary">Markets Analyzed</span>
-              <span className="font-bold text-text-primary">{locationTrends.length}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-text-secondary">Rising Markets</span>
-              <span className="font-bold text-green-400">
-                {locationTrends.filter(t => t.trend === 'rising').length}
-              </span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-text-secondary">Overall Confidence</span>
-              <span className="font-bold text-text-primary">
-                {Math.round(confidence * 100)}%
-              </span>
-            </div>
+            {[
+              { label: "Global Avg Yield", val: locationTrends.length > 0 ? `$${Math.round(locationTrends.reduce((sum, t) => sum + (t.averageSalary || 0), 0) / locationTrends.length).toLocaleString()}` : 'N/A' },
+              { label: "Active Markets", val: locationTrends.length },
+              { label: "High-Growth Nodes", val: locationTrends.filter(t => t.trend === 'rising').length },
+              { label: "System Confidence", val: `${Math.round(confidence * 100)}%` }
+            ].map((stat, i) => (
+              <div key={i} className="flex items-center justify-between p-3 md:p-4 bg-surface-50 rounded-xl border border-transparent hover:border-brand-blue/10 transition-colors group">
+                <span className="text-[10px] md:text-xs font-black text-text-tertiary uppercase tracking-[0.15em]">{stat.label}</span>
+                <span className="font-black text-sm md:text-base text-brand-dark group-hover:text-brand-blue transition-colors">{stat.val}</span>
+              </div>
+            ))}
           </div>
         </div>
       </div>

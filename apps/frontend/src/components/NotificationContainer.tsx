@@ -8,7 +8,7 @@ const NotificationContainer: React.FC = () => {
   if (notifications.length === 0) return null;
 
   return (
-    <div className="fixed top-4 right-4 z-50 space-y-3 max-w-sm w-full">
+    <div className="fixed top-4 inset-x-0 mx-auto md:inset-auto md:left-auto md:right-4 z-50 space-y-3 w-[calc(100%-2rem)] max-w-sm">
       {notifications.map(notification => (
         <NotificationItem
           key={notification.id}

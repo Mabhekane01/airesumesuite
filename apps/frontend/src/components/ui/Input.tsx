@@ -20,7 +20,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         <input
           ref={ref}
           className={clsx(
-            'input-resume py-4',
+            'input-resume py-2 md:py-4',
             error && 'border-red-300 focus:ring-red-100',
             className
           )}

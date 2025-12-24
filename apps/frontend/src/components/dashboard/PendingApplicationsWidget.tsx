@@ -61,7 +61,7 @@ export const PendingApplicationsWidget = () => {
   if (pendingJobs.length === 0) return null;
 
   return (
-    <div className="bg-white border border-surface-200 rounded-[2rem] p-8 shadow-sm mb-8 relative overflow-hidden">
+    <div className="bg-white border border-surface-200 rounded-[2rem] p-6 md:p-8 shadow-sm mb-8 relative overflow-hidden">
       <div className="absolute top-0 right-0 w-64 h-64 bg-brand-orange/5 rounded-full -mr-32 -mt-32 blur-3xl pointer-events-none" />
       
       <div className="flex items-center gap-4 mb-6 relative z-10">

@@ -14,27 +14,27 @@ const JobCard = ({ job, isAdmin, onApprove, onDelete }: { job: any, isAdmin?: bo
     initial={{ opacity: 0, y: 10 }}
     animate={{ opacity: 1, y: 0 }}
     whileHover={{ y: -6 }}
-    className="bg-white border border-surface-200 rounded-[2.5rem] p-8 shadow-sm hover:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.1)] hover:border-brand-blue/20 transition-all duration-500 group relative overflow-hidden flex flex-col h-full"
+    className="bg-white border border-surface-200 rounded-[1.5rem] md:rounded-[2.5rem] p-5 md:p-8 shadow-sm hover:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.1)] hover:border-brand-blue/20 transition-all duration-500 group relative overflow-hidden flex flex-col h-full"
   >
     <div className="absolute top-0 right-0 w-32 h-32 bg-brand-blue/[0.02] rounded-full -mr-16 -mt-16 group-hover:bg-brand-blue/[0.05] transition-colors duration-700" />
     
-    <div className="relative z-10 flex justify-between items-start mb-8">
+    <div className="relative z-10 flex flex-col sm:flex-row justify-between items-start gap-4 mb-6 md:mb-8">
       <div className="min-w-0 flex-1">
-        <h3 className="text-2xl font-display font-black text-brand-dark tracking-tighter leading-[1.1] group-hover:text-brand-blue transition-colors duration-300 line-clamp-2">
+        <h3 className="text-xl md:text-2xl font-display font-black text-brand-dark tracking-tighter leading-[1.1] group-hover:text-brand-blue transition-colors duration-300 line-clamp-2">
           {job.title}
         </h3>
-        <div className="flex flex-wrap items-center gap-5 mt-4">
-          <div className="flex items-center gap-2 text-[10px] font-black text-text-tertiary uppercase tracking-[0.15em] bg-surface-50 px-3 py-1.5 rounded-lg border border-surface-100 group-hover:bg-white transition-colors">
-            <Building size={14} className="text-brand-blue" /> 
+        <div className="flex flex-wrap items-center gap-3 md:gap-5 mt-3 md:mt-4">
+          <div className="flex items-center gap-2 text-[9px] md:text-[10px] font-black text-text-tertiary uppercase tracking-[0.15em] bg-surface-50 px-2.5 py-1.5 rounded-lg border border-surface-100 group-hover:bg-white transition-colors">
+            <Building size={12} className="text-brand-blue" /> 
             {job.company}
           </div>
-          <div className="flex items-center gap-2 text-[10px] font-black text-text-tertiary uppercase tracking-[0.15em] bg-surface-50 px-3 py-1.5 rounded-lg border border-surface-100 group-hover:bg-white transition-colors">
-            <MapPin size={14} className="text-brand-blue" /> 
+          <div className="flex items-center gap-2 text-[9px] md:text-[10px] font-black text-text-tertiary uppercase tracking-[0.15em] bg-surface-50 px-2.5 py-1.5 rounded-lg border border-surface-100 group-hover:bg-white transition-colors">
+            <MapPin size={12} className="text-brand-blue" /> 
             {job.location}
           </div>
         </div>
       </div>
-      <div className="flex flex-col items-end gap-2.5">
+      <div className="flex flex-row sm:flex-col items-center sm:items-end gap-2.5 w-full sm:w-auto justify-between sm:justify-start pt-2 sm:pt-0">
          {isAdmin && job.status === 'pending' && (
            <div className="flex gap-2">
              <button 
@@ -62,49 +62,51 @@ const JobCard = ({ job, isAdmin, onApprove, onDelete }: { job: any, isAdmin?: bo
              <Trash2 size={18} strokeWidth={2.5} />
            </button>
          )}
-         {(() => {
-           if (job.source === 'scraper') {
-             return (
-               <div className="px-3.5 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] border shadow-sm bg-brand-blue/5 border-brand-blue/10 text-brand-blue">
-                 <span className="flex items-center gap-1.5">
-                   <span className="w-1.5 h-1.5 rounded-full bg-brand-blue animate-pulse" />
-                   System Optimized
-                 </span>
-               </div>
-             );
-           } else if (job.source === 'admin') {
-             return (
-               <div className="px-3.5 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] border shadow-sm bg-brand-purple/5 border-brand-purple/10 text-brand-purple">
-                 <span className="flex items-center gap-1.5">
-                   <span className="w-1.5 h-1.5 rounded-full bg-brand-purple" />
-                   Official Listing
-                 </span>
-               </div>
-             );
-           } else {
-             return (
-               <div className="px-3.5 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] border shadow-sm bg-brand-success/5 border-brand-success/10 text-brand-success">
-                 <span className="flex items-center gap-1.5">
-                   Community Authored
-                 </span>
-               </div>
-             );
-           }
-         })()}
-         <div className="flex items-center gap-1.5 text-[9px] font-bold text-text-tertiary uppercase tracking-widest bg-surface-50 px-2 py-1 rounded-md border border-surface-100">
-           <Clock size={10} />
-           {new Date(job.createdAt).toLocaleDateString()}
+         <div className="flex items-center gap-2">
+           {(() => {
+             if (job.source === 'scraper') {
+               return (
+                 <div className="px-2.5 py-1.5 rounded-lg md:rounded-xl text-[8px] md:text-[9px] font-black uppercase tracking-[0.2em] border shadow-sm bg-brand-blue/5 border-brand-blue/10 text-brand-blue">
+                   <span className="flex items-center gap-1.5">
+                     <span className="w-1.5 h-1.5 rounded-full bg-brand-blue animate-pulse" />
+                     System Optimized
+                   </span>
+                 </div>
+               );
+             } else if (job.source === 'admin') {
+               return (
+                 <div className="px-2.5 py-1.5 rounded-lg md:rounded-xl text-[8px] md:text-[9px] font-black uppercase tracking-[0.2em] border shadow-sm bg-brand-purple/5 border-brand-purple/10 text-brand-purple">
+                   <span className="flex items-center gap-1.5">
+                     <span className="w-1.5 h-1.5 rounded-full bg-brand-purple" />
+                     Official Listing
+                   </span>
+                 </div>
+               );
+             } else {
+               return (
+                 <div className="px-2.5 py-1.5 rounded-lg md:rounded-xl text-[8px] md:text-[9px] font-black uppercase tracking-[0.2em] border shadow-sm bg-brand-success/5 border-brand-success/10 text-brand-success">
+                   <span className="flex items-center gap-1.5">
+                     Community Authored
+                   </span>
+                 </div>
+               );
+             }
+           })()}
+           <div className="flex items-center gap-1.5 text-[8px] md:text-[9px] font-bold text-text-tertiary uppercase tracking-widest bg-surface-50 px-2 py-1 rounded-md border border-surface-100">
+             <Clock size={10} />
+             {new Date(job.createdAt).toLocaleDateString()}
+           </div>
          </div>
       </div>
     </div>
     
-    <p className="relative z-10 text-text-secondary text-sm font-medium leading-relaxed opacity-80 mb-10 line-clamp-3 italic">
+    <p className="relative z-10 text-text-secondary text-sm font-medium leading-relaxed opacity-80 mb-6 md:mb-10 line-clamp-3 italic">
       "{job.description}"
     </p>
 
-    <div className="relative z-10 flex items-center justify-between mt-auto pt-6 border-t border-surface-100/60">
+    <div className="relative z-10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between mt-auto pt-6 border-t border-surface-100/60 gap-4">
       <div className="flex flex-col">
-        <span className="text-[9px] font-black text-text-tertiary uppercase tracking-[0.2em] mb-1 opacity-60">Yield Projection</span>
+        <span className="text-[8px] md:text-[9px] font-black text-text-tertiary uppercase tracking-[0.2em] mb-1 opacity-60">Yield Projection</span>
         <span className="text-sm font-black text-brand-dark tracking-tight flex items-center gap-2">
           <Cpu size={14} className="text-brand-blue opacity-40" />
           {job.salaryRange || 'Protocol: Confidential'}
@@ -112,7 +114,7 @@ const JobCard = ({ job, isAdmin, onApprove, onDelete }: { job: any, isAdmin?: bo
       </div>
       <Link 
         to={`/jobs/${job._id}/apply`} 
-        className="btn-primary px-8 py-3.5 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-brand-blue/20 flex items-center gap-2.5 hover:scale-105 transition-transform duration-300"
+        className="btn-primary px-6 md:px-8 py-3.5 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-brand-blue/20 flex items-center justify-center gap-2.5 hover:scale-105 transition-transform duration-300"
       >
         Deploy Application <ChevronRight size={16} className="stroke-[3]" />
       </Link>
@@ -153,20 +155,20 @@ const SubmitJobModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
       <motion.div 
         initial={{ scale: 0.95, opacity: 0, y: 20 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
-        className="relative bg-white border border-surface-200 rounded-[3rem] w-full max-w-2xl p-10 shadow-2xl overflow-hidden"
+        className="relative bg-white border border-surface-200 rounded-[2rem] md:rounded-[3rem] w-full max-w-2xl p-6 md:p-10 shadow-2xl overflow-hidden"
       >
         <div className="absolute top-0 right-0 p-10 opacity-[0.03] pointer-events-none">
           <Plus size={120} />
         </div>
 
-        <div className="relative z-10 flex justify-between items-center mb-10">
+        <div className="relative z-10 flex justify-between items-center mb-6 md:mb-10">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-brand-blue/10 flex items-center justify-center text-brand-blue shadow-inner border border-brand-blue/5">
-              <Plus size={28} strokeWidth={2.5} />
+            <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-brand-blue/10 flex items-center justify-center text-brand-blue shadow-inner border border-brand-blue/5">
+              <Plus size={24} md:size={28} strokeWidth={2.5} />
             </div>
             <div>
-              <h2 className="text-3xl font-display font-black text-brand-dark tracking-tighter uppercase leading-none">Register Architecture.</h2>
-              <p className="text-xs font-bold text-text-tertiary uppercase tracking-widest mt-1">Manual node synchronization</p>
+              <h2 className="text-xl md:text-3xl font-display font-black text-brand-dark tracking-tighter uppercase leading-none">Register Architecture.</h2>
+              <p className="text-[10px] md:text-xs font-bold text-text-tertiary uppercase tracking-widest mt-1">Manual node synchronization</p>
             </div>
           </div>
           <button onClick={onClose} className="w-10 h-10 rounded-full bg-surface-50 border border-surface-200 flex items-center justify-center text-text-tertiary hover:text-brand-dark hover:rotate-90 transition-all duration-300">
@@ -174,40 +176,40 @@ const SubmitJobModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
           </button>
         </div>
         
-        <form onSubmit={handleSubmit} className="relative z-10 space-y-6">
-          <div className="grid grid-cols-2 gap-6">
+        <form onSubmit={handleSubmit} className="relative z-10 space-y-4 md:space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
             <div className="space-y-2">
               <label className="text-[10px] font-black text-brand-dark uppercase tracking-[0.2em] ml-1">Target Role</label>
-              <input required className="input-resume w-full px-5 py-4 rounded-xl text-sm font-bold bg-surface-50 border border-surface-200 focus:ring-4 focus:ring-brand-blue/5 transition-all outline-none" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} placeholder="Software Engineer" />
+              <input required className="input-resume w-full px-5 py-3.5 md:py-4 rounded-xl text-sm font-bold bg-surface-50 border border-surface-200 focus:ring-4 focus:ring-brand-blue/5 transition-all outline-none" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} placeholder="Software Engineer" />
             </div>
             <div className="space-y-2">
               <label className="text-[10px] font-black text-brand-dark uppercase tracking-[0.2em] ml-1">Host Entity</label>
-              <input required className="input-resume w-full px-5 py-4 rounded-xl text-sm font-bold bg-surface-50 border border-surface-200 focus:ring-4 focus:ring-brand-blue/5 transition-all outline-none" value={formData.company} onChange={e => setFormData({...formData, company: e.target.value})} placeholder="Global Inc." />
+              <input required className="input-resume w-full px-5 py-3.5 md:py-4 rounded-xl text-sm font-bold bg-surface-50 border border-surface-200 focus:ring-4 focus:ring-brand-blue/5 transition-all outline-none" value={formData.company} onChange={e => setFormData({...formData, company: e.target.value})} placeholder="Global Inc." />
             </div>
           </div>
           
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
             <div className="space-y-2">
               <label className="text-[10px] font-black text-brand-dark uppercase tracking-[0.2em] ml-1">Geographic Node</label>
-              <input required className="input-resume w-full px-5 py-4 rounded-xl text-sm font-bold bg-surface-50 border border-surface-200 focus:ring-4 focus:ring-brand-blue/5 transition-all outline-none" value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} placeholder="City" />
+              <input required className="input-resume w-full px-5 py-3.5 md:py-4 rounded-xl text-sm font-bold bg-surface-50 border border-surface-200 focus:ring-4 focus:ring-brand-blue/5 transition-all outline-none" value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} placeholder="City" />
             </div>
             <div className="space-y-2">
               <label className="text-[10px] font-black text-brand-dark uppercase tracking-[0.2em] ml-1">Cluster Country</label>
-              <input required className="input-resume w-full px-5 py-4 rounded-xl text-sm font-bold bg-surface-50 border border-surface-200 focus:ring-4 focus:ring-brand-blue/5 transition-all outline-none" value={formData.country} onChange={e => setFormData({...formData, country: e.target.value})} placeholder="Country" />
+              <input required className="input-resume w-full px-5 py-3.5 md:py-4 rounded-xl text-sm font-bold bg-surface-50 border border-surface-200 focus:ring-4 focus:ring-brand-blue/5 transition-all outline-none" value={formData.country} onChange={e => setFormData({...formData, country: e.target.value})} placeholder="Country" />
             </div>
           </div>
 
           <div className="space-y-2">
             <label className="text-[10px] font-black text-brand-dark uppercase tracking-[0.2em] ml-1">Deployment URL</label>
-            <input required type="url" className="input-resume w-full px-5 py-4 rounded-xl text-sm font-bold bg-surface-50 border border-surface-200 focus:ring-4 focus:ring-brand-blue/5 transition-all outline-none" value={formData.url} onChange={e => setFormData({...formData, url: e.target.value})} placeholder="https://..." />
+            <input required type="url" className="input-resume w-full px-5 py-3.5 md:py-4 rounded-xl text-sm font-bold bg-surface-50 border border-surface-200 focus:ring-4 focus:ring-brand-blue/5 transition-all outline-none" value={formData.url} onChange={e => setFormData({...formData, url: e.target.value})} placeholder="https://..." />
           </div>
 
           <div className="space-y-2">
             <label className="text-[10px] font-black text-brand-dark uppercase tracking-[0.2em] ml-1">Technical Specs</label>
-            <textarea required rows={4} className="input-resume w-full px-5 py-4 rounded-xl text-sm font-bold bg-surface-50 border border-surface-200 focus:ring-4 focus:ring-brand-blue/5 transition-all outline-none resize-none" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} placeholder="Architecture description..." />
+            <textarea required rows={3} md:rows={4} className="input-resume w-full px-5 py-3.5 md:py-4 rounded-xl text-sm font-bold bg-surface-50 border border-surface-200 focus:ring-4 focus:ring-brand-blue/5 transition-all outline-none resize-none" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} placeholder="Architecture description..." />
           </div>
 
-          <button disabled={loading} type="submit" className="btn-primary w-full py-5 text-sm font-black uppercase tracking-[0.2em] shadow-2xl shadow-brand-blue/20 mt-4 disabled:opacity-50 transition-all hover:scale-[1.02] active:scale-95">
+          <button disabled={loading} type="submit" className="btn-primary w-full py-4 md:py-5 text-[11px] md:text-sm font-black uppercase tracking-[0.2em] shadow-2xl shadow-brand-blue/20 mt-4 disabled:opacity-50 transition-all hover:scale-[1.02] active:scale-95">
             {loading ? 'Processing Integration...' : 'Deploy Job Protocol'}
           </button>
         </form>
@@ -296,56 +298,56 @@ const JobBoard = () => {
   };
 
   const boardContent = (
-    <div className="w-full space-y-12 pb-24 animate-slide-up-soft">
+    <div className="w-full space-y-6 md:space-y-12 pb-24 animate-slide-up-soft">
       {/* --- HEADER --- */}
-      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 pb-6 border-b border-surface-200/60">
-        <div className="space-y-4">
+      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 md:gap-8 pb-6 border-b border-surface-200/60">
+        <div className="space-y-3 md:space-y-4">
           <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-brand-blue/5 text-brand-blue border border-brand-blue/10 shadow-sm backdrop-blur-sm">
             <Globe className="w-4 h-4" />
-            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Global Intelligence Grid</span>
+            <span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em]">Global Intelligence Grid</span>
           </div>
           <div className="space-y-1">
-            <h1 className="text-4xl md:text-6xl font-display font-black text-brand-dark tracking-tighter">
+            <h1 className="text-3xl md:text-6xl font-display font-black text-brand-dark tracking-tighter">
               Job <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-blue to-brand-purple">Intelligence.</span>
             </h1>
-            <p className="text-lg md:text-xl text-text-secondary font-medium max-w-2xl leading-relaxed">
+            <p className="text-base md:text-xl text-text-secondary font-medium max-w-2xl leading-relaxed opacity-80">
               Real-time market exploration through automated scraper nodes and architectural matching.
             </p>
           </div>
         </div>
         
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 md:gap-4">
           <button 
             onClick={() => setIsModalOpen(true)}
-            className="btn-primary shadow-2xl shadow-brand-blue/20 px-8 py-4 font-black uppercase tracking-[0.15em] text-xs hover:scale-105 transition-transform duration-300 flex items-center gap-3"
+            className="flex-1 sm:flex-none btn-primary shadow-2xl shadow-brand-blue/20 px-6 md:px-8 py-3.5 md:py-4 font-black uppercase tracking-[0.15em] text-[10px] md:text-xs hover:scale-105 transition-transform duration-300 flex items-center justify-center gap-2 md:gap-3"
           >
-            <Plus size={20} strokeWidth={3} />
+            <Plus size={18} md:size={20} strokeWidth={3} />
             {user?.role === 'admin' ? 'Register Node' : 'Submit Job'}
           </button>
           <button 
             onClick={handleRefresh}
             disabled={isScraping}
-            className="w-14 h-14 rounded-[1.2rem] bg-white border border-surface-200 flex items-center justify-center text-text-tertiary hover:text-brand-blue hover:border-brand-blue/30 hover:shadow-lg transition-all duration-300 disabled:opacity-50 shadow-sm"
+            className="w-12 h-12 md:w-14 md:h-14 rounded-xl md:rounded-[1.2rem] bg-white border border-surface-200 flex items-center justify-center text-text-tertiary hover:text-brand-blue hover:border-brand-blue/30 hover:shadow-lg transition-all duration-300 disabled:opacity-50 shadow-sm"
             title="Sync Archive"
           >
-            <RefreshCw size={24} className={`${isScraping ? 'animate-spin' : ''}`} />
+            <RefreshCw size={20} md:size={24} className={`${isScraping ? 'animate-spin' : ''}`} />
           </button>
         </div>
       </div>
 
       {/* --- FILTERS --- */}
-      <div className="bg-white border border-surface-200 rounded-[3rem] p-6 shadow-xl relative overflow-hidden group">
+      <div className="bg-white border border-surface-200 rounded-[1.5rem] md:rounded-[3rem] p-4 md:p-6 shadow-xl relative overflow-hidden group">
         <div className="absolute inset-0 bg-[radial-gradient(#3b82f6_1px,transparent_1px)] [background-size:32px_32px] opacity-[0.03]" />
         
-        <div className="relative z-10 flex flex-col lg:flex-row gap-6 items-stretch lg:items-center">
+        <div className="relative z-10 flex flex-col lg:flex-row gap-4 md:gap-6 items-stretch lg:items-center">
           <div className="flex-1 relative group">
-            <div className="absolute left-6 top-1/2 -translate-y-1/2 w-10 h-10 rounded-xl bg-surface-50 flex items-center justify-center group-focus-within:bg-brand-blue group-focus-within:text-white transition-all border border-surface-100 group-focus-within:border-brand-blue shadow-inner">
-              <MapPin size={18} strokeWidth={2.5} />
+            <div className="absolute left-5 top-1/2 -translate-y-1/2 w-9 h-9 rounded-lg bg-surface-50 flex items-center justify-center group-focus-within:bg-brand-blue group-focus-within:text-white transition-all border border-surface-100 group-focus-within:border-brand-blue shadow-inner">
+              <MapPin size={16} strokeWidth={2.5} />
             </div>
             <input 
               type="text" 
               placeholder="Filter by country cluster..." 
-              className="w-full bg-surface-50/50 border border-surface-200 rounded-2xl py-5 pl-20 pr-8 text-sm font-black text-brand-dark focus:ring-8 focus:ring-brand-blue/5 focus:border-brand-blue outline-none transition-all placeholder:text-text-tertiary placeholder:font-bold tracking-tight"
+              className="w-full bg-surface-50/50 border border-surface-200 rounded-xl md:rounded-2xl py-4 md:py-5 pl-16 md:pl-20 pr-6 text-sm font-black text-brand-dark focus:ring-8 focus:ring-brand-blue/5 focus:border-brand-blue outline-none transition-all placeholder:text-text-tertiary placeholder:font-bold tracking-tight"
               value={country}
               onChange={(e) => setCountry(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleCountrySearch()}
@@ -353,13 +355,13 @@ const JobBoard = () => {
           </div>
 
           <div className="flex-1 relative group">
-            <div className="absolute left-6 top-1/2 -translate-y-1/2 w-10 h-10 rounded-xl bg-surface-50 flex items-center justify-center group-focus-within:bg-brand-blue group-focus-within:text-white transition-all border border-surface-100 group-focus-within:border-brand-blue shadow-inner">
-              <Search size={18} strokeWidth={2.5} />
+            <div className="absolute left-5 top-1/2 -translate-y-1/2 w-9 h-9 rounded-lg bg-surface-50 flex items-center justify-center group-focus-within:bg-brand-blue group-focus-within:text-white transition-all border border-surface-100 group-focus-within:border-brand-blue shadow-inner">
+              <Search size={16} strokeWidth={2.5} />
             </div>
             <input 
               type="text" 
-              placeholder="Search by mission parameters (title, company, description)..." 
-              className="w-full bg-surface-50/50 border border-surface-200 rounded-2xl py-5 pl-20 pr-8 text-sm font-black text-brand-dark focus:ring-8 focus:ring-brand-blue/5 focus:border-brand-blue outline-none transition-all placeholder:text-text-tertiary placeholder:font-bold tracking-tight"
+              placeholder="Search mission parameters..." 
+              className="w-full bg-surface-50/50 border border-surface-200 rounded-xl md:rounded-2xl py-4 md:py-5 pl-16 md:pl-20 pr-6 text-sm font-black text-brand-dark focus:ring-8 focus:ring-brand-blue/5 focus:border-brand-blue outline-none transition-all placeholder:text-text-tertiary placeholder:font-bold tracking-tight"
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
             />
@@ -369,26 +371,26 @@ const JobBoard = () => {
 
       {/* --- ADMIN TABS --- */}
       {isAdmin && (
-        <div className="flex flex-wrap items-center gap-2 bg-surface-50/80 backdrop-blur-md border border-surface-200 p-1.5 rounded-[2rem] w-fit shadow-inner">
+        <div className="flex flex-wrap items-center gap-2 bg-surface-50/80 backdrop-blur-md border border-surface-200 p-1.5 rounded-2xl md:rounded-[2rem] w-full sm:w-fit shadow-inner">
           <button
             onClick={() => setActiveTab('approved')}
-            className={`px-8 py-3.5 rounded-[1.7rem] text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 ${
+            className={`flex-1 sm:flex-none px-6 md:px-8 py-3 rounded-xl md:rounded-[1.7rem] text-[9px] md:text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 ${
               activeTab === 'approved' 
                 ? 'bg-white text-brand-blue shadow-[0_4px_20px_-2px_rgba(0,0,0,0.1)] border border-surface-100 transform scale-105' 
                 : 'text-text-tertiary hover:text-brand-dark hover:bg-white/60'
             }`}
           >
-            Active Nodes <span className="ml-1 opacity-60">({jobs.length})</span>
+            Active <span className="hidden sm:inline">Nodes</span> <span className="ml-1 opacity-60">({jobs.length})</span>
           </button>
           <button
             onClick={() => setActiveTab('pending')}
-            className={`px-8 py-3.5 rounded-[1.7rem] text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 ${
+            className={`flex-1 sm:flex-none px-6 md:px-8 py-3 rounded-xl md:rounded-[1.7rem] text-[9px] md:text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 ${
               activeTab === 'pending' 
                 ? 'bg-white text-brand-blue shadow-[0_4px_20px_-2px_rgba(0,0,0,0.1)] border border-surface-100 transform scale-105' 
                 : 'text-text-tertiary hover:text-brand-dark hover:bg-white/60'
             }`}
           >
-            Pending Verification <span className="ml-1 opacity-60">({pendingJobs.length})</span>
+            Pending <span className="hidden sm:inline">Verification</span> <span className="ml-1 opacity-60">({pendingJobs.length})</span>
           </button>
         </div>
       )}
@@ -396,12 +398,12 @@ const JobBoard = () => {
       <div className="flex items-center justify-between px-2">
         <div className="flex items-center gap-3">
           <div className="w-2 h-2 rounded-full bg-brand-blue animate-pulse" />
-          <h2 className="text-[10px] font-black text-text-tertiary uppercase tracking-[0.3em]">
-            {activeTab === 'approved' ? 'Detection Grid' : 'Verification Queue'}: {filteredJobs.length} {activeTab === 'approved' ? 'Active' : 'Pending'} Nodes
+          <h2 className="text-[9px] md:text-[10px] font-black text-text-tertiary uppercase tracking-[0.3em]">
+            {activeTab === 'approved' ? 'Detection Grid' : 'Verification Queue'}: {filteredJobs.length} Nodes
           </h2>
         </div>
         <div className="flex gap-2">
-          <div className="px-3 py-1 rounded-lg bg-surface-50 border border-surface-200 text-[9px] font-bold text-text-tertiary uppercase tracking-widest">
+          <div className="px-2.5 py-1 rounded-lg bg-surface-50 border border-surface-200 text-[8px] md:text-[9px] font-bold text-text-tertiary uppercase tracking-widest">
             Latent: 12ms
           </div>
         </div>
@@ -409,13 +411,13 @@ const JobBoard = () => {
 
       {/* --- GRID --- */}
       {isLoading && jobs.length === 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-pulse">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10 animate-pulse">
           {[1, 2, 4, 5].map(i => (
-            <div key={i} className="h-80 bg-white border border-surface-200 rounded-[2.5rem] shadow-sm" />
+            <div key={i} className="h-80 bg-white border border-surface-200 rounded-[1.5rem] md:rounded-[2.5rem] shadow-sm" />
           ))}
         </div>
       ) : filteredJobs.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10">
           <AnimatePresence>
             {filteredJobs.map((job: any) => (
               <JobCard 
@@ -429,23 +431,23 @@ const JobBoard = () => {
           </AnimatePresence>
         </div>
       ) : (
-        <div className="bg-white border border-surface-200 rounded-[3rem] py-32 text-center space-y-8 relative overflow-hidden shadow-sm group">
+        <div className="bg-white border border-surface-200 rounded-[2rem] md:rounded-[3rem] py-16 md:py-32 text-center space-y-6 md:space-y-8 relative overflow-hidden shadow-sm group">
           <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:32px_32px] opacity-[0.3]" />
           <div className="relative z-10 flex flex-col items-center">
-            <div className="w-24 h-24 bg-surface-50 rounded-[2.5rem] flex items-center justify-center shadow-inner text-text-tertiary mb-6 group-hover:scale-110 transition-transform duration-500 ring-8 ring-white">
-              <Cpu className="w-10 h-10 opacity-50 group-hover:opacity-100 transition-opacity" />
+            <div className="w-20 h-20 md:w-24 md:h-24 bg-surface-50 rounded-[2rem] md:rounded-[2.5rem] flex items-center justify-center shadow-inner text-text-tertiary mb-4 md:mb-6 group-hover:scale-110 transition-transform duration-500 ring-8 ring-white">
+              <Cpu className="w-8 h-8 md:w-10 md:h-10 opacity-50 group-hover:opacity-100 transition-opacity" />
             </div>
-            <div className="space-y-3 max-w-md mx-auto px-4">
-              <h3 className="text-3xl font-display font-black text-brand-dark tracking-tight">Null Grid Results.</h3>
-              <p className="text-text-secondary font-medium leading-relaxed">The network returned zero architectures for your current parameters. Attempting a global resync is recommended.</p>
+            <div className="space-y-3 max-w-md mx-auto px-6">
+              <h3 className="text-2xl md:text-3xl font-display font-black text-brand-dark tracking-tight">Null Grid Results.</h3>
+              <p className="text-sm md:text-base text-text-secondary font-medium leading-relaxed">The network returned zero architectures for your current parameters. Attempting a global resync is recommended.</p>
             </div>
-            <div className="mt-8">
+            <div className="mt-6 md:mt-8 px-6 w-full sm:w-auto">
               <button 
                 onClick={handleRefresh}
-                className="btn-primary px-10 py-4 text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-brand-blue/20 hover:scale-105 transition-transform flex items-center gap-3 group/btn"
+                className="btn-primary w-full sm:w-auto px-8 md:px-10 py-4 text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-brand-blue/20 hover:scale-105 transition-transform flex items-center justify-center gap-3 group/btn"
               >
                 <RefreshCw size={16} className="group-hover/btn:rotate-180 transition-transform duration-700" />
-                Initialize Global Scraper
+                Initialize Global Resync
               </button>
             </div>
           </div>
@@ -459,7 +461,7 @@ const JobBoard = () => {
   return isDashboard ? (
     boardContent
   ) : (
-    <div className="max-w-[1600px] mx-auto px-6 sm:px-10 lg:px-12 py-20 relative z-10">
+    <div className="max-w-[1600px] mx-auto px-4 sm:px-10 lg:px-12 py-20 relative z-10">
       {boardContent}
     </div>
   );

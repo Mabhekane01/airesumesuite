@@ -25,12 +25,13 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
           <SearchProvider>
             <RouterProvider router={router} />
             <Toaster 
-              position="top-right" 
+              position="top-center" 
               theme="light"
               richColors
               closeButton
               toastOptions={{
                 duration: 4000,
+                className: 'max-w-[90vw] md:max-w-md mx-auto',
                 style: {
                   background: 'white',
                   border: '1px solid #e5e7eb',

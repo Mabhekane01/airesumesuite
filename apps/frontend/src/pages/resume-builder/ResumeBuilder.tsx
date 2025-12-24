@@ -17,30 +17,30 @@ export default function ResumeBuilder() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAFAFB] py-12 px-4 animate-slide-up-soft relative overflow-hidden">
+    <div className="min-h-screen bg-[#FAFAFB] py-6 md:py-12 px-2 md:px-4 animate-slide-up-soft relative overflow-hidden">
       {/* Background Ambience */}
       <div className="absolute top-0 left-0 w-full h-[600px] pointer-events-none -z-10 overflow-hidden">
         <div className="absolute top-[-10%] right-[-5%] w-[800px] h-[800px] bg-brand-blue/[0.03] rounded-full blur-[140px]" />
         <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:32px_32px] opacity-40" />
       </div>
 
-      <div className="max-w-6xl mx-auto space-y-16 relative z-10">
+      <div className="max-w-6xl mx-auto space-y-6 md:space-y-16 relative z-10">
         {/* --- HEADER --- */}
-        <div className="text-center space-y-6 max-w-3xl mx-auto">
-          <div className="inline-flex items-center gap-3 px-5 py-2 rounded-full bg-white border border-surface-200 text-brand-blue font-black uppercase tracking-[0.3em] text-[10px] shadow-sm">
-            <RocketLaunchIcon className="w-4 h-4" />
+        <div className="text-center space-y-4 md:space-y-6 max-w-3xl mx-auto">
+          <div className="inline-flex items-center gap-2 md:gap-3 px-3 py-1.5 md:px-5 md:py-2 rounded-full bg-white border border-surface-200 text-brand-blue font-black uppercase tracking-[0.3em] text-[8px] md:text-[10px] shadow-sm">
+            <RocketLaunchIcon className="w-3 h-3 md:w-4 md:h-4" />
             Core Architecture Module
           </div>
-          <h1 className="text-5xl md:text-7xl font-display font-black text-brand-dark tracking-tighter leading-none">
+          <h1 className="text-3xl md:text-7xl font-display font-black text-brand-dark tracking-tighter leading-none">
             Scale Your <br /><span className="text-brand-blue">Identity.</span>
           </h1>
-          <p className="text-xl text-text-secondary font-bold opacity-80 leading-relaxed">
+          <p className="text-sm md:text-xl text-text-secondary font-bold opacity-80 leading-relaxed px-4">
             Initialize your professional deployment architecture. Choose an entry protocol to begin the optimization cycle.
           </p>
         </div>
 
         {/* --- OPTIONS GRID --- */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-8">
           {[
             { id: 'create', label: 'Manual Init', icon: PlusIcon, desc: 'Step-by-step architectural build with deep semantic guidance.', color: 'text-brand-blue', bg: 'bg-brand-blue/10' },
             { id: 'upload', label: 'Legacy Import', icon: CloudArrowUpIcon, desc: 'Neural extraction from existing PDF or DOCX architectures.', color: 'text-brand-success', bg: 'bg-brand-success/10' },
@@ -53,7 +53,7 @@ export default function ResumeBuilder() {
               transition={{ delay: i * 0.1 }}
               whileHover={{ y: -8 }}
               onClick={() => handleOptionSelect(opt.id as BuilderOption)}
-              className={`bg-white border-2 rounded-[2.5rem] p-10 cursor-pointer transition-all duration-500 group relative overflow-hidden flex flex-col justify-between min-h-[400px] ${
+              className={`bg-white border-2 rounded-xl md:rounded-[2.5rem] p-4 md:p-10 cursor-pointer transition-all duration-500 group relative overflow-hidden flex flex-col justify-between min-h-[180px] md:min-h-[400px] ${
                 selectedOption === opt.id ? 'border-brand-blue shadow-2xl' : 'border-surface-200 shadow-sm hover:shadow-xl'
               }`}
             >
@@ -82,27 +82,27 @@ export default function ResumeBuilder() {
         </div>
 
         {/* --- RECENT ARCHITECTURES --- */}
-        <div className="bg-white border border-surface-200 rounded-[3rem] p-10 md:p-16 shadow-sm relative overflow-hidden">
+        <div className="bg-white border border-surface-200 rounded-xl md:rounded-[3rem] p-3 md:p-16 shadow-sm relative overflow-hidden">
           <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:24px_24px] opacity-[0.1]" />
           <div className="relative z-10">
-            <div className="flex items-center justify-between mb-10 px-2">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-brand-blue/10 flex items-center justify-center text-brand-blue shadow-inner">
-                  <CommandLineIcon className="w-6 h-6" />
+            <div className="flex items-center justify-between mb-4 md:mb-10 px-1 md:px-2">
+              <div className="flex items-center gap-2 md:gap-4">
+                <div className="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-brand-blue/10 flex items-center justify-center text-brand-blue shadow-inner">
+                  <CommandLineIcon className="w-4 h-4 md:w-6 md:h-6" />
                 </div>
-                <h2 className="text-2xl font-black text-brand-dark tracking-tighter uppercase">Recent Deployments.</h2>
+                <h2 className="text-lg md:text-2xl font-black text-brand-dark tracking-tighter uppercase">Recent Deployments.</h2>
               </div>
               <button 
                 onClick={() => navigate('/dashboard')}
-                className="text-[10px] font-black text-brand-blue uppercase tracking-[0.2em] hover:underline"
+                className="text-[8px] md:text-[10px] font-black text-brand-blue uppercase tracking-[0.2em] hover:underline"
               >
-                Access Global Archive →
+                Access Archive →
               </button>
             </div>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-6">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="p-6 bg-surface-50 border border-surface-200 rounded-2xl group hover:border-brand-blue/30 hover:bg-white transition-all duration-300 shadow-sm hover:shadow-lg flex items-center justify-between">
+                <div key={i} className="p-3 md:p-6 bg-surface-50 border border-surface-200 rounded-xl md:rounded-2xl group hover:border-brand-blue/30 hover:bg-white transition-all duration-300 shadow-sm hover:shadow-lg flex items-center justify-between">
                   <div className="flex items-center gap-4 min-w-0">
                     <div className="w-10 h-10 rounded-xl bg-white border border-surface-200 flex items-center justify-center text-text-tertiary shadow-sm group-hover:text-brand-blue transition-colors flex-shrink-0">
                       <DocumentTextIcon className="w-5 h-5" />
