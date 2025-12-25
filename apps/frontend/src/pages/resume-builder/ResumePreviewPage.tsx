@@ -152,19 +152,6 @@ export default function ResumePreviewPage() {
             </ResumeProvider>
           </div>
         </div>
-          <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:32px_32px] opacity-[0.4] pointer-events-none group-hover:opacity-[0.6] transition-opacity duration-700" />
-          <div className="relative z-10">
-            <ResumeProvider initialData={resume}>
-              <EnhancedResumePreview 
-                resume={resume}
-                templateId={resume.template}
-                isLatexTemplate={resume.isLatexTemplate}
-                onResumeUpdate={setResume}
-                pdfBlob={pdfBlob || undefined}
-              />
-            </ResumeProvider>
-          </div>
-        </div>
 
         {/* --- SYSTEM META --- */}
         <div className="flex flex-wrap justify-center gap-4 md:gap-12 pt-2 md:pt-4 pb-8 opacity-60 hover:opacity-100 transition-opacity duration-500">
