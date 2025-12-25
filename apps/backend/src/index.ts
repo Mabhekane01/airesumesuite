@@ -223,7 +223,7 @@ app.use('/templates', (req, res, next) => {
   res.header('Cross-Origin-Resource-Policy', 'cross-origin');
   res.header('Access-Control-Allow-Origin', '*');
   next();
-}, express.static(path.join(__dirname, '../../frontend/public/templates')));
+}, express.static(path.join(process.cwd(), '../frontend/public/templates')));
 
 // Health check endpoints
 app.get('/health', (req, res) => {

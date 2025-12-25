@@ -12,6 +12,10 @@ COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 # Copy backend source code
 COPY apps/backend ./apps/backend
 
+# Copy template assets from frontend so backend can serve them
+RUN mkdir -p ./apps/frontend/public/templates
+COPY apps/frontend/public/templates ./apps/frontend/public/templates
+
 # Prevent Puppeteer from downloading Chromium (handled in base image)
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 ENV PUPPETEER_SKIP_DOWNLOAD=true
