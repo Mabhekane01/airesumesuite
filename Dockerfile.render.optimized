@@ -54,9 +54,5 @@ WORKDIR /app/apps/backend
 # Expose port (ensure it matches your PORT env)
 EXPOSE 3001
 
-# Healthcheck endpoint for Render to monitor container health
-HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=2 \
-  CMD node -e "require('http').get('http://localhost:3001/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })" || exit 1
-
 # Start backend app
 CMD ["pnpm", "start"]

@@ -6,28 +6,29 @@ USER root
 
 WORKDIR /app
 
-# Copy backend source code and package files
-COPY --chown=pptruser:pptruser apps/backend/package.json ./ 
-COPY --chown=pptruser:pptruser apps/backend/tsconfig.json ./
-COPY --chown=pptruser:pptruser pnpm-lock.yaml ./
-COPY --chown=pptruser:pptruser apps/backend/src ./src
+# Copy monorepo root configuration
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+
+# Copy backend source code
+COPY apps/backend ./apps/backend
+
+# Copy template assets from frontend so backend can serve them
+RUN mkdir -p ./apps/frontend/public/templates
+COPY apps/frontend/public/templates ./apps/frontend/public/templates
 
 # Prevent Puppeteer from downloading Chromium (handled in base image)
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 ENV PUPPETEER_SKIP_DOWNLOAD=true
 
-# Install all dependencies for build
-RUN pnpm install --frozen-lockfile
+# Install dependencies for the backend using pnpm filter
+RUN pnpm install --filter @ai-job-suite/backend... --prod=false
 
 # Build backend TS code
-RUN pnpm run build
+RUN pnpm --filter @ai-job-suite/backend build
 
-# Clean up dev dependencies after build
-RUN pnpm prune --prod
-
-# Create LaTeX workspace directories with a placeholder template
-RUN mkdir -p ./latex-workspace/templates/ ./latex-workspace/output/ && \
-    echo "% LaTeX template placeholder" > ./latex-workspace/templates/basic.tex
+# Create LaTeX workspace directories
+RUN mkdir -p /app/apps/backend/latex-workspace/templates/ /app/apps/backend/latex-workspace/output/ && \
+    echo "% LaTeX template placeholder" > /app/apps/backend/latex-workspace/templates/basic.tex
 
 # Fix permissions
 RUN chown -R pptruser:pptruser /app
@@ -35,22 +36,21 @@ RUN chown -R pptruser:pptruser /app
 # Switch to non-root user
 USER pptruser
 
-# Set production environment variables inside container
+# Set production environment variables
+ENV NODE_ENV=production
 ENV LATEX_ENGINE=pdflatex
 ENV PDF_ENGINE=latex
 ENV ENABLE_LATEX_PDF=true
 ENV LATEX_TIMEOUT=300000
 ENV NODE_OPTIONS="--max-old-space-size=2048"
-ENV NODE_ENV=production
 ENV DISABLE_OPENCOLLECTIVE=true
 ENV DISABLE_UPDATE_NOTIFIER=true
 
-# Expose port (ensure it matches your PORT env)
-EXPOSE 3001
+# Set working directory to backend
+WORKDIR /app/apps/backend
 
-# Healthcheck endpoint for production monitoring
-HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=2 \
-  CMD node -e "require('http').get('http://localhost:3001/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })" || exit 1
+# Expose port
+EXPOSE 3001
 
 # Start backend app
 CMD ["pnpm", "start"]
