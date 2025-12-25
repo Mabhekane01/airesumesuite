@@ -88,57 +88,70 @@ export default function ResumePreviewPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAFAFB] space-y-12 pb-24 animate-slide-up-soft relative overflow-hidden">
+    <div className="min-h-screen bg-[#FAFAFB] space-y-4 md:space-y-12 pb-24 animate-slide-up-soft relative overflow-hidden">
       {/* Decorative background elements */}
       <div className="absolute top-0 left-0 w-full h-[600px] pointer-events-none -z-10 overflow-hidden">
         <div className="absolute top-[-10%] right-[-5%] w-[800px] h-[800px] bg-brand-blue/[0.03] rounded-full blur-[100px]" />
         <div className="absolute top-[10%] left-[-10%] w-[600px] h-[600px] bg-brand-purple/[0.02] rounded-full blur-[120px]" />
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 sm:px-10 space-y-10 relative z-10">
+      <div className="max-w-7xl mx-auto px-2 sm:px-10 space-y-4 md:space-y-10 relative z-10">
         {/* --- HEADER --- */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 pt-12">
-          <div className="flex items-center gap-6">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 md:gap-8 pt-4 md:pt-12">
+          <div className="flex items-center gap-3 md:gap-6">
             <button
               onClick={() => navigate('/dashboard/documents')}
-              className="w-14 h-14 rounded-[1.2rem] bg-white border border-surface-200 flex items-center justify-center text-text-tertiary hover:text-brand-blue hover:border-brand-blue/30 hover:shadow-lg hover:shadow-brand-blue/10 shadow-sm transition-all duration-300 group"
+              className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-[1.2rem] bg-white border border-surface-200 flex items-center justify-center text-text-tertiary hover:text-brand-blue hover:border-brand-blue/30 hover:shadow-lg hover:shadow-brand-blue/10 shadow-sm transition-all duration-300 group"
             >
-              <ChevronLeftIcon className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
+              <ChevronLeftIcon className="w-4 h-4 md:w-5 md:h-5 group-hover:-translate-x-0.5 transition-transform" />
             </button>
-            <div className="space-y-1">
-              <div className="flex items-center gap-3">
-                <h1 className="text-3xl md:text-4xl font-display font-black text-brand-dark tracking-tighter">Architecture Review.</h1>
-                <div className="px-3 py-1 rounded-full bg-brand-success/5 border border-brand-success/10 text-[9px] font-black text-brand-success uppercase tracking-[0.2em] shadow-sm backdrop-blur-sm flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-brand-success animate-pulse" />
+            <div className="space-y-0.5 md:space-y-1">
+              <div className="flex flex-wrap items-center gap-2 md:gap-3">
+                <h1 className="text-xl md:text-4xl font-display font-black text-brand-dark tracking-tighter leading-none">Architecture Review.</h1>
+                <div className="px-2 py-0.5 md:px-3 md:py-1 rounded-full bg-brand-success/5 border border-brand-success/10 text-[7px] md:text-[9px] font-black text-brand-success uppercase tracking-[0.2em] shadow-sm backdrop-blur-sm flex items-center gap-1">
+                  <span className="w-1 h-1 rounded-full bg-brand-success animate-pulse" />
                   Live Terminal
                 </div>
               </div>
-              <p className="text-lg text-text-secondary font-medium opacity-80 flex items-center gap-2">
-                Reviewing: <span className="font-black text-brand-dark">{resume.personalInfo?.firstName}'s Deployment Node</span>
+              <p className="text-xs md:text-lg text-text-secondary font-medium opacity-80 flex items-center gap-2">
+                <span className="hidden sm:inline">Reviewing: </span><span className="font-black text-brand-dark">{resume.personalInfo?.firstName}'s Deployment Node</span>
               </p>
             </div>
           </div>
           
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2 md:gap-3">
             <button
               onClick={() => setIsShareModalOpen(true)}
-              className="btn-primary px-8 py-4 font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-brand-blue/20 flex items-center gap-2.5 hover:scale-105 transition-transform duration-300"
+              className="flex-1 sm:flex-none btn-primary px-4 md:px-8 py-3 md:py-4 font-black text-[8px] md:text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-brand-blue/20 flex items-center justify-center gap-1.5 md:gap-2.5 hover:scale-105 transition-transform duration-300"
             >
-              <Share2 size={16} strokeWidth={2.5} />
-              Share Tracking Link
+              <Share2 size={12} md:size={16} strokeWidth={2.5} />
+              Share <span className="hidden sm:inline">Tracking Link</span><span className="sm:hidden">Node</span>
             </button>
             <button
               onClick={() => navigate(`/dashboard/resume/edit/${id}`)}
-              className="px-8 py-4 font-black text-[10px] uppercase tracking-[0.2em] bg-white border-2 border-surface-200 rounded-xl text-brand-dark hover:border-brand-dark hover:bg-surface-50 transition-all duration-300 flex items-center gap-2.5 shadow-sm"
+              className="flex-1 sm:flex-none px-4 md:px-8 py-3 md:py-4 font-black text-[8px] md:text-[10px] uppercase tracking-[0.2em] bg-white border-2 border-surface-200 rounded-lg md:rounded-xl text-brand-dark hover:border-brand-dark hover:bg-surface-50 transition-all duration-300 flex items-center justify-center gap-1.5 md:gap-2.5 shadow-sm"
             >
-              <PencilIcon className="w-4 h-4 stroke-2" />
-              Modify Parameters
+              <PencilIcon className="w-3 md:w-4 h-3 md:h-4 stroke-2" />
+              Modify <span className="hidden sm:inline">Parameters</span><span className="sm:hidden">Core</span>
             </button>
           </div>
         </div>
 
         {/* --- PREVIEW ARCHITECTURE --- */}
-        <div className="bg-white border border-surface-200 rounded-[3rem] p-4 md:p-10 lg:p-16 shadow-2xl relative overflow-hidden group min-h-[1000px]">
+        <div className="bg-white border border-surface-200 rounded-2xl md:rounded-[3rem] p-1 md:p-10 shadow-2xl relative overflow-hidden group min-h-[650px] md:min-h-[1000px]">
+          <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:32px_32px] opacity-[0.4] pointer-events-none group-hover:opacity-[0.6] transition-opacity duration-700" />
+          <div className="relative z-10">
+            <ResumeProvider initialData={resume}>
+              <EnhancedResumePreview 
+                resume={resume}
+                templateId={resume.template}
+                isLatexTemplate={resume.isLatexTemplate}
+                onResumeUpdate={setResume}
+                pdfBlob={pdfBlob || undefined}
+              />
+            </ResumeProvider>
+          </div>
+        </div>
           <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:32px_32px] opacity-[0.4] pointer-events-none group-hover:opacity-[0.6] transition-opacity duration-700" />
           <div className="relative z-10">
             <ResumeProvider initialData={resume}>
@@ -154,14 +167,14 @@ export default function ResumePreviewPage() {
         </div>
 
         {/* --- SYSTEM META --- */}
-        <div className="flex justify-center gap-12 pt-4 pb-8 opacity-60 hover:opacity-100 transition-opacity duration-500">
-          <div className="flex items-center gap-3 px-4 py-2 rounded-full bg-white border border-surface-200 shadow-sm">
-            <div className="w-2 h-2 rounded-full bg-brand-success shadow-[0_0_8px_rgba(46,204,113,0.6)]" />
-            <span className="text-[10px] font-black text-text-tertiary uppercase tracking-[0.2em]">Integrity: Optimal</span>
+        <div className="flex flex-wrap justify-center gap-4 md:gap-12 pt-2 md:pt-4 pb-8 opacity-60 hover:opacity-100 transition-opacity duration-500">
+          <div className="flex items-center gap-2 md:gap-3 px-3 md:px-4 py-1.5 md:py-2 rounded-full bg-white border border-surface-200 shadow-sm">
+            <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-brand-success shadow-[0_0_8px_rgba(46,204,113,0.6)]" />
+            <span className="text-[8px] md:text-[10px] font-black text-text-tertiary uppercase tracking-[0.2em]">Integrity: Optimal</span>
           </div>
-          <div className="flex items-center gap-3 px-4 py-2 rounded-full bg-white border border-surface-200 shadow-sm">
-            <CommandLineIcon className="w-4 h-4 text-brand-blue" />
-            <span className="text-[10px] font-black text-text-tertiary uppercase tracking-[0.2em]">Engine: Vector LaTeX v4.2</span>
+          <div className="flex items-center gap-2 md:gap-3 px-3 md:px-4 py-1.5 md:py-2 rounded-full bg-white border border-surface-200 shadow-sm">
+            <CommandLineIcon className="w-3.5 h-3.5 md:w-4 md:h-4 text-brand-blue" />
+            <span className="text-[8px] md:text-[10px] font-black text-text-tertiary uppercase tracking-[0.2em]">Engine: Vector LaTeX v4.2</span>
           </div>
         </div>
       </div>
