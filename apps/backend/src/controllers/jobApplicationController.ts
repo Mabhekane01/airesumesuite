@@ -837,7 +837,7 @@ export class JobApplicationController {
       });
 
       res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', `attachment; filename="${resume.personalInfo.firstName}_${resume.personalInfo.lastName}_Resume_Tracked.pdf"`);
+      res.setHeader('Content-Disposition', `inline; filename="${resume.personalInfo.firstName}_${resume.personalInfo.lastName}_Resume_Tracked.pdf"`);
       return res.send(trackedPdfBuffer);
     } catch (error) {
       console.error('Download tracked resume error:', error);

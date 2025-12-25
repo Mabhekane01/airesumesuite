@@ -431,6 +431,7 @@ export class StandardizedResumeController {
 
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Length', pdfBuffer.length);
+      res.setHeader('Content-Disposition', 'inline');
       res.setHeader('Cache-Control', 'no-cache');
       res.send(pdfBuffer);
 
@@ -479,7 +480,7 @@ export class StandardizedResumeController {
         
         res.setHeader('Content-Type', 'application/pdf');
         res.setHeader('Content-Length', trackedBuffer.length);
-        res.setHeader('Content-Disposition', `attachment; filename="tracked-${resume.generatedFiles.pdf.filename || 'resume.pdf'}"`);
+        res.setHeader('Content-Disposition', `inline; filename="tracked-${resume.generatedFiles.pdf.filename || 'resume.pdf'}"`);
         res.setHeader('Cache-Control', 'no-cache');
         res.send(trackedBuffer);
         return;
@@ -504,7 +505,7 @@ export class StandardizedResumeController {
 
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Length', pdfBuffer.length);
-      res.setHeader('Content-Disposition', 'attachment; filename="tracked-resume.pdf"');
+      res.setHeader('Content-Disposition', 'inline; filename="tracked-resume.pdf"');
       res.setHeader('Cache-Control', 'no-cache');
       res.send(pdfBuffer);
 
@@ -565,6 +566,7 @@ export class StandardizedResumeController {
 
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Length', pdfBuffer.length);
+      res.setHeader('Content-Disposition', 'inline');
       res.setHeader('Cache-Control', 'no-cache');
       res.send(pdfBuffer);
 
@@ -856,6 +858,7 @@ export class StandardizedResumeController {
 
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Length', pdfBuffer.length);
+      res.setHeader('Content-Disposition', 'inline');
       res.setHeader('Cache-Control', 'no-cache');
       res.send(pdfBuffer);
     } catch (error) {
@@ -920,6 +923,7 @@ export class StandardizedResumeController {
 
           res.setHeader('Content-Type', 'application/pdf');
           res.setHeader('Content-Length', pdfBuffer.length);
+          res.setHeader('Content-Disposition', 'inline');
           res.setHeader('Cache-Control', 'no-cache');
           res.send(pdfBuffer);
           return;
@@ -1251,6 +1255,7 @@ export class StandardizedResumeController {
       
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Length', pdfBuffer.length);
+      res.setHeader('Content-Disposition', 'inline');
       res.send(pdfBuffer);
     } catch (error) {
       console.error('Error generating preview PDF:', error);
@@ -1713,7 +1718,7 @@ export class StandardizedResumeController {
       
       res.setHeader('X-Enhanced-Data', Buffer.from(enhancedDataHeader).toString('base64'));
       res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', 'attachment; filename="enhanced-resume.pdf"');
+      res.setHeader('Content-Disposition', 'inline; filename="enhanced-resume.pdf"');
       res.setHeader('Content-Length', pdfBuffer.length);
 
       // Send PDF buffer
