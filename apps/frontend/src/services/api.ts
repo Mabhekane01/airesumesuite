@@ -1,26 +1,13 @@
 import axios, { AxiosResponse, AxiosError, AxiosRequestConfig } from 'axios';
 import { storageUtils } from '../utils/storageUtils';
 
-// Try multiple common backend URLs 
-const API_BASE_URLS = [
-  (import.meta as any).env.VITE_API_BASE_URL,
-  'https://airesumesuite.onrender.com', // Production Render URL
-  'http://localhost:3001',
-  'http://127.0.0.1:3001',
-  'http://localhost:3000',
-  'http://127.0.0.1:3000'
-].filter(Boolean);
-
 // Intelligent base URL selection
 const getBaseUrl = () => {
-  if ((import.meta as any).env.VITE_API_BASE_URL) return (import.meta as any).env.VITE_API_BASE_URL;
+  // Always prioritize the environment variable provided during build
+  const envUrl = (import.meta as any).env.VITE_API_BASE_URL;
+  if (envUrl) return envUrl;
   
-  const hostname = window.location.hostname;
-  // If running on firebase or custom domain, prefer production backend
-  if (hostname.includes('web.app') || hostname.includes('firebaseapp.com') || hostname !== 'localhost') {
-    return 'https://airesumesuite.onrender.com';
-  }
-  
+  // Development fallback
   return 'http://localhost:3001';
 };
 
