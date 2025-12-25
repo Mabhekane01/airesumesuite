@@ -107,7 +107,7 @@ export default function Header() {
       .filter(Boolean) as NavNotification[];
   };
 
-  const navNotifications = convertToNavNotifications(notifications);
+  const navNotifications = convertToNavNotifications(notifications) as unknown as NavNotification[];
 
   return (
     <>

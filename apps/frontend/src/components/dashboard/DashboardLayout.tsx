@@ -485,7 +485,7 @@ export default function DashboardLayout() {
                             onClick={() => setShowUserMenu(false)}
                           >
                             <StarIcon className="w-5 h-5 mr-3 group-hover:scale-110 transition-transform" />
-                            Upgrade to Enterprise
+                            View Premium Plans
                           </Link>
                         )}
 

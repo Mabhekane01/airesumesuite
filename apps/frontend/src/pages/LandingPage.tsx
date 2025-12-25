@@ -36,8 +36,7 @@ const advancedFeatures = [
       "Professional LaTeX compilation delivers academic-grade typography that makes HTML-to-PDF converters look amateur.",
     tech: "TexLive Engine + Vector Graphics",
     color: "from-emerald-500 to-teal-600",
-    highlight: "Enterprise Grade",
-  },
+          highlight: "Enterprise Grade",  },
   {
     icon: CpuChipIcon,
     title: "Multi-AI Intelligence",
@@ -60,8 +59,7 @@ const advancedFeatures = [
   },
   {
     icon: ShieldCheckIcon,
-    title: "Enterprise Security",
-    subtitle: "Bank-Grade Protection",
+          title: "Enterprise Security",    subtitle: "Bank-Grade Protection",
     description:
       "JWT authentication, encrypted data transmission, and SOC 2 compliance ensure your data stays secure.",
     tech: "Zero-Trust Architecture",
@@ -292,7 +290,7 @@ export default function LandingPage() {
             <div className="inline-flex items-center px-6 py-3 glass-card rounded-full mb-8 glow-effect">
               <CpuChipIcon className="h-5 w-5 text-emerald-400 mr-2" />
               <span className="text-sm font-medium text-white">
-                Enterprise Career Intelligence Platform
+          subtitle: "Enterprise Career Intelligence Platform",
               </span>
               <div className="ml-3 px-2 py-1 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full text-xs font-bold text-white">
                 LaTeX + Multi-AI
@@ -322,9 +320,7 @@ export default function LandingPage() {
                 multi-AI intelligence
               </span>
               , and{" "}
-              <span className="text-emerald-400 font-semibold">
-                enterprise architecture
-              </span>
+              <p className="text-text-secondary font-bold max-w-sm">Built on enterprise architecture for maximum stability and performance.</p>
             </p>
 
             {/* CTA Buttons */}
@@ -472,7 +468,7 @@ export default function LandingPage() {
           >
             <div className="text-center mb-8">
               <h3 className="text-2xl font-bold text-white mb-4">
-                Enterprise Technology Stack
+          title: "Enterprise Technology Stack",
               </h3>
               <p className="text-gray-300">
                 Modern, scalable, and battle-tested technologies
@@ -529,8 +525,7 @@ export default function LandingPage() {
                 <div className="text-emerald-400 font-bold text-lg">
                   AI Job Suite
                 </div>
-                <div className="text-emerald-300 text-sm">Enterprise Grade</div>
-              </div>
+                                    <div className="text-emerald-300 text-sm">Enterprise Grade</div>              </div>
               <div className="text-center">
                 <div className="text-gray-400 font-bold text-lg">Others</div>
                 <div className="text-gray-500 text-sm">Basic Tools</div>

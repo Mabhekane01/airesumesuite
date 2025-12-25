@@ -55,6 +55,16 @@ class JobBoardService {
     }
   }
 
+  // Admin: Update job
+  async updateJob(id: string, jobData: Partial<JobPosting>): Promise<JobPosting> {
+    try {
+      const response = await api.put(`/jobs/${id}`, jobData);
+      return response.data.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Failed to update job');
+    }
+  }
+
   // Admin: Trigger scrape
   async triggerScrape(country: string): Promise<any> {
     try {

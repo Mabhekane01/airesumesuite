@@ -15,6 +15,7 @@ interface JobBoardState {
   approveJob: (id: string) => Promise<void>;
   rejectJob: (id: string) => Promise<void>;
   deleteJob: (id: string) => Promise<void>;
+  updateJob: (id: string, data: any) => Promise<void>;
   submitJob: (data: any) => Promise<void>;
   triggerScrape: (country: string) => Promise<void>;
   setCountryFilter: (country: string) => void;
@@ -81,6 +82,17 @@ export const useJobBoardStore = create<JobBoardState>((set, get) => ({
     try {
       await jobBoardService.deleteJob(id);
       // Refresh list
+      await get().fetchJobs();
+      await get().fetchPendingJobs();
+    } catch (error: any) {
+      set({ error: error.message });
+      throw error;
+    }
+  },
+
+  updateJob: async (id: string, data: any) => {
+    try {
+      await jobBoardService.updateJob(id, data);
       await get().fetchJobs();
       await get().fetchPendingJobs();
     } catch (error: any) {

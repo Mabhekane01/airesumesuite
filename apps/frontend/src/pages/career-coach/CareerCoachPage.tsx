@@ -24,7 +24,6 @@ export default function CareerCoachPage() {
     <PremiumFeatureGate // Changed component name
       feature="AI Career Coach" 
       description="Personalized career trajectory optimization based on your unique professional DNA."
-      requiresEnterprise={true}
       actionButtonLabel="Upgrade to Enterprise"
     >
       {(isAccessGranted, openUpgradeModal) => (

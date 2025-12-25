@@ -17,7 +17,7 @@ export function EducationForm() {
       degree: '',
       fieldOfStudy: '',
       startDate: '',
-      endDate: '',
+      graduationDate: '',
       gpa: '',
       coursework: [],
       location: '',
@@ -122,9 +122,9 @@ export function EducationForm() {
                   />
                   <DatePicker
                     label="Graduation Date"
-                    value={edu.endDate}
+                    value={edu.graduationDate}
                     onChange={(value) => {
-                      handleDataChange('education', education?.map(e => e.id === edu.id ? { ...e, endDate: value } : e));
+                      handleDataChange('education', education?.map(e => e.id === edu.id ? { ...e, graduationDate: value } : e));
                     }}
                   />
                 </div>

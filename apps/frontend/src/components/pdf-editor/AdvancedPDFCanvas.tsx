@@ -81,6 +81,7 @@ export default function AdvancedPDFCanvas({ file, onSave, onTextChange }: Advanc
       setIsLoading(true);
       
       // Import PDF.js dynamically
+      // @ts-ignore
       const pdfjsLib = await import('pdfjs-dist');
       
       // Set worker
@@ -442,28 +443,28 @@ export default function AdvancedPDFCanvas({ file, onSave, onTextChange }: Advanc
           <div className="flex items-center space-x-2">
             <Button
               size="sm"
-              variant={tool === 'select' ? 'default' : 'outline'}
+              variant={tool === 'select' ? 'primary' : 'outline'}
               onClick={() => setTool('select')}
             >
               <MousePointer size={16} />
             </Button>
             <Button
               size="sm"
-              variant={tool === 'text' ? 'default' : 'outline'}
+              variant={tool === 'text' ? 'primary' : 'outline'}
               onClick={() => setTool('text')}
             >
               <Type size={16} />
             </Button>
             <Button
               size="sm"
-              variant={tool === 'move' ? 'default' : 'outline'}
+              variant={tool === 'move' ? 'primary' : 'outline'}
               onClick={() => setTool('move')}
             >
               <Move size={16} />
             </Button>
             <Button
               size="sm"
-              variant={tool === 'pan' ? 'default' : 'outline'}
+              variant={tool === 'pan' ? 'primary' : 'outline'}
               onClick={() => setTool('pan')}
             >
               <Hand size={16} />
@@ -502,7 +503,7 @@ export default function AdvancedPDFCanvas({ file, onSave, onTextChange }: Advanc
               
               <Button
                 size="sm"
-                variant={textStyle.bold ? 'default' : 'outline'}
+                variant={textStyle.bold ? 'primary' : 'outline'}
                 onClick={() => {
                   const bold = !textStyle.bold;
                   setTextStyle(prev => ({ ...prev, bold }));
@@ -514,7 +515,7 @@ export default function AdvancedPDFCanvas({ file, onSave, onTextChange }: Advanc
               
               <Button
                 size="sm"
-                variant={textStyle.italic ? 'default' : 'outline'}
+                variant={textStyle.italic ? 'primary' : 'outline'}
                 onClick={() => {
                   const italic = !textStyle.italic;
                   setTextStyle(prev => ({ ...prev, italic }));
@@ -526,7 +527,7 @@ export default function AdvancedPDFCanvas({ file, onSave, onTextChange }: Advanc
               
               <Button
                 size="sm"
-                variant={textStyle.underline ? 'default' : 'outline'}
+                variant={textStyle.underline ? 'primary' : 'outline'}
                 onClick={() => {
                   const underline = !textStyle.underline;
                   setTextStyle(prev => ({ ...prev, underline }));

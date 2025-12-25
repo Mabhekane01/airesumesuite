@@ -114,11 +114,11 @@ export const createPaymentSession = async (req: AuthenticatedRequest, res: Respo
       });
     }
 
-    // Prevent duplicate subscriptions
+    // Prevent duplicate active subscriptions of the same or higher tier
     if (user.tier === 'enterprise' && user.subscription_status === 'active') {
       return res.status(400).json({
         success: false,
-        message: 'Active subscription already exists'
+        message: 'Maximum tier architecture already active'
       });
     }
 
@@ -150,8 +150,8 @@ export const createPaymentSession = async (req: AuthenticatedRequest, res: Respo
         userId,
         type: 'info',
         category: 'payment',
-        title: 'Payment Session Created',
-        message: `Your ${planType} Enterprise subscription payment is ready. Complete your checkout to activate premium features.`,
+        title: 'Payment Session Initiated',
+        message: `Your payment for the ${planType === 'yearly' ? 'Yearly' : 'Monthly'} premium protocol is ready. Complete your checkout to activate advanced architecture features.`,
         priority: 'medium',
         action: {
           label: 'Complete Payment',

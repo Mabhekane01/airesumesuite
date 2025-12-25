@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MapPinIcon, CurrencyDollarIcon, TrendingUpIcon } from '@heroicons/react/24/outline';
+import { MapPinIcon, CurrencyDollarIcon, ArrowTrendingUpIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 import { analyticsAPI } from '../../services/api';
 
 interface LocationSalaryData {
@@ -29,7 +29,7 @@ interface LocationSalaryData {
     }>;
     recommendations: string[];
     confidence: number;
-    locationComparison: Array<{
+    locationComparison?: Array<{
       location: string;
       averageSalary: number;
       userCount: number;
@@ -41,6 +41,7 @@ interface LocationSalaryData {
       rank: number;
     }>;
   };
+  locationComparison?: any[]; // Root level comparison
 }
 
 export default function LocationSalaryInsights() {
@@ -109,7 +110,7 @@ export default function LocationSalaryInsights() {
     setLoading(false);
   };
 
-  const getDataFromInfoToUse = () => ({
+  const getDataFromInfoToUse = (): LocationSalaryData => ({
     // Exact structure from infotouse.md
     locationComparison: [
       {
@@ -148,8 +149,8 @@ export default function LocationSalaryInsights() {
     userLocationHistory: [
       { city: 'Randburg', country: 'South Africa', loginTime: '2025-07-28T10:05:00.526Z' },
       { city: 'Randburg', country: 'South Africa', loginTime: '2025-07-28T09:51:16.574Z' },
-      { city: null, country: null, loginTime: '2025-07-28T09:39:53.688Z' },
-      { city: null, country: null, loginTime: '2025-07-28T09:35:49.410Z' }
+      { city: 'unknown', country: 'unknown', loginTime: '2025-07-28T09:39:53.688Z' },
+      { city: 'unknown', country: 'unknown', loginTime: '2025-07-28T09:35:49.410Z' }
     ],
     salaryInsights: {
       marketData: [],
@@ -318,26 +319,23 @@ export default function LocationSalaryInsights() {
   console.log('✅ Data keys:', Object.keys(data));
   console.log('✅ Data content:', data);
 
-  const { userLocation, userLocationHistory, realUserData, salaryInsights, locationComparison: rootLocationComparison } = data;
+  const { userLocation, userLocationHistory, realUserData, salaryInsights, locationComparison: rootLocationComparison } = data as any;
   
   // Add data validation and logging
   console.log('📍 User Location:', userLocation);
   console.log('📊 Salary Insights:', salaryInsights);
   console.log('🏙️ Root Location Comparison:', rootLocationComparison);
-  console.log('🏙️ Location Comparison from salaryInsights:', salaryInsights?.locationComparison);
-  console.log('🏙️ Raw data structure keys:', Object.keys(data || {}));
-  console.log('🏙️ SalaryInsights keys:', Object.keys(salaryInsights || {}));
-  
+
   // Extract data according to actual structure from infotouse.md
   const locationTrends = salaryInsights?.locationTrends || [];
   // HARDCODE the locationComparison from infotouse.md
-  let locationComparison = [
+  let locationComparison: any[] = [
     {
       location: 'Johannesburg, ZA',
       averageSalary: 35000,
       userCount: 0,
       sessionCount: 0,
-      trend: 'declining' as const,
+      trend: 'declining',
       confidence: 0.5,
       dataPoints: 25,
       isUserLocation: false,
@@ -348,7 +346,7 @@ export default function LocationSalaryInsights() {
       averageSalary: 35000,
       userCount: 0,
       sessionCount: 0,
-      trend: 'declining' as const,
+      trend: 'declining',
       confidence: 0.5,
       dataPoints: 25,
       isUserLocation: false,
@@ -541,7 +539,7 @@ export default function LocationSalaryInsights() {
                     )}
                   </div>
                   <div className="flex items-center space-x-2 mt-1">
-                    <TrendingUpIcon className={`w-3.5 h-3.5 ${
+                    <ArrowTrendingUpIcon className={`w-3.5 h-3.5 ${
                       location.trend === 'rising' ? 'text-brand-success' :
                       location.trend === 'declining' ? 'text-red-500' :
                       'text-brand-orange'
@@ -609,7 +607,7 @@ export default function LocationSalaryInsights() {
                 </div>
                 <div className="text-right">
                   <div className="flex items-center justify-end space-x-2">
-                    <TrendingUpIcon className={`w-4 h-4 ${
+                    <ArrowTrendingUpIcon className={`w-4 h-4 ${
                       trend.trend === 'rising' ? 'text-brand-success' :
                       trend.trend === 'declining' ? 'text-red-500' :
                       'text-brand-orange'
@@ -655,3 +653,4 @@ export default function LocationSalaryInsights() {
     </div>
   );
 }
+

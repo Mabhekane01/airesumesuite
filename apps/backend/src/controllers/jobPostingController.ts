@@ -146,6 +146,40 @@ export const jobPostingController = {
     }
   },
 
+  // Admin: Update Job
+  updateJob: async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { title, company, location, country, description, url, salaryRange, jobType } = req.body;
+
+      if (!title || !company || !country || !description) {
+        return res.status(400).json({ success: false, message: 'Missing required community job fields' });
+      }
+
+      const job = await JobPosting.findByIdAndUpdate(id, {
+        title,
+        company,
+        location,
+        country,
+        description,
+        url,
+        salaryRange,
+        jobType,
+        updatedAt: new Date()
+      }, { new: true });
+
+      if (!job) return res.status(404).json({ success: false, message: 'Job not found' });
+
+      res.status(200).json({ 
+        success: true, 
+        message: 'Job architecture updated successfully', 
+        data: job 
+      });
+    } catch (error) {
+      res.status(500).json({ success: false, message: 'Failed to update job' });
+    }
+  },
+
   // AI: Community Tool - Assist users in creating high-quality job descriptions
   extractJobDetails: async (req: Request, res: Response) => {
     try {

@@ -3,12 +3,14 @@ import { Document, Page, pdfjs } from 'react-pdf';
 import { Button } from '../ui/Button';
 import { 
   Upload, Save, Download, Type, Highlighter, MousePointer, 
-  Hand, ZoomIn, ZoomOut, RotateCw, Move, Trash2, Edit3
+  Hand, ZoomIn, ZoomOut, RotateCw, Move, Trash2, Edit3,
+  FileText, Crown, Building, Sparkles, Zap, Users, Shield, 
+  FileSignature, Star
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import ErrorDisplay from './ErrorDisplay';
 import { parseApiError, handleApiError, validatePdfFile } from './utils/errorUtils';
-import RealTimeEditingEngine from './RealTimeEditingEngine';
+import AdvancedPDFCanvas from './AdvancedPDFCanvas';
 import ProfessionalToolbar from './ProfessionalToolbar';
 import EnterpriseFeatures from './EnterpriseFeatures';
 
@@ -452,21 +454,10 @@ export default function AdvancedPDFEditor() {
 
             {/* Editor Content */}
             <div className="flex-1 overflow-hidden">
-              {editorMode === 'enterprise' ? (
-                <RealTimeEditingEngine
-                  file={activeFile.file}
-                  onSave={(file) => console.log('File saved:', file)}
-                  enableCollaboration={true}
-                  autoSave={true}
-                />
-              ) : (
-                <RealTimeEditingEngine
-                  file={activeFile.file}
-                  onSave={(file) => console.log('File saved:', file)}
-                  enableCollaboration={editorMode === 'professional'}
-                  autoSave={editorMode !== 'basic'}
-                />
-              )}
+              <AdvancedPDFCanvas
+                file={activeFile.file}
+                onSave={(file) => console.log('File saved:', file)}
+              />
             </div>
 
             {/* Enterprise Features Panel */}

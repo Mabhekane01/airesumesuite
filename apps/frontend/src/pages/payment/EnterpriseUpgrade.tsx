@@ -46,9 +46,13 @@ export default function EnterpriseUpgrade() {
     try {
       setProcessing(true);
       
+      // Store current plan selection for verification handshake
+      localStorage.setItem('selectedPlanId', planId);
+      localStorage.setItem('selectedPlanType', planId === 'enterprise' || planId === 'pro' ? 'monthly' : 'credits');
+
       // Pass metadata to identify if it's a subscription or credit purchase
       const response = await paystackService.processEnterpriseUpgrade(
-        planId, 
+        planId as any, 
         amount, 
         pricing.currency, 
         user.email, 
@@ -132,35 +136,6 @@ export default function EnterpriseUpgrade() {
 
       {/* --- SUBSCRIPTION OPTIONS --- */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-        {/* Free Tier */}
-        <div className="bg-white p-10 rounded-[3rem] border border-surface-200 relative overflow-hidden group hover:border-surface-300 transition-all">
-          <div className="relative z-10 space-y-8">
-            <div>
-              <h3 className="text-2xl font-black text-brand-dark mb-2">Basic Access</h3>
-              <p className="text-sm font-bold text-text-tertiary uppercase tracking-widest">Zero Cost</p>
-            </div>
-            <div className="text-5xl font-black text-text-secondary tracking-tighter">
-              Free
-            </div>
-            <ul className="space-y-4">
-              {[
-                '1 Basic Resume Template',
-                'Manual Content Editing',
-                'Limited AI Summary (1/mo)',
-                'Watermarked PDF Export'
-              ].map((item, i) => (
-                <li key={i} className="flex items-center gap-3 text-sm font-bold text-text-secondary">
-                  <CheckIcon className="w-5 h-5 text-text-tertiary" />
-                  {item}
-                </li>
-              ))}
-            </ul>
-            <button disabled className="w-full py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-xs bg-surface-100 text-text-tertiary cursor-default">
-              Current Plan
-            </button>
-          </div>
-        </div>
-
         {/* Pro Subscription */}
         <div className="bg-brand-dark p-10 rounded-[3rem] border border-brand-dark relative overflow-hidden group shadow-2xl">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(26,145,240,0.2),transparent_60%)]" />
@@ -168,33 +143,77 @@ export default function EnterpriseUpgrade() {
             <div className="flex justify-between items-start">
               <div>
                 <h3 className="text-2xl font-black mb-2">Career Boost</h3>
-                <p className="text-sm font-bold text-brand-blue uppercase tracking-widest">Monthly Subscription</p>
+                <p className="text-sm font-bold text-brand-blue uppercase tracking-widest">Monthly Pro Protocol</p>
               </div>
               <SparklesIcon className="w-8 h-8 text-brand-blue" />
             </div>
             <div className="text-5xl font-black tracking-tighter">
               {pricing.currencySymbol}{pricing.localMonthly}<span className="text-lg font-bold text-white/40">/mo</span>
             </div>
-            <ul className="space-y-4">
+            <ul className="space-y-4 text-sm font-medium">
               {[
-                'Unlimited AI Resume Tailoring',
-                'Custom Cover Letters',
-                'ATS Keyword Optimization',
-                'Job Matching Analysis',
-                'No Watermarks'
+                'Tailored AI Resume Synthesis',
+                'Advanced Cover Letter Logic',
+                'ATS Keyword Mapping',
+                'Job Match Vectoring',
+                'Zero System Watermarks'
               ].map((item, i) => (
-                <li key={i} className="flex items-center gap-3 text-sm font-bold">
-                  <CheckIcon className="w-5 h-5 text-brand-success" />
+                <li key={i} className="flex items-center gap-3">
+                  <CheckIconSolid className="w-5 h-5 text-brand-blue" />
                   {item}
                 </li>
               ))}
             </ul>
             <button 
-              onClick={() => handlePurchase('subscription', 'monthly', pricing.localMonthly, 'Monthly Career Boost')}
+              onClick={() => handlePurchase('subscription', 'pro', pricing.localMonthly, 'Monthly Career Boost')}
               disabled={processing}
               className="w-full py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-xs bg-brand-blue text-white hover:bg-blue-600 transition-all shadow-lg shadow-brand-blue/20"
             >
-              {processing ? 'Processing...' : 'Activate Boost'}
+              {processing ? 'Handshaking...' : 'Activate Pro Boost'}
+            </button>
+          </div>
+        </div>
+
+        {/* Institutional / Enterprise Tier */}
+        <div className="bg-white p-10 rounded-[3rem] border border-brand-orange/20 relative overflow-hidden group hover:border-brand-orange/40 transition-all shadow-xl">
+          <div className="absolute top-0 right-0 p-6 opacity-5">
+            <BuildingOfficeIcon className="w-24 h-24" />
+          </div>
+          <div className="relative z-10 space-y-8">
+            <div className="flex justify-between items-start">
+              <div>
+                <h3 className="text-2xl font-black text-brand-dark mb-2">Institutional</h3>
+                <p className="text-sm font-bold text-brand-orange uppercase tracking-widest">Enterprise Command</p>
+              </div>
+              <RocketLaunchIcon className="w-8 h-8 text-brand-orange" />
+            </div>
+            <div className="text-5xl font-black text-brand-dark tracking-tighter">
+              {pricing.currencySymbol}{pricing.localMonthly * 5}<span className="text-lg font-bold text-text-tertiary">/mo</span>
+            </div>
+            <ul className="space-y-4 text-sm font-bold text-text-secondary">
+              {[
+                'Everything in Pro Protocol',
+                'Bulk Credit Multipliers',
+                'Institutional Intelligence Nodes',
+                'Priority Processing Layer',
+                'API & Dashboard Access'
+              ].map((item, i) => (
+                <li key={i} className="flex items-center gap-3">
+                  <CheckIconSolid className="w-5 h-5 text-brand-orange" />
+                  {item}
+                </li>
+              ))}
+            </ul>
+            <button 
+              onClick={() => handlePurchase('subscription', 'enterprise', pricing.localMonthly * 5, 'Institutional Command')}
+              disabled={processing}
+              className="w-full py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-xs bg-brand-dark text-white border-2 border-brand-orange hover:bg-brand-orange transition-all shadow-2xl shadow-brand-orange/20 flex items-center justify-center gap-2 group"
+            >
+              {processing ? 'Calibrating...' : (
+                <>
+                  Unlock Institutional <RocketLaunchIcon className="w-4 h-4 text-brand-orange group-hover:text-white group-hover:translate-x-1 group-hover:-translate-y-1 transition-all" />
+                </>
+              )}
             </button>
           </div>
         </div>
@@ -249,21 +268,6 @@ export default function EnterpriseUpgrade() {
               </div>
             </div>
           ))}
-        </div>
-      </div>
-
-      {/* --- INSTITUTIONAL --- */}
-      <div className="max-w-4xl mx-auto mt-20 bg-surface-50 border border-surface-200 rounded-[3rem] p-10 md:p-12 text-center relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(#3b82f6_1px,transparent_1px)] [background-size:24px_24px] opacity-[0.05]" />
-        <div className="relative z-10 space-y-6">
-          <BuildingOfficeIcon className="w-12 h-12 text-text-tertiary mx-auto opacity-50" />
-          <h3 className="text-2xl font-black text-brand-dark">Are you an Institution or Recruiter?</h3>
-          <p className="text-text-secondary font-bold max-w-lg mx-auto">
-            We offer bulk credit packages, white-label dashboards, and API access for colleges, NGOs, and recruitment agencies.
-          </p>
-          <button className="text-sm font-black text-brand-blue uppercase tracking-widest hover:underline flex items-center justify-center gap-2 mx-auto">
-            Contact Institutional Sales <RocketLaunchIcon className="w-4 h-4" />
-          </button>
         </div>
       </div>
     </div>

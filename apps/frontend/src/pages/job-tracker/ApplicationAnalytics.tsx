@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import {
   ChartBarIcon,
-  TrendingUpIcon,
+  ArrowTrendingUpIcon,
   CalendarIcon,
   ClockIcon,
   BuildingOfficeIcon,

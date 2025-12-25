@@ -148,8 +148,7 @@ export default function RegisterForm({ onToggleMode, onClose, onSuccess, recaptc
         <h2 className="text-4xl font-black text-brand-dark tracking-tight">
           Initialize <span className="text-brand-blue">Account.</span>
         </h2>
-        <p className="text-text-secondary mt-3 font-semibold tracking-tight tracking-tight">Set up your enterprise career profile instantly.</p>
-      </div>
+                  <p className="text-text-secondary mt-3 font-semibold tracking-tight tracking-tight">Set up your enterprise career profile instantly.</p>      </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">
         <div className="grid grid-cols-2 gap-4">

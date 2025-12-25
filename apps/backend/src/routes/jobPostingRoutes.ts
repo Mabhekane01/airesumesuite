@@ -17,5 +17,6 @@ router.post('/extract-details', authMiddleware, jobPostingController.extractJobD
 router.get('/pending', authMiddleware, requireAdmin, jobPostingController.getPendingJobs);
 router.put('/:id/verify', authMiddleware, requireAdmin, (req: any, res: any) => jobPostingController.verifyJob(req, res));
 router.delete('/:id', authMiddleware, requireAdmin, (req: any, res: any) => jobPostingController.deleteJob(req, res));
+router.put('/:id', authMiddleware, requireAdmin, (req: any, res: any) => jobPostingController.updateJob(req, res));
 
 export default router;

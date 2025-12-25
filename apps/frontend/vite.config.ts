@@ -15,7 +15,17 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    sourcemap: true
+    sourcemap: true,
+    chunkSizeWarningLimit: 1600,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom', 'react-router-dom', 'framer-motion', 'lucide-react', 'axios', 'zustand'],
+          pdf: ['react-pdf'],
+          ui: ['@headlessui/react', '@heroicons/react', 'sonner', 'clsx']
+        }
+      }
+    }
   },
   test: {
     globals: true,

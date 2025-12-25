@@ -469,7 +469,7 @@ export default function LandingPageSimple() {
             />
             <FAQItem 
               question="What is the Enterprise Job Intelligence layer?"
-              answer="It's a network of automated agents that bypass job aggregators and go directly to company source career pages. This gives you a time advantage of up to 48 hours over the general applicant pool."
+              answer="It is our proprietary career-node monitoring system. It provides real-time analytics on how recruiters interact with your architecture, giving you a statistical edge in the market."
             />
             <FAQItem 
               question="Is my career data kept private and secure?"
@@ -611,7 +611,7 @@ export default function LandingPageSimple() {
       </section>
 
       {/* --- ENTERPRISE FOOTER --- */}
-      <footer className="bg-white py-32 border-t border-surface-200">
+      <footer className="bg-white border-t border-surface-200 py-32 px-4">
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-5 gap-16 mb-24">
             <div className="col-span-2 space-y-8">

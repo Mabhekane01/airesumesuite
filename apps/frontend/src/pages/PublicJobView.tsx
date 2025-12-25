@@ -20,7 +20,7 @@ import { toast } from 'sonner';
 import { useAuthStore } from '../stores/authStore';
 import ResumeSelector from '../components/career-coach/ResumeSelector';
 import { ResumeData } from '../services/resumeService';
-import { api } from '../services/api';
+import { api, jobApplicationAPI } from '../services/api';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
 
@@ -96,8 +96,9 @@ const PublicJobView = () => {
   const [error, setError] = useState<string | null>(null);
   const [trackApplication, setTrackApplication] = useState(true);
   const [processing, setProcessing] = useState(false);
+  const [existingApplicationId, setExistingApplicationId] = useState<string | null>(null);
   
-  // Modal State
+  // Modal States
   const [isResumeModalOpen, setIsResumeModalOpen] = useState(false);
 
   useEffect(() => {
@@ -108,13 +109,29 @@ const PublicJobView = () => {
   }, []);
 
   useEffect(() => {
-    const fetchJob = async () => {
+    const fetchJobAndCheckStatus = async () => {
       try {
         const response = await fetch(`${API_BASE}/api/v1/shared/job/${id}`);
         const data = await response.json();
         
         if (data.success) {
-          setJob(data.data);
+          const jobData = data.data;
+          setJob(jobData);
+          
+          // Check if user already applied to this job
+          if (isAuthenticated && jobData.url) {
+            try {
+              const appsRes = await jobApplicationAPI.getApplications();
+              if (appsRes.success) {
+                const existingApp = appsRes.data.applications.find(app => app.jobUrl === jobData.url);
+                if (existingApp) {
+                  setExistingApplicationId(existingApp._id);
+                }
+              }
+            } catch (appErr) {
+              console.warn('Could not verify application status');
+            }
+          }
         } else {
           setError(data.message || 'Job not found');
         }
@@ -125,11 +142,11 @@ const PublicJobView = () => {
       }
     };
 
-    fetchJob();
-  }, [id]);
+    fetchJobAndCheckStatus();
+  }, [id, isAuthenticated]);
 
   const handleApplyClick = () => {
-    if (!job) return;
+    if (!job || existingApplicationId) return;
 
     // Save to pending applications in localStorage so user can add it later if they return
     const pendingApps = JSON.parse(localStorage.getItem('pendingJobApplications') || '[]');
@@ -162,11 +179,15 @@ const PublicJobView = () => {
     }
 
     if (trackApplication && isAuthenticated) {
-      // Open modal to select resume
+      // Direct to resume selection for tracking
       setIsResumeModalOpen(true);
     } else {
       // Direct apply without tracking
       window.open(job.url, '_blank', 'noopener,noreferrer');
+      // Redirect current tab to job board so it's ready when they return
+      setTimeout(() => {
+        navigate('/dashboard/job-posting');
+      }, 500);
     }
   };
 
@@ -235,12 +256,11 @@ const PublicJobView = () => {
       const filteredApps = pendingApps.filter((a: any) => a.id !== (job._id || job.id));
       localStorage.setItem('pendingJobApplications', JSON.stringify(filteredApps));
 
-      // 4. Redirect to Job URL and then back home
+      // 4. Redirect to Job URL and then to job-posting grid
       setTimeout(() => {
         window.open(job.url, '_blank', 'noopener,noreferrer');
         setIsResumeModalOpen(false);
-        // Important: Navigate to applications list so it's there when they return
-        navigate('/dashboard/applications');
+        navigate('/dashboard/job-posting');
       }, 1500);
 
     } catch (err) {
@@ -250,6 +270,9 @@ const PublicJobView = () => {
       });
       // Fallback
       window.open(job.url, '_blank', 'noopener,noreferrer');
+      setTimeout(() => {
+        navigate('/dashboard/job-posting');
+      }, 500);
     } finally {
       setProcessing(false);
     }
@@ -330,51 +353,85 @@ const PublicJobView = () => {
               
               <div className="flex items-center gap-4 w-full md:w-auto">
                 <div className="flex-1 md:flex-none">
-                  <button 
-                    onClick={handleApplyClick}
-                    disabled={processing}
-                    className="btn-primary w-full px-10 py-5 text-sm font-black uppercase tracking-[0.2em] shadow-xl shadow-brand-blue/20 flex items-center justify-center gap-3 transition-all active:scale-95"
-                  >
-                    {processing ? 'Processing...' : 'Deploy Application'} <ArrowRight size={18} className="stroke-[3]" />
-                  </button>
+                  {existingApplicationId ? (
+                    <Link 
+                      to={`/dashboard/applications/${existingApplicationId}`}
+                      className="btn-primary w-full px-10 py-5 text-sm font-black uppercase tracking-[0.2em] shadow-xl shadow-brand-dark/20 flex items-center justify-center gap-3 transition-all bg-brand-dark hover:bg-slate-800"
+                    >
+                      View Active Deployment <Layout size={18} />
+                    </Link>
+                  ) : (
+                    <button 
+                      onClick={handleApplyClick}
+                      disabled={processing}
+                      className="btn-primary w-full px-10 py-5 text-sm font-black uppercase tracking-[0.2em] shadow-xl shadow-brand-blue/20 flex items-center justify-center gap-3 transition-all active:scale-95"
+                    >
+                      {processing ? 'Processing...' : 'Deploy Application'} <ArrowRight size={18} className="stroke-[3]" />
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
           </div>
         </div>
 
+        {/* --- APPLIED BANNER --- */}
+        {existingApplicationId && (
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-brand-success text-white rounded-[2.5rem] p-8 md:p-10 shadow-2xl relative overflow-hidden flex flex-col md:flex-row items-center gap-8"
+          >
+            <div className="w-16 h-16 rounded-2xl bg-white/20 flex items-center justify-center shrink-0">
+              <CheckCircle size={32} strokeWidth={2.5} />
+            </div>
+            <div className="flex-1 text-center md:text-left space-y-1">
+              <h3 className="text-xl font-black uppercase tracking-tight">Application Protocol Active.</h3>
+              <p className="text-sm font-bold opacity-80">You have already synchronized this node with your tracking grid. Redundant deployments are restricted to ensure data integrity.</p>
+            </div>
+            <Link 
+              to={`/dashboard/applications/${existingApplicationId}`}
+              className="px-8 py-3 bg-white text-brand-success rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg hover:scale-105 transition-transform"
+            >
+              Access Analytics
+            </Link>
+          </motion.div>
+        )}
+
         {/* --- TRACKING OPTIONS --- */}
-        <div className="bg-brand-dark text-white rounded-[2.5rem] p-8 md:p-12 shadow-2xl relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-brand-blue/10 rounded-full -mr-32 -mt-32 blur-3xl group-hover:bg-brand-blue/20 transition-all duration-1000" />
-          
-          <div className="relative z-10 flex flex-col md:flex-row items-center gap-10">
-            <div className="w-20 h-20 rounded-3xl bg-brand-blue/20 flex items-center justify-center text-brand-blue shadow-inner shrink-0 group-hover:rotate-6 transition-transform">
-              <ShieldCheck size={40} strokeWidth={2.5} />
-            </div>
+        {!existingApplicationId && (
+          <div className="bg-brand-dark text-white rounded-[2.5rem] p-8 md:p-12 shadow-2xl relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-brand-blue/10 rounded-full -mr-32 -mt-32 blur-3xl group-hover:bg-brand-blue/20 transition-all duration-1000" />
             
-            <div className="flex-1 space-y-2 text-center md:text-left">
-              <h3 className="text-2xl font-black tracking-tight uppercase">Intelligence Tracking Enabled.</h3>
-              <p className="text-sm font-bold text-white/60 leading-relaxed">
-                Activate the real-time tracking protocol. The system will automatically add this node to your application grid, track recruiter engagement, and provide follow-up logic.
-              </p>
-            </div>
-            
-            <div className="flex items-center gap-4 bg-white/5 p-2 rounded-2xl border border-white/10 shrink-0">
-              <button 
-                onClick={() => setTrackApplication(true)}
-                className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${trackApplication ? 'bg-brand-blue text-white shadow-lg' : 'text-white/40 hover:text-white'}`}
-              >
-                Track Node
-              </button>
-              <button 
-                onClick={() => setTrackApplication(false)}
-                className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${!trackApplication ? 'bg-white/10 text-white shadow-lg' : 'text-white/40 hover:text-white'}`}
-              >
-                Direct Only
-              </button>
+            <div className="relative z-10 flex flex-col md:flex-row items-center gap-10">
+              <div className="w-20 h-20 rounded-3xl bg-brand-blue/20 flex items-center justify-center text-brand-blue shadow-inner shrink-0 group-hover:rotate-6 transition-transform">
+                <ShieldCheck size={40} strokeWidth={2.5} />
+              </div>
+              
+              <div className="flex-1 space-y-2 text-center md:text-left">
+                <h3 className="text-2xl font-black tracking-tight uppercase">Intelligence Tracking Enabled.</h3>
+                <p className="text-sm font-bold text-white/60 leading-relaxed">
+                  Activate the real-time tracking protocol. The system will automatically add this node to your application grid, track recruiter engagement, and provide follow-up logic.
+                </p>
+              </div>
+              
+              <div className="flex items-center gap-4 bg-white/5 p-2 rounded-2xl border border-white/10 shrink-0">
+                <button 
+                  onClick={() => setTrackApplication(true)}
+                  className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${trackApplication ? 'bg-brand-blue text-white shadow-lg' : 'text-white/40 hover:text-white'}`}
+                >
+                  Track Node
+                </button>
+                <button 
+                  onClick={() => setTrackApplication(false)}
+                  className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${!trackApplication ? 'bg-white/10 text-white shadow-lg' : 'text-white/40 hover:text-white'}`}
+                >
+                  Direct Only
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* --- JOB DESCRIPTION --- */}
         <div className="bg-white border border-surface-200 rounded-[3rem] p-10 md:p-16 shadow-sm">
@@ -386,16 +443,18 @@ const PublicJobView = () => {
               <h3 className="text-xl font-black text-brand-dark uppercase tracking-tight">Node Technical Specifications</h3>
             </div>
             
-            <div className="prose prose-slate max-w-none">
-              <div className="text-text-secondary font-bold leading-relaxed whitespace-pre-wrap">
-                {job.description}
-              </div>
+            <div className="prose prose-slate max-w-none fidelity-display-layer">
+              <div 
+                dangerouslySetInnerHTML={{ __html: job.description }}
+                className="leading-relaxed text-text-secondary font-medium"
+              />
             </div>
             
             <div className="pt-10 border-t border-surface-100 flex items-center justify-center">
               <button 
                 onClick={handleApplyClick}
-                className="text-sm font-black text-brand-blue uppercase tracking-widest hover:underline flex items-center gap-2 group"
+                disabled={!!existingApplicationId}
+                className={`text-sm font-black uppercase tracking-widest hover:underline flex items-center gap-2 group ${existingApplicationId ? 'opacity-50 cursor-not-allowed' : 'text-brand-blue'}`}
               >
                 <ExternalLink size={16} />
                 View Original Deployment Source
@@ -405,6 +464,18 @@ const PublicJobView = () => {
         </div>
       </div>
       
+      {/* Fidelity Display Layer Synchronization */}
+      <style>{`
+        .fidelity-display-layer { font-size: 1rem !important; line-height: 1.6 !important; }
+        .fidelity-display-layer ul { list-style-type: disc !important; padding-left: 2rem !important; margin-bottom: 1.25rem !important; margin-top: 0.5rem !important; display: block !important; }
+        .fidelity-display-layer ol { list-style-type: decimal !important; padding-left: 2rem !important; margin-bottom: 1.25rem !important; margin-top: 0.5rem !important; display: block !important; }
+        .fidelity-display-layer li { display: list-item !important; margin-bottom: 0.5rem !important; padding-left: 0.25rem !important; color: inherit !important; }
+        .fidelity-display-layer strong { font-weight: 800 !important; color: #1a1a1a !important; }
+        .fidelity-display-layer b { font-weight: 800 !important; }
+        .fidelity-display-layer em, .fidelity-display-layer i { font-style: italic !important; }
+        .fidelity-display-layer p { margin-bottom: 1.25rem !important; display: block !important; }
+      `}</style>
+
       <ResumeSelectionModal 
         isOpen={isResumeModalOpen}
         onClose={() => setIsResumeModalOpen(false)}

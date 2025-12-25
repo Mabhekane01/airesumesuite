@@ -124,7 +124,7 @@ export default function ResumePreviewPage() {
               onClick={() => setIsShareModalOpen(true)}
               className="flex-1 sm:flex-none btn-primary px-4 md:px-8 py-3 md:py-4 font-black text-[8px] md:text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-brand-blue/20 flex items-center justify-center gap-1.5 md:gap-2.5 hover:scale-105 transition-transform duration-300"
             >
-              <Share2 size={12} md:size={16} strokeWidth={2.5} />
+              <Share2 size={16} strokeWidth={2.5} />
               Share <span className="hidden sm:inline">Tracking Link</span><span className="sm:hidden">Node</span>
             </button>
             <button

@@ -308,6 +308,7 @@ export default function JobApplicationDetail() {
       <div className="flex flex-wrap gap-1.5 md:gap-2 bg-surface-50 border border-surface-200 p-1.5 md:p-2 rounded-xl md:rounded-2xl shadow-inner w-full md:max-w-fit mx-auto md:mx-0">
         {[
           { id: 'overview', label: 'Overview', icon: CommandLineIcon },
+          { id: 'specs', label: 'Specifications', icon: DocumentTextIcon },
           { id: 'interviews', label: 'Sessions', icon: CalendarIcon },
           { id: 'communications', label: 'Logs', icon: EnvelopeIcon },
           { id: 'tasks', label: 'Backlog', icon: DocumentTextIcon },
@@ -391,6 +392,23 @@ export default function JobApplicationDetail() {
               </motion.div>
             )}
 
+            {activeTab === 'specs' && (
+              <motion.div key="sp" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-10">
+                <div className="space-y-2">
+                  <h3 className="text-xl md:text-2xl font-black text-brand-dark tracking-tight leading-none uppercase">Technical Specifications.</h3>
+                  <p className="text-[9px] md:text-[10px] font-black text-text-tertiary uppercase tracking-widest">Extracted architectural requirements</p>
+                </div>
+                <div className="p-8 md:p-12 bg-surface-50/50 border border-surface-200 rounded-[2.5rem] shadow-inner">
+                  <div className="prose prose-slate max-w-none fidelity-display-layer">
+                    <div 
+                      dangerouslySetInnerHTML={{ __html: application.jobDescription }}
+                      className="leading-relaxed text-text-secondary font-medium"
+                    />
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
             {activeTab === 'interviews' && (
               <motion.div key="it" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6 md:space-y-8">
                 <div className="flex items-center justify-between gap-4">
@@ -457,6 +475,18 @@ export default function JobApplicationDetail() {
           </AnimatePresence>
         </div>
       </div>
+
+      {/* Fidelity Display Layer Synchronization */}
+      <style>{`
+        .fidelity-display-layer { font-size: 1rem !important; line-height: 1.6 !important; }
+        .fidelity-display-layer ul { list-style-type: disc !important; padding-left: 2rem !important; margin-bottom: 1.25rem !important; margin-top: 0.5rem !important; display: block !important; }
+        .fidelity-display-layer ol { list-style-type: decimal !important; padding-left: 2rem !important; margin-bottom: 1.25rem !important; margin-top: 0.5rem !important; display: block !important; }
+        .fidelity-display-layer li { display: list-item !important; margin-bottom: 0.5rem !important; padding-left: 0.25rem !important; color: inherit !important; }
+        .fidelity-display-layer strong { font-weight: 800 !important; color: #1a1a1a !important; }
+        .fidelity-display-layer b { font-weight: 800 !important; }
+        .fidelity-display-layer em, .fidelity-display-layer i { font-style: italic !important; }
+        .fidelity-display-layer p { margin-bottom: 1.25rem !important; display: block !important; }
+      `}</style>
     </div>
   );
 }

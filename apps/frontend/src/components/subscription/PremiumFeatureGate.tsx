@@ -5,7 +5,8 @@ import {
   SparklesIcon,
   CpuChipIcon,
   ChevronRightIcon,
-  ExclamationTriangleIcon
+  ExclamationTriangleIcon,
+  BoltIcon
 } from '@heroicons/react/24/outline';
 import { useAuthStore } from '../../stores/authStore';
 import { useSubscription } from '../../hooks/useSubscription';
@@ -66,10 +67,10 @@ export default function PremiumFeatureGate({
                   <LockClosedIcon className="w-8 h-8" />
                 </div>
                 <h3 className="text-3xl font-black text-brand-dark tracking-tight leading-none">
-                  Access Restricted.
+                  Premium Restricted.
                 </h3>
                 <p className="text-text-secondary text-lg font-bold leading-relaxed max-w-sm mx-auto">
-                  This module requires a <span className="text-brand-blue underline decoration-brand-blue/30 decoration-4">subscription or AI credits</span> to initiate.
+                  This module requires a <span className="text-brand-blue underline decoration-brand-blue/30 decoration-4">premium subscription or AI credits</span> to initiate.
                 </p>
                 <div className="flex items-center justify-center gap-2 px-4 py-2 bg-brand-blue/5 border border-brand-blue/10 rounded-full text-brand-blue text-[10px] font-black uppercase tracking-widest">
                   <CpuChipIcon className="w-4 h-4" />
@@ -83,7 +84,7 @@ export default function PremiumFeatureGate({
                   onClick={closeModal}
                   className="btn-primary px-10 py-5 text-lg font-black uppercase tracking-[0.2em] shadow-xl shadow-brand-blue/20 flex items-center justify-center gap-3 group"
                 >
-                  {actionButtonLabel} <ChevronRightIcon className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                  Unlock Full Access <ChevronRightIcon className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                 </Link>
                 
                 <div className="flex flex-col items-center gap-2 text-[10px] font-black text-text-tertiary uppercase tracking-widest">

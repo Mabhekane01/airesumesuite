@@ -35,6 +35,12 @@ export function buildApiUrl(endpoint: string): string {
   return `${API_CONFIG.BASE_URL}${endpoint}`;
 }
 
+// PDF Service URL helper
+export function buildPdfServiceUrl(endpoint: string): string {
+  const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  return `${API_CONFIG.BASE_URL}/api/v1/pdf${cleanEndpoint}`;
+}
+
 // Helper function for making authenticated requests
 export async function makeAuthenticatedRequest(
   endpoint: string, 

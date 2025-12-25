@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { Resume } from '../types';
 import { useAuthStore } from '../stores/authStore';
+import { resumeService } from '../services/resumeService';
 
 interface AIEnhancementData {
   atsScore?: number;
@@ -662,7 +663,6 @@ export const ResumeProvider: React.FC<ResumeProviderProps> = ({ children, initia
         stringResumeId = String(resumeId);
       }
       try {
-        const { resumeService } = await import('../services/resumeService');
         await resumeService.savePDFToDatabase(stringResumeId, {
           templateId: aiData.templateId,
           optimizedLatexCode: aiData.optimizedLatexCode,

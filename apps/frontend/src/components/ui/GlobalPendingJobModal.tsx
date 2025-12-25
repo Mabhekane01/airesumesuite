@@ -71,50 +71,58 @@ export const GlobalPendingJobModal = () => {
   return (
     <AnimatePresence>
       <motion.div 
-        initial={{ opacity: 0, y: 50, scale: 0.95 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: 20, scale: 0.95 }}
-        className="fixed bottom-6 right-6 z-[100] max-w-sm w-full"
+        initial={{ opacity: 0, y: 100, x: 20 }}
+        animate={{ opacity: 1, y: 0, x: 0 }}
+        exit={{ opacity: 0, y: 50, scale: 0.9 }}
+        className="fixed bottom-8 right-8 z-[100] max-w-md w-full"
       >
-        <div className="bg-white border border-brand-blue/20 rounded-[2rem] p-6 shadow-2xl shadow-brand-blue/10 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-brand-blue/5 rounded-full -mr-16 -mt-16 blur-xl pointer-events-none" />
+        <div className="bg-white/80 backdrop-blur-2xl border border-brand-blue/20 rounded-[2.5rem] p-8 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.15)] relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-40 h-40 bg-brand-blue/[0.03] rounded-full -mr-20 -mt-20 blur-3xl group-hover:bg-brand-blue/10 transition-colors duration-1000" />
           
-          <div className="relative z-10">
-            <div className="flex justify-between items-start mb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-brand-blue/10 flex items-center justify-center text-brand-blue shadow-inner">
-                  <Briefcase size={20} strokeWidth={2.5} />
+          <div className="relative z-10 space-y-6">
+            <div className="flex justify-between items-start">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-2xl bg-brand-blue/10 flex items-center justify-center text-brand-blue shadow-inner border border-brand-blue/5">
+                  <Briefcase size={28} strokeWidth={2.5} className="group-hover:rotate-6 transition-transform" />
                 </div>
                 <div>
-                  <h4 className="text-sm font-black text-brand-dark uppercase tracking-tight">Recent Activity</h4>
-                  <p className="text-[10px] font-bold text-text-tertiary uppercase tracking-widest">Did you apply to this?</p>
+                  <h4 className="text-base font-black text-brand-dark uppercase tracking-tighter">Recent Deployment.</h4>
+                  <p className="text-[10px] font-bold text-brand-blue uppercase tracking-widest flex items-center gap-1.5">
+                    <span className="w-1 h-1 rounded-full bg-brand-blue animate-pulse" />
+                    Tracking Synchronization
+                  </p>
                 </div>
               </div>
               <button 
                 onClick={handleDismiss}
-                className="text-text-tertiary hover:text-brand-dark transition-colors"
+                className="w-8 h-8 rounded-full bg-surface-50 border border-surface-200 flex items-center justify-center text-text-tertiary hover:text-brand-dark transition-all"
               >
                 <X size={16} />
               </button>
             </div>
 
-            <div className="bg-surface-50 border border-surface-200 rounded-xl p-4 mb-4">
-              <h5 className="font-black text-brand-dark truncate">{pendingJob.title}</h5>
-              <div className="text-xs font-bold text-text-secondary mt-1">{pendingJob.company} • {pendingJob.location}</div>
+            <div className="space-y-2">
+              <p className="text-sm font-bold text-text-secondary leading-relaxed">
+                We detected interest in an external architecture. Would you like to synchronize this node with your application grid?
+              </p>
+              <div className="p-5 bg-surface-50/50 border border-surface-200 rounded-2xl group-hover:bg-white transition-colors duration-500">
+                <h5 className="text-base font-black text-brand-dark truncate tracking-tight">{pendingJob.title}</h5>
+                <p className="text-[11px] font-bold text-text-tertiary uppercase tracking-widest mt-1">{pendingJob.company} <span className="mx-1.5 opacity-30">•</span> {pendingJob.location}</p>
+              </div>
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex gap-3 pt-2">
               <button 
                 onClick={handleDismiss}
-                className="flex-1 py-3 rounded-xl border border-surface-200 text-xs font-black uppercase tracking-wider hover:bg-surface-50 transition-colors"
+                className="flex-1 py-4 rounded-xl bg-surface-50 border border-surface-200 text-[10px] font-black uppercase tracking-widest text-text-tertiary hover:text-brand-dark hover:bg-white transition-all active:scale-95"
               >
-                No, Dismiss
+                Purge Node
               </button>
               <button 
                 onClick={handleTrack}
-                className="flex-1 py-3 rounded-xl bg-brand-blue text-white text-xs font-black uppercase tracking-wider shadow-lg shadow-brand-blue/20 hover:bg-brand-blue/90 transition-colors flex items-center justify-center gap-2"
+                className="flex-[1.5] py-4 rounded-xl bg-brand-blue text-white text-[10px] font-black uppercase tracking-widest shadow-xl shadow-brand-blue/20 hover:bg-brand-blue/90 hover:-translate-y-0.5 transition-all active:scale-95 flex items-center justify-center gap-2"
               >
-                Yes, Track <ArrowRight size={12} strokeWidth={3} />
+                Sync to Tracker <ArrowRight size={14} strokeWidth={3} />
               </button>
             </div>
           </div>

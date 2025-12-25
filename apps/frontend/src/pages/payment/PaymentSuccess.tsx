@@ -8,7 +8,8 @@ import {
   HomeIcon,
   StarIcon,
   CommandLineIcon,
-  ChevronRightIcon
+  ChevronRightIcon,
+  ShieldCheckIcon
 } from '@heroicons/react/24/outline';
 import { CheckCircleIcon as CheckCircleIconSolid } from '@heroicons/react/24/solid';
 import { toast } from 'sonner';

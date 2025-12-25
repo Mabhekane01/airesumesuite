@@ -193,7 +193,7 @@ export const ValidatedInput: React.FC<ValidatedInputProps> = ({
           autoComplete={autoComplete}
           spellCheck={spellCheck}
           className={getInputClasses()}
-          aria-invalid={showError}
+          aria-invalid={showError ? "true" : "false"}
           aria-describedby={showError ? `${name}-error` : undefined}
         />
         {renderIcon()}
@@ -324,7 +324,7 @@ export const ValidatedTextarea: React.FC<ValidatedTextareaProps> = ({
           minLength={minLength}
           spellCheck={spellCheck}
           className={getTextareaClasses()}
-          aria-invalid={showError}
+          aria-invalid={showError ? "true" : "false"}
           aria-describedby={showError ? `${name}-error` : undefined}
         />
         
@@ -433,7 +433,7 @@ export const ValidatedSelect: React.FC<ValidatedSelectProps> = ({
         required={required}
         multiple={multiple}
         className={getSelectClasses()}
-        aria-invalid={showError}
+        aria-invalid={showError ? "true" : "false"}
         aria-describedby={showError ? `${name}-error` : undefined}
       >
         {placeholder && !multiple && (

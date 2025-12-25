@@ -16,7 +16,7 @@ export function SkillsForm() {
     const newSkillData: Skill = {
       id: Date.now().toString(),
       name: newSkill,
-      category: category,
+      category: category as Skill['category'],
     };
     handleDataChange('skills', [...(skills || []), newSkillData]);
     setNewSkill('');

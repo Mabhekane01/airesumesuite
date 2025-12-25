@@ -79,15 +79,17 @@ export default function WatermarkEditor({
   };
 
   return (
-    <div className=\"space-y-6\">
+    <div className="space-y-6">
       {/* Quick Presets */}
-      <div className=\"bg-white/20 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl p-4\">
-        <h3 className=\"text-white font-semibold mb-4 flex items-center gap-2\">
-          <Stamp size={18} className=\"text-teal-400\" />
-          Quick Watermarks
-        </h3>
+      <div className="bg-white/20 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl p-4">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-white font-semibold flex items-center gap-2">
+            <Stamp size={18} className="text-teal-400" />
+            Quick Watermarks
+          </h3>
+        </div>
         
-        <div className=\"grid grid-cols-2 gap-2 mb-4\">
+        <div className="grid grid-cols-2 gap-2 mb-4">
           {presetWatermarks.map((preset) => (
             <button
               key={preset.id}
@@ -104,10 +106,10 @@ export default function WatermarkEditor({
                   }
                 }, 100);
               }}
-              className=\"p-3 bg-white/5 hover:bg-white/10 rounded-lg transition-all duration-300 hover:scale-105 border border-white/10 hover:border-white/20\"
+              className="p-3 bg-white/5 hover:bg-white/10 rounded-lg transition-all duration-300 hover:scale-105 border border-white/10 hover:border-white/20"
             >
               <span 
-                className=\"text-sm font-bold\" 
+                className="text-sm font-bold" 
                 style={{ color: preset.color }}
               >
                 {preset.text}
@@ -116,21 +118,21 @@ export default function WatermarkEditor({
           ))}
         </div>
         
-        <div className=\"flex gap-2\">
+        <div className="flex gap-2">
           <Button
             onClick={() => onWatermarkAdd('text')}
-            variant=\"outline\"
-            size=\"sm\"
-            className=\"flex-1\"
+            variant="outline"
+            size="sm"
+            className="flex-1"
           >
             <Type size={14} />
             Text Watermark
           </Button>
           <Button
             onClick={() => onWatermarkAdd('image')}
-            variant=\"outline\"
-            size=\"sm\"
-            className=\"flex-1\"
+            variant="outline"
+            size="sm"
+            className="flex-1"
           >
             <Image size={14} />
             Image Watermark
@@ -139,117 +141,119 @@ export default function WatermarkEditor({
       </div>
 
       {/* Watermark List */}
-      <div className=\"bg-white/20 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl p-4\">
-        <h3 className=\"text-white font-semibold mb-4 flex items-center gap-2\">
-          <Layers size={18} className=\"text-cyan-400\" />
+      <div className="bg-white/20 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl p-4">
+        <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+          <Layers size={18} className="text-cyan-400" />
           Watermarks ({watermarks.length})
         </h3>
         
-        <div className=\"space-y-2 max-h-40 overflow-y-auto\">
-          {watermarks.map((watermark, index) => (
-            <div
-              key={watermark.id}
-              onClick={() => onWatermarkSelect(watermark.id)}
-              className={clsx(
-                'group flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all duration-300',
-                selectedWatermarkId === watermark.id
-                  ? 'bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border border-teal-400/50'
-                  : 'bg-white/5 hover:bg-white/10 border border-white/10'
-              )}
-            >
-              <div className={clsx(
-                'w-10 h-10 rounded-lg flex items-center justify-center border border-white/20',
-                watermark.type === 'text' ? 'bg-teal-500/20' :
-                watermark.type === 'image' ? 'bg-green-500/20' : 'bg-emerald-500/20'
-              )}>
-                {watermark.type === 'text' && <Type size={16} className=\"text-teal-400\" />}
-                {watermark.type === 'image' && <Image size={16} className=\"text-green-400\" />}
-                {watermark.type === 'stamp' && <Stamp size={16} className=\"text-emerald-400\" />}
+        <div className="space-y-2 max-h-40 overflow-y-auto">
+          {watermarks.map((watermark, index) => {
+            const Icon = watermark.type === 'text' ? Type : watermark.type === 'image' ? Image : Stamp;
+            
+            return (
+              <div
+                key={watermark.id}
+                onClick={() => onWatermarkSelect(watermark.id)}
+                className={clsx(
+                  'group flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all duration-300',
+                  selectedWatermarkId === watermark.id
+                    ? 'bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border border-teal-400/50'
+                    : 'bg-white/5 hover:bg-white/10 border border-white/10'
+                )}
+              >
+                <div className={clsx(
+                  'w-10 h-10 rounded-lg flex items-center justify-center border border-white/20',
+                  watermark.type === 'text' ? 'bg-teal-500/20' :
+                  watermark.type === 'image' ? 'bg-green-500/20' : 'bg-emerald-500/20'
+                )}>
+                  <Icon size={16} className={watermark.type === 'text' ? 'text-teal-400' : watermark.type === 'image' ? 'text-green-400' : 'text-emerald-400'} />
+                </div>
+                
+                <div className="flex-1">
+                  <p className="text-white text-sm font-medium">
+                    {watermark.content.length > 20 
+                      ? `${watermark.content.substring(0, 20)}...` 
+                      : watermark.content}
+                  </p>
+                  <p className="text-gray-400 text-xs">
+                    Layer {index + 1} • {Math.round(watermark.opacity * 100)}% opacity
+                  </p>
+                </div>
+                
+                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onWatermarkUpdate(watermark.id, { visible: !watermark.visible });
+                    }}
+                    className={clsx(
+                      'p-1 rounded transition-colors',
+                      watermark.visible 
+                        ? 'bg-white/10 hover:bg-white/20' 
+                        : 'bg-gray-500/20 hover:bg-gray-500/30'
+                    )}
+                  >
+                    {watermark.visible ? <Eye size={12} /> : <EyeOff size={12} />}
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onWatermarkApplyToAll(watermark.id);
+                    }}
+                    className="p-1 bg-green-500/20 hover:bg-green-500/30 rounded transition-colors"
+                    title="Apply to all pages"
+                  >
+                    <Copy size={12} className="text-green-400" />
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onWatermarkDelete(watermark.id);
+                    }}
+                    className="p-1 bg-red-500/20 hover:bg-red-500/30 rounded transition-colors"
+                  >
+                    <Trash2 size={12} className="text-red-400" />
+                  </button>
+                </div>
               </div>
-              
-              <div className=\"flex-1\">
-                <p className=\"text-white text-sm font-medium\">
-                  {watermark.content.length > 20 
-                    ? `${watermark.content.substring(0, 20)}...` 
-                    : watermark.content}
-                </p>
-                <p className=\"text-gray-400 text-xs\">
-                  Layer {index + 1} • {Math.round(watermark.opacity * 100)}% opacity
-                </p>
-              </div>
-              
-              <div className=\"flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity\">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onWatermarkUpdate(watermark.id, { visible: !watermark.visible });
-                  }}
-                  className={clsx(
-                    'p-1 rounded transition-colors',
-                    watermark.visible 
-                      ? 'bg-white/10 hover:bg-white/20' 
-                      : 'bg-gray-500/20 hover:bg-gray-500/30'
-                  )}
-                >
-                  {watermark.visible ? <Eye size={12} /> : <EyeOff size={12} />}
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onWatermarkApplyToAll(watermark.id);
-                  }}
-                  className=\"p-1 bg-green-500/20 hover:bg-green-500/30 rounded transition-colors\"
-                  title=\"Apply to all pages\"
-                >
-                  <Copy size={12} className=\"text-green-400\" />
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onWatermarkDelete(watermark.id);
-                  }}
-                  className=\"p-1 bg-red-500/20 hover:bg-red-500/30 rounded transition-colors\"
-                >
-                  <Trash2 size={12} className=\"text-red-400\" />
-                </button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
       {/* Watermark Properties */}
       {selectedWatermark && (
-        <div className=\"bg-white/20 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl p-4\">
-          <h3 className=\"text-white font-semibold mb-4 flex items-center gap-2\">
-            <Droplets size={18} className=\"text-pink-400\" />
+        <div className="bg-white/20 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl p-4">
+          <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+            <Droplets size={18} className="text-pink-400" />
             Watermark Properties
           </h3>
           
-          <div className=\"space-y-4\">
+          <div className="space-y-4">
             {/* Content */}
             <div>
-              <label className=\"text-sm text-gray-300 mb-2 block\">
+              <label className="text-sm text-gray-300 mb-2 block">
                 {selectedWatermark.type === 'text' ? 'Text Content' : 'Image URL'}
               </label>
               {selectedWatermark.type === 'text' ? (
                 <textarea
                   value={selectedWatermark.content}
                   onChange={(e) => handleWatermarkUpdate('content', e.target.value)}
-                  className=\"w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500\"
+                  className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
                   rows={3}
-                  placeholder=\"Enter watermark text\"
+                  placeholder="Enter watermark text"
                 />
               ) : (
-                <div className=\"space-y-2\">
+                <div className="space-y-2">
                   <input
-                    type=\"url\"
+                    type="url"
                     value={selectedWatermark.content}
                     onChange={(e) => handleWatermarkUpdate('content', e.target.value)}
-                    className=\"w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500\"
-                    placeholder=\"Image URL or upload\"
+                    className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                    placeholder="Image URL or upload"
                   />
-                  <Button size=\"sm\" variant=\"outline\" className=\"w-full\">
+                  <Button size="sm" variant="outline" className="w-full">
                     <Upload size={14} />
                     Upload Image
                   </Button>
@@ -258,86 +262,86 @@ export default function WatermarkEditor({
             </div>
             
             {/* Position & Size */}
-            <div className=\"grid grid-cols-2 gap-3\">
+            <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className=\"text-sm text-gray-300 mb-1 block\">X Position</label>
+                <label className="text-sm text-gray-300 mb-1 block">X Position</label>
                 <input
-                  type=\"number\"
+                  type="number"
                   value={selectedWatermark.x}
                   onChange={(e) => handleWatermarkUpdate('x', parseInt(e.target.value))}
-                  className=\"w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500\"
+                  className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
                 />
               </div>
               <div>
-                <label className=\"text-sm text-gray-300 mb-1 block\">Y Position</label>
+                <label className="text-sm text-gray-300 mb-1 block">Y Position</label>
                 <input
-                  type=\"number\"
+                  type="number"
                   value={selectedWatermark.y}
                   onChange={(e) => handleWatermarkUpdate('y', parseInt(e.target.value))}
-                  className=\"w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500\"
+                  className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
                 />
               </div>
             </div>
             
-            <div className=\"grid grid-cols-2 gap-3\">
+            <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className=\"text-sm text-gray-300 mb-1 block\">Width</label>
+                <label className="text-sm text-gray-300 mb-1 block">Width</label>
                 <input
-                  type=\"number\"
+                  type="number"
                   value={selectedWatermark.width}
                   onChange={(e) => handleWatermarkUpdate('width', parseInt(e.target.value))}
-                  className=\"w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500\"
+                  className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
                 />
               </div>
               <div>
-                <label className=\"text-sm text-gray-300 mb-1 block\">Height</label>
+                <label className="text-sm text-gray-300 mb-1 block">Height</label>
                 <input
-                  type=\"number\"
+                  type="number"
                   value={selectedWatermark.height}
                   onChange={(e) => handleWatermarkUpdate('height', parseInt(e.target.value))}
-                  className=\"w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500\"
+                  className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
                 />
               </div>
             </div>
             
             {/* Rotation */}
             <div>
-              <label className=\"text-sm text-gray-300 mb-2 block\">Rotation</label>
-              <div className=\"flex items-center gap-2\">
+              <label className="text-sm text-gray-300 mb-2 block">Rotation</label>
+              <div className="flex items-center gap-2">
                 <input
-                  type=\"range\"
-                  min=\"-180\"
-                  max=\"180\"
+                  type="range"
+                  min="-180"
+                  max="180"
                   value={selectedWatermark.rotation}
                   onChange={(e) => handleWatermarkUpdate('rotation', parseInt(e.target.value))}
-                  className=\"flex-1 h-2 bg-white/20 rounded-lg appearance-none cursor-pointer\"
+                  className="flex-1 h-2 bg-white/20 rounded-lg appearance-none cursor-pointer"
                 />
-                <span className=\"text-white font-medium min-w-[60px] text-center\">
+                <span className="text-white font-medium min-w-[60px] text-center">
                   {selectedWatermark.rotation}°
                 </span>
                 <button
                   onClick={() => handleWatermarkUpdate('rotation', selectedWatermark.rotation + 45)}
-                  className=\"p-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors\"
+                  className="p-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors"
                 >
-                  <RotateCw size={14} className=\"text-gray-300\" />
+                  <RotateCw size={14} className="text-gray-300" />
                 </button>
               </div>
             </div>
             
             {/* Opacity */}
             <div>
-              <label className=\"text-sm text-gray-300 mb-2 block\">Opacity</label>
-              <div className=\"flex items-center gap-2\">
+              <label className="text-sm text-gray-300 mb-2 block">Opacity</label>
+              <div className="flex items-center gap-2">
                 <input
-                  type=\"range\"
-                  min=\"0\"
-                  max=\"1\"
-                  step=\"0.1\"
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.1"
                   value={selectedWatermark.opacity}
                   onChange={(e) => handleWatermarkUpdate('opacity', parseFloat(e.target.value))}
-                  className=\"flex-1 h-2 bg-white/20 rounded-lg appearance-none cursor-pointer\"
+                  className="flex-1 h-2 bg-white/20 rounded-lg appearance-none cursor-pointer"
                 />
-                <span className=\"text-white font-medium min-w-[50px] text-center\">
+                <span className="text-white font-medium min-w-[50px] text-center">
                   {Math.round(selectedWatermark.opacity * 100)}%
                 </span>
               </div>
@@ -348,26 +352,26 @@ export default function WatermarkEditor({
       
       {/* Text Styling */}
       {selectedWatermark && selectedWatermark.type === 'text' && (
-        <div className=\"bg-white/20 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl p-4\">
-          <h3 className=\"text-white font-semibold mb-4 flex items-center gap-2\">
-            <Palette size={18} className=\"text-yellow-400\" />
+        <div className="bg-white/20 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl p-4">
+          <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+            <Palette size={18} className="text-yellow-400" />
             Text Styling
           </h3>
           
-          <div className=\"space-y-4\">
+          <div className="space-y-4">
             {/* Font Size */}
             <div>
-              <label className=\"text-sm text-gray-300 mb-2 block\">Font Size</label>
-              <div className=\"flex items-center gap-2\">
+              <label className="text-sm text-gray-300 mb-2 block">Font Size</label>
+              <div className="flex items-center gap-2">
                 <input
-                  type=\"range\"
-                  min=\"8\"
-                  max=\"72\"
+                  type="range"
+                  min="8"
+                  max="72"
                   value={selectedWatermark.style.fontSize || 16}
                   onChange={(e) => handleStyleUpdate('fontSize', parseInt(e.target.value))}
-                  className=\"flex-1 h-2 bg-white/20 rounded-lg appearance-none cursor-pointer\"
+                  className="flex-1 h-2 bg-white/20 rounded-lg appearance-none cursor-pointer"
                 />
-                <span className=\"text-white font-medium min-w-[40px] text-center\">
+                <span className="text-white font-medium min-w-[40px] text-center">
                   {selectedWatermark.style.fontSize || 16}px
                 </span>
               </div>
@@ -375,39 +379,39 @@ export default function WatermarkEditor({
             
             {/* Font Family */}
             <div>
-              <label className=\"text-sm text-gray-300 mb-2 block\">Font Family</label>
+              <label className="text-sm text-gray-300 mb-2 block">Font Family</label>
               <select
                 value={selectedWatermark.style.fontFamily || 'Arial'}
                 onChange={(e) => handleStyleUpdate('fontFamily', e.target.value)}
-                className=\"w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500\"
+                className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
               >
-                <option value=\"Arial\">Arial</option>
-                <option value=\"Helvetica\">Helvetica</option>
-                <option value=\"Times New Roman\">Times New Roman</option>
-                <option value=\"Courier New\">Courier New</option>
-                <option value=\"Impact\">Impact</option>
-                <option value=\"Georgia\">Georgia</option>
+                <option value="Arial">Arial</option>
+                <option value="Helvetica">Helvetica</option>
+                <option value="Times New Roman">Times New Roman</option>
+                <option value="Courier New">Courier New</option>
+                <option value="Impact">Impact</option>
+                <option value="Georgia">Georgia</option>
               </select>
             </div>
             
             {/* Colors */}
-            <div className=\"grid grid-cols-2 gap-3\">
+            <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className=\"text-sm text-gray-300 mb-1 block\">Text Color</label>
+                <label className="text-sm text-gray-300 mb-1 block">Text Color</label>
                 <input
-                  type=\"color\"
+                  type="color"
                   value={selectedWatermark.style.color || '#000000'}
                   onChange={(e) => handleStyleUpdate('color', e.target.value)}
-                  className=\"w-full h-10 bg-white/10 border border-white/20 rounded-lg cursor-pointer\"
+                  className="w-full h-10 bg-white/10 border border-white/20 rounded-lg cursor-pointer"
                 />
               </div>
               <div>
-                <label className=\"text-sm text-gray-300 mb-1 block\">Background</label>
+                <label className="text-sm text-gray-300 mb-1 block">Background</label>
                 <input
-                  type=\"color\"
+                  type="color"
                   value={selectedWatermark.style.backgroundColor || '#ffffff'}
                   onChange={(e) => handleStyleUpdate('backgroundColor', e.target.value)}
-                  className=\"w-full h-10 bg-white/10 border border-white/20 rounded-lg cursor-pointer\"
+                  className="w-full h-10 bg-white/10 border border-white/20 rounded-lg cursor-pointer"
                 />
               </div>
             </div>
@@ -417,16 +421,16 @@ export default function WatermarkEditor({
       
       {/* Quick Actions */}
       {selectedWatermark && (
-        <div className=\"bg-white/20 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl p-4\">
-          <h3 className=\"text-white font-semibold mb-4 flex items-center gap-2\">
-            <Move size={18} className=\"text-green-400\" />
+        <div className="bg-white/20 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl p-4">
+          <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+            <Move size={18} className="text-green-400" />
             Quick Actions
           </h3>
           
-          <div className=\"grid grid-cols-2 gap-3\">
+          <div className="grid grid-cols-2 gap-3">
             <Button
-              size=\"sm\"
-              variant=\"outline\"
+              size="sm"
+              variant="outline"
               onClick={() => {
                 handleWatermarkUpdate('x', 50);
                 handleWatermarkUpdate('y', 50);
@@ -435,8 +439,8 @@ export default function WatermarkEditor({
               Center Top
             </Button>
             <Button
-              size=\"sm\"
-              variant=\"outline\"
+              size="sm"
+              variant="outline"
               onClick={() => {
                 handleWatermarkUpdate('x', 50);
                 handleWatermarkUpdate('y', 50);
@@ -446,15 +450,15 @@ export default function WatermarkEditor({
               Diagonal
             </Button>
             <Button
-              size=\"sm\"
-              variant=\"outline\"
+              size="sm"
+              variant="outline"
               onClick={() => handleWatermarkUpdate('opacity', 0.3)}
             >
               Light (30%)
             </Button>
             <Button
-              size=\"sm\"
-              variant=\"outline\"
+              size="sm"
+              variant="outline"
               onClick={() => onWatermarkApplyToAll(selectedWatermark.id)}
             >
               Apply to All
@@ -462,12 +466,12 @@ export default function WatermarkEditor({
           </div>
           
           {/* Position Presets */}
-          <div className=\"mt-4\">
-            <label className=\"text-sm text-gray-300 mb-2 block\">Position Presets</label>
-            <div className=\"grid grid-cols-3 gap-2\">
+          <div className="mt-4">
+            <label className="text-sm text-gray-300 mb-2 block">Position Presets</label>
+            <div className="grid grid-cols-3 gap-2">
               <Button
-                size=\"sm\"
-                variant=\"outline\"
+                size="sm"
+                variant="outline"
                 onClick={() => {
                   handleWatermarkUpdate('x', 20);
                   handleWatermarkUpdate('y', 80);
@@ -476,8 +480,8 @@ export default function WatermarkEditor({
                 Top Left
               </Button>
               <Button
-                size=\"sm\"
-                variant=\"outline\"
+                size="sm"
+                variant="outline"
                 onClick={() => {
                   handleWatermarkUpdate('x', 50);
                   handleWatermarkUpdate('y', 80);
@@ -486,8 +490,8 @@ export default function WatermarkEditor({
                 Top Center
               </Button>
               <Button
-                size=\"sm\"
-                variant=\"outline\"
+                size="sm"
+                variant="outline"
                 onClick={() => {
                   handleWatermarkUpdate('x', 80);
                   handleWatermarkUpdate('y', 80);
@@ -496,8 +500,8 @@ export default function WatermarkEditor({
                 Top Right
               </Button>
               <Button
-                size=\"sm\"
-                variant=\"outline\"
+                size="sm"
+                variant="outline"
                 onClick={() => {
                   handleWatermarkUpdate('x', 50);
                   handleWatermarkUpdate('y', 50);
@@ -506,8 +510,8 @@ export default function WatermarkEditor({
                 Center
               </Button>
               <Button
-                size=\"sm\"
-                variant=\"outline\"
+                size="sm"
+                variant="outline"
                 onClick={() => {
                   handleWatermarkUpdate('x', 20);
                   handleWatermarkUpdate('y', 20);
@@ -516,8 +520,8 @@ export default function WatermarkEditor({
                 Bottom Left
               </Button>
               <Button
-                size=\"sm\"
-                variant=\"outline\"
+                size="sm"
+                variant="outline"
                 onClick={() => {
                   handleWatermarkUpdate('x', 80);
                   handleWatermarkUpdate('y', 20);
@@ -525,10 +529,10 @@ export default function WatermarkEditor({
               >
                 Bottom Right
               </Button>
+            </div>
           </div>
         </div>
       )}
     </div>
   );
 }
-

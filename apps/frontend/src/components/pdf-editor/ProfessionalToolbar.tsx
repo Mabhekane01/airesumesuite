@@ -5,9 +5,9 @@ import {
   Type, Bold, Italic, Underline, Strikethrough, Subscript, Superscript,
   AlignLeft, AlignCenter, AlignRight, AlignJustify,
   List, ListOrdered, Indent, Outdent, Quote,
-  Palette, Brush, Highlighter, Eraser, Eyedropper,
-  FontBold, FontItalic, Minus, Plus, RotateCw,
-  Copy, Cut, Paste, Undo, Redo, Search, Replace,
+  Palette, Brush, Highlighter, Eraser,
+  Minus, Plus, RotateCw,
+  Copy, Scissors, Clipboard, Undo, Redo, Search, Replace,
   ChevronDown, Settings, Layers, Grid, Ruler, ZoomIn, ZoomOut,
   PaintBucket, Pipette, Spline, Square, Circle, Triangle, Pen,
   Save, FileDown, FileUp, Share2, Printer, Eye
@@ -212,13 +212,13 @@ export default function ProfessionalToolbar({
           </Button>
           <div className="w-px h-6 bg-gray-300 mx-2" />
           <Button size="sm" variant="ghost" onClick={() => onAction('cut')}>
-            <Cut size={16} />
+            <Scissors size={16} />
           </Button>
           <Button size="sm" variant="ghost" onClick={() => onAction('copy')}>
             <Copy size={16} />
           </Button>
           <Button size="sm" variant="ghost" onClick={() => onAction('paste')}>
-            <Paste size={16} />
+            <Clipboard size={16} />
           </Button>
         </div>
 
@@ -262,28 +262,28 @@ export default function ProfessionalToolbar({
         <div className="flex items-center space-x-1">
           <Button
             size="sm"
-            variant={currentStyle.fontWeight === 'bold' ? 'default' : 'ghost'}
+            variant={currentStyle.fontWeight === 'bold' ? 'primary' : 'ghost'}
             onClick={() => onStyleChange({ fontWeight: currentStyle.fontWeight === 'bold' ? 'normal' : 'bold' })}
           >
             <Bold size={16} />
           </Button>
           <Button
             size="sm"
-            variant={currentStyle.fontStyle === 'italic' ? 'default' : 'ghost'}
+            variant={currentStyle.fontStyle === 'italic' ? 'primary' : 'ghost'}
             onClick={() => onStyleChange({ fontStyle: currentStyle.fontStyle === 'italic' ? 'normal' : 'italic' })}
           >
             <Italic size={16} />
           </Button>
           <Button
             size="sm"
-            variant={hasTextDecoration('underline') ? 'default' : 'ghost'}
+            variant={hasTextDecoration('underline') ? 'primary' : 'ghost'}
             onClick={() => toggleTextDecoration('underline')}
           >
             <Underline size={16} />
           </Button>
           <Button
             size="sm"
-            variant={hasTextDecoration('line-through') ? 'default' : 'ghost'}
+            variant={hasTextDecoration('line-through') ? 'primary' : 'ghost'}
             onClick={() => toggleTextDecoration('line-through')}
           >
             <Strikethrough size={16} />
@@ -300,28 +300,28 @@ export default function ProfessionalToolbar({
         <div className="flex items-center space-x-1">
           <Button
             size="sm"
-            variant={currentStyle.textAlign === 'left' ? 'default' : 'ghost'}
+            variant={currentStyle.textAlign === 'left' ? 'primary' : 'ghost'}
             onClick={() => onStyleChange({ textAlign: 'left' })}
           >
             <AlignLeft size={16} />
           </Button>
           <Button
             size="sm"
-            variant={currentStyle.textAlign === 'center' ? 'default' : 'ghost'}
+            variant={currentStyle.textAlign === 'center' ? 'primary' : 'ghost'}
             onClick={() => onStyleChange({ textAlign: 'center' })}
           >
             <AlignCenter size={16} />
           </Button>
           <Button
             size="sm"
-            variant={currentStyle.textAlign === 'right' ? 'default' : 'ghost'}
+            variant={currentStyle.textAlign === 'right' ? 'primary' : 'ghost'}
             onClick={() => onStyleChange({ textAlign: 'right' })}
           >
             <AlignRight size={16} />
           </Button>
           <Button
             size="sm"
-            variant={currentStyle.textAlign === 'justify' ? 'default' : 'ghost'}
+            variant={currentStyle.textAlign === 'justify' ? 'primary' : 'ghost'}
             onClick={() => onStyleChange({ textAlign: 'justify' })}
           >
             <AlignJustify size={16} />
@@ -381,14 +381,14 @@ export default function ProfessionalToolbar({
         <div className="flex items-center space-x-1">
           <Button
             size="sm"
-            variant={showGrid ? 'default' : 'ghost'}
+            variant={showGrid ? 'primary' : 'ghost'}
             onClick={onToggleGrid}
           >
             <Grid size={16} />
           </Button>
           <Button
             size="sm"
-            variant={showRulers ? 'default' : 'ghost'}
+            variant={showRulers ? 'primary' : 'ghost'}
             onClick={onToggleRulers}
           >
             <Ruler size={16} />

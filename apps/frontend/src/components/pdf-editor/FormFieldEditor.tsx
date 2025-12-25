@@ -102,12 +102,12 @@ export default function FormFieldEditor({
   };
 
   return (
-    <div className=\"space-y-6\">
+    <div className="space-y-6">
       {/* Field Types */}
-      <div className=\"bg-white/20 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl p-4\">
-        <div className=\"flex items-center justify-between mb-4\">
-          <h3 className=\"text-white font-semibold flex items-center gap-2\">
-            <Square size={18} className=\"text-teal-400\" />
+      <div className="bg-white/20 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl p-4">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-white font-semibold flex items-center gap-2">
+            <Square size={18} className="text-teal-400" />
             Form Fields
           </h3>
           <button
@@ -122,7 +122,7 @@ export default function FormFieldEditor({
         </div>
 
         {showFieldTypes && (
-          <div className=\"grid grid-cols-2 gap-2 mb-4\">
+          <div className="grid grid-cols-2 gap-2 mb-4">
             {fieldTypes.map(({ type, label, icon: Icon, color }) => (
               <button
                 key={type}
@@ -130,17 +130,17 @@ export default function FormFieldEditor({
                   onFieldAdd(type);
                   setShowFieldTypes(false);
                 }}
-                className=\"flex items-center gap-2 p-3 bg-white/5 hover:bg-white/10 rounded-lg transition-all duration-300 hover:scale-105\"
+                className="flex items-center gap-2 p-3 bg-white/5 hover:bg-white/10 rounded-lg transition-all duration-300 hover:scale-105"
               >
                 <Icon size={16} className={color} />
-                <span className=\"text-white text-sm font-medium\">{label}</span>
+                <span className="text-white text-sm font-medium">{label}</span>
               </button>
             ))}
           </div>
         )}
 
         {/* Field List */}
-        <div className=\"space-y-2 max-h-40 overflow-y-auto\">
+        <div className="space-y-2 max-h-40 overflow-y-auto">
           {fields.map((field) => {
             const fieldType = fieldTypes.find(ft => ft.type === field.type);
             const Icon = fieldType?.icon || Square;
@@ -157,16 +157,16 @@ export default function FormFieldEditor({
                 )}
               >
                 <Icon size={16} className={fieldType?.color || 'text-gray-400'} />
-                <div className=\"flex-1\">
-                  <p className=\"text-white text-sm font-medium\">{field.label || `${field.type} field`}</p>
-                  <p className=\"text-gray-400 text-xs\">
+                <div className="flex-1">
+                  <p className="text-white text-sm font-medium">{field.label || `${field.type} field`}</p>
+                  <p className="text-gray-400 text-xs">
                     {field.width}×{field.height} at ({field.x}, {field.y})
                   </p>
                 </div>
-                <div className=\"flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity\">
+                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   {field.required && (
-                    <div className=\"p-1 bg-red-500/20 rounded\">
-                      <span className=\"text-red-400 text-xs\">*</span>
+                    <div className="p-1 bg-red-500/20 rounded">
+                      <span className="text-red-400 text-xs">*</span>
                     </div>
                   )}
                   <button
@@ -174,9 +174,9 @@ export default function FormFieldEditor({
                       e.stopPropagation();
                       onFieldDelete(field.id);
                     }}
-                    className=\"p-1 bg-red-500/20 hover:bg-red-500/30 rounded transition-colors\"
+                    className="p-1 bg-red-500/20 hover:bg-red-500/30 rounded transition-colors"
                   >
-                    <Trash2 size={12} className=\"text-red-400\" />
+                    <Trash2 size={12} className="text-red-400" />
                   </button>
                 </div>
               </div>
@@ -187,88 +187,88 @@ export default function FormFieldEditor({
 
       {/* Field Properties */}
       {selectedField && (
-        <div className=\"bg-white/20 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl p-4\">
-          <h3 className=\"text-white font-semibold mb-4 flex items-center gap-2\">
-            <Type size={18} className=\"text-cyan-400\" />
+        <div className="bg-white/20 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl p-4">
+          <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+            <Type size={18} className="text-cyan-400" />
             Field Properties
           </h3>
           
-          <div className=\"space-y-4\">
+          <div className="space-y-4">
             {/* Basic Properties */}
             <div>
-              <label className=\"text-sm text-gray-300 mb-2 block\">Label</label>
+              <label className="text-sm text-gray-300 mb-2 block">Label</label>
               <input
-                type=\"text\"
+                type="text"
                 value={selectedField.label}
                 onChange={(e) => handleFieldUpdate('label', e.target.value)}
-                className=\"w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500\"
-                placeholder=\"Field label\"
+                className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                placeholder="Field label"
               />
             </div>
             
             <div>
-              <label className=\"text-sm text-gray-300 mb-2 block\">Placeholder</label>
+              <label className="text-sm text-gray-300 mb-2 block">Placeholder</label>
               <input
-                type=\"text\"
+                type="text"
                 value={selectedField.placeholder || ''}
                 onChange={(e) => handleFieldUpdate('placeholder', e.target.value)}
-                className=\"w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500\"
-                placeholder=\"Placeholder text\"
+                className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                placeholder="Placeholder text"
               />
             </div>
             
-            <div className=\"flex items-center gap-2\">
+            <div className="flex items-center gap-2">
               <input
-                type=\"checkbox\"
-                id=\"required\"
+                type="checkbox"
+                id="required"
                 checked={selectedField.required}
                 onChange={(e) => handleFieldUpdate('required', e.target.checked)}
-                className=\"w-4 h-4 bg-white/10 border border-white/20 rounded focus:ring-2 focus:ring-cyan-500\"
+                className="w-4 h-4 bg-white/10 border border-white/20 rounded focus:ring-2 focus:ring-cyan-500"
               />
-              <label htmlFor=\"required\" className=\"text-sm text-gray-300\">
+              <label htmlFor="required" className="text-sm text-gray-300">
                 Required field
               </label>
             </div>
             
             {/* Position & Size */}
-            <div className=\"grid grid-cols-2 gap-3\">
+            <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className=\"text-sm text-gray-300 mb-1 block\">X Position</label>
+                <label className="text-sm text-gray-300 mb-1 block">X Position</label>
                 <input
-                  type=\"number\"
+                  type="number"
                   value={selectedField.x}
                   onChange={(e) => handleFieldUpdate('x', parseInt(e.target.value))}
-                  className=\"w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500\"
+                  className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
                 />
               </div>
               <div>
-                <label className=\"text-sm text-gray-300 mb-1 block\">Y Position</label>
+                <label className="text-sm text-gray-300 mb-1 block">Y Position</label>
                 <input
-                  type=\"number\"
+                  type="number"
                   value={selectedField.y}
                   onChange={(e) => handleFieldUpdate('y', parseInt(e.target.value))}
-                  className=\"w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500\"
+                  className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
                 />
               </div>
             </div>
             
-            <div className=\"grid grid-cols-2 gap-3\">
+            <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className=\"text-sm text-gray-300 mb-1 block\">Width</label>
+                <label className="text-sm text-gray-300 mb-1 block">Width</label>
                 <input
-                  type=\"number\"
+                  type="number"
                   value={selectedField.width}
                   onChange={(e) => handleFieldUpdate('width', parseInt(e.target.value))}
-                  className=\"w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500\"
+                  className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
                 />
               </div>
               <div>
-                <label className=\"text-sm text-gray-300 mb-1 block\">Height</label>
+                <label className="text-sm text-gray-300 mb-1 block">Height</label>
                 <input
-                  type=\"number\"
+                  type="number"
                   value={selectedField.height}
                   onChange={(e) => handleFieldUpdate('height', parseInt(e.target.value))}
-                  className=\"w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500\"
+                  className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
                 />
               </div>
             </div>
@@ -276,17 +276,13 @@ export default function FormFieldEditor({
             {/* Options for dropdown/radio */}
             {(selectedField.type === 'dropdown' || selectedField.type === 'radio') && (
               <div>
-                <label className=\"text-sm text-gray-300 mb-2 block\">Options (one per line)</label>
+                <label className="text-sm text-gray-300 mb-2 block">Options (one per line)</label>
                 <textarea
-                  value={(selectedField.options || []).join('\
-')}
-                  onChange={(e) => handleFieldUpdate('options', e.target.value.split('\
-').filter(o => o.trim()))}
-                  className=\"w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500\"
+                  value={(selectedField.options || []).join('\n')}
+                  onChange={(e) => handleFieldUpdate('options', e.target.value.split('\n').filter(o => o.trim()))}
+                  className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
                   rows={4}
-                  placeholder=\"Option 1\
-Option 2\
-Option 3\"
+                  placeholder="Option 1\nOption 2\nOption 3"
                 />
               </div>
             )}
@@ -296,75 +292,75 @@ Option 3\"
       
       {/* Field Styling */}
       {selectedField && (
-        <div className=\"bg-white/20 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl p-4\">
-          <h3 className=\"text-white font-semibold mb-4 flex items-center gap-2\">
-            <Eye size={18} className=\"text-pink-400\" />
+        <div className="bg-white/20 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl p-4">
+          <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+            <Eye size={18} className="text-pink-400" />
             Appearance
           </h3>
           
-          <div className=\"space-y-4\">
+          <div className="space-y-4">
             {/* Font Size */}
             <div>
-              <label className=\"text-sm text-gray-300 mb-2 block\">Font Size</label>
-              <div className=\"flex items-center gap-2\">
+              <label className="text-sm text-gray-300 mb-2 block">Font Size</label>
+              <div className="flex items-center gap-2">
                 <input
-                  type=\"range\"
-                  min=\"8\"
-                  max=\"24\"
+                  type="range"
+                  min="8"
+                  max="24"
                   value={selectedField.style.fontSize}
                   onChange={(e) => handleStyleUpdate('fontSize', parseInt(e.target.value))}
-                  className=\"flex-1 h-2 bg-white/20 rounded-lg appearance-none cursor-pointer\"
+                  className="flex-1 h-2 bg-white/20 rounded-lg appearance-none cursor-pointer"
                 />
-                <span className=\"text-white font-medium min-w-[40px] text-center\">
+                <span className="text-white font-medium min-w-[40px] text-center">
                   {selectedField.style.fontSize}px
                 </span>
               </div>
             </div>
             
             {/* Colors */}
-            <div className=\"grid grid-cols-3 gap-3\">
+            <div className="grid grid-cols-3 gap-3">
               <div>
-                <label className=\"text-sm text-gray-300 mb-1 block\">Text</label>
+                <label className="text-sm text-gray-300 mb-1 block">Text</label>
                 <input
-                  type=\"color\"
+                  type="color"
                   value={selectedField.style.color}
                   onChange={(e) => handleStyleUpdate('color', e.target.value)}
-                  className=\"w-full h-10 bg-white/10 border border-white/20 rounded-lg cursor-pointer\"
+                  className="w-full h-10 bg-white/10 border border-white/20 rounded-lg cursor-pointer"
                 />
               </div>
               <div>
-                <label className=\"text-sm text-gray-300 mb-1 block\">Background</label>
+                <label className="text-sm text-gray-300 mb-1 block">Background</label>
                 <input
-                  type=\"color\"
+                  type="color"
                   value={selectedField.style.backgroundColor}
                   onChange={(e) => handleStyleUpdate('backgroundColor', e.target.value)}
-                  className=\"w-full h-10 bg-white/10 border border-white/20 rounded-lg cursor-pointer\"
+                  className="w-full h-10 bg-white/10 border border-white/20 rounded-lg cursor-pointer"
                 />
               </div>
               <div>
-                <label className=\"text-sm text-gray-300 mb-1 block\">Border</label>
+                <label className="text-sm text-gray-300 mb-1 block">Border</label>
                 <input
-                  type=\"color\"
+                  type="color"
                   value={selectedField.style.borderColor}
                   onChange={(e) => handleStyleUpdate('borderColor', e.target.value)}
-                  className=\"w-full h-10 bg-white/10 border border-white/20 rounded-lg cursor-pointer\"
+                  className="w-full h-10 bg-white/10 border border-white/20 rounded-lg cursor-pointer"
                 />
               </div>
             </div>
             
             {/* Border Width */}
             <div>
-              <label className=\"text-sm text-gray-300 mb-2 block\">Border Width</label>
-              <div className=\"flex items-center gap-2\">
+              <label className="text-sm text-gray-300 mb-2 block">Border Width</label>
+              <div className="flex items-center gap-2">
                 <input
-                  type=\"range\"
-                  min=\"0\"
-                  max=\"5\"
+                  type="range"
+                  min="0"
+                  max="5"
                   value={selectedField.style.borderWidth}
                   onChange={(e) => handleStyleUpdate('borderWidth', parseInt(e.target.value))}
-                  className=\"flex-1 h-2 bg-white/20 rounded-lg appearance-none cursor-pointer\"
+                  className="flex-1 h-2 bg-white/20 rounded-lg appearance-none cursor-pointer"
                 />
-                <span className=\"text-white font-medium min-w-[30px] text-center\">
+                <span className="text-white font-medium min-w-[30px] text-center">
                   {selectedField.style.borderWidth}px
                 </span>
               </div>
@@ -375,51 +371,51 @@ Option 3\"
       
       {/* Field Validation */}
       {selectedField && ['text', 'textarea', 'email', 'url'].includes(selectedField.type) && (
-        <div className=\"bg-white/20 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl p-4\">
-          <h3 className=\"text-white font-semibold mb-4 flex items-center gap-2\">
-            <Lock size={18} className=\"text-orange-400\" />
+        <div className="bg-white/20 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl p-4">
+          <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+            <Lock size={18} className="text-orange-400" />
             Validation
           </h3>
           
-          <div className=\"space-y-4\">
-            <div className=\"grid grid-cols-2 gap-3\">
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className=\"text-sm text-gray-300 mb-1 block\">Min Length</label>
+                <label className="text-sm text-gray-300 mb-1 block">Min Length</label>
                 <input
-                  type=\"number\"
+                  type="number"
                   value={selectedField.validation?.minLength || ''}
                   onChange={(e) => handleFieldUpdate('validation', {
                     ...selectedField.validation,
                     minLength: e.target.value ? parseInt(e.target.value) : undefined
                   })}
-                  className=\"w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500\"
+                  className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
                 />
               </div>
               <div>
-                <label className=\"text-sm text-gray-300 mb-1 block\">Max Length</label>
+                <label className="text-sm text-gray-300 mb-1 block">Max Length</label>
                 <input
-                  type=\"number\"
+                  type="number"
                   value={selectedField.validation?.maxLength || ''}
                   onChange={(e) => handleFieldUpdate('validation', {
                     ...selectedField.validation,
                     maxLength: e.target.value ? parseInt(e.target.value) : undefined
                   })}
-                  className=\"w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500\"
+                  className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
                 />
               </div>
             </div>
             
             <div>
-              <label className=\"text-sm text-gray-300 mb-2 block\">Regex Pattern</label>
+              <label className="text-sm text-gray-300 mb-2 block">Regex Pattern</label>
               <input
-                type=\"text\"
+                type="text"
                 value={selectedField.validation?.pattern || ''}
                 onChange={(e) => handleFieldUpdate('validation', {
                   ...selectedField.validation,
                   pattern: e.target.value || undefined
                 })}
-                className=\"w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500\"
-                placeholder=\"e.g., ^[A-Za-z0-9]+$\"
+                className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                placeholder="e.g., ^[A-Za-z0-9]+$"
               />
             </div>
           </div>
@@ -428,4 +424,3 @@ Option 3\"
     </div>
   );
 }
-

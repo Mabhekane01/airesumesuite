@@ -1334,19 +1334,21 @@ export default function EnterpriseResumeEnhancer({
                 </div>
               </div>
             ) : dynamicTemplate || resume.isLatexTemplate ? (
-              <PDFPreview
-                pdfUrl={aiData.cachedPdfUrl}
-                pdfBlob={aiData.pdfBlob}
-                pdfBlobBase64={aiData.pdfBlobBase64}
-                templateId={resume.template || resume.templateId}
-                resumeData={memoizedResumeData}
-                title="LaTeX Resume Preview"
-                className="w-full h-full"
-                onPdfGenerated={handlePdfGenerated}
-                onGenerationStart={handlePdfGenerationStart}
-                refreshTrigger={pdfRefreshTrigger}
-                optimizedLatexCode={aiData.optimizedLatexCode}
-              />
+                <PDFPreview 
+                  pdfUrl={pdfUrl}
+                  pdfBlob={pdfBlob}
+                  pdfBlobBase64={pdfBlobBase64}
+                  templateId={resumeData.template || 'template01'}
+                  resumeData={resumeData as any}
+                  title={resumeData.title || 'Enhanced Resume'}
+                  className="h-full"
+                  onPdfGenerated={(url, blob) => {
+                    setPdfUrl(url);
+                    setPdfBlob(blob);
+                  }}
+                  onGenerationStart={() => setIsGeneratingPDF(true)}
+                  refreshTrigger={refreshTrigger}
+                />
             ) : (
               <div className="flex items-center justify-center h-full bg-gray-100">
                 <div className="text-center">

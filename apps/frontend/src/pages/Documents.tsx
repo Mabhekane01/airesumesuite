@@ -15,7 +15,7 @@ import {
   ChevronRightIcon,
   Square2StackIcon,
   ChartBarIcon,
-  Share2Icon,
+  ShareIcon,
   SignalIcon,
   GlobeAltIcon,
   DevicePhoneMobileIcon,

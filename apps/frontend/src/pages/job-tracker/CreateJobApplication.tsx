@@ -170,9 +170,9 @@ export default function CreateJobApplication() {
         <p className="text-[10px] font-black text-text-tertiary uppercase tracking-widest">Base identification data</p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <JobTitleInput value={formData.jobTitle} onChange={(v) => updateFormData('jobTitle', v)} required />
-        <CompanyInput value={formData.companyName} onChange={(v) => updateFormData('companyName', v)} required />
-        <JobSourceInput value={formData.jobSource} onChange={(v) => updateFormData('jobSource', v)} />
+        <JobTitleInput name="jobTitle" label="Target Role" value={formData.jobTitle} onChange={(v) => updateFormData('jobTitle', v)} required />
+        <CompanyInput name="companyName" label="Host Entity" value={formData.companyName} onChange={(v) => updateFormData('companyName', v)} required />
+        <JobSourceInput name="jobSource" label="Deployment Source" value={formData.jobSource} onChange={(v) => updateFormData('jobSource', v)} />
         <ValidatedInput name="jobUrl" label="Reference URL" type="url" value={formData.jobUrl} onChange={(v) => updateFormData('jobUrl', v)} placeholder="https://..." />
       </div>
       <div className="pt-4 border-t border-surface-100">
@@ -210,9 +210,9 @@ export default function CreateJobApplication() {
         <p className="text-[10px] font-black text-text-tertiary uppercase tracking-widest">Geographic and financial calibration</p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <LocationInput type="city" label="Node City" value={formData.jobLocation.city || ''} onChange={(v) => updateNestedFormData('jobLocation', 'city', v)} />
-        <LocationInput type="state" label="Node State" value={formData.jobLocation.state || ''} onChange={(v) => updateNestedFormData('jobLocation', 'state', v)} />
-        <LocationInput type="country" label="Node Country" value={formData.jobLocation.country || ''} onChange={(v) => updateNestedFormData('jobLocation', 'country', v)} />
+        <LocationInput name="city" type="city" label="Node City" value={formData.jobLocation.city || ''} onChange={(v) => updateNestedFormData('jobLocation', 'city', v)} />
+        <LocationInput name="state" type="state" label="Node State" value={formData.jobLocation.state || ''} onChange={(v) => updateNestedFormData('jobLocation', 'state', v)} />
+        <LocationInput name="country" type="country" label="Node Country" value={formData.jobLocation.country || ''} onChange={(v) => updateNestedFormData('jobLocation', 'country', v)} />
       </div>
       <div className="flex gap-4 p-4 bg-surface-50 border border-surface-200 rounded-2xl">
         <label className="flex items-center gap-3 cursor-pointer group">
@@ -221,7 +221,7 @@ export default function CreateJobApplication() {
         </label>
       </div>
       <div className="pt-4 border-t border-surface-100">
-        <EnhancedSalaryInput minValue={formData.compensation.salaryRange?.min || 0} maxValue={formData.compensation.salaryRange?.max || 0} currency={formData.compensation.salaryRange?.currency || 'USD'} period={formData.compensation.salaryRange?.period || 'yearly'} onMinChange={(v) => updateNestedFormData('compensation', 'salaryRange', { ...formData.compensation.salaryRange, min: v })} onMaxChange={(v) => updateNestedFormData('compensation', 'salaryRange', { ...formData.compensation.salaryRange, max: v })} onCurrencyChange={(v) => updateNestedFormData('compensation', 'salaryRange', { ...formData.compensation.salaryRange, currency: v })} onPeriodChange={(v) => updateNestedFormData('compensation', 'salaryRange', { ...formData.compensation.salaryRange, period: v })} />
+        <EnhancedSalaryInput name="compensation" label="Yield Projection" minValue={formData.compensation.salaryRange?.min || 0} maxValue={formData.compensation.salaryRange?.max || 0} currency={formData.compensation.salaryRange?.currency || 'USD'} period={formData.compensation.salaryRange?.period || 'yearly'} onMinChange={(v) => updateNestedFormData('compensation', 'salaryRange', { ...formData.compensation.salaryRange, min: v })} onMaxChange={(v) => updateNestedFormData('compensation', 'salaryRange', { ...formData.compensation.salaryRange, max: v })} onCurrencyChange={(v) => updateNestedFormData('compensation', 'salaryRange', { ...formData.compensation.salaryRange, currency: v })} onPeriodChange={(v) => updateNestedFormData('compensation', 'salaryRange', { ...formData.compensation.salaryRange, period: v })} />
       </div>
     </div>
   );
@@ -289,7 +289,7 @@ export default function CreateJobApplication() {
               {currentStep === 1 && renderStep1()}
               {currentStep === 2 && renderStep2()}
               {currentStep === 3 && renderStep3()}
-              {currentStep === 4 && <div className="animate-slide-up-soft space-y-8"><div className="space-y-2"><h3 className="text-2xl font-black text-brand-dark tracking-tight">Strategic Metadata.</h3><p className="text-[10px] font-black text-text-tertiary uppercase tracking-widest">Methodology and priority levels</p></div><div className="grid grid-cols-1 md:grid-cols-2 gap-6"><ApplicationMethodInput value={formData.applicationMethod} onChange={(v) => updateFormData('applicationMethod', v)} /><PriorityInput value={formData.priority} onChange={(v) => updateFormData('priority', v)} /></div></div>}
+              {currentStep === 4 && <div className="animate-slide-up-soft space-y-8"><div className="space-y-2"><h3 className="text-2xl font-black text-brand-dark tracking-tight">Strategic Metadata.</h3><p className="text-[10px] font-black text-text-tertiary uppercase tracking-widest">Methodology and priority levels</p></div><div className="grid grid-cols-1 md:grid-cols-2 gap-6"><ApplicationMethodInput name="method" label="Protocol" value={formData.applicationMethod} onChange={(v) => updateFormData('applicationMethod', v)} /><PriorityInput name="priority" label="Urgency" value={formData.priority} onChange={(v) => updateFormData('priority', v)} /></div></div>}
               {currentStep === 5 && <div className="animate-slide-up-soft space-y-8"><div className="space-y-2"><h3 className="text-2xl font-black text-brand-dark tracking-tight">Directives.</h3><p className="text-[10px] font-black text-text-tertiary uppercase tracking-widest">Mission strategy and value props</p></div><div className="space-y-6"><ValidatedTextarea name="why" label="Deployment Motivation" value={formData.applicationStrategy.whyInterested} onChange={(v) => updateNestedFormData('applicationStrategy', 'whyInterested', v)} rows={4} placeholder="Protocol rationale..." /></div></div>}
             </div>
 

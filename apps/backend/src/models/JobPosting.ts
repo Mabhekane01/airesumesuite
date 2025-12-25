@@ -10,8 +10,9 @@ export interface IJobPosting extends Document {
   salaryRange?: string;
   jobType?: string; // Full-time, Part-time, Contract
   source: 'user' | 'admin';
-  status: 'pending' | 'approved' | 'rejected';
+  status: 'pending' | 'approved' | 'rejected' | 'applied';
   postedBy: mongoose.Types.ObjectId;
+  jobApplicationId?: mongoose.Types.ObjectId;
   verifiedBy?: mongoose.Types.ObjectId;
   verifiedAt?: Date;
   verificationNotes?: string;
@@ -32,11 +33,12 @@ const jobPostingSchema = new Schema<IJobPosting>(
     source: { type: String, enum: ['user', 'admin'], required: true },
     status: { 
       type: String, 
-      enum: ['pending', 'approved', 'rejected'], 
+      enum: ['pending', 'approved', 'rejected', 'applied'], 
       default: 'pending',
       index: true 
     },
     postedBy: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    jobApplicationId: { type: Schema.Types.ObjectId, ref: 'JobApplication' },
     verifiedBy: { type: Schema.Types.ObjectId, ref: 'User' },
     verifiedAt: { type: Date },
     verificationNotes: { type: String }

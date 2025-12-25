@@ -173,7 +173,7 @@ const ResumeTrackingDashboard = () => {
             onClick={() => navigate('/jobs')}
             className="btn-primary w-full sm:w-auto shadow-2xl shadow-brand-blue/20 px-6 md:px-8 py-3.5 md:py-4 font-black uppercase tracking-[0.15em] text-[10px] md:text-xs hover:scale-105 transition-transform duration-300 flex items-center justify-center gap-3"
           >
-            <Plus size={18} md:size={20} strokeWidth={3} />
+            <Plus size={18} strokeWidth={3} />
             Deploy New
           </button>
         </div>

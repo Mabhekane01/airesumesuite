@@ -254,28 +254,28 @@ export default function EnterpriseFeatures({
           <div className="flex gap-2 mb-4">
             <Button
               size="sm"
-              variant={signatureMode === 'draw' ? 'default' : 'outline'}
+              variant={signatureMode === 'draw' ? 'primary' : 'outline'}
               onClick={() => setSignatureMode('draw')}
             >
               Draw Signature
             </Button>
             <Button
               size="sm"
-              variant={signatureMode === 'type' ? 'default' : 'outline'}
+              variant={signatureMode === 'type' ? 'primary' : 'outline'}
               onClick={() => setSignatureMode('type')}
             >
               Type Signature
             </Button>
             <Button
               size="sm"
-              variant={signatureMode === 'upload' ? 'default' : 'outline'}
+              variant={signatureMode === 'upload' ? 'primary' : 'outline'}
               onClick={() => setSignatureMode('upload')}
             >
               Upload Image
             </Button>
             <Button
               size="sm"
-              variant={signatureMode === 'certificate' ? 'default' : 'outline'}
+              variant={signatureMode === 'certificate' ? 'primary' : 'outline'}
               onClick={() => setSignatureMode('certificate')}
             >
               Digital Certificate
@@ -513,7 +513,7 @@ export default function EnterpriseFeatures({
             <h4 className="font-medium">Comments ({document.comments.length})</h4>
             <Button
               size="sm"
-              variant={showComments ? 'default' : 'outline'}
+              variant={showComments ? 'primary' : 'outline'}
               onClick={() => setShowComments(!showComments)}
             >
               <MessageCircle size={16} />
@@ -698,7 +698,7 @@ export default function EnterpriseFeatures({
         <div className="flex items-center space-x-1">
           <Button
             size="sm"
-            variant={activeFeature === 'signatures' ? 'default' : 'ghost'}
+            variant={activeFeature === 'signatures' ? 'primary' : 'outline'}
             onClick={() => setActiveFeature(activeFeature === 'signatures' ? null : 'signatures')}
           >
             <FileSignature size={16} className="mr-1" />
@@ -706,7 +706,7 @@ export default function EnterpriseFeatures({
           </Button>
           <Button
             size="sm"
-            variant={activeFeature === 'forms' ? 'default' : 'ghost'}
+            variant={activeFeature === 'forms' ? 'primary' : 'outline'}
             onClick={() => setActiveFeature(activeFeature === 'forms' ? null : 'forms')}
           >
             <CheckSquare size={16} className="mr-1" />
@@ -714,7 +714,7 @@ export default function EnterpriseFeatures({
           </Button>
           <Button
             size="sm"
-            variant={activeFeature === 'collaboration' ? 'default' : 'ghost'}
+            variant={activeFeature === 'collaboration' ? 'primary' : 'outline'}
             onClick={() => setActiveFeature(activeFeature === 'collaboration' ? null : 'collaboration')}
           >
             <Users size={16} className="mr-1" />
@@ -722,7 +722,7 @@ export default function EnterpriseFeatures({
           </Button>
           <Button
             size="sm"
-            variant={activeFeature === 'approval' ? 'default' : 'ghost'}
+            variant={activeFeature === 'approval' ? 'primary' : 'outline'}
             onClick={() => setActiveFeature(activeFeature === 'approval' ? null : 'approval')}
           >
             <Award size={16} className="mr-1" />
@@ -730,7 +730,7 @@ export default function EnterpriseFeatures({
           </Button>
           <Button
             size="sm"
-            variant={activeFeature === 'security' ? 'default' : 'ghost'}
+            variant={activeFeature === 'security' ? 'primary' : 'outline'}
             onClick={() => setActiveFeature(activeFeature === 'security' ? null : 'security')}
           >
             <Shield size={16} className="mr-1" />
