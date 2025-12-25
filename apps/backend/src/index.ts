@@ -120,6 +120,8 @@ const corsOptions = {
       'http://127.0.0.1:5178',
       'http://127.0.0.1:3000',
       'http://127.0.0.1:3001',
+      'https://airesumesuite.web.app',
+      'https://aijobsuite.bankhosa.com',
       process.env.FRONTEND_URL || 'http://localhost:5173'
     ];
     

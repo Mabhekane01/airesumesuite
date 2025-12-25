@@ -165,7 +165,7 @@ const PDFFromBlob = ({ blobUrl, pdfBlob, title, isFullscreenMode, onFullscreen, 
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center w-full h-full min-h-96 bg-white">
+      <div className="flex items-center justify-center w-full h-full min-h-[800px] bg-white">
         <div className="text-center">
           <ArrowPathIcon className="h-8 w-8 animate-spin text-teal-500 mx-auto mb-4" />
           <p className="text-gray-600">Converting PDF for display...</p>
@@ -176,7 +176,7 @@ const PDFFromBlob = ({ blobUrl, pdfBlob, title, isFullscreenMode, onFullscreen, 
 
   if (error) {
     return (
-      <div className="flex items-center justify-center w-full h-full min-h-96 bg-white">
+      <div className="flex items-center justify-center w-full h-full min-h-[800px] bg-white">
         <div className="text-center">
           <DocumentTextIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
           <p className="text-gray-600">PDF preview temporarily unavailable</p>
@@ -197,18 +197,18 @@ const PDFFromBlob = ({ blobUrl, pdfBlob, title, isFullscreenMode, onFullscreen, 
     return (
       <iframe
         src={blobUrl}
-        className="w-full h-full border-none"
+        className="w-full h-full min-h-[800px] border-none"
         title={title || 'PDF Preview'}
       />
     );
   }
 
   return (
-    <div className="relative w-full h-full group">
+    <div className="relative w-full h-full min-h-[1000px] group">
       {/* PDF Display - Make PDF fill the container better */}
       <iframe
         src={`${dataUrl}#toolbar=0&navpanes=0&scrollbar=0&zoom=FitH&view=FitH`}
-        className="w-full h-full border-none"
+        className="w-full h-full min-h-[1000px] border-none"
         title={title || 'PDF Preview'}
         style={{
           transform: 'scale(1.0)',
@@ -398,8 +398,12 @@ export default function PDFPreview({
     if (propPdfBlob && propPdfBlob !== pdfBlob) {
       console.log(`📦 Updating pdfBlob from prop: ${propPdfBlob.size} bytes`);
       setPdfBlob(propPdfBlob);
+      const url = URL.createObjectURL(propPdfBlob);
+      setActualPdfUrl(url);
+      setViewerMethod('fallback');
+      setIframeError(true);
     }
-  }, [propPdfBlob, pdfBlob]);
+  }, [propPdfBlob]);
 
   // Clean up expired PDF cache entries on component mount
   useEffect(() => {
@@ -909,7 +913,7 @@ export default function PDFPreview({
 
     if (!actualPdfUrl) {
       return (
-        <div className="flex items-center justify-center w-full h-full min-h-[600px] bg-white rounded-[2.5rem] border-2 border-dashed border-surface-200">
+        <div className="flex items-center justify-center w-full h-full min-h-[800px] bg-white rounded-[2.5rem] border-2 border-dashed border-surface-200">
           <div className="text-center space-y-4 opacity-40 group-hover:opacity-60 transition-opacity duration-500">
             <div className="w-20 h-20 bg-surface-50 rounded-[2rem] flex items-center justify-center mx-auto text-text-tertiary">
               <DocumentTextIcon className="h-10 w-10" />
@@ -923,7 +927,7 @@ export default function PDFPreview({
     // If iframe fails to load blob URL, use direct blob display
     if (iframeError && pdfBlob) {
       return (
-        <div className={`relative w-full h-full min-h-[800px] bg-gray-50 rounded-[2.5rem] overflow-hidden border border-surface-200 shadow-inner`}>
+        <div className={`relative w-full h-full min-h-[1000px] bg-gray-50 rounded-[2.5rem] overflow-hidden border border-surface-200 shadow-inner`}>
           <PDFFromBlob 
             blobUrl={actualPdfUrl}
             pdfBlob={pdfBlob}
@@ -986,27 +990,26 @@ export default function PDFPreview({
     if (isBlob) {
       console.log(`🔄 Converting blob URL to data URL for inline display`);
       
-      // Use iframe with data URL instead of blob URL
-      return (
-        <div className={`relative w-full h-full min-h-[800px] bg-gray-50 rounded-[2.5rem] overflow-hidden border border-surface-200 shadow-inner`}>
-          <PDFFromBlob 
-            blobUrl={actualPdfUrl} 
-            pdfBlob={pdfBlob}
-            title={title}
-            pdfBlobBase64={pdfBlobBase64}
-          />
-        </div>
-      );
-    }
+          // Use iframe with data URL instead of blob URL
+          return (
+            <div className={`relative w-full h-full min-h-[1000px] bg-gray-50 rounded-[2.5rem] overflow-hidden border border-surface-200 shadow-inner`}>
+              <PDFFromBlob 
+                blobUrl={actualPdfUrl} 
+                pdfBlob={pdfBlob}
+                title={title}
+                pdfBlobBase64={pdfBlobBase64}
+              />
+            </div>
+          );    }
 
     return (
-      <div className={`relative w-full h-full min-h-[800px] bg-gray-50 rounded-[2.5rem] overflow-hidden border border-surface-200 shadow-inner`}>
+      <div className={`relative w-full h-full min-h-[1000px] bg-gray-50 rounded-[2.5rem] overflow-hidden border border-surface-200 shadow-inner`}>
         {/* PDF Viewer - Try different methods based on viewerMethod state */}
         {viewerMethod === 'embed' ? (
           <embed
             src={`${actualPdfUrl}#toolbar=0&navpanes=0&scrollbar=0&zoom=FitH&view=FitH`}
             type="application/pdf"
-            className="w-full h-full border-none rounded-[2.5rem]"
+            className="w-full h-full min-h-[1000px] border-none rounded-[2.5rem]"
             title={title || 'PDF Preview'}
             onLoad={handleViewerLoad}
             onError={handleViewerError}
@@ -1020,7 +1023,7 @@ export default function PDFPreview({
           <object
             data={`${actualPdfUrl}#toolbar=0&navpanes=0&scrollbar=0&zoom=FitH&view=FitH`}
             type="application/pdf"
-            className="w-full h-full border-none rounded-[2.5rem]"
+            className="w-full h-full min-h-[1000px] border-none rounded-[2.5rem]"
             title={title || 'PDF Preview'}
             onLoad={handleViewerLoad}
             onError={handleViewerError}
@@ -1051,15 +1054,15 @@ export default function PDFPreview({
   return (
     <div className={`w-full h-full ${className}`}>
       {title && (
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-text-primary">{title}</h3>
+        <div className="flex items-center justify-between mb-8 px-2">
+          <h3 className="text-xl md:text-2xl font-display font-black text-brand-dark tracking-tighter uppercase">{title}</h3>
           {onClose && (
             <Button
               onClick={onClose}
               variant="outline"
-              className="text-text-secondary hover:text-text-primary"
+              className="w-10 h-10 rounded-full p-0 flex items-center justify-center border-surface-200 text-text-tertiary hover:text-brand-dark hover:bg-surface-50 transition-all"
             >
-              <XMarkIcon className="h-4 w-4" />
+              <XMarkIcon className="h-5 w-5" />
             </Button>
           )}
         </div>

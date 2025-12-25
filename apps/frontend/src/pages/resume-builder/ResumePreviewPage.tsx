@@ -18,6 +18,7 @@ export default function ResumePreviewPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
 
   useEffect(() => {
     const fetchResume = async () => {
@@ -41,6 +42,19 @@ export default function ResumePreviewPage() {
           template: resumeData.templateId || 'template01',
         };
         setResume(transformedResume);
+        
+        // Pre-generate PDF for smoother preview experience
+        try {
+          console.log('🔄 Pre-generating PDF preview for architecture:', id);
+          const blob = await resumeService.generateLatexPDFPreview(
+            transformedResume, 
+            transformedResume.template
+          );
+          setPdfBlob(blob);
+          console.log('✅ Architecture preview synchronized successfully');
+        } catch (pdfErr) {
+          console.warn('⚠️ PDF pre-generation failed, component will retry on mount');
+        }
       } catch (error) {
         setError('Protocol Error: Data acquisition failed.');
       } finally {
@@ -124,7 +138,7 @@ export default function ResumePreviewPage() {
         </div>
 
         {/* --- PREVIEW ARCHITECTURE --- */}
-        <div className="bg-white border border-surface-200 rounded-[3rem] p-4 md:p-10 lg:p-16 shadow-2xl relative overflow-hidden group">
+        <div className="bg-white border border-surface-200 rounded-[3rem] p-4 md:p-10 lg:p-16 shadow-2xl relative overflow-hidden group min-h-[1000px]">
           <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:32px_32px] opacity-[0.4] pointer-events-none group-hover:opacity-[0.6] transition-opacity duration-700" />
           <div className="relative z-10">
             <ResumeProvider initialData={resume}>
@@ -133,6 +147,7 @@ export default function ResumePreviewPage() {
                 templateId={resume.template}
                 isLatexTemplate={resume.isLatexTemplate}
                 onResumeUpdate={setResume}
+                pdfBlob={pdfBlob || undefined}
               />
             </ResumeProvider>
           </div>

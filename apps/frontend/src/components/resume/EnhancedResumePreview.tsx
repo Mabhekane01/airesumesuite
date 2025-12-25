@@ -47,6 +47,7 @@ interface EnhancedResumePreviewProps {
   atsScore?: number;
   aiGenerated?: boolean;
   readOnly?: boolean;
+  pdfBlob?: Blob;
 }
 
 export default function EnhancedResumePreview({ 
@@ -59,7 +60,8 @@ export default function EnhancedResumePreview({
   onResumeUpdate,
   atsScore,
   aiGenerated = false,
-  readOnly = false
+  readOnly = false,
+  pdfBlob: propPdfBlob
 }: EnhancedResumePreviewProps) {
   const { 
     aiData, 
@@ -157,7 +159,7 @@ export default function EnhancedResumePreview({
                 <div className="absolute -inset-6 bg-brand-blue/[0.03] rounded-[3.5rem] -z-10 blur-2xl group-hover:bg-brand-blue/[0.05] transition-colors duration-700" />
                 <PDFPreview 
                   pdfUrl={isCacheValid(generateResumeHash()) ? aiData.cachedPdfUrl : null}
-                  pdfBlob={aiData.pdfBlob}
+                  pdfBlob={propPdfBlob || aiData.pdfBlob}
                   templateId={templateId || resume.template}
                   resumeData={resume}
                   title="Architecture Deployment Preview"

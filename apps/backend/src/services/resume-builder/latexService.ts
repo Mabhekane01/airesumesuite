@@ -136,7 +136,15 @@ export class LaTeXService {
         texFilePath,
         compilationDir,
         "DirectLatexCompilation"
-      );
+      ).catch(err => {
+        if (err instanceof LaTeXCompilationError) throw err;
+        throw new LaTeXCompilationError(
+          `Direct compilation failed: ${err.message}`,
+          "DirectLatexCompilation",
+          null,
+          err.stack || ""
+        );
+      });
       
       // Validate PDF buffer before proceeding
       if (!pdfBuffer || pdfBuffer.length === 0) {
