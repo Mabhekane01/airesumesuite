@@ -15,6 +15,9 @@ const router: Router = express.Router();
 // GET /api/v1/resumes - Get all resumes for user
 router.get('/', authMiddleware, (req: AuthenticatedRequest, res: Response) => resumeController.getAllResumes(req, res));
 
+// GET /api/v1/resumes/new - Get empty resume structure
+router.get('/new', authMiddleware, (req: Request, res: Response) => resumeController.getNewResume(req, res));
+
 // GET /api/v1/resumes/:id - Get specific resume
 router.get('/:id', authMiddleware, (req: AuthenticatedRequest, res: Response) => resumeController.getResumeById(req, res));
 
@@ -54,6 +57,12 @@ router.post('/download/pdf', authMiddleware, (req: AuthenticatedRequest, res: Re
 // POST /api/v1/resumes/generate-summary - Generate professional summary for unsaved resume
 router.post('/generate-summary',
   (req: Request, res: Response) => resumeController.generateSummaryForUnsavedResume(req, res)
+);
+
+// POST /api/v1/resumes/optimize-basic-summary - Generate summary for basic builder
+router.post('/optimize-basic-summary',
+  authMiddleware,
+  (req: AuthenticatedRequest, res: Response) => resumeController.optimizeBasicSummary(req, res)
 );
 
 // POST /api/v1/resumes/:id/enhance - Comprehensive AI enhancement

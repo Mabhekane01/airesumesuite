@@ -19,6 +19,9 @@ import {
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { jobApplicationAPI } from '../../services/api';
+import { TrustScore } from '../../components/jobs/TrustScore';
+import { FeedbackModal } from '../../components/jobs/FeedbackModal';
+import { ShieldCheck } from 'lucide-react';
 
 // --- Components ---
 
@@ -26,11 +29,12 @@ const STATUS_CONFIG: Record<string, any> = {
   applied: { label: 'Applied', color: 'text-brand-blue bg-brand-blue/10 border-brand-blue/20', icon: Clock },
   under_review: { label: 'In Review', color: 'text-brand-orange bg-brand-orange/10 border-brand-orange/20', icon: Eye },
   interview: { label: 'Interview', color: 'text-brand-purple bg-brand-purple/10 border-brand-purple/20', icon: Calendar },
+  interviewing: { label: 'Interviewing', color: 'text-brand-purple bg-brand-purple/10 border-brand-purple/20', icon: Calendar },
   offer: { label: 'Offer', color: 'text-brand-success bg-brand-success/10 border-brand-success/20', icon: CheckCircle2 },
   rejected: { label: 'Rejected', color: 'text-red-500 bg-red-50 border-red-100', icon: XCircle },
 };
 
-const ApplicationCard = ({ application, onDelete }: { application: any, onDelete: (id: string) => void }) => {
+const ApplicationCard = ({ application, onDelete, onVerify, onViewFeedback }: { application: any, onDelete: (id: string) => void, onVerify: (job: any) => void, onViewFeedback: (job: any) => void }) => {
   const statusConfig = STATUS_CONFIG[application.status] || STATUS_CONFIG.applied;
   
   return (
@@ -58,6 +62,26 @@ const ApplicationCard = ({ application, onDelete }: { application: any, onDelete
                 {application.jobLocation.city || 'Remote'}
               </div>
             )}
+            {/* Trust Score integration */}
+            {application.jobPostingId && typeof application.jobPostingId === 'object' && 'authenticityScore' in application.jobPostingId ? (
+              <div title="Click to view reports" className="cursor-pointer hover:scale-105 transition-transform">
+                <TrustScore 
+                  score={application.jobPostingId.authenticityScore} 
+                  badges={application.jobPostingId.trustBadges || []} 
+                  reviewCount={application.jobPostingId.reviewCount || 0}
+                  size="sm"
+                  onClick={() => onViewFeedback(application)}
+                />
+              </div>
+            ) : (
+              <div 
+                className="flex items-center gap-1.5 text-[8px] md:text-[9px] font-black text-text-tertiary uppercase tracking-[0.15em] bg-surface-50 px-2.5 py-1.5 rounded-lg border border-dashed border-surface-200 cursor-help"
+                title="This job hasn't been rated by the community yet. Be the first!"
+              >
+                <ShieldCheck size={10} className="opacity-40" />
+                No Ratings
+              </div>
+            )}
           </div>
         </div>
         <div className="flex flex-row sm:flex-col items-center sm:items-end gap-2.5 w-full sm:w-auto justify-between sm:justify-start pt-2 sm:pt-0">
@@ -73,19 +97,35 @@ const ApplicationCard = ({ application, onDelete }: { application: any, onDelete
              {new Date(application.applicationDate).toLocaleDateString()}
            </div>
            
-           <button 
-             onClick={(e) => { e.preventDefault(); onDelete(application._id); }}
-             className="p-2 rounded-xl text-text-tertiary hover:bg-red-50 hover:text-red-500 transition-all sm:opacity-0 group-hover:opacity-100"
-             title="Remove Application"
-           >
-             <Trash2 size={16} />
-           </button>
+           <div className="flex gap-2">
+             <Link 
+               to={`/dashboard/applications/${application._id}`}
+               className="p-2 rounded-xl text-text-tertiary hover:bg-brand-blue/5 hover:text-brand-blue transition-all border border-transparent hover:border-brand-blue/10"
+               title="View Details"
+             >
+               <Eye size={16} />
+             </Link>
+             <button 
+               onClick={(e) => { e.preventDefault(); onVerify(application); }}
+               className={`p-2 rounded-xl transition-all border ${application.jobPostingId ? 'text-brand-blue border-brand-blue/10 bg-brand-blue/5 hover:bg-brand-blue hover:text-white' : 'text-text-tertiary border-surface-200 bg-surface-50 hover:border-brand-blue/30 hover:text-brand-blue'}`}
+               title="Verify Authenticity"
+             >
+               <ShieldCheck size={16} />
+             </button>
+             <button 
+               onClick={(e) => { e.preventDefault(); onDelete(application._id); }}
+               className="p-2 rounded-xl text-text-tertiary hover:bg-red-50 hover:text-red-500 transition-all border border-transparent hover:border-red-100"
+               title="Remove Application"
+             >
+               <Trash2 size={16} />
+             </button>
+           </div>
         </div>
       </div>
       
       {/* Description Snippet or Notes */}
       <p className="relative z-10 text-text-secondary text-sm font-medium leading-relaxed opacity-80 mb-6 md:mb-10 line-clamp-3 italic">
-        "{application.applicationStrategy?.whyInterested || application.jobDescription || 'No notes available.'}"
+        "{ (application.applicationStrategy?.whyInterested || application.jobDescription || 'No notes available.').replace(/<[^>]*>?/gm, '').replace(/&nbsp;/g, ' ').substring(0, 180) }..."
       </p>
 
       <div className="relative z-10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between mt-auto pt-6 border-t border-surface-100/60 gap-4">
@@ -95,12 +135,15 @@ const ApplicationCard = ({ application, onDelete }: { application: any, onDelete
              {application.communications?.length || 0} Logs / {application.interviews?.length || 0} Sessions
           </span>
         </div>
-        <Link 
-          to={`/dashboard/applications/${application._id}`} 
-          className="btn-primary px-6 md:px-8 py-3.5 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-brand-blue/20 flex items-center justify-center gap-2.5 hover:scale-105 transition-transform duration-300"
-        >
-          Manage Protocol <ChevronRight size={16} className="stroke-[3]" />
-        </Link>
+        
+        {application.jobUrl && (
+          <button 
+            onClick={() => window.open(application.jobUrl, '_blank', 'noopener,noreferrer')}
+            className="btn-primary px-6 md:px-8 py-3.5 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-brand-blue/20 flex items-center justify-center gap-2.5 hover:scale-105 transition-transform duration-300"
+          >
+            Applied Link <ExternalLink size={16} className="stroke-[3]" />
+          </button>
+        )}
       </div>
     </motion.div>
   );
@@ -113,6 +156,11 @@ const ResumeTrackingDashboard = () => {
   const [applications, setApplications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [keyword, setKeyword] = useState('');
+  
+  // Feedback Modal State
+  const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
+  const [selectedApplication, setSelectedApplication] = useState<any>(null);
+  const [modalMode, setModalMode] = useState<'verify' | 'view'>('verify');
 
   useEffect(() => {
     fetchApplications();
@@ -130,6 +178,18 @@ const ResumeTrackingDashboard = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleVerify = (application: any) => {
+    setSelectedApplication(application);
+    setModalMode('verify');
+    setIsFeedbackModalOpen(true);
+  };
+
+  const handleViewFeedback = (application: any) => {
+    setSelectedApplication(application);
+    setModalMode('view');
+    setIsFeedbackModalOpen(true);
   };
 
   const handleDelete = async (id: string) => {
@@ -223,6 +283,8 @@ const ResumeTrackingDashboard = () => {
                 key={app._id} 
                 application={app} 
                 onDelete={handleDelete}
+                onVerify={handleVerify}
+                onViewFeedback={handleViewFeedback}
               />
             ))}
           </AnimatePresence>
@@ -249,6 +311,21 @@ const ResumeTrackingDashboard = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {selectedApplication && (
+        <FeedbackModal 
+          isOpen={isFeedbackModalOpen}
+          onClose={() => {
+            setIsFeedbackModalOpen(false);
+            fetchApplications(); // Refresh to see new score
+          }}
+          jobId={selectedApplication.jobPostingId?._id}
+          jobApplicationId={selectedApplication._id}
+          jobTitle={selectedApplication.jobTitle}
+          companyName={selectedApplication.companyName}
+          initialMode={modalMode}
+        />
       )}
     </div>
   );

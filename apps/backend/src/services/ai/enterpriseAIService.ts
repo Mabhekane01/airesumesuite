@@ -609,8 +609,8 @@ CRITICAL RULES:
       let extractedJson = null;
       
       // Strategy 1: Look for complete JSON object/array with proper nesting support
-      let jsonPattern = /(\{(?:[^{}]|{(?:[^{}]|{[^{}]*})*})*\}|\[(?:[^\[\]]|\[(?:[^\[\]]|\[[^\[\]]*\])*\])*\])/;
-      let match = cleanedText.match(jsonPattern);
+      const jsonPattern = /(\{(?:[^{}]|{(?:[^{}]|{[^{}]*})*})*\}|\[(?:[^\[\]]|\[(?:[^\[\]]|\[[^\[\]]*\])*\])*\])/;
+      const match = cleanedText.match(jsonPattern);
       
       if (match) {
         extractedJson = match[0];

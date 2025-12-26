@@ -267,22 +267,28 @@ export function processHobbiesData(hobbiesData: any[]): any[] {
 /**
  * Validates personal info data
  */
-export function validatePersonalInfo(personalInfo: any): void {
+export function validatePersonalInfo(personalInfo: any, isForPreview: boolean = false): void {
   if (!personalInfo || typeof personalInfo !== 'object') {
+    if (isForPreview) return;
     throw new Error('Personal information is required');
   }
   
   const required = ['firstName', 'lastName', 'email', 'phone'];
   for (const field of required) {
     if (!personalInfo[field] || typeof personalInfo[field] !== 'string' || !personalInfo[field].trim()) {
+      if (isForPreview) continue;
       throw new Error(`${field} is required and cannot be empty`);
     }
   }
   
   // Basic email validation
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(personalInfo.email)) {
-    throw new Error('Invalid email format');
+  if (personalInfo.email && !emailRegex.test(personalInfo.email)) {
+    if (!isForPreview) {
+      throw new Error('Invalid email format');
+    }
+  } else if (!personalInfo.email && !isForPreview) {
+    throw new Error('email is required and cannot be empty');
   }
 }
 
@@ -290,6 +296,14 @@ export function validatePersonalInfo(personalInfo: any): void {
  * Sanitizes personal info data
  */
 export function processPersonalInfo(personalInfo: any): any {
+  if (!personalInfo) return {
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    location: ''
+  };
+
   return {
     firstName: personalInfo.firstName?.trim() || '',
     lastName: personalInfo.lastName?.trim() || '',
@@ -300,7 +314,16 @@ export function processPersonalInfo(personalInfo: any): any {
     portfolioUrl: personalInfo.portfolioUrl?.trim() || undefined,
     githubUrl: personalInfo.githubUrl?.trim() || undefined,
     websiteUrl: personalInfo.websiteUrl?.trim() || undefined,
-    professionalTitle: personalInfo.professionalTitle?.trim() || undefined
+    professionalTitle: personalInfo.professionalTitle?.trim() || undefined,
+    // South African CV Specific Fields
+    identityNumber: personalInfo.identityNumber?.trim() || undefined,
+    dateOfBirth: personalInfo.dateOfBirth?.trim() || undefined,
+    gender: personalInfo.gender?.trim() || undefined,
+    nationality: personalInfo.nationality?.trim() || undefined,
+    maritalStatus: personalInfo.maritalStatus?.trim() || undefined,
+    homeLanguage: personalInfo.homeLanguage?.trim() || undefined,
+    otherLanguages: personalInfo.otherLanguages?.trim() || undefined,
+    residentialAddress: personalInfo.residentialAddress?.trim() || undefined
   };
 }
 
@@ -308,12 +331,12 @@ export function processPersonalInfo(personalInfo: any): any {
  * Complete resume data processing pipeline
  * Processes all resume sections with proper validation and sanitization
  */
-export function processCompleteResumeData(data: any): any {
+export function processCompleteResumeData(data: any, isForPreview: boolean = false): any {
   // Validate user ID
   const userId = validateUserId(data.userId);
   
   // Validate and process personal info
-  validatePersonalInfo(data.personalInfo);
+  validatePersonalInfo(data.personalInfo, isForPreview);
   const personalInfo = processPersonalInfo(data.personalInfo);
   
   // Process all sections
@@ -336,7 +359,7 @@ export function processCompleteResumeData(data: any): any {
     isPublic: Boolean(data.isPublic)
   };
   
-  console.log('✅ Resume data processing completed successfully');
+  console.log(`✅ Resume data processing completed successfully${isForPreview ? ' (Preview mode)' : ''}`);
   return processedData;
 }
 

@@ -3,6 +3,7 @@ import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
 import { Card } from '../ui/Card';
+import { useResume } from '../../contexts/ResumeContext';
 import { CheckIcon, XMarkIcon, SparklesIcon, EyeIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
 import { CheckIcon as CheckIconSolid } from '@heroicons/react/24/solid';
 import { toast } from 'sonner';

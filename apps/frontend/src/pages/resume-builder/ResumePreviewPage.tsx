@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import { ArrowLeftIcon, ChevronLeftIcon, DocumentTextIcon, RocketLaunchIcon, PencilIcon, CommandLineIcon } from '@heroicons/react/24/outline';
 import { Button } from '../../components/ui/Button';
 import EnhancedResumePreview from '../../components/resume/EnhancedResumePreview';
@@ -14,11 +14,51 @@ import { toast } from 'sonner';
 export default function ResumePreviewPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const [resume, setResume] = useState<Resume | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
+  const [isSaving, setIsGenerating] = useState(false);
+
+  const handleSaveToRepository = async () => {
+    if (!resume) return;
+    
+    try {
+      setIsGenerating(true);
+      toast.loading('Synchronizing architecture to repository...', { id: 'save-resume' });
+      
+      const urlParams = new URLSearchParams(location.search);
+      const queryTemplate = urlParams.get('template');
+      
+      const resumeToSave = {
+        ...resume,
+        professionalSummary: resume.professionalSummary || '',
+        title: resume.title || `${resume.personalInfo?.firstName} ${resume.personalInfo?.lastName} Architecture`,
+        template: queryTemplate || resume.template || resume.templateId || 'template01',
+        templateId: queryTemplate || resume.template || resume.templateId || 'template01',
+        isPublic: false
+      };
+
+      const result = await resumeService.createResume(resumeToSave);
+      
+      if (result.success) {
+        toast.success('✅ Architecture deployment saved to repository.', { id: 'save-resume' });
+        // Small delay to let user see success message
+        setTimeout(() => {
+          navigate('/dashboard/documents');
+        }, 1500);
+      } else {
+        toast.error(result.message || 'Deployment synchronization failed.', { id: 'save-resume' });
+      }
+    } catch (error) {
+      console.error('Save error:', error);
+      toast.error('Protocol Error: Repository synchronization failed.', { id: 'save-resume' });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   useEffect(() => {
     const fetchResume = async () => {
@@ -36,16 +76,55 @@ export default function ResumePreviewPage() {
       }
 
       try {
-        const resumeData: ResumeData = await resumeService.getResumeById(String(id));
+        let resumeData: ResumeData | null = null;
+        
+        // Extract template from query params
+        const urlParams = new URLSearchParams(location.search);
+        const queryTemplate = urlParams.get('template');
+        
+        // Check if we have data passed from the builder
+        const stateData = location.state?.resumeData;
+        if (stateData && (id === 'new' || stateData._id === id || stateData.id === id)) {
+          console.log('📦 Using resume data from navigation state');
+          resumeData = stateData;
+        } 
+        // Fallback for 'new' resumes: try to load from localStorage (fixes refresh issue)
+        else if (id === 'new') {
+          console.log('🔍 Attempting to load "new" resume from localStorage fallback');
+          try {
+            const userStr = localStorage.getItem('auth-storage');
+            const user = userStr ? JSON.parse(userStr)?.state?.user : null;
+            const userResumeKey = user?.id ? `resume-builder-data-${user.id}` : 'resume-builder-data-guest';
+            const savedData = localStorage.getItem(userResumeKey);
+            if (savedData) {
+              console.log('✅ Restored "new" resume from localStorage');
+              resumeData = JSON.parse(savedData);
+            }
+          } catch (e) {
+            console.warn('⚠️ Failed to restore from localStorage:', e);
+          }
+        }
+
+        // If still no data, fetch from API
+        if (!resumeData) {
+          console.log('📡 Fetching resume data from API for ID:', id);
+          resumeData = await resumeService.getResumeById(String(id));
+        }
+
+        if (!resumeData) {
+          throw new Error('Data not found');
+        }
+
         const transformedResume: Resume = {
           ...resumeData,
-          template: resumeData.templateId || 'template01',
+          template: queryTemplate || resumeData.templateId || resumeData.template || 'template01',
         };
         setResume(transformedResume);
         
         // Pre-generate PDF for smoother preview experience
         try {
           console.log('🔄 Pre-generating PDF preview for architecture:', id);
+          console.log('📊 Data payload:', JSON.stringify(transformedResume, null, 2));
           const blob = await resumeService.generateLatexPDFPreview(
             transformedResume, 
             transformedResume.template
@@ -56,13 +135,14 @@ export default function ResumePreviewPage() {
           console.warn('⚠️ PDF pre-generation failed, component will retry on mount');
         }
       } catch (error) {
+        console.error('Preview data error:', error);
         setError('Protocol Error: Data acquisition failed.');
       } finally {
         setLoading(false);
       }
     };
     fetchResume();
-  }, [id, navigate]);
+  }, [id, navigate, location.state]);
 
   if (loading) {
     return (
@@ -120,15 +200,37 @@ export default function ResumePreviewPage() {
           </div>
           
           <div className="flex flex-wrap items-center gap-2 md:gap-3">
+            {id === 'new' ? (
+              <button
+                onClick={handleSaveToRepository}
+                disabled={isSaving}
+                className="flex-1 sm:flex-none btn-primary px-4 md:px-8 py-3 md:py-4 font-black text-[8px] md:text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-brand-blue/20 flex items-center justify-center gap-1.5 md:gap-2.5 hover:scale-105 transition-transform duration-300 disabled:opacity-50"
+              >
+                <CommandLineIcon className="w-4 h-4" strokeWidth={2.5} />
+                Save to <span className="hidden sm:inline">Repository</span><span className="sm:hidden">Core</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => setIsShareModalOpen(true)}
+                className="flex-1 sm:flex-none btn-primary px-4 md:px-8 py-3 md:py-4 font-black text-[8px] md:text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-brand-blue/20 flex items-center justify-center gap-1.5 md:gap-2.5 hover:scale-105 transition-transform duration-300"
+              >
+                <Share2 className="w-4 h-4" strokeWidth={2.5} />
+                Share <span className="hidden sm:inline">Tracking Link</span><span className="sm:hidden">Node</span>
+              </button>
+            )}
+            
             <button
-              onClick={() => setIsShareModalOpen(true)}
-              className="flex-1 sm:flex-none btn-primary px-4 md:px-8 py-3 md:py-4 font-black text-[8px] md:text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-brand-blue/20 flex items-center justify-center gap-1.5 md:gap-2.5 hover:scale-105 transition-transform duration-300"
-            >
-              <Share2 size={16} strokeWidth={2.5} />
-              Share <span className="hidden sm:inline">Tracking Link</span><span className="sm:hidden">Node</span>
-            </button>
-            <button
-              onClick={() => navigate(`/dashboard/resume/edit/${id}`)}
+              onClick={() => {
+                const urlParams = new URLSearchParams(location.search);
+                const queryTemplate = urlParams.get('template');
+                const isBasic = queryTemplate === 'basic_sa' || resume.template === 'basic_sa';
+                
+                if (isBasic) {
+                  navigate(`/dashboard/resume/basic/${id}`, { state: { resumeData: resume } });
+                } else {
+                  navigate(`/dashboard/resume/edit/${id}`);
+                }
+              }}
               className="flex-1 sm:flex-none px-4 md:px-8 py-3 md:py-4 font-black text-[8px] md:text-[10px] uppercase tracking-[0.2em] bg-white border-2 border-surface-200 rounded-lg md:rounded-xl text-brand-dark hover:border-brand-dark hover:bg-surface-50 transition-all duration-300 flex items-center justify-center gap-1.5 md:gap-2.5 shadow-sm"
             >
               <PencilIcon className="w-3 md:w-4 h-3 md:h-4 stroke-2" />

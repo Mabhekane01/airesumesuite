@@ -754,7 +754,7 @@ class CurrencyService {
       limit = 50
     } = options;
 
-    let searchQuery: any = { isActive: true };
+    const searchQuery: any = { isActive: true };
 
     if (query) {
       searchQuery.$or = [

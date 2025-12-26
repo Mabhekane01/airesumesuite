@@ -10,7 +10,21 @@ import { Button } from '../ui/Button';
 import { api } from '../../services/api';
 
 // Component to convert blob to data URL for inline display
-const PDFFromBlob = ({ blobUrl, pdfBlob, title, isFullscreenMode, onFullscreen, pdfBlobBase64 }) => {
+const PDFFromBlob = ({ 
+  blobUrl, 
+  pdfBlob, 
+  title, 
+  isFullscreenMode, 
+  onFullscreen, 
+  pdfBlobBase64 
+}: { 
+  blobUrl: any; 
+  pdfBlob: any; 
+  title: any; 
+  isFullscreenMode?: any; 
+  onFullscreen?: any; 
+  pdfBlobBase64: any; 
+}) => {
   const [dataUrl, setDataUrl] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -697,7 +711,17 @@ export default function PDFPreview({
   };
 
   const generatePDFPreview = async () => {
-    if (!templateId || !resumeData) return;
+    console.log('🚀 [PDFPreview] generatePDFPreview called', {
+      templateId,
+      hasResumeData: !!resumeData,
+      resumeDataKeys: resumeData ? Object.keys(resumeData) : [],
+      isFirstNamePresent: !!resumeData?.personalInfo?.firstName
+    });
+
+    if (!templateId || !resumeData) {
+      console.warn('⚠️ [PDFPreview] Missing requirements for generation:', { templateId, hasResumeData: !!resumeData });
+      return;
+    }
 
     // OPTIMIZATION: Only generate if content has actually changed
     const currentHash = generateResumeHash();

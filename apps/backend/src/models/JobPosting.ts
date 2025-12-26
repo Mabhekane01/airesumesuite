@@ -16,6 +16,11 @@ export interface IJobPosting extends Document {
   verifiedBy?: mongoose.Types.ObjectId;
   verifiedAt?: Date;
   verificationNotes?: string;
+  authenticityScore: number;
+  trustBadges: string[];
+  reviewCount: number;
+  lastReviewDate?: Date;
+  isLocked: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -41,7 +46,14 @@ const jobPostingSchema = new Schema<IJobPosting>(
     jobApplicationId: { type: Schema.Types.ObjectId, ref: 'JobApplication' },
     verifiedBy: { type: Schema.Types.ObjectId, ref: 'User' },
     verifiedAt: { type: Date },
-    verificationNotes: { type: String }
+    verificationNotes: { type: String },
+    
+    // Authenticity & Trust
+    authenticityScore: { type: Number, default: 50, min: 0, max: 100, index: true },
+    trustBadges: { type: [String], default: [] },
+    reviewCount: { type: Number, default: 0 },
+    lastReviewDate: { type: Date },
+    isLocked: { type: Boolean, default: false }
   },
   { timestamps: true }
 );

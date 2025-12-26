@@ -203,7 +203,14 @@ export default function Documents() {
                       toast.error('Corrupted architecture ID detected. Please refresh or recreate.');
                       return;
                     }
-                    if (action === 'edit') navigate(`/dashboard/resume/edit/${id}`);
+                    if (action === 'edit') {
+                      // Check if this is a basic resume
+                      if (resume.templateId === 'basic_sa' || (resume.educationLevel && resume.educationLevel === 'Grade 12')) {
+                        navigate(`/dashboard/resume/basic/${id}`);
+                      } else {
+                        navigate(`/dashboard/resume/edit/${id}`);
+                      }
+                    }
                     if (action === 'view') navigate(`/dashboard/resume/preview/${id}`);
                     if (action === 'delete') handleDeleteResume(id);
                   };

@@ -35,12 +35,20 @@ import {
 import { toast } from 'sonner';
 import { jobApplicationAPI, interviewAPI } from '../../services/api';
 import { motion, AnimatePresence } from 'framer-motion';
+import { TrustScore } from '../../components/jobs/TrustScore';
+import { FeedbackModal } from '../../components/jobs/FeedbackModal';
 
 interface JobApplication {
   _id: string;
   jobTitle: string;
   companyName: string;
   status: string;
+  jobPostingId?: { // Populated field
+    _id: string;
+    authenticityScore: number;
+    trustBadges: string[];
+    reviewCount: number;
+  };
   applicationDate: string;
   jobDescription: string;
   jobLocation: {
@@ -126,6 +134,7 @@ const STATUS_CONFIG: Record<string, any> = {
   applied: { label: 'Applied', color: 'text-brand-blue bg-brand-blue/10 border-brand-blue/20', icon: ClockIcon },
   under_review: { label: 'In Review', color: 'text-brand-orange bg-brand-orange/10 border-brand-orange/20', icon: EyeIcon },
   phone_screen: { label: 'Screening', color: 'text-brand-orange bg-brand-orange/10 border-brand-orange/20', icon: PhoneIcon },
+  interviewing: { label: 'Interviewing', color: 'text-brand-purple bg-brand-purple/10 border-brand-purple/20', icon: CalendarIcon },
   first_interview: { label: 'Technical', color: 'text-brand-success bg-brand-success/10 border-brand-success/20', icon: CalendarIcon },
   offer_received: { label: 'Offer Received', color: 'text-brand-success bg-brand-success/10 border-brand-success/20', icon: CheckCircleIcon },
   rejected: { label: 'Closed', color: 'text-red-500 bg-red-50 border-red-100', icon: XCircleIcon },
@@ -141,6 +150,7 @@ export default function JobApplicationDetail() {
   const [interviewTasks, setInterviewTasks] = useState<Record<string, any[]>>({});
   const [interviewMessages, setInterviewMessages] = useState<Record<string, any[]>>({});
   const [showCreateInterviewModal, setShowCreateInterviewModal] = useState(false);
+  const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
 
   useEffect(() => {
     if (applicationId) {
@@ -270,6 +280,17 @@ export default function JobApplicationDetail() {
         </div>
         
         <div className="flex gap-2 md:gap-3">
+          {/* Trust Verification Button */}
+          {application.jobPostingId && (
+            <button
+              onClick={() => setIsFeedbackModalOpen(true)}
+              className="flex-1 sm:flex-none btn-secondary px-4 md:px-6 py-3 font-black text-[9px] md:text-[10px] uppercase tracking-[0.2em] border-2 border-brand-blue/20 text-brand-blue hover:bg-brand-blue/5 flex items-center justify-center gap-2"
+            >
+              <ShieldCheckIcon className="w-4 h-4" />
+              Verify
+            </button>
+          )}
+
           <button
             onClick={() => navigate(`/dashboard/applications/${application._id}/edit`)}
             className="flex-1 sm:flex-none btn-secondary px-4 md:px-6 py-3 font-black text-[9px] md:text-[10px] uppercase tracking-[0.2em] border-2 flex items-center justify-center gap-2"
@@ -291,7 +312,24 @@ export default function JobApplicationDetail() {
         {[
           { label: "Semantic Score", val: `${application.metrics.applicationScore}/100`, icon: ChartBarIcon, color: "text-brand-blue", bg: "bg-brand-blue/10" },
           { label: "Active Nodes", val: application.interviews.length, icon: CalendarIcon, color: "text-brand-success", bg: "bg-brand-success/10" },
-          { label: "Alert Logs", val: application.communications.length, icon: EnvelopeIcon, color: "text-brand-orange", bg: "bg-brand-orange/10" },
+          // Replace Alert Logs with Trust Score if available
+          application.jobPostingId && typeof application.jobPostingId === 'object' && 'authenticityScore' in application.jobPostingId
+            ? { 
+                label: "Authenticity", 
+                component: (
+                  <TrustScore 
+                    score={application.jobPostingId.authenticityScore} 
+                    badges={application.jobPostingId.trustBadges || []} 
+                    reviewCount={application.jobPostingId.reviewCount || 0}
+                    size="md"
+                    showLabel={false}
+                  />
+                ),
+                icon: ShieldCheckIcon, 
+                color: "text-brand-blue", 
+                bg: "bg-brand-blue/10" 
+              }
+            : { label: "Alert Logs", val: application.communications.length, icon: EnvelopeIcon, color: "text-brand-orange", bg: "bg-brand-orange/10" },
           { label: "Sync Delta", val: `${Math.floor((new Date().getTime() - new Date(application.applicationDate).getTime()) / (1000 * 60 * 60 * 24))} Days`, icon: ClockIcon, color: "text-brand-dark", bg: "bg-brand-dark/5" }
         ].map((stat, i) => (
           <div key={i} className="bg-white border border-surface-200 p-5 md:p-8 rounded-[1.5rem] md:rounded-[2rem] shadow-sm group hover:shadow-xl transition-all duration-500">
@@ -299,7 +337,11 @@ export default function JobApplicationDetail() {
               <stat.icon className="w-5 h-5 md:w-6 md:h-6" />
             </div>
             <p className="text-[10px] md:text-[11px] font-black text-text-tertiary uppercase tracking-widest mb-1">{stat.label}</p>
-            <p className="text-3xl md:text-4xl font-black text-brand-dark tracking-tighter group-hover:text-brand-blue transition-colors">{stat.val}</p>
+            {stat.component ? (
+               <div className="mt-1">{stat.component}</div>
+            ) : (
+              <p className="text-3xl md:text-4xl font-black text-brand-dark tracking-tighter group-hover:text-brand-blue transition-colors">{stat.val}</p>
+            )}
           </div>
         ))}
       </div>
@@ -487,6 +529,16 @@ export default function JobApplicationDetail() {
         .fidelity-display-layer em, .fidelity-display-layer i { font-style: italic !important; }
         .fidelity-display-layer p { margin-bottom: 1.25rem !important; display: block !important; }
       `}</style>
+      
+      {application.jobPostingId && (
+        <FeedbackModal 
+          isOpen={isFeedbackModalOpen} 
+          onClose={() => setIsFeedbackModalOpen(false)}
+          jobId={typeof application.jobPostingId === 'object' ? application.jobPostingId._id : application.jobPostingId}
+          jobTitle={application.jobTitle}
+          companyName={application.companyName}
+        />
+      )}
     </div>
   );
 }

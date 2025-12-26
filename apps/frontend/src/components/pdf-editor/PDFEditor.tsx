@@ -349,7 +349,7 @@ const LivePDFEditor = ({ file, selectedTool, onTextEdit, onTextDelete, onTextAdd
     setModifications(prev => {
       const existing = prev.findIndex(m => m.blockId === blockId);
       const modification = {
-        type: blockId.startsWith('new-block') ? 'add' : 'replace' as const,
+        type: (blockId.startsWith('new-block') ? 'add' : 'replace') as 'add' | 'replace' | 'hide',
         blockId,
         newText,
         pageNum: pageNumber
@@ -1252,9 +1252,9 @@ export default function PDFEditor() {
         </div>
         
         <div className="flex-1">
-          {selectedTool === 'merge-pdf' && <MergePDFTool activeFile={activeFile} />}
-          {selectedTool === 'split-pdf' && <SplitPDFTool activeFile={activeFile} />}
-          {selectedTool === 'compress-pdf' && <CompressPDFTool activeFile={activeFile} />}
+          {selectedTool === 'merge-pdf' && <MergePDFTool activeFile={activeFile?.file} />}
+          {selectedTool === 'split-pdf' && <SplitPDFTool activeFile={activeFile?.file} />}
+          {selectedTool === 'compress-pdf' && <CompressPDFTool activeFile={activeFile?.file} />}
           {selectedTool === 'convert-pdf' && <ConvertPDFTool activeFile={activeFile} onFileUpload={setActiveFile} />}
           {selectedTool === 'delete-pages' && <DeletePagesTool activeFile={activeFile} />}
         </div>

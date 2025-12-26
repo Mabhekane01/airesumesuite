@@ -7,10 +7,12 @@ import { toast } from 'sonner';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { locationService } from '../services/locationService';
 import { jobApplicationAPI } from '../services/api';
+import { TrustScore } from '../components/jobs/TrustScore';
+import { FeedbackModal } from '../components/jobs/FeedbackModal';
 
 // --- Components ---
 
-const JobCard = ({ job, isAdmin, onApprove, onDelete, onEdit, isApplied, applicationId }: { job: any, isAdmin?: boolean, onApprove?: (id: string) => void, onDelete?: (id: string) => void, onEdit?: (job: any) => void, isApplied?: boolean, applicationId?: string }) => {
+const JobCard = ({ job, isAdmin, onApprove, onDelete, onEdit, onViewFeedback, isApplied, applicationId }: { job: any, isAdmin?: boolean, onApprove?: (id: string) => void, onDelete?: (id: string) => void, onEdit?: (job: any) => void, onViewFeedback?: (job: any) => void, isApplied?: boolean, applicationId?: string }) => {
   return (
     <motion.div 
       initial={{ opacity: 0, y: 10 }}
@@ -34,6 +36,18 @@ const JobCard = ({ job, isAdmin, onApprove, onDelete, onEdit, isApplied, applica
               <MapPin size={10} className="text-brand-blue" /> 
               {job.location}
             </div>
+            {/* Trust Score Integration */}
+            {(job.authenticityScore !== undefined || job.trustBadges?.length > 0) && (
+              <div title="Click to view community reviews" className="cursor-pointer hover:scale-105 transition-transform">
+                <TrustScore 
+                  score={job.authenticityScore || 50} 
+                  badges={job.trustBadges || []} 
+                  reviewCount={job.reviewCount || 0}
+                  size="sm"
+                  onClick={() => onViewFeedback?.(job)}
+                />
+              </div>
+            )}
           </div>
         </div>
         <div className="flex flex-row sm:flex-col items-center sm:items-end gap-2 w-full sm:w-auto justify-between sm:justify-start pt-1 sm:pt-0">
@@ -375,6 +389,7 @@ const JobBoard = () => {
   const [filteredJobs, setFilteredJobs] = useState<any[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingJob, setEditingJob] = useState<any>(null);
+  const [feedbackJob, setFeedbackJob] = useState<any>(null); // For viewing feedback
   const [isScraping, setIsScraping] = useState(false);
   const [activeTab, setActiveTab] = useState<'approved' | 'pending'>('approved');
   const [appliedJobUrls, setAppliedJobUrls] = useState<Record<string, string>>({});
@@ -480,7 +495,19 @@ const JobBoard = () => {
         </div>
       ) : filteredJobs.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-10">
-          <AnimatePresence>{filteredJobs.map((job: any) => (<JobCard key={job._id || job.id} job={job} isAdmin={isAdmin} onApprove={handleApprove} onDelete={handleDelete} onEdit={handleEdit} isApplied={!!appliedJobUrls[job.url]} applicationId={appliedJobUrls[job.url]} />))}</AnimatePresence>
+          <AnimatePresence>{filteredJobs.map((job: any) => (
+            <JobCard 
+              key={job._id || job.id} 
+              job={job} 
+              isAdmin={isAdmin} 
+              onApprove={handleApprove} 
+              onDelete={handleDelete} 
+              onEdit={handleEdit}
+              onViewFeedback={(j) => setFeedbackJob(j)} 
+              isApplied={!!appliedJobUrls[job.url]} 
+              applicationId={appliedJobUrls[job.url]} 
+            />
+          ))}</AnimatePresence>
         </div>
       ) : (
         <div className="bg-white border border-surface-200 rounded-[2rem] md:rounded-[3rem] py-16 md:py-32 text-center space-y-6 md:space-y-8 relative overflow-hidden shadow-sm group">
@@ -498,6 +525,17 @@ const JobBoard = () => {
       )}
 
       <JobActionModal isOpen={isModalOpen} onClose={() => { setIsModalOpen(false); setEditingJob(null); }} editingJob={editingJob} />
+      
+      {feedbackJob && (
+        <FeedbackModal 
+          isOpen={!!feedbackJob} 
+          onClose={() => setFeedbackJob(null)} 
+          jobId={feedbackJob._id} 
+          jobTitle={feedbackJob.title} 
+          companyName={feedbackJob.company}
+          initialMode="view"
+        />
+      )}
     </div>
   );
 

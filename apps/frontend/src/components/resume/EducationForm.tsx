@@ -126,6 +126,7 @@ export function EducationForm() {
                     onChange={(value) => {
                       handleDataChange('education', education?.map(e => e.id === edu.id ? { ...e, graduationDate: value } : e));
                     }}
+                    required
                   />
                 </div>
 

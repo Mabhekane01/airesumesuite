@@ -48,6 +48,23 @@ interface AIEnhancementData {
     };
   }>;
   shouldAutoTrigger?: boolean;
+  lastEnhanced?: string;
+  isEnhanced?: boolean;
+  analysisProgress?: {
+    isLoading: boolean;
+    currentStep: string;
+    progress: number;
+    error: string | null;
+  };
+  enhancementProgress?: {
+    isLoading: boolean;
+    currentStep: string;
+    progress: number;
+    error: string | null;
+  };
+  enhancementType?: string;
+  lastApplied?: string;
+  qualityScore?: number;
 }
 
 interface ResumeContextType {
@@ -642,7 +659,7 @@ export const ResumeProvider: React.FC<ResumeProviderProps> = ({ children, initia
     });
 
     // Try to save to database if resume has an ID
-    const resumeId = resumeData._id || resumeData.id;
+    const resumeId = (resumeData._id || resumeData.id) as any;
     if (resumeId) {
       // Convert ObjectId to string properly - handle all cases
       let stringResumeId;

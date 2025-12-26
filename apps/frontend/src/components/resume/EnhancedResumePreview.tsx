@@ -84,6 +84,7 @@ export default function EnhancedResumePreview({
   
   const template = getTemplateById(resume.template) || resumeTemplates[0];
   const currentAtsScore = atsScore || aiData.atsScore;
+  const isBasicSA = resume.template === 'basic_sa' || resume.templateId === 'basic_sa' || templateId === 'basic_sa';
 
   const handleATSCheck = async () => {
     setIsATSCheckerOpen(true);
@@ -114,13 +115,17 @@ export default function EnhancedResumePreview({
 
   const allTabs = [
     { id: 'preview', label: 'Architecture', icon: EyeIcon },
-    { id: 'ai-insights', label: 'Intelligence', icon: SparklesIcon },
-    { id: 'ats-analysis', label: 'Validation', icon: ShieldCheckIcon },
+    { id: 'ai-insights', label: 'Intelligence', icon: SparklesIcon, isAI: true },
+    { id: 'ats-analysis', label: 'Validation', icon: ShieldCheckIcon, isAI: true },
     { id: 'downloads', label: 'Deployment', icon: ArrowDownTrayIcon }
   ];
 
-  // Filter tabs based on readOnly prop
-  const tabs = readOnly ? allTabs.filter(t => t.id === 'preview') : allTabs;
+  // Filter tabs based on readOnly prop and template type
+  const tabs = allTabs.filter(tab => {
+    if (readOnly && tab.id !== 'preview') return false;
+    if (isBasicSA && (tab as any).isAI) return false;
+    return true;
+  });
 
   return (
     <div className="space-y-10">
@@ -166,7 +171,7 @@ export default function EnhancedResumePreview({
                   className="w-full rounded-[2.5rem] shadow-2xl border border-surface-200 overflow-hidden bg-white"
                   onPdfGenerated={(url, blob) => setCachedPdf(url, generateResumeHash(), blob)}
                 />
-                {aiGenerated && !readOnly && (
+                {aiGenerated && !readOnly && !isBasicSA && (
                   <div className="absolute top-8 right-8 bg-white/80 backdrop-blur-md border border-brand-success/20 rounded-xl px-4 py-2.5 flex items-center gap-2.5 z-20 shadow-xl animate-pulse ring-1 ring-brand-success/10">
                     <SparklesIcon className="w-4 h-4 text-brand-success stroke-[2.5px]" />
                     <span className="text-[10px] font-black text-brand-success uppercase tracking-[0.2em]">Optimized Layer Active</span>
@@ -175,7 +180,7 @@ export default function EnhancedResumePreview({
               </div>
             )}
 
-            {activeTab === 'ai-insights' && !readOnly && (
+            {activeTab === 'ai-insights' && !readOnly && !isBasicSA && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="bg-white border border-surface-200 p-10 rounded-[3rem] shadow-lg space-y-10 relative overflow-hidden group hover:border-brand-blue/20 transition-colors duration-500">
                   <div className="absolute inset-0 bg-[radial-gradient(#3b82f6_1px,transparent_1px)] [background-size:24px_24px] opacity-[0.03]" />
@@ -247,7 +252,7 @@ export default function EnhancedResumePreview({
               </div>
             )}
 
-            {activeTab === 'ats-analysis' && !readOnly && (
+            {activeTab === 'ats-analysis' && !readOnly && !isBasicSA && (
               <div className="bg-white border border-surface-200 rounded-[3rem] p-12 md:p-24 shadow-lg relative overflow-hidden group">
                 <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:24px_24px] opacity-[0.2]" />
                 <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-brand-blue/5 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2" />
@@ -297,7 +302,7 @@ export default function EnhancedResumePreview({
                 <CheckCircleIcon className="w-5 h-5 text-brand-success stroke-[2.5px]" />
                 <span className="text-[10px] font-black text-brand-dark uppercase tracking-[0.2em]">Logic Integrity Verified</span>
               </div>
-              {currentAtsScore && (
+              {currentAtsScore && !isBasicSA && (
                 <div className="flex items-center gap-3 px-5 py-2.5 bg-brand-blue/5 border border-brand-blue/10 rounded-2xl shadow-sm">
                   <ChartBarIcon className="w-5 h-5 text-brand-blue stroke-[2.5px]" />
                   <span className="text-[10px] font-black text-brand-dark uppercase tracking-[0.2em]">ATS INDEX: {currentAtsScore}%</span>
@@ -312,12 +317,14 @@ export default function EnhancedResumePreview({
               >
                 Rapid Export
               </button>
-              <button 
-                onClick={() => setActiveTab('ai-insights')}
-                className="btn-primary px-8 py-3.5 text-[10px] font-black uppercase tracking-[0.15em] shadow-xl shadow-brand-blue/20 active:scale-95 transition-all hover:-translate-y-1"
-              >
-                Initialize AI Layer
-              </button>
+              {!isBasicSA && (
+                <button 
+                  onClick={() => setActiveTab('ai-insights')}
+                  className="btn-primary px-8 py-3.5 text-[10px] font-black uppercase tracking-[0.15em] shadow-xl shadow-brand-blue/20 active:scale-95 transition-all hover:-translate-y-1"
+                >
+                  Initialize AI Layer
+                </button>
+              )}
             </div>
           </div>
         </div>

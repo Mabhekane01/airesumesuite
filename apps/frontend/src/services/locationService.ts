@@ -1,6 +1,6 @@
 interface LocationData {
-  city: string | null;
-  country: string | null;
+  city?: string | null;
+  country?: string | null;
   region?: string | null;
   coordinates?: {
     latitude: number;

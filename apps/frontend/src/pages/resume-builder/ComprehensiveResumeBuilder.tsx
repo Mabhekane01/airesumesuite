@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate, useLocation, useParams } from 'react-router-dom';
+import { useNavigate, useLocation, useParams, useBeforeUnload } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
 import { locationService } from '../../services/locationService';
 import JobOptimizationModal from '../../components/resume/JobOptimizationModal';
@@ -121,20 +121,18 @@ const ComprehensiveResumeBuilderContent: React.FC = () => {
     localStorage.setItem('resume-builder-current-step', currentStep.toString());
   }, [currentStep]);
 
-  // Prompt for browser's beforeunload event
-  useEffect(() => {
-    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      if (isDirty) {
-        event.preventDefault();
-        event.returnValue = ''; // Standard for browser prompt
-      }
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
-  }, [isDirty]);
+  // Use React Router's hook for unload protection
+  useBeforeUnload(
+    useCallback(
+      (event) => {
+        if (isDirty) {
+          event.preventDefault();
+          event.returnValue = '';
+        }
+      },
+      [isDirty]
+    )
+  );
 
 
   useEffect(() => {

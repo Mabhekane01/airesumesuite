@@ -74,12 +74,16 @@ class LocationCurrencyService {
 
       // Primary: ipapi.co (most reliable)
       try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+        
         const response = await fetch('https://ipapi.co/json/', {
-          timeout: 5000,
+          signal: controller.signal,
           headers: {
             'User-Agent': 'AI Job Suite Location Service'
           }
         });
+        clearTimeout(timeoutId);
 
         if (response.ok) {
           const data = await response.json();
@@ -92,9 +96,13 @@ class LocationCurrencyService {
       // Fallback: ip-api.com
       if (!locationData) {
         try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 5000);
+          
           const response = await fetch('http://ip-api.com/json/', {
-            timeout: 5000
+            signal: controller.signal
           });
+          clearTimeout(timeoutId);
 
           if (response.ok) {
             const data = await response.json();
@@ -105,20 +113,23 @@ class LocationCurrencyService {
         }
       }
 
-      // Fallback: ipgeolocation.io (requires API key but has free tier)
-      if (!locationData && import.meta.env.VITE_IPGEOLOCATION_API_KEY) {
+      // Final Fallback: freeipapi.com
+      if (!locationData) {
         try {
-          const response = await fetch(
-            `https://api.ipgeolocation.io/ipgeo?apiKey=${import.meta.env.VITE_IPGEOLOCATION_API_KEY}`,
-            { timeout: 5000 }
-          );
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 5000);
+          
+          const response = await fetch('https://freeipapi.com/api/json', {
+            signal: controller.signal
+          });
+          clearTimeout(timeoutId);
 
           if (response.ok) {
             const data = await response.json();
             locationData = this.parseIpGeolocationResponse(data);
           }
         } catch (error) {
-          console.warn('ipgeolocation.io failed:', error);
+          console.warn('freeipapi.com failed:', error);
         }
       }
 
@@ -158,10 +169,14 @@ class LocationCurrencyService {
 
       // Primary: Exchange Rates API (free, reliable)
       try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+        
         const response = await fetch(
           `https://api.exchangerate-api.com/v4/latest/${baseCurrency}`,
-          { timeout: 5000 }
+          { signal: controller.signal }
         );
+        clearTimeout(timeoutId);
 
         if (response.ok) {
           const data = await response.json();
@@ -174,10 +189,14 @@ class LocationCurrencyService {
       // Fallback: Fixer.io (requires API key)
       if (!rates && import.meta.env.VITE_FIXER_API_KEY) {
         try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 5000);
+          
           const response = await fetch(
             `https://api.fixer.io/latest?access_key=${import.meta.env.VITE_FIXER_API_KEY}&base=${baseCurrency}`,
-            { timeout: 5000 }
+            { signal: controller.signal }
           );
+          clearTimeout(timeoutId);
 
           if (response.ok) {
             const data = await response.json();
@@ -191,10 +210,14 @@ class LocationCurrencyService {
       // Fallback: CurrencyAPI (alternative)
       if (!rates && import.meta.env.VITE_CURRENCYAPI_KEY) {
         try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 5000);
+          
           const response = await fetch(
             `https://api.currencyapi.com/v3/latest?apikey=${import.meta.env.VITE_CURRENCYAPI_KEY}&base_currency=${baseCurrency}`,
-            { timeout: 5000 }
+            { signal: controller.signal }
           );
+          clearTimeout(timeoutId);
 
           if (response.ok) {
             const data = await response.json();

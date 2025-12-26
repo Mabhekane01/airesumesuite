@@ -9,16 +9,14 @@ interface TemplateRendererProps {
 }
 
 export default function TemplateRenderer({ resume, template, isPreview = false }: TemplateRendererProps) {
-  const {
-    personalInfo = {},
-    professionalSummary = '',
-    workExperience = [],
-    education = [],
-    skills = [],
-    projects = [],
-    certifications = [],
-    languages = []
-  } = resume;
+  const personalInfo = resume.personalInfo || {} as any;
+  const professionalSummary = resume.professionalSummary || '';
+  const workExperience = resume.workExperience || [];
+  const education = resume.education || [];
+  const skills = resume.skills || [];
+  const projects = resume.projects || [];
+  const certifications = resume.certifications || [];
+  const languages = resume.languages || [];
 
   // Fixed font sizes and spacing that never change - same as TemplatePreview
   const fixedStyles = {

@@ -1,57 +1,4 @@
-/**
- * Enterprise-Grade Job Application Search Service
- * Robust, scalable, and comprehensive search implementation
- */
-
-// Comprehensive interfaces
-export interface JobApplication {
-  _id: string;
-  id?: string;
-  jobTitle: string;
-  companyName?: string;
-  company?: string;
-  location?: string;
-  jobLocation?: {
-    city?: string;
-    state?: string;
-    country?: string;
-    remote: boolean;
-  };
-  salary?: string;
-  appliedDate?: string;
-  applicationDate: string;
-  status: ApplicationStatus;
-  priority: ApplicationPriority;
-  jobUrl?: string;
-  notes?: string;
-  nextAction?: {
-    type: string;
-    date: string;
-    description: string;
-  };
-  metrics?: {
-    applicationScore?: number;
-  };
-  interviews: Interview[];
-  communications: Communication[];
-  tags?: string[];
-  archived?: boolean;
-}
-
-export type ApplicationStatus = 
-  | 'applied' 
-  | 'under_review' 
-  | 'phone_screen' 
-  | 'technical_assessment'
-  | 'first_interview' 
-  | 'second_interview' 
-  | 'final_interview' 
-  | 'offer_received'
-  | 'offer_accepted' 
-  | 'rejected' 
-  | 'withdrawn';
-
-export type ApplicationPriority = 'low' | 'medium' | 'high';
+import { Resume, JobApplication, ApplicationStatus, ApplicationPriority } from '../types';
 
 export type SortField = 'appliedDate' | 'jobTitle' | 'companyName' | 'status' | 'priority' | 'salary';
 export type SortDirection = 'asc' | 'desc';
@@ -516,15 +463,17 @@ export class JobApplicationSearchService {
         case 'status':
           // Custom status ordering
           const statusOrder: Record<ApplicationStatus, number> = {
-            'offer_accepted': 9,
-            'offer_received': 8,
-            'final_interview': 7,
-            'second_interview': 6,
-            'first_interview': 5,
+            'offer_accepted': 10,
+            'offer_received': 9,
+            'final_interview': 8,
+            'second_interview': 7,
+            'first_interview': 6,
+            'interviewing': 5,
             'technical_assessment': 4,
             'phone_screen': 3,
             'under_review': 2,
             'applied': 1,
+            'pending': 1,
             'rejected': 0,
             'withdrawn': -1
           };
@@ -733,15 +682,22 @@ export class JobApplicationSearchService {
 // Create singleton instance
 export const searchService = new JobApplicationSearchService();
 
-export interface SearchResult {
+export interface GlobalSearchResult {
   id: string;
-  type: 'resume' | 'job_application' | 'skill' | 'company';
+  type: 'resume' | 'job_application' | 'skill' | 'company' | 'cover_letter';
   title: string;
   subtitle: string;
   description: string;
   data: any;
   score: number;
   href: string;
+  applications?: JobApplication[];
+  totalCount?: number;
+  filteredCount?: number;
+  searchTime?: number;
+  hasMore?: boolean;
+  page?: number;
+  totalPages?: number;
 }
 
 export interface SearchIndex {
@@ -799,8 +755,8 @@ class SearchService {
     if (data.jobApplications) this.index.jobApplications = data.jobApplications;
   }
 
-  private searchResumes(query: string): SearchResult[] {
-    const results: SearchResult[] = [];
+  private searchResumes(query: string): GlobalSearchResult[] {
+    const results: GlobalSearchResult[] = [];
 
     this.index.resumes.forEach(resume => {
       // Search in personal info
@@ -856,8 +812,8 @@ class SearchService {
     return results;
   }
 
-  private searchJobApplications(query: string): SearchResult[] {
-    const results: SearchResult[] = [];
+  private searchJobApplications(query: string): GlobalSearchResult[] {
+    const results: GlobalSearchResult[] = [];
 
     this.index.jobApplications.forEach(app => {
       const appText = `${app.jobTitle} ${app.companyName} ${app.location} ${app.status} ${app.notes || ''}`;
@@ -880,7 +836,7 @@ class SearchService {
     return results;
   }
 
-  private searchQuickActions(query: string): SearchResult[] {
+  private searchQuickActions(query: string): GlobalSearchResult[] {
     const quickActions = [
       {
         id: 'new-resume',
@@ -908,7 +864,7 @@ class SearchService {
       }
     ];
 
-    const results: SearchResult[] = [];
+    const results: GlobalSearchResult[] = [];
 
     quickActions.forEach(action => {
       const searchText = `${action.title} ${action.subtitle} ${action.description} ${action.keywords}`;
@@ -931,7 +887,7 @@ class SearchService {
     return results;
   }
 
-  search(query: string, maxResults: number = 10): SearchResult[] {
+  search(query: string, maxResults: number = 10): GlobalSearchResult[] {
     if (!query || query.trim().length < 2) {
       return [];
     }
@@ -952,7 +908,7 @@ class SearchService {
   }
 
   // Get suggestions for empty search
-  getQuickSuggestions(): SearchResult[] {
+  getQuickSuggestions(): GlobalSearchResult[] {
     return [
       {
         id: 'suggestion-resume',

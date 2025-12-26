@@ -251,15 +251,7 @@ export default function EditJobApplication() {
     setFormData({ ...formData, [field]: value });
   };
 
-  const updateNestedFormData = (parent: string, field: string, value: any) => {
-    setFormData({
-      ...formData,
-      [parent]: {
-        ...formData[parent as keyof JobApplicationForm],
-        [field]: value
-      }
-    });
-  };
+  const updateNestedFormData = (parent: string, field: string, value: any) => setFormData({ ...formData, [parent]: { ...(formData[parent as keyof JobApplicationForm] as any), [field]: value } });
 
   const addSellingPoint = () => {
     if (newSellingPoint.trim()) {
@@ -1020,7 +1012,7 @@ export default function EditJobApplication() {
             <div className="flex items-center space-x-4">
               <p className="text-text-secondary">Update your job application details</p>
               <AutoSaveIndicator 
-                lastSaved={lastSaved} 
+                lastSaved={lastSaved ? new Date(lastSaved) : null} 
                 isDirty={isDirty} 
               />
             </div>

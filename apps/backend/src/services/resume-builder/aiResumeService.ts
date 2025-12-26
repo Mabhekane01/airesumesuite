@@ -545,7 +545,7 @@ ANALYZE THE JOB POSTING AT ${jobUrl} NOW:
         jobDetails = JSON.parse(text.trim());
       } catch (e) {
         // If that fails, clean the text and try again
-        let cleaned = text
+        const cleaned = text
           .replace(/```json|```/g, '')
           .replace(/^[^{]*{/, '{')  // Remove everything before first {
           .replace(/}[^}]*$/, '}') // Remove everything after last }
@@ -617,7 +617,7 @@ ANALYZE THE JOB POSTING AT ${jobUrl} NOW:
       const workingResumeData = this.ensureMinimumResumeStructure(resumeData);
       
       // NEW: Check if resume uses LaTeX template for enhanced optimization
-      let isLatexTemplate = workingResumeData.isLatexTemplate || false;
+      const isLatexTemplate = workingResumeData.isLatexTemplate || false;
       let availableTemplates = [];
       
       if (isLatexTemplate) {

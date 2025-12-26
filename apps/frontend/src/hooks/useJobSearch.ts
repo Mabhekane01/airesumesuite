@@ -9,10 +9,10 @@ import {
   SearchOptions, 
   SearchResult, 
   SearchStats, 
-  JobApplication,
   SearchFilters,
   SortOptions
 } from '../services/searchService';
+import { JobApplication } from '../types';
 
 interface UseJobSearchOptions {
   debounceMs?: number;

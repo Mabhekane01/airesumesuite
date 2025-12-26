@@ -19,6 +19,8 @@ import { toast } from 'sonner';
 import { useAuthStore } from '../../stores/authStore';
 import AuthModalSimple from '../../components/auth/AuthModalSimple';
 import { motion } from 'framer-motion';
+import { LocationEducationCheck } from './LocationEducationCheck';
+import { locationService } from '../../services/locationService';
 
 export default function TemplateSelection() {
   const navigate = useNavigate();
@@ -26,9 +28,60 @@ export default function TemplateSelection() {
   const [selectedTemplate, setSelectedTemplate] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  
+  // Pre-check state
+  const [showPreCheck, setShowPreCheck] = useState(false);
+  const [detectedLocation, setDetectedLocation] = useState<string>('');
+  const [preCheckStep, setPreCheckStep] = useState(1);
+
+  // Automated Location Detection
+  useEffect(() => {
+    const detectLocationAndCheck = async () => {
+      // Don't ask again if we already have it in navigation state
+      if (location.state?.targetLocation) return;
+
+      try {
+        const loc = await locationService.getUserLocation();
+        const country = loc.country || '';
+        setDetectedLocation(country);
+
+        if (country === 'South Africa') {
+          // If SA, we MUST ask for education level to decide builder type
+          setPreCheckStep(2); // Jump straight to education question
+          setShowPreCheck(true);
+        } else {
+          // If not SA, we don't need to show the popup, just set the location
+          // (Unless we want to ask education for everyone, but user specified SA focus)
+        }
+      } catch (err) {
+        // If detection fails, show full check starting at location
+        setPreCheckStep(1);
+        setShowPreCheck(true);
+      }
+    };
+
+    detectLocationAndCheck();
+  }, []);
 
   // Auth store
   const { isAuthenticated, setRedirectAfterLogin } = useAuthStore();
+
+  const handlePreCheckComplete = (data: { location: string; education: string }) => {
+    setShowPreCheck(false);
+    
+    // Branching Logic
+    if (data.location === 'South Africa' && data.education === 'Grade 12') {
+      navigate('/dashboard/resume/basic', { 
+        state: { 
+          targetLocation: data.location, 
+          educationLevel: data.education 
+        } 
+      });
+    } else {
+      // Stay on template selection but remember preferences
+      // (Optional: filter templates here based on education if needed)
+    }
+  };
 
   // Get resume data if passed from previous steps
   const resumeData = location.state?.resumeData;
@@ -159,6 +212,15 @@ export default function TemplateSelection() {
           setRedirectAfterLogin(null);
         }}
       />
+      {/* Pre-Check Modal (Location/Education) */}
+      {showPreCheck && (
+        <LocationEducationCheck 
+          onComplete={handlePreCheckComplete} 
+          onCancel={() => setShowPreCheck(false)}
+          initialStep={preCheckStep}
+          initialLocation={detectedLocation}
+        />
+      )}
     </div>
   );
 }

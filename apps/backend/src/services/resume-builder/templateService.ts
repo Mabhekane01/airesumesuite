@@ -18,6 +18,15 @@ export interface ResumeData {
     githubUrl?: string;
     websiteUrl?: string;
     professionalTitle?: string;
+    // South African CV Specific Fields
+    identityNumber?: string;
+    dateOfBirth?: string;
+    gender?: string;
+    nationality?: string;
+    maritalStatus?: string;
+    homeLanguage?: string;
+    otherLanguages?: string;
+    residentialAddress?: string;
   };
   professionalSummary: string;
   workExperience: Array<{ 
@@ -129,16 +138,19 @@ export interface ResumeData {
  */
 export class TemplateService {
   private templatesPath: string;
-  private templateCache: Map<string, string> = new Map();
 
   constructor() {
-    this.templatesPath = path.join(
-      process.cwd(),
+    this.templatesPath = path.resolve(
+      __dirname,
+      "..",
+      "..",
+      "..",
       "..",
       "frontend",
       "public",
       "templates"
     );
+    console.log('📂 [TemplateService] Templates path (resolved via __dirname):', this.templatesPath);
   }
 
   /**
@@ -158,9 +170,220 @@ export class TemplateService {
       template = await this.loadTemplate("template01");
     }
     
-    // For now, we assume all templates share the standardized structure supported by renderTemplate01
-    const body = await this.renderTemplate01(resumeData);
+    // Inject custom command definitions to ensure compatibility with all templates
+    const definitions = `
+% ------------ AI Resume Suite Custom Commands ------------
+\\ifx\\introduction\\undefined
+  \\usepackage{etoolbox}
+  \\usepackage{keycommand}
+  \\usepackage{xstring}
+
+  \\def \\separator { \\textbf{\\Large\\textbullet} }
+
+  \\newkeycommand{\\introduction}[fullname,email,phone,linkedin,github]{%
+      \\begin{center}
+          {\\Huge\\bfseries \\commandkey{fullname}} \\\\
+          \\vspace{0.5em}
+          \\ifcommandkey{phone}{\\commandkey{phone}}{}
+          \\ifcommandkey{email}{\\ifcommandkey{phone}{ \\separator }{} \\href{mailto:\\commandkey{email}}{\\commandkey{email}}}{}
+          \\ifcommandkey{linkedin}{\\ifcommandkey{email}{ \\separator }{\\ifcommandkey{phone}{ \\separator }{}} \\href{https://\\commandkey{linkedin}}{\\commandkey{linkedin}}}{}
+          \\ifcommandkey{github}{\\ifcommandkey{linkedin}{ \\separator }{\\ifcommandkey{email}{ \\separator }{\\ifcommandkey{phone}{ \\separator }{}}}} \\href{https://\\commandkey{github}}{\\commandkey{github}}{}
+      \\end{center}
+  }
+
+  \\providecommand{\\summary}[1]{ \\section{Summary} #1 }
+
+  \\ifx\\educationSection\\undefined
+    \\newenvironment{educationSection}[1]{ \\section{#1} }{}
+  \\fi
+
+  \\newkeycommand{\\educationItem}[university,college,program,graduation,grade,coursework]{%
+      {\\bfseries \\commandkey{program}} \\hfill \\commandkey{graduation} \\\\
+      \\ifcommandkey{university}{\\commandkey{university} \\ifcommandkey{grade}{\\hfill \\commandkey{grade}}{} \\\\ }{}
+      \\ifcommandkey{college}{\\commandkey{college} \\\\ }{}
+      \\ifcommandkey{coursework}{{\\small \\commandkey{coursework}} \\\\ }{}
+      \\vspace{0.5em}
+  }
+
+  \\ifx\\skillsSection\\undefined
+    \\newenvironment{skillsSection}[1]{ \\section{#1} }{}
+  \\fi
+
+  \\newkeycommand{\\skillItem}[category,skills]{%
+      {\\bfseries \\commandkey{category}:} \\commandkey{skills}
+  }
+
+  \\ifx\\experienceSection\\undefined
+    \\newenvironment{experienceSection}[1]{ \\section{#1} }{}
+  \\fi
+
+  \\newkeycommand{\\experienceItem}[company,position,location,duration]{%
+      {\\bfseries \\commandkey{company}} \\ifcommandkey{location}{, \\commandkey{location}}{} \\hfill \\commandkey{duration} \\\\
+      {\\itshape \\commandkey{position}}%
+  }
+
+  \\newkeycommand{\\projectItem}[title,duration,keyHighlight]{%
+      {\\bfseries \\commandkey{title}} \\hfill \\commandkey{duration} \\\\
+      \\commandkey{keyHighlight}%
+  }
+\\fi
+% ---------------------------------------------------------
+`;
+
+    // Inject packages and definitions after \documentclass or at top
+    if (template.includes("\\documentclass")) {
+      template = template.replace(/(\\documentclass.*)/, `$1\n${definitions}`);
+    } else {
+      template = definitions + "\n" + template;
+    }
+
+    // Use specialized renderer for basic_sa if requested
+    const body = templateId === 'basic_sa' 
+      ? await this.renderBasicSA(resumeData)
+      : await this.renderTemplate01(resumeData);
+      
     return template.replace("{{TEMPLATE_CONTENT}}", body);
+  }
+
+  /**
+   * Specialized renderer for South African Basic CV style
+   */
+  private async renderBasicSA(data: ResumeData): Promise<string> {
+    const out: string[] = [];
+    const info = data.personalInfo;
+
+    // Title at the top
+    const fullName = `${info.firstName || ''} ${info.lastName || ''}`.trim().toUpperCase();
+    out.push(`% Title at the top`);
+    out.push(`\\begin{center}`);
+    out.push(`{\\Large\\bfseries CV OF ${this.escapeLatex(fullName)}}`);
+    out.push(`\\end{center}`);
+    out.push(`\\vspace{15pt}`);
+
+    // PERSONAL DETAILS Section
+    out.push(`\\cvsection{PERSONAL DETAILS}`);
+    out.push(``);
+    out.push(`\\cventry{Surname}{${this.escapeLatex(info.lastName)}}`);
+    out.push(`\\cventry{Name}{${this.escapeLatex(info.firstName)}}`);
+    
+    if (info.identityNumber) out.push(`\\cventry{Identity Number}{${this.escapeLatex(info.identityNumber)}}`);
+    if (info.dateOfBirth) out.push(`\\cventry{Date of Birth}{${this.escapeLatex(info.dateOfBirth)}}`);
+    if (info.gender) out.push(`\\cventry{Gender}{${this.escapeLatex(info.gender)}}`);
+    if (info.nationality) out.push(`\\cventry{Nationality}{${this.escapeLatex(info.nationality)}}`);
+    if (info.maritalStatus) out.push(`\\cventry{Marital Status}{${this.escapeLatex(info.maritalStatus)}}`);
+    if (info.homeLanguage) out.push(`\\cventry{Home Language}{${this.escapeLatex(info.homeLanguage)}}`);
+    if (info.otherLanguages) out.push(`\\cventry{Other Languages}{${this.escapeLatex(info.otherLanguages)}}`);
+    
+    if (info.residentialAddress) {
+      const addressLines = info.residentialAddress.split('\n').map(l => this.escapeLatex(l.trim())).filter(Boolean);
+      const latexAddress = `\\begin{tabular}[t]{@{}l@{}} ${addressLines.join('\\\\ ')} \\end{tabular}`;
+      out.push(`\\cventry{Residential Address}{${latexAddress}}`);
+    } else if (info.location) {
+      out.push(`\\cventry{Residential Address}{${this.escapeLatex(info.location)}}`);
+    }
+
+    out.push(`\\vspace{8pt}`);
+    out.push(`\\noindent\\begin{tabular}{@{}p{4.5cm}p{0.3cm}p{10cm}@{}}`);
+    out.push(`Contact Number & & ${this.escapeLatex(info.phone)}`);
+    out.push(`\\end{tabular}\\\\[2pt]`);
+    out.push(``);
+    out.push(`\\noindent\\begin{tabular}{@{}p{4.5cm}p{0.3cm}p{10cm}@{}}`);
+    out.push(`Email Address & \\textcolor{bulletred}{$\\bullet$} & \\textcolor{emailblue}{\\href{mailto:${info.email}}{${this.escapeLatex(info.email)}}}`);
+    out.push(`\\end{tabular}`);
+    out.push(``);
+
+    // EDUCATIONAL BACKGROUND (School Level)
+    if (data.education && data.education.length > 0) {
+      // Find school level education (usually the first one or Grade 12)
+      const schoolEdu = data.education.find(e => e.degree.includes('Grade') || e.degree.includes('Matric')) || data.education[data.education.length - 1];
+      
+      out.push(`\\cvsection{EDUCATIONAL BACKGROUND}`);
+      out.push(``);
+      out.push(`\\cventry{Highest Grade passed}{${this.escapeLatex(schoolEdu.degree)}}`);
+      
+      const year = schoolEdu.graduationDate ? new Date(schoolEdu.graduationDate).getFullYear() : '';
+      out.push(`\\cventry{Year}{${year}}`);
+      out.push(`\\cventry{School}{${this.escapeLatex(schoolEdu.institution)}}`);
+      
+      if (schoolEdu.coursework && schoolEdu.coursework.length > 0) {
+        out.push(`\\cventry{Subjects Passed}{${this.escapeLatex(schoolEdu.coursework.join(', '))}}`);
+      }
+      out.push(``);
+
+      // TERTIARY EDUCATION
+      const tertiaryEdu = data.education.filter(e => e !== schoolEdu);
+      if (tertiaryEdu.length > 0) {
+        out.push(`\\cvsection{TERTIARY EDUCATION}`);
+        out.push(``);
+        
+        for (const edu of tertiaryEdu) {
+          out.push(`\\cventry{Institution}{${this.escapeLatex(edu.institution)}}`);
+          out.push(`\\cventry{Diploma}{${this.escapeLatex(edu.degree)}}`);
+          
+          const duration = this.buildDateRange(edu.startDate, edu.graduationDate);
+          out.push(`\\cventry{Duration}{${duration}}`);
+          
+          if (edu.fieldOfStudy) out.push(`\\cventry{Completed}{${this.escapeLatex(edu.fieldOfStudy)}}`);
+          
+          if (edu.coursework && edu.coursework.length > 0) {
+            const modules = edu.coursework.map(m => this.escapeLatex(m.trim())).filter(Boolean);
+            const latexModules = `\\begin{tabular}[t]{@{}l@{}} ${modules.join('\\\\ ')} \\end{tabular}`;
+            out.push(`\\cventry{Modules Passed}{${latexModules}}`);
+          }
+          out.push(`\\vspace{10pt}`);
+        }
+      }
+    }
+
+    // Professional Summary (if not empty)
+    if (this.nonEmpty(data.professionalSummary)) {
+      out.push(`\\cvsection{PROFESSIONAL SUMMARY}`);
+      out.push(this.escapeLatex(this.singleLine(data.professionalSummary)));
+      out.push(``);
+    }
+
+    // WORK EXPERIENCE
+    if (data.workExperience && data.workExperience.length > 0) {
+      out.push(`\\cvsection{WORK EXPERIENCE}`);
+      out.push(``);
+      for (const exp of data.workExperience) {
+        out.push(`\\cventry{Company}{${this.escapeLatex(exp.company)}}`);
+        out.push(`\\cventry{Position}{${this.escapeLatex(exp.jobTitle)}}`);
+        const duration = this.buildDateRange(exp.startDate, exp.endDate, exp.isCurrentJob);
+        out.push(`\\cventry{Duration}{${duration}}`);
+        
+        if (exp.responsibilities && exp.responsibilities.length > 0) {
+          const resp = exp.responsibilities.map(r => this.escapeLatex(r.trim())).filter(Boolean);
+          const latexResp = `\\begin{tabular}[t]{@{}l@{}} ${resp.join('\\\\ ')} \\end{tabular}`;
+          out.push(`\\cventry{Responsibilities}{${latexResp}}`);
+        }
+        out.push(`\\vspace{10pt}`);
+      }
+    }
+
+    // SKILLS
+    if (data.skills && data.skills.length > 0) {
+      out.push(`\\cvsection{SKILLS}`);
+      out.push(``);
+      const skillNames = data.skills.map(s => s.name).join(', ');
+      out.push(this.escapeLatex(skillNames));
+      out.push(``);
+    }
+
+    // REFERENCES
+    if (data.references && data.references.length > 0) {
+      out.push(`\\cvsection{REFERENCES}`);
+      out.push(``);
+      for (const ref of data.references) {
+        out.push(`\\cventry{Name}{${this.escapeLatex(ref.name)}}`);
+        out.push(`\\cventry{Position}{${this.escapeLatex(ref.title)}}`);
+        out.push(`\\cventry{Company}{${this.escapeLatex(ref.company)}}`);
+        out.push(`\\cventry{Contact}{${this.escapeLatex(ref.phone || ref.email)}}`);
+        out.push(`\\vspace{10pt}`);
+      }
+    }
+
+    return out.join('\n');
   }
 
   /**
@@ -171,7 +394,7 @@ export class TemplateService {
     const out: string[] = [];
 
     // --------- Contact Information -----------
-    let phoneDisplay = data?.personalInfo?.phone;
+    const phoneDisplay = data?.personalInfo?.phone;
 
     let githubDisplay = this.stripScheme(data?.personalInfo?.githubUrl);
     const siteUrl = this.stripScheme(data?.personalInfo?.portfolioUrl || data?.personalInfo?.websiteUrl);
@@ -702,23 +925,27 @@ export class TemplateService {
 
     if (out.length === 0) {
       out.push("% (intentionally left blank — no resume fields provided)");
+      out.push("\\begin{center}");
+      out.push("  \\Large Resume Data Not Provided");
+      out.push("  \\\\ \\vspace{1em}");
+      out.push("  \\small Please fill in your details to generate a preview.");
+      out.push("\\end{center}");
     }
 
     return out.join("\n");
   }
 
   private async loadTemplate(templateId: string): Promise<string> {
-    if (this.templateCache.has(templateId)) {
-      return this.templateCache.get(templateId)!;
-    }
-    let templatePath = path.join(this.templatesPath, templateId, `${templateId}-standardized.tex`);
+    const templatePath = path.join(this.templatesPath, templateId, `${templateId}-standardized.tex`);
+    console.log(`📄 [TemplateService] Reading template from: ${templatePath}`);
     try {
       await fs.access(templatePath);
     } catch {
+      console.error(`❌ [TemplateService] Template not found: ${templatePath}`);
       throw new Error(`Template file not found: ${templatePath}`);
     }
     const template = await fs.readFile(templatePath, "utf8");
-    this.templateCache.set(templateId, template);
+    console.log(`✅ [TemplateService] Loaded template ${templateId}, length: ${template.length}`);
     return template;
   }
 

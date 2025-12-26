@@ -225,7 +225,7 @@ export default function Header() {
                           onClick={() => setNotificationDropdownOpen(false)}
                         />
                         <NotificationDropdown
-                          notifications={notifications}
+                          notifications={navNotifications}
                           onMarkAsRead={markAsRead}
                           onMarkAllAsRead={markAllAsRead}
                           onClearAll={clearAll}

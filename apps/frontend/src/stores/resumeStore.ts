@@ -71,7 +71,11 @@ export const useResumeStore = create<ResumeStore>((set, get) => ({
   createResume: async (data) => {
     set({ loadingState: 'loading', error: null });
     try {
-      const newResume = await resumeService.createResume(data);
+      const result = await resumeService.createResume(data);
+      if (!result.success || !result.data) {
+        throw new Error(result.message || 'Failed to create resume');
+      }
+      const newResume = result.data;
       set((state) => ({ 
         resumes: [newResume, ...state.resumes],
         currentResume: newResume,

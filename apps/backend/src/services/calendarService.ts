@@ -43,7 +43,7 @@ class CalendarService {
       return text.replace(/(.{70})/g, '$1\r\n ');
     };
 
-    let icsContent = [
+    const icsContent = [
       'BEGIN:VCALENDAR',
       'VERSION:2.0',
       'PRODID:-//Job Suite//Interview Scheduler//EN',
@@ -208,7 +208,7 @@ class CalendarService {
       `Originally scheduled: ${new Date(interview.scheduledDate).toLocaleString()}\n\n` +
       `Please remove this event from your calendar.`;
 
-    let icsContent = [
+    const icsContent = [
       'BEGIN:VCALENDAR',
       'VERSION:2.0',
       'PRODID:-//Job Suite//Interview Scheduler//EN',

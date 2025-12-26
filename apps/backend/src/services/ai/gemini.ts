@@ -1373,7 +1373,7 @@ ${prompt}
         /^[^%\\][^\n]*$/gm
       ];
       
-      let allProblematicContent = [];
+      const allProblematicContent = [];
       let cleanedContentBeforeBegin = contentBeforeBegin;
       
       for (const pattern of problematicPatterns) {

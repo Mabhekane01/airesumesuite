@@ -10,6 +10,7 @@ import {
 import { clsx } from 'clsx';
 import ErrorDisplay from './ErrorDisplay';
 import { parseApiError, handleApiError, validatePdfFile } from './utils/errorUtils';
+import { Card } from '../ui/Card';
 import AdvancedPDFCanvas from './AdvancedPDFCanvas';
 import ProfessionalToolbar from './ProfessionalToolbar';
 import EnterpriseFeatures from './EnterpriseFeatures';

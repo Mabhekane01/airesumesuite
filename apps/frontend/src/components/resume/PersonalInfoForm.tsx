@@ -7,9 +7,13 @@ export function PersonalInfoForm() {
   const { resumeData, handleDataChange } = useResume();
   const { personalInfo } = resumeData;
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    handleDataChange('personal-info', { ...(personalInfo || {}), [name]: value });
+    // Functional update logic similar to the one added to Basic Builder
+    handleDataChange('personal-info', { 
+      ...(personalInfo || {}), 
+      [name]: value 
+    });
   };
 
   return (
@@ -36,12 +40,70 @@ export function PersonalInfoForm() {
           placeholder="e.g. John"
         />
         <Input
-          label="Legal Last Name"
+          label="Legal Last Name (Surname)"
           name="lastName"
           value={personalInfo?.lastName || ''}
           onChange={handleChange}
           required
           placeholder="e.g. Doe"
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6">
+        <Input
+          label="Identity Number"
+          name="identityNumber"
+          value={personalInfo?.identityNumber || ''}
+          onChange={handleChange}
+          required
+          placeholder="13-digit ID"
+          maxLength={13}
+        />
+        <Input
+          label="Date of Birth"
+          name="dateOfBirth"
+          value={personalInfo?.dateOfBirth || ''}
+          onChange={handleChange}
+          required
+          placeholder="e.g. 18 October 1991"
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6">
+        <Input
+          label="Gender"
+          name="gender"
+          value={personalInfo?.gender || ''}
+          onChange={handleChange}
+          required
+          placeholder="e.g. Female"
+        />
+        <Input
+          label="Nationality"
+          name="nationality"
+          value={personalInfo?.nationality || ''}
+          onChange={handleChange}
+          required
+          placeholder="e.g. South African"
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6">
+        <Input
+          label="Marital Status"
+          name="maritalStatus"
+          value={personalInfo?.maritalStatus || ''}
+          onChange={handleChange}
+          required
+          placeholder="e.g. Single"
+        />
+        <Input
+          label="Home Language"
+          name="homeLanguage"
+          value={personalInfo?.homeLanguage || ''}
+          onChange={handleChange}
+          required
+          placeholder="e.g. IsiXhosa"
         />
       </div>
 
@@ -67,7 +129,19 @@ export function PersonalInfoForm() {
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6">
+      <div className="space-y-1.5">
+        <label className="text-sm font-black text-brand-dark uppercase tracking-widest pl-1">Residential Address</label>
+        <textarea
+          name="residentialAddress"
+          value={personalInfo?.residentialAddress || ''}
+          onChange={handleChange}
+          required
+          placeholder="Street, Suburb, City, Code"
+          className="w-full px-5 py-4 rounded-xl border-2 border-surface-200 bg-surface-50 focus:border-brand-blue focus:bg-white transition-all outline-none text-brand-dark font-bold min-h-[100px] resize-none"
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6 pt-4">
         <Input
           label="Geographic Node"
           placeholder="City, Country"

@@ -9,6 +9,7 @@ import GoogleAuthCallback from './pages/auth/GoogleAuthCallback';
 import GoogleAuthError from './pages/auth/GoogleAuthError';
 import ResumeBuilder from './pages/resume-builder/ResumeBuilder';
 import ComprehensiveResumeBuilder from './pages/resume-builder/ComprehensiveResumeBuilder';
+import BasicResumeBuilder from './pages/resume-builder/BasicResumeBuilder';
 import TemplateSelection from './pages/resume-builder/TemplateSelection';
 import ResumePreviewPage from './pages/resume-builder/ResumePreviewPage';
 import UploadResume from './pages/resume-builder/UploadResume';
@@ -92,6 +93,8 @@ const AppRoutes = [
       { path: "resume", element: <ResumeBuilder /> },
       { path: "resume/templates", element: <TemplateSelection /> },
       { path: "resume/comprehensive", element: <ComprehensiveResumeBuilder /> },
+      { path: "resume/basic", element: <BasicResumeBuilder /> },
+      { path: "resume/basic/:id", element: <BasicResumeBuilder /> },
       { path: "resume/upload", element: <UploadResume /> },
       { path: "resume/preview/:id", element: <ResumePreviewPage /> },
       { path: "resume/edit/:id", element: <ComprehensiveResumeBuilder /> },

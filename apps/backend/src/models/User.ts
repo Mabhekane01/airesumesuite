@@ -47,6 +47,7 @@ export interface IUser extends Document {
   profileViews?: number;
   searchRankingScore?: number;
   technicalSkills?: Array<{ name: string; level?: string; years?: number; }>;
+  reputationScore: number;
 }
 
 const UserSchema = new Schema<IUser>({
@@ -151,7 +152,13 @@ const UserSchema = new Schema<IUser>({
     name: String,
     level: String,
     years: Number
-  }]
+  }],
+  reputationScore: {
+    type: Number,
+    default: 10,
+    min: 0,
+    max: 100
+  }
 }, {
   timestamps: true
 });

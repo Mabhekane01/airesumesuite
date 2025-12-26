@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { jobBoardService, JobPosting } from '../services/jobBoardService';
+import { api } from '../services/api';
 
 interface JobBoardState {
   jobs: JobPosting[];

@@ -1,4 +1,5 @@
 import express from 'express';
+console.log('🚀 [BACKEND] SERVER RELOADING - ' + new Date().toISOString());
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
@@ -30,6 +31,7 @@ import publicRoutes from './routes/publicRoutes';
 import adminRoutes from './routes/adminRoutes';
 import jobPostingRoutes from './routes/jobPostingRoutes';
 import resumeShareRoutes from './routes/resumeShareRoutes';
+import jobFeedbackRoutes from './routes/jobFeedbackRoutes';
 import { cleanupExpiredTokens } from './utils/tokenCleanup';
 import { tokenCleanupScheduler } from './services/tokenCleanupScheduler';
 import { 
@@ -280,6 +282,7 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/v1/notifications', notificationRoutes);
 app.use('/api/v1/admin', adminRoutes);
 app.use('/api/v1/jobs', jobPostingRoutes);
+app.use('/api/v1/jobs/feedback', jobFeedbackRoutes);
 app.use('/api/v1/share', resumeShareRoutes);
 
 // 404 handler for unmatched API routes

@@ -190,7 +190,7 @@ export const jobPostingController = {
       }
 
       const { geminiService } = await import('../services/ai/gemini');
-      let extractionInput = text || `Analyze this job link for community posting: ${url}`;
+      const extractionInput = text || `Analyze this job link for community posting: ${url}`;
 
       const extractedData = await geminiService.extractJobDetails(extractionInput);
       

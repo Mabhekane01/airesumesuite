@@ -1323,7 +1323,7 @@ export class StandardizedTemplateService {
                   }
                   return value
                     .map((arrayItem) => {
-                      let processedArrayItemContent = arrayContent
+                      const processedArrayItemContent = arrayContent
                         .replace(
                           /\{\{\.\}\}/g,
                           this.escapeLatex(String(arrayItem))

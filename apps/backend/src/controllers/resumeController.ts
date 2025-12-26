@@ -1,8 +1,10 @@
 import { Request, Response } from 'express';
+import mongoose from 'mongoose';
 import { resumeService, CreateResumeData } from '../services/resume-builder/resumeService';
 import { ResumeData } from '../services/resume-builder/templateService';
 import { standardizedJobOptimizationService } from '../services/standardizedJobOptimizationService';
 import { aiContentEnhancer } from '../services/resume-builder/aiContentEnhancer';
+import { aiOptimizationService } from '../services/aiOptimizationService';
 import { aiLatexGenerator } from '../services/resume-builder/aiLatexGenerator';
 import { notificationService } from '../services/notificationService';
 import { body, validationResult } from 'express-validator';
@@ -223,7 +225,76 @@ const HTML_TEMPLATES = [
  */
 export class StandardizedResumeController {
 
+  async optimizeBasicSummary(req: Request, res: Response): Promise<void> {
+    try {
+      const { skills, education, experience } = req.body;
+      
+      if (!skills || !education) {
+        res.status(400).json({
+          success: false,
+          message: 'Skills and education are required'
+        });
+        return;
+      }
+
+      console.log('🤖 [BASIC-AI] Generating basic profile summary...');
+      
+      const result = await aiOptimizationService.optimizeBasicSummary({
+        skills,
+        education,
+        experience
+      });
+
+      res.status(200).json({
+        success: true,
+        data: result
+      });
+    } catch (error) {
+      console.error('❌ Basic summary optimization failed:', error);
+      res.status(500).json({
+        success: false, 
+        message: 'Failed to generate summary'
+      });
+    }
+  }
+
   // ===== CORE RESUME MANAGEMENT =====
+
+  async getNewResume(req: Request, res: Response): Promise<void> {
+    try {
+      res.status(200).json({
+        success: true,
+        data: {
+          personalInfo: {
+            firstName: '',
+            lastName: '',
+            email: '',
+            phone: '',
+            location: '',
+          },
+          professionalSummary: '',
+          workExperience: [],
+          education: [],
+          skills: [],
+          projects: [],
+          certifications: [],
+          languages: [],
+          volunteerExperience: [],
+          awards: [],
+          publications: [],
+          references: [],
+          hobbies: [],
+          additionalSections: []
+        }
+      });
+    } catch (error) {
+      console.error('Error getting new resume structure:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to initialize new resume'
+      });
+    }
+  }
 
   async getAllResumes(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
@@ -255,6 +326,11 @@ export class StandardizedResumeController {
 
       if (!userId) {
         res.status(401).json({ message: 'Unauthorized' });
+        return;
+      }
+
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        res.status(400).json({ success: false, message: 'Invalid resume ID' });
         return;
       }
 
@@ -446,23 +522,29 @@ export class StandardizedResumeController {
   }
 
   async downloadTrackedPDF(req: AuthenticatedRequest, res: Response): Promise<void> {
+    const { id } = req.params;
+    console.log(`📥 [downloadTrackedPDF] Request received for resume: ${id}`);
+    
     try {
-      const { id } = req.params;
       const { trackingUrl, templateId = 'template01' } = req.body;
       const userId = req.user?.id;
 
       if (!userId) {
+        console.warn('❌ [downloadTrackedPDF] Unauthorized: No user ID');
         res.status(401).json({ message: 'Unauthorized' });
         return;
       }
 
       if (!trackingUrl) {
+         console.warn('❌ [downloadTrackedPDF] Bad Request: No tracking URL');
          res.status(400).json({ message: 'Tracking URL is required' });
          return;
       }
 
+      console.log(`🔍 [downloadTrackedPDF] Fetching resume ${id} for user ${userId}`);
       const resume = await resumeService.getResumeById(id, userId);
       if (!resume) {
+        console.warn(`❌ [downloadTrackedPDF] Resume not found: ${id}`);
         res.status(404).json({
           success: false, 
           message: 'Resume not found'
@@ -472,45 +554,73 @@ export class StandardizedResumeController {
 
       // Check if we have an existing PDF in the database
       if (resume.generatedFiles?.pdf?.data) {
-        console.log('✅ [OPTIMIZED] Attaching tracking to existing PDF from database');
+        console.log('✅ [downloadTrackedPDF] Found existing PDF in database, attaching tracking...');
         
-        // Think out of the box: Overlay tracking layer using pdf-lib instead of heavy LaTeX
-        const originalBuffer = resume.generatedFiles.pdf.data;
-        const trackedBuffer = await resumeService.attachTrackingToPDF(originalBuffer, trackingUrl);
-        
-        res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Length', trackedBuffer.length);
-        res.setHeader('Content-Disposition', `inline; filename="tracked-${resume.generatedFiles.pdf.filename || 'resume.pdf'}"`);
-        res.setHeader('Cache-Control', 'no-cache');
-        res.send(trackedBuffer);
-        return;
+        try {
+          const originalBuffer = resume.generatedFiles.pdf.data;
+          const trackedBuffer = await resumeService.attachTrackingToPDF(originalBuffer, trackingUrl);
+          
+          console.log('📦 [downloadTrackedPDF] Sending existing PDF with tracking as JSON');
+          res.setHeader('Content-Type', 'application/json');
+          res.setHeader('X-Content-Type-Options', 'nosniff');
+          res.setHeader('X-Download-Options', 'noopen');
+          res.json({
+            success: true,
+            data: {
+              filename: `tracked-${resume.generatedFiles.pdf.filename || 'resume.pdf'}`,
+              pdfData: trackedBuffer.toString('base64'),
+              contentType: 'application/pdf'
+            }
+          });
+          return;
+        } catch (pdfLibError) {
+          console.error('❌ [downloadTrackedPDF] pdf-lib processing failed, falling back to LaTeX generation', pdfLibError);
+          // Fall through to LaTeX generation if optimized path fails
+        }
       }
 
-      // Fallback to generation if no PDF exists (legacy or first-time)
+      console.log('🏗️ [downloadTrackedPDF] No existing PDF or processing failed, generating via LaTeX...');
       const standardizedData = convertToStandardizedData(resume, trackingUrl);
 
-      console.log(`📄 [LATEX] Generating TRACKED PDF with URL: ${trackingUrl}`);
+      console.log(`📄 [downloadTrackedPDF] Loading template: ${templateId}`);
       const { templateService } = await import('../services/resume-builder/templateService');
       const latex = await templateService.generateLatex(
         templateId,
         standardizedData
       );
 
-      const pdfBuffer = await resumeService.generateLatexResumePDF(standardizedData, {
+      console.log('🏗️ [downloadTrackedPDF] Compiling LaTeX to PDF...');
+      let pdfBuffer = await resumeService.generateLatexResumePDF(standardizedData, {
         templateId,
         outputFormat: 'pdf',
         cleanup: true,
         optimizedLatexCode: latex
       });
 
-      res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Length', pdfBuffer.length);
-      res.setHeader('Content-Disposition', 'inline; filename="tracked-resume.pdf"');
-      res.setHeader('Cache-Control', 'no-cache');
-      res.send(pdfBuffer);
+      // ALWAYS apply the advanced tracking layer (QR Code, Metadata, Link) to the final buffer
+      console.log('🔗 [downloadTrackedPDF] Applying advanced tracking layer to generated PDF...');
+      try {
+        pdfBuffer = await resumeService.attachTrackingToPDF(pdfBuffer, trackingUrl);
+      } catch (trackError) {
+        console.error('❌ [downloadTrackedPDF] Failed to attach tracking layer:', trackError);
+        // Continue with untracked PDF as fallback if overlay fails
+      }
+
+      console.log('📦 [downloadTrackedPDF] Sending generated PDF as JSON');
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('X-Content-Type-Options', 'nosniff');
+      res.setHeader('X-Download-Options', 'noopen');
+      res.json({
+        success: true,
+        data: {
+          filename: 'tracked-resume.pdf',
+          pdfData: pdfBuffer.toString('base64'),
+          contentType: 'application/pdf'
+        }
+      });
 
     } catch (error) {
-      console.error('❌ Tracked PDF generation failed:', error);
+      console.error('❌ [downloadTrackedPDF] CRITICAL ERROR:', error);
       res.status(500).json({
         success: false, 
         message: 'Failed to generate tracked PDF',
@@ -557,7 +667,7 @@ export class StandardizedResumeController {
 
         console.log('🔍 [LATEX-DEBUG] Generated LaTeX for unsaved preview:', latex);
 
-        let pdfBuffer = await resumeService.generateLatexResumePDF(resumeData, {
+        const pdfBuffer = await resumeService.generateLatexResumePDF(resumeData, {
         templateId,
         outputFormat,
         cleanup: true,
@@ -1199,7 +1309,7 @@ export class StandardizedResumeController {
           title: resumeData.title || `${resumeData.personalInfo?.firstName || 'My'} ${resumeData.personalInfo?.lastName || 'Resume'}`
         };
         
-        processedResumeData = processCompleteResumeData(dataToProcess);
+        processedResumeData = processCompleteResumeData(dataToProcess, true);
         console.log('✅ Resume data processed successfully for preview');
       } catch (processingError) {
         console.warn('⚠️ Data processing failed, using raw data:', processingError);
@@ -1463,7 +1573,7 @@ export class StandardizedResumeController {
   async savePDFToDatabase(req: AuthenticatedRequest, res: Response) {
     try {
       const { id: resumeId } = req.params;
-      const userId = req.user?.id!;
+      const userId = req.user!.id;
       const { 
         templateId, 
         optimizedLatexCode, 

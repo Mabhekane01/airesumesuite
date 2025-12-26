@@ -195,10 +195,12 @@ export default function CreateResume() {
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <Card className="card-dark p-4 md:p-6 mb-8">
             <CurrentStepComponent
-              form={form}
-              data={form.watch('professionalSummary')}
-              onChange={(value: string) => form.setValue('professionalSummary', value)}
-              resumeData={form.getValues()}
+              {...({
+                form: form,
+                data: form.watch('professionalSummary' as any),
+                onChange: (value: string) => form.setValue('professionalSummary' as any, value),
+                resumeData: form.getValues()
+              } as any)}
             />
           </Card>
 

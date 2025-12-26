@@ -760,7 +760,7 @@ class SimpleAnalyticsService {
     let totalScore = 0;
     resumes.forEach(resume => {
       let completionFactors = 0;
-      let maxFactors = 11; // Total possible completion factors
+      const maxFactors = 11; // Total possible completion factors
       
       // Core completeness factors
       if (resume.personalInfo?.firstName && resume.personalInfo?.lastName) completionFactors++;

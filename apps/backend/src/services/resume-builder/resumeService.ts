@@ -615,6 +615,8 @@ export class ResumeService {
       const resumeData = processCompleteResumeData(data);
 
       console.log('💾 Creating resume with processed data:', resumeData);
+      console.log('🔍 [SCHEMA-DEBUG] paths:', Object.keys(Resume.schema.paths));
+      console.log('🔍 [SCHEMA-DEBUG] professionalSummary options:', JSON.stringify(Resume.schema.paths.professionalSummary.options));
 
       const resume = new Resume(resumeData);
 
@@ -1479,7 +1481,7 @@ export class ResumeService {
           x: 0,
           y: 0,
           width: width,
-          height: 30,
+          height: 40,
           color: rgb(0.98, 0.98, 0.98),
           opacity: 0.9,
         });
@@ -1487,7 +1489,7 @@ export class ResumeService {
         // Draw tracking text
         page.drawText(footerText, {
           x: 40,
-          y: 12,
+          y: 15,
           size: 7,
           font: helveticaFont,
           color: rgb(0.1, 0.4, 0.8), 
@@ -1498,7 +1500,7 @@ export class ResumeService {
           pdfDoc.context.obj({
             Type: 'Annot',
             Subtype: 'Link',
-            Rect: [0, 0, width, 30],
+            Rect: [0, 0, width, 40],
             Border: [0, 0, 0],
             C: [0, 0, 1],
             A: {
@@ -1520,9 +1522,9 @@ export class ResumeService {
         if (qrImageEmbed) {
           page.drawImage(qrImageEmbed, {
             x: width - 60,
-            y: 5,
-            width: 20,
-            height: 20,
+            y: 10,
+            width: 25,
+            height: 25,
           });
         }
 

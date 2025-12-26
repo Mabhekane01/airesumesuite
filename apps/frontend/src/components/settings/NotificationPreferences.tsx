@@ -11,8 +11,9 @@ import {
   ExclamationTriangleIcon,
   InformationCircleIcon
 } from '@heroicons/react/24/outline';
-import { notificationService, NotificationPreferences as INotificationPreferences } from '../../services/notificationService';
+import { notificationService } from '../../services/notificationService';
 import { toast } from 'sonner';
+import { NotificationPreferences as INotificationPreferences } from '../../types';
 
 interface NotificationPreferencesProps {
   onClose?: () => void;
@@ -93,7 +94,12 @@ export default function NotificationPreferences({ onClose }: NotificationPrefere
   ) => {
     try {
       setSaving(true);
-      const updatedPrefs = await notificationService.updateCategoryPreferences(category, settings);
+      const updatedPrefs = await notificationService.updatePreferences({
+        categories: {
+          ...preferences?.categories,
+          [category]: settings
+        }
+      });
       setPreferences(updatedPrefs);
       toast.success(`${categoryLabels[category as keyof typeof categoryLabels]} preferences updated`);
     } catch (error) {

@@ -727,7 +727,7 @@ Return the COMPLETE, PERFECT LaTeX code that will compile without ANY errors:`;
    * Fix package declaration errors
    */
   private fixPackageErrors(latexCode: string): string {
-    let fixed = latexCode;
+    const fixed = latexCode;
     
     // Split into lines and fix package lines individually
     const lines = fixed.split('\n');
@@ -898,7 +898,7 @@ Return the COMPLETE, PERFECT LaTeX code that will compile without ANY errors:`;
       try {
         const { templateService } = await import('./templateService');
         
-        let generatedLatex = await templateService.generateLatex(
+        const generatedLatex = await templateService.generateLatex(
           templateId,
           data as any
         );

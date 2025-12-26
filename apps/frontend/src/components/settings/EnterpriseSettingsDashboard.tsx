@@ -931,7 +931,7 @@ export const EnterpriseSettingsDashboard: React.FC = () => {
             </label>
             <Select
               value={exportFormat}
-              onChange={setExportFormat}
+              onChange={(e) => setExportFormat(e.target.value as 'json' | 'csv')}
               options={[
                 { value: 'json', label: 'JSON - Full data with all details' },
                 { value: 'csv', label: 'CSV - Simplified data for spreadsheets' }

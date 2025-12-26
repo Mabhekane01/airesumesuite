@@ -14,14 +14,14 @@ import {
   ChevronRightIcon
 } from '@heroicons/react/24/outline';
 import { useNavigate } from 'react-router-dom';
-import { globalSearchService as searchService, SearchResult } from '../../services/searchService';
+import { globalSearchService as searchService, GlobalSearchResult } from '../../services/searchService';
 
 interface SearchModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const getResultIcon = (type: SearchResult['type']) => {
+const getResultIcon = (type: GlobalSearchResult['type']) => {
   switch (type) {
     case 'resume':
       return <DocumentTextIcon className="h-5 w-5 text-brand-blue" />;
@@ -36,7 +36,7 @@ const getResultIcon = (type: SearchResult['type']) => {
   }
 };
 
-const getResultTypeLabel = (type: SearchResult['type']) => {
+const getResultTypeLabel = (type: GlobalSearchResult['type']) => {
   switch (type) {
     case 'resume': return 'Architecture';
     case 'job_application': return 'Deployment';
@@ -48,7 +48,7 @@ const getResultTypeLabel = (type: SearchResult['type']) => {
 
 export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<SearchResult[]>([]);
+  const [results, setResults] = useState<GlobalSearchResult[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -95,7 +95,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, results, selectedIndex, onClose]);
 
-  const handleResultClick = (result: SearchResult) => {
+  const handleResultClick = (result: GlobalSearchResult) => {
     navigate(result.href);
     handleClose();
   };

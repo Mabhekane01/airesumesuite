@@ -1,0 +1,44 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[left=0.75in,top=0.75in,right=0.75in,bottom=1in]{geometry}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{array}
+\usepackage{etoolbox}
+\usepackage{keycommand}
+\usepackage{xstring}
+
+% Remove page numbers
+\pagestyle{empty}
+
+% Define colors
+\definecolor{emailblue}{RGB}{0,0,255}
+\definecolor{bulletred}{RGB}{255,0,0}
+
+% Custom section command
+\newcommand{\cvsection}[1]{%
+    \vspace{10pt}
+    {\large\bfseries\underline{#1}}
+    \vspace{5pt}
+}
+
+% Custom entry command for CV details
+\newcommand{\cventry}[2]{%
+    \noindent\begin{tabular}{@{}p{4.5cm}p{0.3cm}p{10cm}@{}}
+    #1 & : & #2
+    \end{tabular}\\[2pt]
+}
+
+\begin{document}
+
+% Heavy border around entire page
+\noindent\fbox{\parbox{\dimexpr\textwidth-2\fboxsep-2\fboxrule}{
+\vspace{10pt}
+
+{{TEMPLATE_CONTENT}}
+
+\vspace{10pt}
+}}
+
+\end{document}

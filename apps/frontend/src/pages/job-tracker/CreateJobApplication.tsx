@@ -108,7 +108,7 @@ export default function CreateJobApplication() {
   const [validationState, validationActions] = useFormValidation({ validateOnChange: true });
 
   const updateFormData = (field: string, value: any) => setFormData({ ...formData, [field]: value });
-  const updateNestedFormData = (parent: string, field: string, value: any) => setFormData({ ...formData, [parent]: { ...formData[parent as keyof JobApplicationForm], [field]: value } });
+  const updateNestedFormData = (parent: string, field: string, value: any) => setFormData({ ...formData, [parent]: { ...(formData[parent as keyof JobApplicationForm] as any), [field]: value } });
 
   const addSellingPoint = () => {
     if (newSellingPoint.trim()) {
@@ -257,7 +257,7 @@ export default function CreateJobApplication() {
           <div>
             <div className="flex items-center gap-3 mb-1">
               <h1 className="text-3xl md:text-4xl font-display font-black text-brand-dark tracking-tighter leading-none">Initialization Terminal.</h1>
-              <AutoSaveIndicator lastSaved={lastSaved} isDirty={isDirty} />
+              <AutoSaveIndicator lastSaved={lastSaved ? new Date(lastSaved) : null} isDirty={isDirty} />
             </div>
             <p className="text-lg text-text-secondary font-bold opacity-70">Register a new recruitment architecture.</p>
           </div>

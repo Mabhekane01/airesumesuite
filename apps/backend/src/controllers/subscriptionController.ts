@@ -312,7 +312,7 @@ export const getRevenueAnalytics = async (req: AuthenticatedRequest, res: Respon
 
     const { period = '30d' } = req.query;
     
-    let startDate = new Date();
+    const startDate = new Date();
     switch (period) {
       case '7d':
         startDate.setDate(startDate.getDate() - 7);

@@ -448,6 +448,44 @@ CRITICAL RULES:
     }
   }
 
+  async optimizeBasicSummary(
+    data: { skills: string[]; education: string; experience?: any[] }
+  ): Promise<{ summary: string }> {
+    try {
+      const prompt = `
+You are a Career Consultant specializing in entry-level and school-leaver resumes for the South African market. Write a professional, humble, and hardworking profile summary (max 3-4 sentences) for a candidate with the following details:
+
+EDUCATION: ${data.education}
+SKILLS: ${data.skills.join(', ')}
+EXPERIENCE: ${data.experience?.length ? JSON.stringify(data.experience) : 'No formal work experience (focus on potential, character, and willingness to learn)'}
+
+TONE: Professional, eager to work, reliable, honest.
+OUTPUT FORMAT (STRICT JSON):
+{
+  "summary": "The profile summary text..."
+}
+`;
+
+      const result = await geminiService.client?.models.generateContent({
+        model: 'gemini-3-flash-preview',
+        contents: prompt,
+      });
+      
+      if (!result) throw new Error('AI service unavailable');
+      
+      let text = result.text || '';
+      // Clean markdown if present
+      if (text.startsWith('```json')) text = text.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+      
+      return JSON.parse(text);
+    } catch (error) {
+      console.error('Basic summary optimization failed:', error);
+      return { 
+        summary: `Hardworking and reliable ${data.education} graduate with strong skills in ${data.skills.slice(0,3).join(', ')}. Eager to learn and contribute to a professional team.` 
+      };
+    }
+  }
+
   // Fallback methods for when AI services are unavailable
   private getFallbackOptimizationSuggestions(jobDescription: string): ResumeOptimizationSuggestion[] {
     return [

@@ -37,6 +37,7 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
       resumes: [
         {
           id: '1',
+          title: 'John Doe - Software Engineer',
           template: 'modern',
           personalInfo: {
             firstName: 'John',
@@ -89,7 +90,7 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
             {
               id: '1',
               name: 'E-commerce Platform',
-              description: 'Full-stack e-commerce solution with React frontend and Node.js backend',
+              description: ['Full-stack e-commerce solution with React frontend and Node.js backend'],
               technologies: ['React', 'Node.js', 'MongoDB', 'Paystack API'],
               url: 'https://github.com/johndoe/ecommerce'
             }

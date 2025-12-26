@@ -1095,8 +1095,8 @@ export default function EnterpriseResumeEnhancer({
   };
 
   const calculateSkillsMatch = (resume: Resume, jobAnalysis: any): number => {
-    const resumeSkills = resume.skills?.map((skill) =>
-      (skill.name || skill).toLowerCase()
+    const resumeSkills = resume.skills?.map((skill: any) =>
+      (typeof skill === 'string' ? skill : skill.name || '').toLowerCase()
     ) || [];
     
     // Handle different possible structures from backend
@@ -1335,19 +1335,16 @@ export default function EnterpriseResumeEnhancer({
               </div>
             ) : dynamicTemplate || resume.isLatexTemplate ? (
                 <PDFPreview 
-                  pdfUrl={pdfUrl}
-                  pdfBlob={pdfBlob}
-                  pdfBlobBase64={pdfBlobBase64}
-                  templateId={resumeData.template || 'template01'}
-                  resumeData={resumeData as any}
-                  title={resumeData.title || 'Enhanced Resume'}
+                  pdfUrl={aiData.cachedPdfUrl}
+                  pdfBlob={aiData.pdfBlob}
+                  pdfBlobBase64={aiData.pdfBlobBase64}
+                  templateId={resume.template || 'template01'}
+                  resumeData={resume as any}
+                  title={resume.title || 'Enhanced Resume'}
                   className="h-full"
-                  onPdfGenerated={(url, blob) => {
-                    setPdfUrl(url);
-                    setPdfBlob(blob);
-                  }}
-                  onGenerationStart={() => setIsGeneratingPDF(true)}
-                  refreshTrigger={refreshTrigger}
+                  onPdfGenerated={handlePdfGenerated}
+                  onGenerationStart={handlePdfGenerationStart}
+                  refreshTrigger={pdfRefreshTrigger}
                 />
             ) : (
               <div className="flex items-center justify-center h-full bg-gray-100">

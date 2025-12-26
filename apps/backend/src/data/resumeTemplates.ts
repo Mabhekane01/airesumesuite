@@ -75,6 +75,20 @@ export const resumeTemplates: ResumeTemplate[] = [
     },
     fontStyle: 'modern',
     layout: 'two-column'
+  },
+  {
+    id: 'basic_sa',
+    name: 'Basic SA',
+    description: 'Optimized for South African entry-level and Grade 12 graduates.',
+    category: 'minimalist',
+    colors: {
+      primary: '#004d99',
+      secondary: '#505050',
+      text: '#000000',
+      background: '#FFFFFF'
+    },
+    fontStyle: 'classic',
+    layout: 'single-column'
   }
 ];
 

@@ -50,6 +50,15 @@ export interface PersonalInfo {
   githubUrl?: string;
   websiteUrl?: string;
   professionalTitle?: string;
+  // South African CV Specific Fields
+  identityNumber?: string;
+  dateOfBirth?: string;
+  gender?: string;
+  nationality?: string;
+  maritalStatus?: string;
+  homeLanguage?: string;
+  otherLanguages?: string;
+  residentialAddress?: string;
 }
 
 export interface WorkExperience {
@@ -74,6 +83,7 @@ export interface Education {
   endDate?: string;
   location?: string;
   gpa?: string;
+  honors?: string | string[];
   coursework?: string[];
 }
 
@@ -135,12 +145,39 @@ export interface AdditionalSection {
   content: string;
 }
 
+export interface Publication {
+  id?: string;
+  title: string;
+  publisher: string;
+  publicationDate: string;
+  url?: string;
+  description?: string;
+}
+
+export interface Reference {
+  id?: string;
+  name: string;
+  title: string;
+  company: string;
+  email: string;
+  phone: string;
+  relationship: string;
+}
+
+export interface Hobby {
+  id?: string;
+  name: string;
+  description?: string;
+  category: 'creative' | 'sports' | 'technology' | 'volunteer' | 'other';
+}
+
 export interface Resume {
   id?: string;
   _id?: string;
   title: string;
   template: string;
   templateId?: string;
+  isPublic?: boolean;
   isLatexTemplate?: boolean;
   personalInfo: PersonalInfo;
   professionalSummary: string;
@@ -152,7 +189,9 @@ export interface Resume {
   languages?: Language[];
   volunteerExperience?: VolunteerExperience[];
   awards?: Award[];
-  hobbies?: Array<{ id?: string; name: string; category?: string }>;
+  publications?: Publication[];
+  references?: Reference[];
+  hobbies?: Hobby[];
   additionalSections?: AdditionalSection[];
   aiGenerated?: {
     summary: boolean;
@@ -165,31 +204,96 @@ export interface Resume {
   updatedAt?: string;
 }
 
+export type ApplicationStatus = 
+  | 'applied' 
+  | 'under_review' 
+  | 'phone_screen' 
+  | 'interviewing'
+  | 'technical_assessment' 
+  | 'first_interview' 
+  | 'second_interview' 
+  | 'final_interview' 
+  | 'offer_received'
+  | 'offer_accepted' 
+  | 'rejected' 
+  | 'withdrawn'
+  | 'pending';
+
+export type ApplicationPriority = 'low' | 'medium' | 'high';
+
+export interface JobInterview {
+  id: string;
+  type: string;
+  date: string;
+  interviewer: string;
+  status: 'scheduled' | 'completed' | 'cancelled';
+}
+
+export interface JobCommunication {
+  id: string;
+  type: 'email' | 'call' | 'message';
+  date: string;
+  subject: string;
+  content: string;
+}
+
 export interface JobApplication {
   _id: string;
   id?: string;
   jobTitle: string;
   companyName: string;
+  company?: string;
   location: string;
   jobUrl?: string;
-  status: 'applied' | 'interviewing' | 'offered' | 'rejected' | 'withdrawn' | 'pending';
+  status: ApplicationStatus;
+  priority?: ApplicationPriority;
   appliedDate: string;
-  applicationDate?: Date;
+  applicationDate?: Date | string;
   salary?: string;
   notes?: string;
   resumeId?: string;
   jobSource?: string;
   jobLocation?: {
-    country?: string;
     city?: string;
+    state?: string;
+    country?: string;
     remote?: boolean;
   };
   documentsUsed?: {
     resumeId?: string;
     trackingShareId?: string;
   };
+  interviews?: JobInterview[];
+  communications?: JobCommunication[];
+  metrics?: {
+    applicationScore?: number;
+    successProbability?: number;
+  };
+  tags?: string[];
+  archived?: boolean;
   createdAt?: string;
   updatedAt?: string;
+}
+
+export interface NotificationPreferences {
+  enabled: boolean;
+  categories: Record<string, {
+    enabled: boolean;
+    priority: 'low' | 'medium' | 'high';
+    channels: string[];
+  }>;
+  channels: {
+    email: boolean;
+    inApp: boolean;
+    browser: boolean;
+    mobile: boolean;
+  };
+  quietHours: {
+    enabled: boolean;
+    startTime: string;
+    endTime: string;
+    timezone: string;
+  };
 }
 
 export interface INotification {

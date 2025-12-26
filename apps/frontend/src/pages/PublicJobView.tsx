@@ -19,6 +19,8 @@ import {
 import { toast } from 'sonner';
 import { useAuthStore } from '../stores/authStore';
 import ResumeSelector from '../components/career-coach/ResumeSelector';
+import { TrustScore } from '../components/jobs/TrustScore';
+import { FeedbackModal } from '../components/jobs/FeedbackModal';
 import { ResumeData } from '../services/resumeService';
 import { api, jobApplicationAPI } from '../services/api';
 
@@ -94,12 +96,13 @@ const PublicJobView = () => {
   const [job, setJob] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [trackApplication, setTrackApplication] = useState(true);
+  const [trackApplication, setTrackApplication] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [existingApplicationId, setExistingApplicationId] = useState<string | null>(null);
   
   // Modal States
   const [isResumeModalOpen, setIsResumeModalOpen] = useState(false);
+  const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
 
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
@@ -214,12 +217,25 @@ const PublicJobView = () => {
       const pdfRes = await api.post(`/resumes/${resume._id}/download-tracked`, {
         trackingUrl,
         templateId: resume.templateId || 'template01'
-      }, { responseType: 'blob' });
+      });
 
-      const url = window.URL.createObjectURL(new Blob([pdfRes.data]));
+      if (!pdfRes.data.success || !pdfRes.data.data.pdfData) {
+        throw new Error('Failed to retrieve tracked PDF data');
+      }
+
+      // Convert base64 back to Blob
+      const base64Data = pdfRes.data.data.pdfData;
+      const binaryString = atob(base64Data);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      const pdfBlob = new Blob([bytes], { type: 'application/pdf' });
+
+      const url = window.URL.createObjectURL(pdfBlob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${resume.personalInfo.firstName}_${resume.personalInfo.lastName}_${job.company}_Resume.pdf`;
+      a.download = pdfRes.data.data.filename || `${resume.personalInfo.firstName}_${resume.personalInfo.lastName}_${job.company}_Resume.pdf`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
@@ -235,6 +251,7 @@ const PublicJobView = () => {
         companyName: job.company,
         jobDescription: job.description,
         jobUrl: job.url,
+        jobPostingId: job._id || job.id, // Proper schema link
         jobSource: 'manual',
         jobLocation: {
           country: job.country,
@@ -336,6 +353,15 @@ const PublicJobView = () => {
                       {job.jobType}
                     </div>
                   )}
+                  {/* Trust Score Display */}
+                  <div className="md:ml-4 pl-4 md:border-l border-surface-200">
+                    <TrustScore 
+                      score={job.authenticityScore || 50} 
+                      badges={job.trustBadges || []} 
+                      reviewCount={job.reviewCount || 0}
+                      size="md"
+                    />
+                  </div>
                 </div>
               </div>
               
@@ -389,12 +415,40 @@ const PublicJobView = () => {
               <h3 className="text-xl font-black uppercase tracking-tight">Application Protocol Active.</h3>
               <p className="text-sm font-bold opacity-80">You have already synchronized this node with your tracking grid. Redundant deployments are restricted to ensure data integrity.</p>
             </div>
-            <Link 
-              to={`/dashboard/applications/${existingApplicationId}`}
-              className="px-8 py-3 bg-white text-brand-success rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg hover:scale-105 transition-transform"
-            >
-              Access Analytics
-            </Link>
+            <div className="flex gap-3">
+              <button 
+                onClick={() => setIsFeedbackModalOpen(true)}
+                className="px-6 py-3 bg-white/20 text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg hover:bg-white/30 transition-colors"
+              >
+                Verify Authenticity
+              </button>
+              <Link 
+                to={`/dashboard/applications/${existingApplicationId}`}
+                className="px-8 py-3 bg-white text-brand-success rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg hover:scale-105 transition-transform"
+              >
+                Access Analytics
+              </Link>
+            </div>
+          </motion.div>
+        )}
+
+        {/* --- DEPLOYMENT STRATEGY ALERT --- */}
+        {!existingApplicationId && (
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-brand-blue/5 border border-brand-blue/20 rounded-[2.5rem] p-8 flex items-start gap-6 shadow-sm"
+          >
+            <div className="w-12 h-12 rounded-2xl bg-brand-blue/10 flex items-center justify-center text-brand-blue shrink-0">
+              <AlertCircle size={24} strokeWidth={3} />
+            </div>
+            <div className="space-y-1">
+              <h4 className="text-sm font-black text-brand-dark uppercase tracking-widest">Recommended: Deployment Strategy</h4>
+              <p className="text-xs font-bold text-text-secondary leading-relaxed">
+                Choose <span className="text-brand-blue">"Direct Only"</span> for your first visit. This ensures the job site opens instantly without being blocked by your browser. 
+                <span className="block mt-1 opacity-70 italic font-medium text-text-tertiary">Don't worry—the system will save this node to your dashboard, so you can easily activate full tracking later.</span>
+              </p>
+            </div>
           </motion.div>
         )}
 
@@ -482,6 +536,16 @@ const PublicJobView = () => {
         onConfirm={handleConfirmApply}
         loading={processing}
       />
+      
+      {job && (
+        <FeedbackModal 
+          isOpen={isFeedbackModalOpen} 
+          onClose={() => setIsFeedbackModalOpen(false)}
+          jobId={job._id || job.id}
+          jobTitle={job.title}
+          companyName={job.company}
+        />
+      )}
     </div>
   );
 };

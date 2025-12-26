@@ -73,6 +73,8 @@ export interface IHobby {
 export interface IResume extends Document {
   userId: mongoose.Types.ObjectId;
   title: string;
+  targetLocation?: string; // e.g. 'South Africa'
+  educationLevel?: string; // e.g. 'Grade 12'
   personalInfo: {
     firstName: string;
     lastName: string;
@@ -84,6 +86,15 @@ export interface IResume extends Document {
     githubUrl?: string;
     websiteUrl?: string;
     professionalTitle?: string;
+    // South African CV Specific Fields
+    identityNumber?: string;
+    dateOfBirth?: string;
+    gender?: string;
+    nationality?: string;
+    maritalStatus?: string;
+    homeLanguage?: string;
+    otherLanguages?: string;
+    residentialAddress?: string;
   };
   professionalSummary: string;
   workExperience: IWorkExperience[];
@@ -251,6 +262,8 @@ const ResumeSchema = new Schema<IResume>({
     required: true,
     trim: true
   },
+  targetLocation: { type: String },
+  educationLevel: { type: String },
   personalInfo: {
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
@@ -261,11 +274,18 @@ const ResumeSchema = new Schema<IResume>({
     portfolioUrl: { type: String },
     githubUrl: { type: String },
     websiteUrl: { type: String },
-    professionalTitle: { type: String }
+    professionalTitle: { type: String },
+    identityNumber: { type: String },
+    dateOfBirth: { type: String },
+    gender: { type: String },
+    nationality: { type: String },
+    maritalStatus: { type: String },
+    homeLanguage: { type: String },
+    otherLanguages: { type: String },
+    residentialAddress: { type: String }
   },
   professionalSummary: {
-    type: String,
-    required: true
+    type: String
   },
   workExperience: [WorkExperienceSchema],
   education: [EducationSchema],

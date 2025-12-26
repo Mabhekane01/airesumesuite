@@ -11,6 +11,7 @@ export interface IJobApplication extends Document {
   jobUrl?: string;
   jobSource: 'manual' | 'linkedin' | 'indeed' | 'glassdoor' | 'company_website' | 'referral' | 'recruiter';
   jobId?: string; // External job ID from platforms
+  jobPostingId?: mongoose.Types.ObjectId; // Link to internal JobPosting
   
   // Location & Remote Info
   jobLocation: {
@@ -342,6 +343,7 @@ const JobApplicationSchema = new Schema<IJobApplication>({
     default: 'manual'
   },
   jobId: String,
+  jobPostingId: { type: Schema.Types.ObjectId, ref: 'JobPosting' },
   
   // Location
   jobLocation: {

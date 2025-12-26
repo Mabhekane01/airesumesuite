@@ -194,7 +194,7 @@ export function handleApiError(error: any): AppError {
 
   // Handle validation errors
   if (status === 400 && data?.errors) {
-    const validationErrors: ValidationError[] = data.errors.map((err: any) => ({
+    const validationErrors: ValidationErrorDetail[] = data.errors.map((err: any) => ({
       field: err.field,
       message: err.message,
       code: err.code || 'VALIDATION_ERROR'
@@ -222,17 +222,15 @@ export function handleApiError(error: any): AppError {
   }, error);
 }
 
-export function validateResumeData(resumeData: any): ValidationError[] {
-  const errors: ValidationError[] = [];
+export function validateResumeData(resumeData: any): ValidationErrorDetail[] {
+  const errors: ValidationErrorDetail[] = [];
 
   // Personal info validation
   if (!resumeData.personalInfo?.firstName?.trim()) {
     errors.push({
       field: 'personalInfo.firstName',
       message: 'First name is required',
-      code: 'REQUIRED_FIELD',
-      name: 'ValidationError',
-      errors: []
+      code: 'REQUIRED_FIELD'
     });
   }
 
@@ -240,9 +238,7 @@ export function validateResumeData(resumeData: any): ValidationError[] {
     errors.push({
       field: 'personalInfo.lastName',
       message: 'Last name is required',
-      code: 'REQUIRED_FIELD',
-      name: 'ValidationError',
-      errors: []
+      code: 'REQUIRED_FIELD'
     });
   }
 
@@ -250,17 +246,13 @@ export function validateResumeData(resumeData: any): ValidationError[] {
     errors.push({
       field: 'personalInfo.email',
       message: 'Email is required',
-      code: 'REQUIRED_FIELD',
-      name: 'ValidationError',
-      errors: []
+      code: 'REQUIRED_FIELD'
     });
   } else if (!isValidEmail(resumeData.personalInfo.email)) {
     errors.push({
       field: 'personalInfo.email',
       message: 'Please enter a valid email address',
-      code: 'INVALID_EMAIL',
-      name: 'ValidationError',
-      errors: []
+      code: 'INVALID_EMAIL'
     });
   }
 
@@ -268,9 +260,7 @@ export function validateResumeData(resumeData: any): ValidationError[] {
     errors.push({
       field: 'personalInfo.phone',
       message: 'Phone number is required',
-      code: 'REQUIRED_FIELD',
-      name: 'ValidationError',
-      errors: []
+      code: 'REQUIRED_FIELD'
     });
   }
 
@@ -279,9 +269,7 @@ export function validateResumeData(resumeData: any): ValidationError[] {
     errors.push({
       field: 'workExperience',
       message: 'At least one work experience entry is required',
-      code: 'REQUIRED_FIELD',
-      name: 'ValidationError',
-      errors: []
+      code: 'REQUIRED_FIELD'
     });
   } else {
     resumeData.workExperience.forEach((job: any, index: number) => {
@@ -289,9 +277,7 @@ export function validateResumeData(resumeData: any): ValidationError[] {
         errors.push({
           field: `workExperience.${index}.jobTitle`,
           message: 'Job title is required',
-          code: 'REQUIRED_FIELD',
-          name: 'ValidationError',
-          errors: []
+          code: 'REQUIRED_FIELD'
         });
       }
       
@@ -299,9 +285,7 @@ export function validateResumeData(resumeData: any): ValidationError[] {
         errors.push({
           field: `workExperience.${index}.company`,
           message: 'Company name is required',
-          code: 'REQUIRED_FIELD',
-          name: 'ValidationError',
-          errors: []
+          code: 'REQUIRED_FIELD'
         });
       }
       
@@ -309,9 +293,7 @@ export function validateResumeData(resumeData: any): ValidationError[] {
         errors.push({
           field: `workExperience.${index}.startDate`,
           message: 'Start date is required',
-          code: 'REQUIRED_FIELD',
-          name: 'ValidationError',
-          errors: []
+          code: 'REQUIRED_FIELD'
         });
       }
     });
@@ -322,9 +304,7 @@ export function validateResumeData(resumeData: any): ValidationError[] {
     errors.push({
       field: 'skills',
       message: 'At least one skill is required',
-      code: 'REQUIRED_FIELD',
-      name: 'ValidationError',
-      errors: []
+      code: 'REQUIRED_FIELD'
     });
   }
 

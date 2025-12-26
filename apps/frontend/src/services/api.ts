@@ -470,6 +470,7 @@ export const jobApplicationAPI = {
 
   async createApplication(applicationData: any): Promise<{
     success: boolean;
+    message?: string;
     data?: {
       application: any;
     };
@@ -480,6 +481,7 @@ export const jobApplicationAPI = {
 
   async getApplication(id: string): Promise<{
     success: boolean;
+    message?: string;
     data?: {
       application: any;
     };
@@ -490,6 +492,7 @@ export const jobApplicationAPI = {
 
   async updateApplication(id: string, updates: any): Promise<{
     success: boolean;
+    message?: string;
     data?: {
       application: any;
     };

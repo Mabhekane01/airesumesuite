@@ -1,5 +1,6 @@
 import { JobApplication, IJobApplication } from '../models/JobApplication';
 import { User, IUser } from '../models/User';
+import { JobPosting } from '../models/JobPosting';
 import { IUserProfile } from '../models';
 import { Resume } from '../models/Resume';
 import { ResumeShare } from '../models/ResumeShare';
@@ -34,6 +35,7 @@ export interface CreateJobApplicationData {
   jobDescription: string;
   jobUrl?: string;
   jobSource?: string;
+  jobPostingId?: string;
   enableTracking?: boolean;
   trackingSettings?: {
     showQrCode?: boolean;
@@ -204,6 +206,7 @@ class JobApplicationService {
       // Convert string IDs to ObjectIds for database storage
       const processedApplicationData = {
         ...applicationData,
+        jobPostingId: applicationData.jobPostingId ? new mongoose.Types.ObjectId(applicationData.jobPostingId) : undefined,
         documentsUsed: applicationData.documentsUsed ? {
           ...applicationData.documentsUsed,
           resumeId: applicationData.documentsUsed.resumeId ? 
@@ -357,7 +360,7 @@ class JobApplicationService {
       console.log(`📝 Application created with match score: ${matchScore}%`);
       console.log(`🎯 Job: ${application.jobTitle} at ${application.companyName}`);
       console.log(`📄 Has job description: ${application.jobDescription?.length > 0 ? 'Yes' : 'No'} (${application.jobDescription?.length || 0} chars)`);
-      console.log(`📝 Has resume content: ${!!application.documentsUsed?.resumeContent ? 'Yes' : 'No'} (${application.documentsUsed?.resumeContent?.length || 0} chars)`);
+      console.log(`📝 Has resume content: ${application.documentsUsed?.resumeContent ? 'Yes' : 'No'} (${application.documentsUsed?.resumeContent?.length || 0} chars)`);
 
       await application.save();
       console.log(`📝 Job application created with match score: ${application.metrics.applicationScore}%`);
@@ -435,8 +438,9 @@ class JobApplicationService {
       const skip = (pagination.page - 1) * pagination.limit;
 
       // Execute queries
-      const [applications, total, statusSummary, prioritySummary, scoreSummary] = await Promise.all([
+      let [applications, total, statusSummary, prioritySummary, scoreSummary] = await Promise.all([
         JobApplication.find(query)
+          .populate('jobPostingId')
           .sort(sortCriteria)
           .skip(skip)
           .limit(pagination.limit)
@@ -455,6 +459,28 @@ class JobApplicationService {
           { $group: { _id: null, avgScore: { $avg: '$metrics.applicationScore' }, totalCount: { $sum: 1 } } }
         ])
       ]);
+
+      // AUTO-HEAL: Check for missing jobPostingId and try to link via jobUrl
+      // This ensures older applications get linked to the trust system
+      const healPromises = applications.map(async (app: any) => {
+        if (!app.jobPostingId && app.jobUrl) {
+          try {
+            const matchedJob = await JobPosting.findOne({ url: app.jobUrl }).select('_id authenticityScore trustBadges reviewCount');
+            if (matchedJob) {
+              // Update the application record asynchronously
+              await JobApplication.updateOne({ _id: app._id }, { jobPostingId: matchedJob._id });
+              
+              // Patch the returned object so the UI updates immediately
+              app.jobPostingId = matchedJob;
+            }
+          } catch (err) {
+            // Ignore healing errors, don't block response
+          }
+        }
+        return app;
+      });
+      
+      applications = await Promise.all(healPromises);
 
       // Format summary data
       const byStatus = statusSummary.reduce((acc, item) => {
@@ -495,7 +521,9 @@ class JobApplicationService {
       const application = await JobApplication.findOne({
         _id: applicationId,
         userId: new mongoose.Types.ObjectId(userId)
-      }).lean();
+      })
+      .populate('jobPostingId')
+      .lean();
 
       if (application && application.documentsUsed?.trackingShareId) {
         // Fetch tracking stats
