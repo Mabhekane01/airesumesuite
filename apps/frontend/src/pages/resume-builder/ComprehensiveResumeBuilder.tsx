@@ -139,6 +139,17 @@ const ComprehensiveResumeBuilderContent: React.FC = () => {
     const urlParams = new URLSearchParams(location.search);
     const templateId = location.state?.templateId || urlParams.get('templateId');
     const isLatexTemplate = location.state?.isLatexTemplate || urlParams.get('isLatexTemplate') === 'true';
+    
+    // Auto-fill location if provided in state (from TemplateSelection)
+    if (location.state?.targetLocation) {
+      updateResumeData({
+        personalInfo: {
+          ...resumeData.personalInfo,
+          location: resumeData.personalInfo?.location || location.state.targetLocation
+        }
+      });
+    }
+
     if (templateId) {
       updateResumeData({ template: templateId, isLatexTemplate: isLatexTemplate });
     }
@@ -155,7 +166,7 @@ const ComprehensiveResumeBuilderContent: React.FC = () => {
       }
       loadResumeForEditing(editId);
     }
-  }, [location.state?.templateId, location.search, id]);
+  }, [location.state?.templateId, location.state?.targetLocation, location.search, id]);
 
   const loadResumeForEditing = async (resumeId: string) => {
     try {
@@ -200,13 +211,74 @@ const ComprehensiveResumeBuilderContent: React.FC = () => {
     setCurrentStep(stepIndex);
   }, [saveToStorage]);
 
+  const validateCurrentStep = (): boolean => {
+    const currentStepId = steps[currentStep].id;
+    const isRequired = steps[currentStep].required;
+
+    if (!isRequired) return true;
+
+    switch (currentStepId) {
+      case 'personal-info':
+        if (!resumeData.personalInfo?.firstName || !resumeData.personalInfo?.lastName) {
+          toast.error('First Name and Last Name are required.');
+          return false;
+        }
+        if (!resumeData.personalInfo?.email) {
+          toast.error('Email is required.');
+          return false;
+        }
+        if (!resumeData.personalInfo?.phone) {
+          toast.error('Phone number is required.');
+          return false;
+        }
+        if (!resumeData.personalInfo?.location) {
+          toast.error('Location is required.');
+          return false;
+        }
+        return true;
+        
+      case 'work-experience':
+        if (!resumeData.workExperience || resumeData.workExperience.length === 0) {
+          toast.error('At least one work experience entry is required.');
+          return false;
+        }
+        return true;
+        
+      case 'education':
+        if (!resumeData.education || resumeData.education.length === 0) {
+          toast.error('At least one education entry is required.');
+          return false;
+        }
+        return true;
+        
+      case 'skills':
+        if (!resumeData.skills || resumeData.skills.length === 0) {
+          toast.error('At least one skill is required.');
+          return false;
+        }
+        return true;
+        
+      case 'professional-summary':
+        if (!resumeData.professionalSummary || resumeData.professionalSummary.trim().length === 0) {
+          toast.error('Professional Summary is required.');
+          return false;
+        }
+        return true;
+        
+      default:
+        return true;
+    }
+  };
+
   const handleNext = useCallback(() => {
     if (currentStep < steps.length - 1) {
-      // Auto-save when moving to next
-      saveToStorage();
-      setCurrentStep(currentStep + 1);
+      if (validateCurrentStep()) {
+        // Auto-save when moving to next
+        saveToStorage();
+        setCurrentStep(currentStep + 1);
+      }
     }
-  }, [currentStep, saveToStorage]);
+  }, [currentStep, saveToStorage, resumeData]);
 
   const handlePrevious = useCallback(() => {
     if (currentStep > 0) {
@@ -219,10 +291,31 @@ const ComprehensiveResumeBuilderContent: React.FC = () => {
   const handleSaveResume = async () => {
     setIsLoading(true);
     try {
+      // Identity Protocol Validation
       if (!resumeData.personalInfo?.firstName || !resumeData.personalInfo?.lastName) {
         toast.error('Identity Protocol Error: Name required.');
+        setIsLoading(false);
         return;
       }
+      
+      if (!resumeData.personalInfo?.email) {
+        toast.error('Identity Protocol Error: Email required.');
+        setIsLoading(false);
+        return;
+      }
+      
+      if (!resumeData.personalInfo?.phone) {
+        toast.error('Identity Protocol Error: Phone number required.');
+        setIsLoading(false);
+        return;
+      }
+      
+      if (!resumeData.personalInfo?.location) {
+        toast.error('Identity Protocol Error: Location required.');
+        setIsLoading(false);
+        return;
+      }
+      
       toast.loading('Synchronizing architecture...', { id: 'save-resume' });
       
       // Robust cleaning of all resume sections

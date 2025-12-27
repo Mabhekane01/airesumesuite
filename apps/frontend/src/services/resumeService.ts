@@ -1542,7 +1542,7 @@ export class ResumeService {
         throw new Error('Invalid resume ID');
       }
       const response = await api.get(`/resumes/${stringResumeId}/pdf-info`);
-      return response.data.data;
+      return { ...response.data.data, hasSavedPDF: true };
     } catch (error) {
       console.error('❌ Failed to get saved PDF info:', error);
       return { hasSavedPDF: false };

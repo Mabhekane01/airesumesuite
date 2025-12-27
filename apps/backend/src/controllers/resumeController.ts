@@ -11,6 +11,7 @@ import { body, validationResult } from 'express-validator';
 import { AuthenticatedRequest } from '../middleware/auth';
 import { IResume } from '../models/Resume';
 import { convertDatesForFrontend } from '../utils/dateHandler';
+import { templateRenderer } from '../services/resume-builder/templateRenderer';
 
 
 
@@ -492,18 +493,32 @@ export class StandardizedResumeController {
 
       // Fallback to LaTeX engine
       console.log('📄 [LATEX] Generating PDF using LaTeX template system');
-      const { templateService } = await import('../services/resume-builder/templateService');
-      const latex = await templateService.generateLatex(
-        templateId,
-        standardizedData
-      );
+      
+      let pdfBuffer: Buffer;
+      
+      try {
+        const { templateService } = await import('../services/resume-builder/templateService');
+        const latex = await templateService.generateLatex(
+          templateId,
+          standardizedData
+        );
 
-      const pdfBuffer = await resumeService.generateLatexResumePDF(standardizedData, {
-        templateId,
-        outputFormat,
-        cleanup: true,
-        optimizedLatexCode: latex
-      });
+        pdfBuffer = await resumeService.generateLatexResumePDF(standardizedData, {
+          templateId,
+          outputFormat,
+          cleanup: true,
+          optimizedLatexCode: latex
+        });
+      } catch (latexError) {
+        console.error('⚠️ LaTeX generation failed, falling back to HTML/Puppeteer engine:', latexError);
+        console.log(`📄 [HTML-FALLBACK] Generating PDF using HTML engine for template: ${templateId}`);
+        
+        // Fallback to HTML/Puppeteer
+        pdfBuffer = await templateRenderer.generatePDF({
+          ...standardizedData,
+          templateId
+        });
+      }
 
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Length', pdfBuffer.length);
@@ -583,19 +598,31 @@ export class StandardizedResumeController {
       const standardizedData = convertToStandardizedData(resume, trackingUrl);
 
       console.log(`📄 [downloadTrackedPDF] Loading template: ${templateId}`);
-      const { templateService } = await import('../services/resume-builder/templateService');
-      const latex = await templateService.generateLatex(
-        templateId,
-        standardizedData
-      );
+      let pdfBuffer: Buffer;
+      
+      try {
+        const { templateService } = await import('../services/resume-builder/templateService');
+        const latex = await templateService.generateLatex(
+          templateId,
+          standardizedData
+        );
 
-      console.log('🏗️ [downloadTrackedPDF] Compiling LaTeX to PDF...');
-      let pdfBuffer = await resumeService.generateLatexResumePDF(standardizedData, {
-        templateId,
-        outputFormat: 'pdf',
-        cleanup: true,
-        optimizedLatexCode: latex
-      });
+        console.log('🏗️ [downloadTrackedPDF] Compiling LaTeX to PDF...');
+        pdfBuffer = await resumeService.generateLatexResumePDF(standardizedData, {
+          templateId,
+          outputFormat: 'pdf',
+          cleanup: true,
+          optimizedLatexCode: latex
+        });
+      } catch (latexError) {
+        console.error('⚠️ [downloadTrackedPDF] LaTeX generation failed, falling back to HTML/Puppeteer engine:', latexError);
+        console.log(`📄 [HTML-FALLBACK] Generating PDF using HTML engine for template: ${templateId}`);
+        
+        pdfBuffer = await templateRenderer.generatePDF({
+          ...standardizedData,
+          templateId
+        });
+      }
 
       // ALWAYS apply the advanced tracking layer (QR Code, Metadata, Link) to the final buffer
       console.log('🔗 [downloadTrackedPDF] Applying advanced tracking layer to generated PDF...');
@@ -658,8 +685,11 @@ export class StandardizedResumeController {
 
       console.log('📄 [LATEX] Generating unsaved resume PDF using standardized templates');
 
-      // Use template service
-      const { templateService } = await import('../services/resume-builder/templateService');
+      let pdfBuffer: Buffer;
+
+      try {
+        // Use template service
+        const { templateService } = await import('../services/resume-builder/templateService');
         const latex = await templateService.generateLatex(
           templateId,
           resumeData
@@ -667,12 +697,21 @@ export class StandardizedResumeController {
 
         console.log('🔍 [LATEX-DEBUG] Generated LaTeX for unsaved preview:', latex);
 
-        const pdfBuffer = await resumeService.generateLatexResumePDF(resumeData, {
-        templateId,
-        outputFormat,
-        cleanup: true,
-        optimizedLatexCode: latex
-      });
+        pdfBuffer = await resumeService.generateLatexResumePDF(resumeData, {
+          templateId,
+          outputFormat,
+          cleanup: true,
+          optimizedLatexCode: latex
+        });
+      } catch (latexError) {
+        console.error('⚠️ Unsaved preview LaTeX generation failed, falling back to HTML/Puppeteer engine:', latexError);
+        console.log(`📄 [HTML-FALLBACK] Generating unsaved preview using HTML engine for template: ${templateId}`);
+        
+        pdfBuffer = await templateRenderer.generatePDF({
+          ...resumeData,
+          templateId
+        });
+      }
 
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Length', pdfBuffer.length);
@@ -1336,20 +1375,32 @@ export class StandardizedResumeController {
       // Fallback to LaTeX engine for other templates
       console.log('📄 [LATEX] Generating PDF using LaTeX template system');
       
-      const { templateService } = await import('../services/resume-builder/templateService');
-      const latex = await templateService.generateLatex(
-        templateId,
-        processedResumeData
-      );
+      let pdfBuffer: Buffer;
 
-      console.log('🔍 [LATEX-DEBUG] Generated LaTeX for preview:', latex);
+      try {
+        const { templateService } = await import('../services/resume-builder/templateService');
+        const latex = await templateService.generateLatex(
+          templateId,
+          processedResumeData
+        );
 
-      const { latexService } = await import('../services/resume-builder/latexService');
-      const pdfBuffer = await latexService.compileLatexToPDF(
-        latex,
-        templateId,
-        'pdf'
-      );
+        console.log('🔍 [LATEX-DEBUG] Generated LaTeX for preview:', latex);
+
+        const { latexService } = await import('../services/resume-builder/latexService');
+        pdfBuffer = await latexService.compileLatexToPDF(
+          latex,
+          templateId,
+          'pdf'
+        );
+      } catch (latexError) {
+        console.error('⚠️ Preview PDF LaTeX generation failed, falling back to HTML/Puppeteer engine:', latexError);
+        console.log(`📄 [HTML-FALLBACK] Generating preview PDF using HTML engine for template: ${templateId}`);
+        
+        pdfBuffer = await templateRenderer.generatePDF({
+          ...processedResumeData,
+          templateId
+        });
+      }
 
       // Validate the PDF buffer
       if (!pdfBuffer || pdfBuffer.length === 0) {
@@ -1630,19 +1681,29 @@ export class StandardizedResumeController {
         } else {
         */
           // Use LaTeX engine
-          const { templateService } = await import('../services/resume-builder/templateService');
-          const { latexService } = await import('../services/resume-builder/latexService');
-          
-          const latex = await templateService.generateLatex(
-            templateId || 'template01',
-            standardizedData
-          );
-          
-          pdfBuffer = await latexService.compileLatexToPDF(
-            latex,
-            templateId || 'template01',
-            'pdf'
-          );
+          try {
+            const { templateService } = await import('../services/resume-builder/templateService');
+            const { latexService } = await import('../services/resume-builder/latexService');
+            
+            const latex = await templateService.generateLatex(
+              templateId || 'template01',
+              standardizedData
+            );
+            
+            pdfBuffer = await latexService.compileLatexToPDF(
+              latex,
+              templateId || 'template01',
+              'pdf'
+            );
+          } catch (latexError) {
+            console.error('⚠️ Save PDF LaTeX generation (from data) failed, falling back to HTML/Puppeteer engine:', latexError);
+            console.log(`📄 [HTML-FALLBACK] Generating PDF using HTML engine for template: ${templateId || 'template01'}`);
+            
+            pdfBuffer = await templateRenderer.generatePDF({
+              ...standardizedData,
+              templateId: templateId || 'template01'
+            });
+          }
         
         
         console.log('✅ PDF generated from resume data, size:', pdfBuffer.length);
@@ -1669,19 +1730,30 @@ export class StandardizedResumeController {
         } else {
         */
           // Use LaTeX engine
-          const { templateService } = await import('../services/resume-builder/templateService');
-          const { latexService } = await import('../services/resume-builder/latexService');
-          
-          const latex = await templateService.generateLatex(
-            templateId || savedResume.templateId || 'template01',
-            standardizedData
-          );
-          
-          pdfBuffer = await latexService.compileLatexToPDF(
-            latex,
-            templateId || savedResume.templateId || 'template01',
-            'pdf'
-          );
+          try {
+            const { templateService } = await import('../services/resume-builder/templateService');
+            const { latexService } = await import('../services/resume-builder/latexService');
+            
+            const latex = await templateService.generateLatex(
+              templateId || savedResume.templateId || 'template01',
+              standardizedData
+            );
+            
+            pdfBuffer = await latexService.compileLatexToPDF(
+              latex,
+              templateId || savedResume.templateId || 'template01',
+              'pdf'
+            );
+          } catch (latexError) {
+            console.error('⚠️ Save PDF LaTeX generation (from DB) failed, falling back to HTML/Puppeteer engine:', latexError);
+            const fallbackTemplateId = templateId || savedResume.templateId || 'template01';
+            console.log(`📄 [HTML-FALLBACK] Generating PDF using HTML engine for template: ${fallbackTemplateId}`);
+            
+            pdfBuffer = await templateRenderer.generatePDF({
+              ...standardizedData,
+              templateId: fallbackTemplateId
+            });
+          }
         
         
         console.log('✅ PDF generated from saved resume, size:', pdfBuffer.length);

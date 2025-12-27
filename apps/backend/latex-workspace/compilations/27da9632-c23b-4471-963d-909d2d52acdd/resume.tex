@@ -1,0 +1,138 @@
+\documentclass[11pt,a4paper]{article}
+
+% ------------ AI Resume Suite Custom Commands ------------
+\ifx\introduction\undefined
+  \usepackage{etoolbox}
+  \usepackage{keycommand}
+  \usepackage{xstring}
+
+  \def \separator { \textbf{\Large\textbullet} }
+
+  \newkeycommand{\introduction}[fullname,email,phone,linkedin,github]{%
+      \begin{center}
+          {\Huge\bfseries \commandkey{fullname}} \\
+          \vspace{0.5em}
+          \ifcommandkey{phone}{\commandkey{phone}}{}
+          \ifcommandkey{email}{\ifcommandkey{phone}{ \separator }{} \href{mailto:\commandkey{email}}{\commandkey{email}}}{}
+          \ifcommandkey{linkedin}{\ifcommandkey{email}{ \separator }{\ifcommandkey{phone}{ \separator }{}} \href{https://\commandkey{linkedin}}{\commandkey{linkedin}}}{}
+          \ifcommandkey{github}{\ifcommandkey{linkedin}{ \separator }{\ifcommandkey{email}{ \separator }{\ifcommandkey{phone}{ \separator }{}}}} \href{https://\commandkey{github}}{\commandkey{github}}{}
+      \end{center}
+  }
+
+  \providecommand{\summary}[1]{ \section{Summary} #1 }
+
+  \ifx\educationSection\undefined
+    \newenvironment{educationSection}[1]{ \section{#1} }{}
+  \fi
+
+  \newkeycommand{\educationItem}[university,college,program,graduation,grade,coursework]{%
+      {\bfseries \commandkey{program}} \hfill \commandkey{graduation} \\
+      \ifcommandkey{university}{\commandkey{university} \ifcommandkey{grade}{\hfill \commandkey{grade}}{} \\ }{}
+      \ifcommandkey{college}{\commandkey{college} \\ }{}
+      \ifcommandkey{coursework}{{\small \commandkey{coursework}} \\ }{}
+      \vspace{0.5em}
+  }
+
+  \ifx\skillsSection\undefined
+    \newenvironment{skillsSection}[1]{ \section{#1} }{}
+  \fi
+
+  \newkeycommand{\skillItem}[category,skills]{%
+      {\bfseries \commandkey{category}:} \commandkey{skills}
+  }
+
+  \ifx\experienceSection\undefined
+    \newenvironment{experienceSection}[1]{ \section{#1} }{}
+  \fi
+
+  \newkeycommand{\experienceItem}[company,position,location,duration]{%
+      {\bfseries \commandkey{company}} \ifcommandkey{location}{, \commandkey{location}}{} \hfill \commandkey{duration} \\
+      {\itshape \commandkey{position}}%
+  }
+
+  \newkeycommand{\projectItem}[title,duration,keyHighlight]{%
+      {\bfseries \commandkey{title}} \hfill \commandkey{duration} \\
+      \commandkey{keyHighlight}%
+  }
+\fi
+% ---------------------------------------------------------
+
+\usepackage[left=0.75in,top=0.75in,right=0.75in,bottom=1in]{geometry}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{array}
+\usepackage{etoolbox}
+\usepackage{keycommand}
+\usepackage{xstring}
+
+% Remove page numbers
+\pagestyle{empty}
+
+% Define colors
+\definecolor{emailblue}{RGB}{0,0,255}
+\definecolor{bulletred}{RGB}{255,0,0}
+
+% Custom section command
+\newcommand{\cvsection}[1]{%
+    \vspace{10pt}
+    {\large\bfseries\underline{#1}}
+    \vspace{5pt}
+}
+
+% Custom entry command for CV details
+\newcommand{\cventry}[2]{%
+    \noindent\begin{tabular}{@{}p{4.5cm}p{0.3cm}p{10cm}@{}}
+    #1 & : & #2
+    \end{tabular}\\[2pt]
+}
+
+\begin{document}
+
+% Heavy border around entire page
+\noindent\fbox{\parbox{\dimexpr\textwidth-2\fboxsep-2\fboxrule}{
+\vspace{10pt}
+
+% Title at the top
+\begin{center}
+{\Large\bfseries CV OF BHEKI NGWENYA}
+\end{center}
+\vspace{15pt}
+\cvsection{PERSONAL DETAILS}
+
+\cventry{Surname}{Ngwenya}
+\cventry{Name}{Bheki}
+\cventry{Identity Number}{0005086026084}
+\cventry{Date of Birth}{18/05/2025}
+\cventry{Gender}{Male}
+\cventry{Nationality}{South Africa}
+\cventry{Marital Status}{Single}
+\cventry{Home Language}{Siswati}
+\cventry{Other Languages}{English, Setswana}
+\cventry{Residential Address}{\begin{tabular}[t]{@{}l@{}} STAND NO 010522, MSOGWABA\\ MSOGWABA \end{tabular}}
+\vspace{8pt}
+\noindent\begin{tabular}{@{}p{4.5cm}p{0.3cm}p{10cm}@{}}
+Contact Number & & 0797394470
+\end{tabular}\\[2pt]
+
+\noindent\begin{tabular}{@{}p{4.5cm}p{0.3cm}p{10cm}@{}}
+Email Address & \textcolor{bulletred}{$\bullet$} & \textcolor{emailblue}{\href{mailto:ngwenyabheki275@gmail.com}{ngwenyabheki275@gmail.com}}
+\end{tabular}
+
+\cvsection{EDUCATIONAL BACKGROUND}
+
+\cventry{Highest Grade passed}{Grade 12}
+\cventry{Year}{2020}
+\cventry{School}{Hillaria Mthethwa Secondary School}
+\cventry{Subjects Passed}{Mathematics, Physical Sciences, Life Sciences, Geography, Life Orientation, SiSwati, English First Additional Language}
+
+\cvsection{SKILLS}
+
+Hardworking, Teamwork, Attention to Details, Easy to communicate
+
+
+\vspace{10pt}
+}}
+
+\end{document}

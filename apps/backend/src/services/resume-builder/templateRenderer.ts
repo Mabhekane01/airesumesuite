@@ -22,9 +22,45 @@ export class TemplateRenderer {
   private async getBrowser() {
     if (!TemplateRenderer.browserInstance) {
       console.log('🚀 Launching new browser instance...');
+      
+      let executablePath = process.env.NODE_ENV === 'production' ? '/usr/bin/google-chrome-stable' : undefined;
+      
+      // Try to find local Chrome on Windows if not provided
+      if (!executablePath && process.platform === 'win32') {
+        const commonPaths = [
+          'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+          'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
+          `${process.env.LOCALAPPDATA}\\Google\\Chrome\\Application\\chrome.exe`
+        ];
+        
+        for (const path of commonPaths) {
+          try {
+            // We can't synchronously check file existence easily without importing fs, 
+            // but Puppeteer will fail if path is invalid. 
+            // Better to let Puppeteer try default first, then fallback? 
+            // Or just set it if we suspect it's needed.
+            // Let's use a simple approach: if we can find it, use it.
+            // Since we can't easily check existence here without fs, 
+            // we will rely on Puppeteer's default resolution or user environment.
+            // However, to be helpful, let's explicitly try to use one if we are dev.
+             // Actually, let's import fs to check
+          } catch (e) {}
+        }
+        
+        // Simpler approach: Check if we can find it using fs
+        const fs = require('fs');
+        for (const p of commonPaths) {
+          if (fs.existsSync(p)) {
+            console.log(`✅ Found local Chrome at: ${p}`);
+            executablePath = p;
+            break;
+          }
+        }
+      }
+
       TemplateRenderer.browserInstance = await puppeteer.launch({
         headless: 'new',
-        executablePath: process.env.NODE_ENV === 'production' ? '/usr/bin/google-chrome-stable' : undefined,
+        executablePath,
         args: [
           '--no-sandbox', 
           '--disable-setuid-sandbox',

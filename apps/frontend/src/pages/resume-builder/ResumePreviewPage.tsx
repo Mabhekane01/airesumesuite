@@ -25,6 +25,27 @@ export default function ResumePreviewPage() {
   const handleSaveToRepository = async () => {
     if (!resume) return;
     
+    // Validate required fields before saving
+    if (!resume.personalInfo?.firstName || !resume.personalInfo?.lastName) {
+      toast.error('Identity Protocol Error: Name required.');
+      return;
+    }
+    
+    if (!resume.personalInfo?.email) {
+      toast.error('Identity Protocol Error: Email required.');
+      return;
+    }
+    
+    if (!resume.personalInfo?.phone) {
+      toast.error('Identity Protocol Error: Phone number required.');
+      return;
+    }
+    
+    if (!resume.personalInfo?.location) {
+      toast.error('Identity Protocol Error: Location required.');
+      return;
+    }
+    
     try {
       setIsGenerating(true);
       toast.loading('Synchronizing architecture to repository...', { id: 'save-resume' });
@@ -44,6 +65,23 @@ export default function ResumePreviewPage() {
       const result = await resumeService.createResume(resumeToSave);
       
       if (result.success) {
+        // Always attempt to save the PDF to generatedFiles
+        // If pdfBlob is available, we use it. If not, backend will generate it.
+        if (result.data && (result.data._id || result.data.id)) {
+          const newResumeId = result.data._id || result.data.id;
+          try {
+            console.log('🔄 Saving generated PDF to database for new resume...');
+            await resumeService.savePDFToDatabase(newResumeId, {
+              templateId: resumeToSave.templateId,
+              pdfBlob: pdfBlob || undefined,
+              resumeData: resumeToSave
+            });
+            console.log('✅ PDF saved to generatedFiles successfully.');
+          } catch (pdfError) {
+            console.warn('⚠️ Failed to save generated PDF to DB (non-critical):', pdfError);
+          }
+        }
+
         toast.success('✅ Architecture deployment saved to repository.', { id: 'save-resume' });
         // Small delay to let user see success message
         setTimeout(() => {
@@ -121,18 +159,43 @@ export default function ResumePreviewPage() {
         };
         setResume(transformedResume);
         
-        // Pre-generate PDF for smoother preview experience
+        // Try to load saved PDF from DB first, otherwise generate preview
         try {
-          console.log('🔄 Pre-generating PDF preview for architecture:', id);
-          console.log('📊 Data payload:', JSON.stringify(transformedResume, null, 2));
-          const blob = await resumeService.generateLatexPDFPreview(
-            transformedResume, 
-            transformedResume.template
-          );
-          setPdfBlob(blob);
-          console.log('✅ Architecture preview synchronized successfully');
+          console.log('🔍 Checking for saved PDF in repository...');
+          // Determine the correct ID to check - handle both string and object formats
+          const resumeIdToCheck = typeof id === 'string' ? id : (id as any)._id || (id as any).id;
+          
+          // Check if PDF info exists first to avoid unnecessary download attempts
+          const pdfInfo = await resumeService.getSavedPDFInfo(resumeIdToCheck);
+          
+          if (pdfInfo && pdfInfo.hasSavedPDF) {
+            console.log('✅ Found saved PDF, retrieving from database...');
+            const savedPdfBlob = await resumeService.getSavedPDF(resumeIdToCheck);
+            setPdfBlob(savedPdfBlob);
+            console.log('📦 Loaded existing PDF from repository.');
+          } else {
+            console.log('🔄 No saved PDF found, generating preview...');
+            const blob = await resumeService.generateLatexPDFPreview(
+              transformedResume, 
+              transformedResume.template
+            );
+            setPdfBlob(blob);
+            console.log('✅ Architecture preview generated successfully');
+          }
         } catch (pdfErr) {
-          console.warn('⚠️ PDF pre-generation failed, component will retry on mount');
+          console.warn('⚠️ PDF retrieval/generation failed, component will handle missing blob:', pdfErr);
+          // Fallback to generation if retrieval failed but we didn't try generation yet
+          if (!pdfBlob) {
+             try {
+                const blob = await resumeService.generateLatexPDFPreview(
+                  transformedResume, 
+                  transformedResume.template
+                );
+                setPdfBlob(blob);
+             } catch (genErr) {
+                console.warn('⚠️ Fallback generation also failed:', genErr);
+             }
+          }
         }
       } catch (error) {
         console.error('Preview data error:', error);

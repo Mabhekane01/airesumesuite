@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { formatDistanceToNow } from 'date-fns';
 import { jobApplicationAPI } from '../../services/api';
 import { TrustScore } from '../../components/jobs/TrustScore';
 import { FeedbackModal } from '../../components/jobs/FeedbackModal';
@@ -94,8 +95,15 @@ const ApplicationCard = ({ application, onDelete, onVerify, onViewFeedback }: { 
            
            <div className="flex items-center gap-1.5 text-[8px] md:text-[9px] font-bold text-text-tertiary uppercase tracking-widest bg-surface-50 px-2 py-1 rounded-md border border-surface-100">
              <Clock size={10} />
-             {new Date(application.applicationDate).toLocaleDateString()}
+             Applied: {new Date(application.applicationDate).toLocaleDateString()}
            </div>
+
+           {application.jobPostingId && typeof application.jobPostingId === 'object' && (application.jobPostingId.postedDate || application.jobPostingId.createdAt) && (
+             <div className="flex items-center gap-1.5 text-[8px] md:text-[9px] font-bold text-brand-blue uppercase tracking-widest bg-brand-blue/5 px-2 py-1 rounded-md border border-brand-blue/10">
+               <Calendar size={10} />
+               Listed: {formatDistanceToNow(new Date(application.jobPostingId.postedDate || application.jobPostingId.createdAt), { addSuffix: true })}
+             </div>
+           )}
            
            <div className="flex gap-2">
              <Link 

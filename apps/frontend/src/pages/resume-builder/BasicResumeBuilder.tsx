@@ -81,7 +81,14 @@ const BasicResumeBuilderContent = () => {
         ...localData,
         targetLocation: location.state.targetLocation,
         educationLevel: location.state.educationLevel,
-        templateId: 'basic_sa'
+        templateId: 'basic_sa',
+        personalInfo: {
+          ...(localData.personalInfo || {}),
+          // Auto-fill residential address if empty so user sees it
+          residentialAddress: localData.personalInfo?.residentialAddress || location.state.targetLocation,
+          // Ensure backend required 'location' field is set
+          location: localData.personalInfo?.location || location.state.targetLocation
+        }
       };
       setLocalData(updated);
       updateResumeData(updated);

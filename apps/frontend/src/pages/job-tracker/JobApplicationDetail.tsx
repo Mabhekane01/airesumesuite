@@ -141,7 +141,7 @@ const STATUS_CONFIG: Record<string, any> = {
 };
 
 export default function JobApplicationDetail() {
-  const { applicationId } = useParams<{ applicationId: string }>();
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [application, setApplication] = useState<JobApplication | null>(null);
   const [loading, setLoading] = useState(true);
@@ -153,18 +153,18 @@ export default function JobApplicationDetail() {
   const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
 
   useEffect(() => {
-    if (applicationId) {
+    if (id) {
       loadApplication();
     } else {
       toast.error('Invalid deployment ID');
       navigate('/dashboard/applications');
     }
-  }, [applicationId]);
+  }, [id]);
 
   const loadApplication = async () => {
     try {
       setLoading(true);
-      const response = await jobApplicationAPI.getApplication(applicationId!);
+      const response = await jobApplicationAPI.getApplication(id!);
       if (response.success && response.data) {
         setApplication(response.data.application);
         await loadInterviews();
@@ -180,9 +180,9 @@ export default function JobApplicationDetail() {
   };
 
   const loadInterviews = async () => {
-    if (!applicationId) return;
+    if (!id) return;
     try {
-      const response = await interviewAPI.getInterviews({ applicationId });
+      const response = await interviewAPI.getInterviews({ applicationId: id });
       if (response.success && response.data) {
         setInterviews(response.data.interviews || []);
         for (const interview of response.data.interviews || []) {
@@ -389,7 +389,7 @@ export default function JobApplicationDetail() {
                     {[
                       { icon: BuildingOfficeIcon, label: "Institutional Host", val: application.companyName },
                       { icon: MapPinIcon, label: "Deployment Node", val: `${application.jobLocation.city || 'Global'}, ${application.jobLocation.country || 'Remote'}` },
-                      { icon: CurrencyDollarIcon, label: "Compensation Band", val: application.compensation?.salaryRange ? `$${application.compensation.salaryRange.min.toLocaleString()} - $${application.compensation.salaryRange.max.toLocaleString()}` : "Confidential" },
+                      { icon: CurrencyDollarIcon, label: "Compensation Band", val: (application.compensation?.salaryRange?.min !== undefined && application.compensation?.salaryRange?.max !== undefined) ? `$${application.compensation.salaryRange.min.toLocaleString()} - $${application.compensation.salaryRange.max.toLocaleString()}` : "Confidential" },
                       { icon: CalendarIcon, label: "Initialization Date", val: new Date(application.applicationDate).toLocaleDateString() }
                     ].map((item, i) => (
                       <div key={i} className="flex items-center gap-4 md:gap-5 p-4 md:p-5 bg-surface-50 border border-surface-200 rounded-xl md:rounded-2xl group hover:border-brand-blue/30 transition-all shadow-sm">

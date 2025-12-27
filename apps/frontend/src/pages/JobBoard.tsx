@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { MapPin, Briefcase, Building, Plus, Search, ExternalLink, RefreshCw, X, Globe, Cpu, Clock, ChevronRight, Trash2, CheckCircle2, Bold, Italic, List, ListOrdered, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { formatDistanceToNow } from 'date-fns';
 import { locationService } from '../services/locationService';
 import { jobApplicationAPI } from '../services/api';
 import { TrustScore } from '../components/jobs/TrustScore';
@@ -13,6 +14,8 @@ import { FeedbackModal } from '../components/jobs/FeedbackModal';
 // --- Components ---
 
 const JobCard = ({ job, isAdmin, onApprove, onDelete, onEdit, onViewFeedback, isApplied, applicationId }: { job: any, isAdmin?: boolean, onApprove?: (id: string) => void, onDelete?: (id: string) => void, onEdit?: (job: any) => void, onViewFeedback?: (job: any) => void, isApplied?: boolean, applicationId?: string }) => {
+  const displayDate = job.postedDate || job.createdAt;
+  
   return (
     <motion.div 
       initial={{ opacity: 0, y: 10 }}
@@ -36,6 +39,12 @@ const JobCard = ({ job, isAdmin, onApprove, onDelete, onEdit, onViewFeedback, is
               <MapPin size={10} className="text-brand-blue" /> 
               {job.location}
             </div>
+            {displayDate && (
+              <div className="flex items-center gap-1.5 text-[8px] md:text-[10px] font-black text-text-tertiary uppercase tracking-[0.15em] bg-surface-50 px-2.5 py-1.5 rounded-lg border border-surface-100 group-hover:bg-white transition-colors">
+                <Clock size={10} className="text-brand-blue" />
+                {formatDistanceToNow(new Date(displayDate), { addSuffix: true })}
+              </div>
+            )}
             {/* Trust Score Integration */}
             {(job.authenticityScore !== undefined || job.trustBadges?.length > 0) && (
               <div title="Click to view community reviews" className="cursor-pointer hover:scale-105 transition-transform">
@@ -140,7 +149,7 @@ const JobActionModal = ({ isOpen, onClose, editingJob }: { isOpen: boolean; onCl
   const [loading, setLoading] = useState(false);
   const editorRef = useRef<HTMLDivElement>(null);
   const [formData, setFormData] = useState({
-    title: '', company: '', location: '', country: '', description: '', url: '', jobType: 'Full-time', salaryRange: ''
+    title: '', company: '', location: '', country: '', description: '', url: '', jobType: 'Full-time', salaryRange: '', postedDate: ''
   });
 
   useEffect(() => {
@@ -153,9 +162,10 @@ const JobActionModal = ({ isOpen, onClose, editingJob }: { isOpen: boolean; onCl
         description: editingJob.description || '',
         url: editingJob.url || '',
         jobType: editingJob.jobType || 'Full-time',
-        salaryRange: editingJob.salaryRange || ''
+        salaryRange: editingJob.salaryRange || '',
+        postedDate: editingJob.postedDate ? new Date(editingJob.postedDate).toISOString().split('T')[0] : ''
       } : {
-        title: '', company: '', location: '', country: '', description: '', url: '', jobType: 'Full-time', salaryRange: ''
+        title: '', company: '', location: '', country: '', description: '', url: '', jobType: 'Full-time', salaryRange: '', postedDate: ''
       };
       
       setFormData(initialData);
@@ -337,6 +347,11 @@ const JobActionModal = ({ isOpen, onClose, editingJob }: { isOpen: boolean; onCl
                 <input className="input-resume w-full px-4 md:px-5 py-3 md:py-4 rounded-xl text-sm font-bold bg-surface-50 border border-surface-200 outline-none focus:ring-4 focus:ring-brand-blue/5 transition-all" value={formData.salaryRange} onChange={e => setFormData({...formData, salaryRange: e.target.value})} placeholder="e.g. $120k" />
               </div>
             </div>
+            
+            <div className="space-y-1.5 mb-6">
+              <label className="text-[9px] md:text-[10px] font-black text-brand-dark uppercase tracking-[0.2em] ml-1">Posted Date (Optional)</label>
+              <input type="date" className="input-resume w-full px-4 md:px-5 py-3 md:py-4 rounded-xl text-sm font-bold bg-surface-50 border border-surface-200 outline-none focus:ring-4 focus:ring-brand-blue/5 transition-all" value={formData.postedDate} onChange={e => setFormData({...formData, postedDate: e.target.value})} />
+            </div>
 
             <div className="space-y-2">
               <label className="text-[9px] md:text-[10px] font-black text-brand-dark uppercase tracking-[0.2em] ml-1">Technical Specs</label>
@@ -386,6 +401,7 @@ const JobBoard = () => {
   const navigate = useNavigate();
   const [country, setCountry] = useState('');
   const [keyword, setKeyword] = useState('');
+  const [dateRange, setDateRange] = useState('all');
   const [filteredJobs, setFilteredJobs] = useState<any[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingJob, setEditingJob] = useState<any>(null);
@@ -424,9 +440,29 @@ const JobBoard = () => {
   useEffect(() => {
     const lowerKeyword = keyword.toLowerCase();
     const sourceData = activeTab === 'approved' ? jobs : pendingJobs;
-    const filtered = sourceData.filter(job => !lowerKeyword || job.title.toLowerCase().includes(lowerKeyword) || job.company.toLowerCase().includes(lowerKeyword) || job.description.toLowerCase().includes(lowerKeyword));
+    
+    let filtered = sourceData.filter(job => 
+      !lowerKeyword || 
+      job.title.toLowerCase().includes(lowerKeyword) || 
+      job.company.toLowerCase().includes(lowerKeyword) || 
+      job.description.toLowerCase().includes(lowerKeyword)
+    );
+
+    if (dateRange !== 'all') {
+      const now = new Date();
+      filtered = filtered.filter(job => {
+        const jobDate = new Date(job.postedAt || job.createdAt);
+        const diffDays = (now.getTime() - jobDate.getTime()) / (1000 * 3600 * 24);
+        
+        if (dateRange === 'today') return diffDays <= 1;
+        if (dateRange === 'week') return diffDays <= 7;
+        if (dateRange === 'month') return diffDays <= 30;
+        return true;
+      });
+    }
+
     setFilteredJobs(filtered);
-  }, [keyword, jobs, pendingJobs, activeTab]);
+  }, [keyword, jobs, pendingJobs, activeTab, dateRange]);
 
   const handleCountrySearch = () => country && fetchJobs(country);
   const handleRefresh = async () => {
@@ -474,6 +510,20 @@ const JobBoard = () => {
           <div className="flex-1 relative group">
             <div className="absolute left-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg bg-surface-50 flex items-center justify-center group-focus-within:bg-brand-blue group-focus-within:text-white transition-all border border-surface-100 shadow-inner"><Search size={14} strokeWidth={2.5} /></div>
             <input type="text" placeholder="Search mission parameters..." className="w-full bg-surface-50/50 border border-surface-200 rounded-xl md:rounded-2xl py-3.5 md:py-5 pl-14 md:pl-20 pr-4 text-sm font-black text-brand-dark focus:ring-8 focus:ring-brand-blue/5 outline-none transition-all placeholder:text-text-tertiary" value={keyword} onChange={(e) => setKeyword(e.target.value)} />
+          </div>
+          
+          <div className="flex-1 lg:max-w-[200px] relative group">
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg bg-surface-50 flex items-center justify-center group-focus-within:bg-brand-blue group-focus-within:text-white transition-all border border-surface-100 shadow-inner"><Clock size={14} strokeWidth={2.5} /></div>
+            <select 
+              className="w-full bg-surface-50/50 border border-surface-200 rounded-xl md:rounded-2xl py-3.5 md:py-5 pl-14 md:pl-16 pr-4 text-sm font-black text-brand-dark focus:ring-8 focus:ring-brand-blue/5 outline-none transition-all appearance-none cursor-pointer"
+              value={dateRange}
+              onChange={(e) => setDateRange(e.target.value)}
+            >
+              <option value="all">All Time</option>
+              <option value="today">Last 24 Hours</option>
+              <option value="week">Last 7 Days</option>
+              <option value="month">Last 30 Days</option>
+            </select>
           </div>
         </div>
       </div>

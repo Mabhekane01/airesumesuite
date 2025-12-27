@@ -216,11 +216,15 @@ export default function CareerCoachPage() {
           </div>
 
           {/* Chat Modal */}
-          <ChatModal 
-            isOpen={isChatModalOpen} 
-            onClose={() => setIsChatModalOpen(false)}
-            resumeTitle={selectedResume?.title}
-          />
+          <AnimatePresence>
+            {isChatModalOpen && (
+              <ChatModal 
+                isOpen={isChatModalOpen} 
+                onClose={() => setIsChatModalOpen(false)}
+                resumeTitle={selectedResume?.title}
+              />
+            )}
+          </AnimatePresence>
         </div>
       )}
     </PremiumFeatureGate>
