@@ -3,7 +3,6 @@
     "target": "ES2022",
     "module": "commonjs",
     "lib": ["ES2022"],
-    "types": ["node"], // ✅ This is the missing piece
     "outDir": "./dist",
     "rootDir": "./src",
     "strict": false,
@@ -26,7 +25,7 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src/**/*", "src/types/global.d.ts"],
+  "include": ["src/**/*"],
   "exclude": [
     "node_modules",
     "dist",

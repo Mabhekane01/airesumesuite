@@ -1,4 +1,4 @@
-import { createBrowserRouter, RouterProvider, Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuthStore } from './stores/authStore';
 import Layout from './components/layout/Layout';
 import DashboardLayout from './components/dashboard/DashboardLayout';
@@ -29,6 +29,7 @@ import DashboardHome from './components/dashboard/DashboardHome';
 import Documents from './pages/Documents';
 import PublicJobView from './pages/PublicJobView';
 import PublicResumeShareView from './pages/PublicResumeShareView';
+import LoginPage from './pages/auth/LoginPage';
 
 
 import { GlobalPendingJobModal } from './components/ui/GlobalPendingJobModal';
@@ -39,8 +40,12 @@ import './utils/apiDebug'; // Load API debug tools
 // Protected Route Component
 function ProtectedRoute({ children }: { children?: React.ReactNode }) {
   const { isAuthenticated } = useAuthStore();
+  const location = useLocation();
+
   if (!isAuthenticated) {
-    return <Navigate to="/" replace />;
+    // Save the location we were trying to go to
+    localStorage.setItem('redirectAfterLogin', location.pathname + location.search);
+    return <Navigate to="/login" replace />;
   }
   // If children are provided (like DashboardLayout), render them.
   // Otherwise render Outlet for nested routes.
@@ -57,6 +62,10 @@ const AppRoutes = [
   {
     path: "/",
     element: <Layout><LandingPageSimple /></Layout>
+  },
+  {
+    path: "/login",
+    element: <LoginPage />
   },
   {
     path: "/templates",

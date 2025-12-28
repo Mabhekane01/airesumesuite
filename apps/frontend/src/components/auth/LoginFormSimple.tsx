@@ -102,6 +102,11 @@ export default function LoginFormSimple({ onToggleMode, onClose, onSuccess }: Lo
   };
 
   const handleGoogleLogin = () => {
+    // Sync localStorage redirect to authStore for Google Login
+    const storedRedirect = localStorage.getItem('redirectAfterLogin');
+    if (storedRedirect) {
+      useAuthStore.getState().setRedirectAfterLogin(storedRedirect);
+    }
     googleLogin();
   };
 

@@ -5,11 +5,13 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import compression from 'compression';
 import rateLimit from 'express-rate-limit';
+import session from 'express-session';
+import { RedisStore } from 'connect-redis';
 import path from 'path';
 import dotenv from 'dotenv';
 import { EnvironmentValidator } from './utils/environmentValidator';
 import { connectDB } from './config/database';
-import { connectRedis } from './config/redis';
+import { connectRedis, redisClient } from './config/redis';
 import { configurePassport } from './config/passport';
 import passport from 'passport';
 import resumeRoutes from './routes/resumeRoutes';
@@ -203,11 +205,25 @@ app.use(morgan('combined'));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// Session configuration
+app.use(session({
+  store: new RedisStore({ client: redisClient }),
+  secret: process.env.SESSION_SECRET || 'your-secret-key',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production', // secure cookies in production
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  }
+}));
+
 // Configure passport strategies (after env vars are loaded)
 configurePassport();
 
 // Passport middleware
 app.use(passport.initialize());
+app.use(passport.session());
 
 // Enterprise middleware
 app.use(requestIdMiddleware);

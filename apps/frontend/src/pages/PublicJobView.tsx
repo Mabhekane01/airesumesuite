@@ -14,7 +14,8 @@ import {
   Clock,
   ExternalLink,
   X,
-  Download
+  Download,
+  BarChart2
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuthStore } from '../stores/authStore';
@@ -176,7 +177,7 @@ const PublicJobView = () => {
       toast.info('Please sign in to track this application', {
         description: 'You can still apply directly, but tracking helps you manage your search.'
       });
-      localStorage.setItem('redirectAfterLogin', window.location.pathname);
+      localStorage.setItem('redirectAfterLogin', window.location.pathname + '?autoTrack=true');
       navigate('/login');
       return;
     }
@@ -415,18 +416,18 @@ const PublicJobView = () => {
               <h3 className="text-xl font-black uppercase tracking-tight">Application Protocol Active.</h3>
               <p className="text-sm font-bold opacity-80">You have already synchronized this node with your tracking grid. Redundant deployments are restricted to ensure data integrity.</p>
             </div>
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-3">
               <button 
                 onClick={() => setIsFeedbackModalOpen(true)}
-                className="px-6 py-3 bg-white/20 text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg hover:bg-white/30 transition-colors"
+                className="px-6 py-3.5 bg-brand-dark text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-lg hover:bg-slate-800 transition-colors flex items-center justify-center gap-2"
               >
-                Verify Authenticity
+                <ShieldCheck size={14} /> Verify
               </button>
               <Link 
                 to={`/dashboard/applications/${existingApplicationId}`}
-                className="px-8 py-3 bg-white text-brand-success rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg hover:scale-105 transition-transform"
+                className="px-6 py-3.5 bg-white text-brand-dark rounded-xl font-black text-xs uppercase tracking-widest shadow-lg hover:scale-105 transition-transform flex items-center justify-center gap-2"
               >
-                Access Analytics
+                <BarChart2 size={14} className="stroke-[3]" /> Analytics
               </Link>
             </div>
           </motion.div>
