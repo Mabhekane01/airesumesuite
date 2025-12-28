@@ -123,11 +123,15 @@ const PublicJobView = () => {
           setJob(jobData);
           
           // Check if user already applied to this job
-          if (isAuthenticated && jobData.url) {
+          if (isAuthenticated) {
             try {
               const appsRes = await jobApplicationAPI.getApplications();
               if (appsRes.success) {
-                const existingApp = appsRes.data.applications.find(app => app.jobUrl === jobData.url);
+                const jobId = jobData._id || jobData.id;
+                const existingApp = appsRes.data.applications.find(app => 
+                  (app.jobPostingId && (app.jobPostingId === jobId || app.jobPostingId.toString() === jobId)) || 
+                  (jobData.url && app.jobUrl === jobData.url)
+                );
                 if (existingApp) {
                   setExistingApplicationId(existingApp._id);
                 }

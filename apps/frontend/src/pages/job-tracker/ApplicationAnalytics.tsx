@@ -130,6 +130,19 @@ export default function ApplicationAnalytics() {
   const [selectedTrendMetric, setSelectedTrendMetric] = useState('applications');
   const [selectedMonthlyMetric, setSelectedMonthlyMetric] = useState('applications');
 
+  const formatLocation = (loc: any) => {
+    if (!loc) return 'Unknown Coordinates';
+    if (typeof loc === 'string') return loc;
+    if (typeof loc === 'object') {
+      if (loc.city && loc.country) return `${loc.city}, ${loc.country}`;
+      if (loc.country) return loc.country;
+      if (loc.city) return loc.city;
+      if (loc.coordinates) return 'Remote Signal (Coordinates Tracked)';
+      return 'Encrypted Location';
+    }
+    return 'Unknown Coordinates';
+  };
+
   useEffect(() => {
     loadAnalytics();
   }, [timeRange]);
@@ -378,49 +391,127 @@ export default function ApplicationAnalytics() {
           </div>
           
           {documentEngagement.recentViews && documentEngagement.recentViews.length > 0 && (
-            <div className="bg-white border border-surface-200 rounded-[2rem] md:rounded-[3rem] p-6 md:p-10 shadow-lg relative overflow-hidden mt-6 md:mt-8">
-              <div className="flex items-center justify-between mb-6 md:mb-8">
+            <div className="space-y-6 mt-12 md:mt-16">
+              <div className="flex items-center justify-between px-2">
                 <div className="space-y-1">
-                  <h3 className="text-xl md:text-2xl font-display font-black text-brand-dark tracking-tight leading-none uppercase">Signal Access Logs.</h3>
-                  <p className="text-[10px] md:text-xs font-bold text-text-tertiary uppercase tracking-widest">Real-time recruiter interactions</p>
+                  <h3 className="text-xl md:text-2xl font-display font-black text-brand-dark tracking-tight leading-none uppercase">Signal Access Analytics.</h3>
+                  <p className="text-[10px] md:text-xs font-bold text-text-tertiary uppercase tracking-widest">Recruiter engagement grouped by deployment node</p>
                 </div>
               </div>
               
-              <div className="overflow-x-auto -mx-6 md:mx-0">
-                <table className="w-full min-w-[600px]">
-                  <thead>
-                    <tr className="border-b border-surface-100 text-left">
-                      <th className="pb-4 text-[9px] md:text-[10px] font-black text-text-tertiary uppercase tracking-widest pl-6 md:pl-4">Document Node</th>
-                      <th className="pb-4 text-[9px] md:text-[10px] font-black text-text-tertiary uppercase tracking-widest">Source IP / Location</th>
-                      <th className="pb-4 text-[9px] md:text-[10px] font-black text-text-tertiary uppercase tracking-widest">Client Signature</th>
-                      <th className="pb-4 text-[9px] md:text-[10px] font-black text-text-tertiary uppercase tracking-widest text-right pr-6 md:pr-4">Timestamp</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-surface-100">
-                    {documentEngagement.recentViews.map((view, idx) => (
-                      <tr key={idx} className="group hover:bg-surface-50 transition-colors">
-                        <td className="py-4 pl-6 md:pl-4">
-                          <div className="font-bold text-brand-dark text-sm">{view.documentTitle}</div>
-                        </td>
-                        <td className="py-4">
-                          <div className="flex flex-col">
-                            <span className="font-mono text-[10px] md:text-xs text-brand-blue bg-brand-blue/5 px-2 py-0.5 rounded w-fit mb-1">{view.ipAddress}</span>
-                            {view.location && typeof view.location === 'string' && (
-                              <span className="text-[9px] md:text-[10px] font-bold text-text-tertiary uppercase tracking-wider">{view.location}</span>
-                            )}
+              <div className="grid grid-cols-1 gap-6">
+                {(() => {
+                  // Group views by document title
+                  const groupedViews = documentEngagement.recentViews.reduce((acc: any, view) => {
+                    if (!acc[view.documentTitle]) {
+                      acc[view.documentTitle] = {
+                        title: view.documentTitle,
+                        views: [],
+                        totalHits: 0,
+                        lastViewed: view.viewedAt,
+                        locations: new Set()
+                      };
+                    }
+                    acc[view.documentTitle].views.push(view);
+                    acc[view.documentTitle].totalHits++;
+                    if (new Date(view.viewedAt) > new Date(acc[view.documentTitle].lastViewed)) {
+                      acc[view.documentTitle].lastViewed = view.viewedAt;
+                    }
+                    if (view.location) acc[view.documentTitle].locations.add(view.location);
+                    return acc;
+                  }, {});
+
+                  return Object.values(groupedViews).map((group: any, idx: number) => (
+                    <div key={idx} className="bg-white border border-surface-200 rounded-[2rem] md:rounded-[2.5rem] overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 group/node">
+                      <div className="p-6 md:p-10 flex flex-col md:flex-row md:items-center justify-between gap-6 md:gap-10 border-b border-surface-100/60 bg-white group-hover/node:bg-surface-50/30 transition-colors">
+                        <div className="flex items-center gap-5">
+                          <div className="w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-brand-blue/5 border border-brand-blue/10 flex items-center justify-center text-brand-blue shadow-inner group-hover/node:scale-110 transition-transform duration-500">
+                            <DocumentTextIcon className="w-7 h-7 md:w-8 md:h-8" />
                           </div>
-                        </td>
-                        <td className="py-4">
-                          <div className="text-[10px] md:text-xs text-text-secondary max-w-[150px] md:max-w-xs truncate" title={view.userAgent}>{view.userAgent}</div>
-                        </td>
-                        <td className="py-4 text-right pr-6 md:pr-4">
-                          <div className="font-bold text-brand-dark text-[10px] md:text-xs">{new Date(view.viewedAt).toLocaleDateString()}</div>
-                          <div className="text-[9px] md:text-[10px] text-text-tertiary font-mono">{new Date(view.viewedAt).toLocaleTimeString()}</div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                          <div>
+                            <h4 className="text-lg md:text-2xl font-black text-brand-dark tracking-tight leading-none group-hover/node:text-brand-blue transition-colors">{group.title}</h4>
+                            <div className="flex flex-wrap items-center gap-4 mt-3">
+                              <div className="flex items-center gap-1.5 text-[9px] md:text-[10px] font-black text-text-tertiary uppercase tracking-widest bg-white px-2.5 py-1.5 rounded-lg border border-surface-100 shadow-sm">
+                                <ClockIcon className="w-3.5 h-3.5 text-brand-blue opacity-40" />
+                                Latest: {new Date(group.lastViewed).toLocaleDateString()}
+                              </div>
+                              <div className="flex items-center gap-1.5 text-[9px] md:text-[10px] font-black text-text-tertiary uppercase tracking-widest bg-white px-2.5 py-1.5 rounded-lg border border-surface-100 shadow-sm">
+                                <MapPinIcon className="w-3.5 h-3.5 text-brand-blue opacity-40" />
+                                {group.locations.size} {group.locations.size === 1 ? 'Location' : 'Locations'}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center gap-8 md:gap-12">
+                          <div className="text-right">
+                            <p className="text-3xl md:text-5xl font-black text-brand-dark tracking-tighter leading-none">{group.totalHits}</p>
+                            <p className="text-[9px] md:text-[10px] font-black text-text-tertiary uppercase tracking-[0.2em] mt-1">Total Hits</p>
+                          </div>
+                          <button 
+                            onClick={() => {
+                              const el = document.getElementById(`logs-${idx}`);
+                              if (el) {
+                                const isHidden = el.classList.contains('hidden');
+                                el.classList.toggle('hidden', !isHidden);
+                                // Simple rotate animation for arrow
+                                const arrow = document.getElementById(`arrow-${idx}`);
+                                if (arrow) arrow.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+                              }
+                            }}
+                            className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-brand-dark text-white flex items-center justify-center shadow-lg hover:scale-110 active:scale-95 transition-all group/btn"
+                          >
+                            <ArrowDownIcon id={`arrow-${idx}`} className="w-5 h-5 md:w-6 md:h-6 transition-transform duration-300" />
+                          </button>
+                        </div>
+                      </div>
+
+                      <div id={`logs-${idx}`} className="hidden bg-surface-50 animate-in fade-in slide-in-from-top-4 duration-500">
+                        <div className="p-6 md:p-10">
+                          <div className="bg-white rounded-2xl md:rounded-[2rem] border border-surface-200 shadow-inner overflow-hidden">
+                            <div className="overflow-x-auto">
+                              <table className="w-full min-w-[600px]">
+                                <thead>
+                                  <tr className="bg-surface-50/50 border-b border-surface-100 text-left">
+                                    <th className="py-4 px-6 text-[10px] font-black text-text-tertiary uppercase tracking-widest">Source Entity / IP</th>
+                                    <th className="py-4 px-6 text-[10px] font-black text-text-tertiary uppercase tracking-widest">Location Signals</th>
+                                    <th className="py-4 px-6 text-[10px] font-black text-text-tertiary uppercase tracking-widest">Client Signature</th>
+                                    <th className="py-4 px-6 text-[10px] font-black text-text-tertiary uppercase tracking-widest text-right">Timestamp</th>
+                                  </tr>
+                                </thead>
+                                <tbody className="divide-y divide-surface-100">
+                                  {group.views.map((view: any, vIdx: number) => (
+                                    <tr key={vIdx} className="hover:bg-brand-blue/[0.02] transition-colors">
+                                      <td className="py-4 px-6">
+                                        <div className="flex flex-col">
+                                          <span className="font-mono text-[11px] text-brand-blue bg-brand-blue/5 px-2 py-0.5 rounded w-fit mb-1 font-bold tracking-tight">{view.ipAddress}</span>
+                                          <span className="text-[10px] font-bold text-text-tertiary/60 uppercase">Node Access Point</span>
+                                        </div>
+                                      </td>
+                                      <td className="py-4 px-6">
+                                        <div className="flex items-center gap-2">
+                                          <div className="w-2 h-2 rounded-full bg-brand-success opacity-40" />
+                                          <span className="text-xs font-bold text-brand-dark">{formatLocation(view.location)}</span>
+                                        </div>
+                                      </td>
+                                      <td className="py-4 px-6">
+                                        <div className="text-[10px] md:text-xs text-text-secondary max-w-[200px] truncate font-medium italic opacity-70" title={view.userAgent}>{view.userAgent}</div>
+                                      </td>
+                                      <td className="py-4 px-6 text-right">
+                                        <div className="font-bold text-brand-dark text-xs">{new Date(view.viewedAt).toLocaleDateString()}</div>
+                                        <div className="text-[10px] text-text-tertiary font-mono">{new Date(view.viewedAt).toLocaleTimeString()}</div>
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ));
+                })()}
               </div>
             </div>
           )}

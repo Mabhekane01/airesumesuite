@@ -257,7 +257,8 @@ ai-job-suite/
    GEMINI_API_KEY=your-gemini-api-key
    
    # Frontend (.env)
-   VITE_API_URL=http://localhost:3001/api/v1
+      # Frontend (.env)
+   VITE_API_BASE_URL=http://localhost:3001/api/v1
    ```
 
 5. **Start with Docker (Recommended)**
@@ -347,7 +348,8 @@ Key environment variables for the frontend:
 
 ```env
 # API Configuration
-VITE_API_URL=http://localhost:3001/api/v1
+   # Frontend (.env)
+   VITE_API_BASE_URL=http://localhost:3001/api/v1
 VITE_APP_NAME=AI Job Suite
 VITE_APP_VERSION=1.0.0
 

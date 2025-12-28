@@ -5,6 +5,8 @@ import { IUserProfile } from '../models';
 import { Resume } from '../models/Resume';
 import { ResumeShare } from '../models/ResumeShare';
 import { aiOptimizationService } from './aiOptimizationService';
+import { analyticsService } from './analyticsService';
+import { advancedAnalyticsService } from './advancedAnalyticsService';
 import { resumeService as builderResumeService } from './resume-builder/resumeService';
 import mongoose from 'mongoose';
 import crypto from 'crypto';
@@ -692,6 +694,15 @@ class JobApplicationService {
 
       if (result.deletedCount === 0) {
         throw new Error('Job application not found');
+      }
+
+      // Success: Clear analytics cache so stats are updated immediately
+      try {
+        analyticsService.clearCache();
+        advancedAnalyticsService.clearCache();
+        console.log(`🧹 Analytics and Advanced Analytics caches cleared after deleting application ${applicationId}`);
+      } catch (cacheError) {
+        console.warn('⚠️ Failed to clear analytics caches:', cacheError);
       }
     } catch (error) {
       if (error instanceof Error) {

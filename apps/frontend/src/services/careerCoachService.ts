@@ -8,7 +8,7 @@ const getAICoachResponse = async (message: string, resumeId: string): Promise<Re
     throw new Error('Authentication required');
   }
   
-  const baseUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:3001';
+  const baseUrl = (import.meta as any).env?.VITE_API_BASE_URL || 'http://localhost:3001';
   
   try {
     const response = await fetch(`${baseUrl}/api/v1/coach/chat`, {

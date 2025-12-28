@@ -408,7 +408,7 @@ const JobBoard = () => {
   const [feedbackJob, setFeedbackJob] = useState<any>(null); // For viewing feedback
   const [isScraping, setIsScraping] = useState(false);
   const [activeTab, setActiveTab] = useState<'approved' | 'pending'>('approved');
-  const [appliedJobUrls, setAppliedJobUrls] = useState<Record<string, string>>({});
+  const [appliedJobMap, setAppliedJobMap] = useState<Record<string, string>>({});
 
   const isAdmin = user?.role === 'admin';
   const isDashboard = location.pathname.startsWith('/dashboard');
@@ -424,9 +424,19 @@ const JobBoard = () => {
         if (user) {
           const appsRes = await jobApplicationAPI.getApplications();
           if (appsRes.success) {
-            const urlMap: Record<string, string> = {};
-            appsRes.data.applications.forEach(app => { if (app.jobUrl) urlMap[app.jobUrl] = app._id; });
-            setAppliedJobUrls(urlMap);
+            const jobMap: Record<string, string> = {};
+            appsRes.data.applications.forEach(app => { 
+              // Map by internal JobPosting ID (Most reliable)
+              if (app.jobPostingId) {
+                const idStr = typeof app.jobPostingId === 'string' ? app.jobPostingId : app.jobPostingId.toString();
+                jobMap[idStr] = app._id;
+              }
+              // Map by URL as fallback (Only if URL exists and is not empty)
+              if (app.jobUrl && app.jobUrl.trim().length > 0) {
+                jobMap[app.jobUrl] = app._id; 
+              }
+            });
+            setAppliedJobMap(jobMap);
           }
         }
       } catch (e) {
@@ -545,19 +555,25 @@ const JobBoard = () => {
         </div>
       ) : filteredJobs.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-10">
-          <AnimatePresence>{filteredJobs.map((job: any) => (
-            <JobCard 
-              key={job._id || job.id} 
-              job={job} 
-              isAdmin={isAdmin} 
-              onApprove={handleApprove} 
-              onDelete={handleDelete} 
-              onEdit={handleEdit}
-              onViewFeedback={(j) => setFeedbackJob(j)} 
-              isApplied={!!appliedJobUrls[job.url]} 
-              applicationId={appliedJobUrls[job.url]} 
-            />
-          ))}</AnimatePresence>
+          <AnimatePresence>{filteredJobs.map((job: any) => {
+            const jobId = job._id || job.id;
+            const jobUrl = job.url;
+            const appliedId = (jobId && appliedJobMap[jobId]) || (jobUrl && appliedJobMap[jobUrl]);
+            
+            return (
+              <JobCard 
+                key={jobId} 
+                job={job} 
+                isAdmin={isAdmin} 
+                onApprove={handleApprove} 
+                onDelete={handleDelete} 
+                onEdit={handleEdit}
+                onViewFeedback={(j) => setFeedbackJob(j)} 
+                isApplied={!!appliedId} 
+                applicationId={appliedId} 
+              />
+            );
+          })}</AnimatePresence>
         </div>
       ) : (
         <div className="bg-white border border-surface-200 rounded-[2rem] md:rounded-[3rem] py-16 md:py-32 text-center space-y-6 md:space-y-8 relative overflow-hidden shadow-sm group">

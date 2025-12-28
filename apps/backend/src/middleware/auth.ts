@@ -16,14 +16,27 @@ export const authMiddleware = async (req: AuthenticatedRequest, res: Response, n
     const authHeader = req.headers.authorization;
     
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.log('🔓 [AUTH] Missing or malformed authorization header');
       return res.status(401).json({ message: 'Access token required' });
     }
 
     const token = authHeader.split(' ')[1];
-    const decoded = verifyAccessToken(token);
+    
+    let decoded;
+    try {
+      decoded = verifyAccessToken(token);
+    } catch (jwtError: any) {
+      console.error('🔓 [AUTH] JWT Verification failed:', {
+        message: jwtError.message,
+        name: jwtError.name,
+        expiredAt: jwtError.expiredAt
+      });
+      return res.status(401).json({ message: 'Invalid access token' });
+    }
     
     const user = await User.findById(decoded.id);
     if (!user) {
+      console.error('🔓 [AUTH] User not found in database:', decoded.id);
       return res.status(401).json({ message: 'User not found' });
     }
 
@@ -35,7 +48,8 @@ export const authMiddleware = async (req: AuthenticatedRequest, res: Response, n
     };
     
     return next();
-  } catch (error) {
+  } catch (error: any) {
+    console.error('🔓 [AUTH] Unexpected error in authMiddleware:', error.message);
     return res.status(401).json({ message: 'Invalid access token' });
   }
 };
