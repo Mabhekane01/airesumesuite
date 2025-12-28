@@ -85,21 +85,21 @@ export default function ChatModal({ isOpen, onClose, resumeTitle }: ChatModalPro
   const showSuggestions = messages.length === 0 && !isLoading;
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-0 sm:p-4">
-      {/* Backdrop */}
+    <div className="fixed top-20 left-0 lg:left-72 right-0 bottom-0 z-[60] flex items-center justify-center p-0 sm:p-4">
+      {/* Backdrop - Only covers content area */}
       <motion.div 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         onClick={handleClose}
-        className="absolute inset-0 bg-brand-dark/20 backdrop-blur-sm"
+        className="absolute inset-0 bg-brand-dark/5 backdrop-blur-[2px]"
       />
 
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 20 }}
-        className="relative bg-white w-full max-w-5xl h-full sm:h-[85vh] md:rounded-[2rem] shadow-2xl flex flex-col overflow-hidden"
+        className="relative bg-white w-full h-full sm:h-[90%] md:rounded-[2rem] shadow-2xl flex flex-col overflow-hidden border-l border-surface-100 sm:border-none"
       >
         {/* Header */}
         <div className="px-6 py-4 border-b border-surface-100 flex items-center justify-between bg-white sticky top-0 z-30">
