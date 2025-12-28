@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowDownTrayIcon } from '@heroicons/react/24/outline';
 import { 
@@ -7,13 +8,8 @@ import {
   Copy, 
   Share2, 
   Mail, 
-  Clock, 
-  CheckCircle,
-  AlertCircle,
   Shield,
-  Eye,
-  ArrowRight,
-  Send
+  ArrowRight
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -40,17 +36,33 @@ export const ResumeShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, r
     }
   });
   const [trackingLink, setTrackingLink] = useState('');
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${API_BASE}/api/v1/share`, {
+      const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+      // Handle auth-storage format if needed
+      let actualToken = token;
+      if (!token) {
+         const authStorage = localStorage.getItem('auth-storage');
+         if (authStorage) {
+            const parsed = JSON.parse(authStorage);
+            actualToken = parsed?.state?.accessToken;
+         }
+      }
+
+      const response = await fetch(`${API_BASE}/api/v1/resumes/share`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${actualToken}`
         },
         body: JSON.stringify({
           resumeId,
@@ -60,7 +72,7 @@ export const ResumeShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, r
 
       const data = await response.json();
       if (data.success) {
-        setTrackingLink(data.data.trackingUrl);
+        setTrackingLink(data.data.trackingUrl || data.data.url);
         setStep('success');
         toast.success('Tracking protocol initialized.');
       } else {
@@ -78,75 +90,70 @@ export const ResumeShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, r
     toast.success('Link copied to clipboard.');
   };
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 overflow-y-auto overflow-x-hidden safe-area-mobile">
       <motion.div 
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
         onClick={onClose}
-        className="absolute inset-0 bg-brand-dark/20 backdrop-blur-md" 
+        className="fixed inset-0 bg-brand-dark/40 backdrop-blur-md" 
       />
       <motion.div 
         initial={{ scale: 0.95, opacity: 0, y: 20 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
-        className="relative bg-white border border-surface-200 rounded-[3rem] w-full max-w-xl p-12 shadow-2xl overflow-hidden group"
+        className="relative bg-white rounded-3xl w-full max-w-lg p-5 sm:p-8 shadow-2xl overflow-hidden my-auto max-h-[85vh] overflow-y-auto custom-scrollbar"
       >
-        <div className="absolute top-0 right-0 p-12 opacity-[0.02] pointer-events-none group-hover:opacity-[0.05] transition-opacity duration-700">
-          <Share2 size={120} />
+        <div className="absolute top-0 right-0 p-8 opacity-[0.03] pointer-events-none">
+          <Share2 size={100} />
         </div>
 
         <AnimatePresence mode="wait">
           {step === 'form' ? (
             <motion.div 
               key="form"
-              initial={{ opacity: 0, x: -20 }}
+              initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              className="space-y-10 relative z-10"
+              exit={{ opacity: 0, x: 10 }}
+              className="space-y-6 relative z-10"
             >
-              <div className="flex justify-between items-center pb-6 border-b border-surface-100">
-                <div className="flex items-center gap-5">
-                  <div className="w-14 h-14 rounded-2xl bg-brand-blue/5 border border-brand-blue/10 flex items-center justify-center text-brand-blue shadow-sm">
-                    <Share2 size={28} strokeWidth={2.5} />
-                  </div>
-                  <div>
-                    <h2 className="text-3xl font-display font-black text-brand-dark tracking-tighter uppercase leading-none">Initialize Share.</h2>
-                    <p className="text-xs font-bold text-text-tertiary uppercase tracking-widest mt-1">Deployment Node Tracking</p>
-                  </div>
+              <div className="flex justify-between items-start pb-2">
+                <div>
+                  <h2 className="text-xl sm:text-2xl font-black text-brand-dark tracking-tight">Share Tracking Link</h2>
+                  <p className="text-xs sm:text-sm font-medium text-text-secondary mt-1">Generate a secure, trackable link.</p>
                 </div>
-                <button onClick={onClose} className="w-10 h-10 rounded-full bg-surface-50 border border-surface-200 flex items-center justify-center text-text-tertiary hover:text-brand-dark hover:rotate-90 transition-all duration-300">
+                <button onClick={onClose} className="p-2 -mr-2 rounded-full hover:bg-surface-50 text-text-tertiary hover:text-brand-dark transition-colors">
                   <X size={20} />
                 </button>
               </div>
 
-              <form onSubmit={handleSubmit} className="space-y-8">
-                <div className="space-y-3">
-                  <label className="text-[10px] font-black text-brand-dark uppercase tracking-[0.2em] ml-1">Internal Reference Title</label>
+              <form onSubmit={handleSubmit} className="space-y-5">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-brand-dark uppercase tracking-wider ml-1">Reference Title</label>
                   <input 
                     required 
-                    className="w-full bg-surface-50 border border-surface-200 rounded-2xl py-4 px-6 text-sm font-bold text-brand-dark focus:ring-4 focus:ring-brand-blue/5 focus:border-brand-blue outline-none transition-all placeholder:text-text-tertiary" 
+                    className="w-full bg-surface-50 border-none rounded-xl py-3 px-4 text-sm font-semibold text-brand-dark focus:ring-2 focus:ring-brand-blue/20 outline-none transition-all placeholder:text-text-tertiary" 
                     value={shareData.title} 
                     onChange={e => setShareData({...shareData, title: e.target.value})} 
-                    placeholder="e.g. Sent to Google HR" 
+                    placeholder="e.g. Application to Google" 
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-6">
-                  <div className="space-y-3">
-                    <label className="text-[10px] font-black text-brand-dark uppercase tracking-[0.2em] ml-1">Recipient Identifier</label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-brand-dark uppercase tracking-wider ml-1">Recipient Name</label>
                     <input 
-                      className="w-full bg-surface-50 border border-surface-200 rounded-2xl py-4 px-6 text-sm font-bold text-brand-dark focus:ring-4 focus:ring-brand-blue/5 focus:border-brand-blue outline-none transition-all placeholder:text-text-tertiary" 
+                      className="w-full bg-surface-50 border-none rounded-xl py-3 px-4 text-sm font-semibold text-brand-dark focus:ring-2 focus:ring-brand-blue/20 outline-none transition-all placeholder:text-text-tertiary" 
                       value={shareData.recipientName} 
                       onChange={e => setShareData({...shareData, recipientName: e.target.value})} 
                       placeholder="Optional" 
                     />
                   </div>
-                  <div className="space-y-3">
-                    <label className="text-[10px] font-black text-brand-dark uppercase tracking-[0.2em] ml-1">Communication Protocol (Email)</label>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-brand-dark uppercase tracking-wider ml-1">Recipient Email</label>
                     <input 
                       type="email" 
-                      className="w-full bg-surface-50 border border-surface-200 rounded-2xl py-4 px-6 text-sm font-bold text-brand-dark focus:ring-4 focus:ring-brand-blue/5 focus:border-brand-blue outline-none transition-all placeholder:text-text-tertiary" 
+                      className="w-full bg-surface-50 border-none rounded-xl py-3 px-4 text-sm font-semibold text-brand-dark focus:ring-2 focus:ring-brand-blue/20 outline-none transition-all placeholder:text-text-tertiary" 
                       value={shareData.recipientEmail} 
                       onChange={e => setShareData({...shareData, recipientEmail: e.target.value})} 
                       placeholder="Optional" 
@@ -154,17 +161,16 @@ export const ResumeShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, r
                   </div>
                 </div>
 
-                <div className="p-8 bg-surface-50 border border-surface-200 rounded-[2.5rem] space-y-6 relative overflow-hidden group/settings shadow-inner">
-                  <div className="absolute inset-0 bg-brand-blue/[0.01] pointer-events-none group-hover/settings:bg-brand-blue/[0.03] transition-colors" />
-                  <h4 className="relative z-10 text-[10px] font-black text-text-tertiary uppercase tracking-[0.2em] flex items-center gap-2">
+                <div className="p-4 sm:p-5 bg-surface-50 rounded-2xl space-y-3">
+                  <h4 className="text-[10px] font-black text-text-tertiary uppercase tracking-wider flex items-center gap-2 mb-1">
                     <Shield size={12} className="text-brand-blue" />
-                    Tracking Protocol Configuration
+                    Tracking Settings
                   </h4>
-                  <div className="relative z-10 space-y-4">
-                    <label className="flex items-center justify-between p-4 bg-white/50 border border-surface-100 rounded-xl cursor-pointer group/label hover:bg-white transition-all shadow-sm">
-                      <span className="text-xs font-black text-brand-dark uppercase tracking-widest flex items-center gap-3">
-                        <Mail size={14} className="text-brand-blue opacity-40" />
-                        View Alerts
+                  <div className="space-y-2.5">
+                    <label className="flex items-center justify-between p-2.5 bg-white rounded-xl cursor-pointer hover:shadow-sm transition-all active:scale-[0.99]">
+                      <span className="text-xs sm:text-sm font-bold text-brand-dark flex items-center gap-2">
+                        <Mail size={14} className="text-text-tertiary" />
+                        Notify on View
                       </span>
                       <div className="relative">
                         <input 
@@ -173,15 +179,15 @@ export const ResumeShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, r
                           checked={shareData.settings.notifyOnView}
                           onChange={e => setShareData({...shareData, settings: {...shareData.settings, notifyOnView: e.target.checked}})}
                         />
-                        <div className="w-12 h-7 bg-surface-200 rounded-full peer-checked:bg-brand-blue transition-colors duration-300 shadow-inner" />
-                        <div className="absolute left-1 top-1 w-5 h-5 bg-white rounded-full transition-transform duration-300 peer-checked:translate-x-5 shadow-md" />
+                        <div className="w-9 h-5 bg-surface-200 rounded-full peer-checked:bg-brand-blue transition-colors duration-300" />
+                        <div className="absolute left-1 top-1 w-3 h-3 bg-white rounded-full transition-transform duration-300 peer-checked:translate-x-4 shadow-sm" />
                       </div>
                     </label>
                     
-                    <label className="flex items-center justify-between p-4 bg-white/50 border border-surface-100 rounded-xl cursor-pointer group/label hover:bg-white transition-all shadow-sm">
-                      <span className="text-xs font-black text-brand-dark uppercase tracking-widest flex items-center gap-3">
-                        <ArrowDownTrayIcon className="w-3.5 h-3.5 text-brand-blue opacity-40" />
-                        Asset Extraction (PDF)
+                    <label className="flex items-center justify-between p-2.5 bg-white rounded-xl cursor-pointer hover:shadow-sm transition-all active:scale-[0.99]">
+                      <span className="text-xs sm:text-sm font-bold text-brand-dark flex items-center gap-2">
+                        <ArrowDownTrayIcon className="w-3.5 h-3.5 text-text-tertiary" />
+                        Allow PDF Download
                       </span>
                       <div className="relative">
                         <input 
@@ -190,16 +196,19 @@ export const ResumeShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, r
                           checked={shareData.settings.allowDownload}
                           onChange={e => setShareData({...shareData, settings: {...shareData.settings, allowDownload: e.target.checked}})}
                         />
-                        <div className="w-12 h-7 bg-surface-200 rounded-full peer-checked:bg-brand-blue transition-colors duration-300 shadow-inner" />
-                        <div className="absolute left-1 top-1 w-5 h-5 bg-white rounded-full transition-transform duration-300 peer-checked:translate-x-5 shadow-md" />
+                        <div className="w-9 h-5 bg-surface-200 rounded-full peer-checked:bg-brand-blue transition-colors duration-300" />
+                        <div className="absolute left-1 top-1 w-3 h-3 bg-white rounded-full transition-transform duration-300 peer-checked:translate-x-4 shadow-sm" />
                       </div>
                     </label>
                   </div>
                 </div>
 
-                <button disabled={loading} type="submit" className="btn-primary w-full py-5 text-sm font-black uppercase tracking-[0.2em] shadow-2xl shadow-brand-blue/20 mt-4 disabled:opacity-50 transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-3 group/submit">
-                  {loading ? 'Processing Integration...' : 'Initialize Tracking Node'}
-                  <ArrowRight size={18} className="group-hover/submit:translate-x-1 transition-transform" />
+                <button disabled={loading} type="submit" className="btn-primary w-full py-4 text-xs sm:text-sm font-black uppercase tracking-wider shadow-lg shadow-brand-blue/20 mt-2 disabled:opacity-50 transition-all hover:scale-[1.01] active:scale-95 flex items-center justify-center gap-2">
+                  {loading ? (
+                    <>Processing...</>
+                  ) : (
+                    <>Create Tracking Link <ArrowRight size={16} /></>
+                  )}
                 </button>
               </form>
             </motion.div>
@@ -208,52 +217,53 @@ export const ResumeShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, r
               key="success"
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="text-center space-y-12 relative z-10"
+              className="text-center space-y-6 relative z-10"
             >
-              <div className="relative mx-auto w-24 h-24">
-                <div className="absolute inset-0 bg-brand-success/20 rounded-full blur-2xl animate-pulse" />
-                <div className="relative w-24 h-24 rounded-[2.5rem] bg-white border-2 border-brand-success/20 flex items-center justify-center text-brand-success shadow-xl ring-8 ring-brand-success/5 animate-bounce-slow">
-                  <Shield size={48} strokeWidth={2.5} />
+              <div className="relative mx-auto w-16 h-16 sm:w-20 sm:h-20">
+                <div className="absolute inset-0 bg-brand-success/20 rounded-full blur-xl animate-pulse" />
+                <div className="relative w-full h-full rounded-full bg-white border-2 border-brand-success/20 flex items-center justify-center text-brand-success shadow-lg ring-4 ring-brand-success/5">
+                  <Share2 size={32} strokeWidth={2.5} />
                 </div>
               </div>
               
-              <div className="space-y-4">
-                <h3 className="text-4xl font-display font-black text-brand-dark tracking-tighter uppercase leading-none">Node Active.</h3>
-                <p className="text-base text-text-secondary font-medium max-w-xs mx-auto leading-relaxed">Your unique tracking link is live. Recruiter engagement is now being monitored.</p>
+              <div className="space-y-1">
+                <h3 className="text-xl sm:text-2xl font-black text-brand-dark tracking-tight">Link Generated</h3>
+                <p className="text-xs sm:text-sm text-text-secondary font-medium max-w-xs mx-auto">Your secure tracking link is ready.</p>
               </div>
 
-              <div className="p-3 bg-surface-50 border border-surface-200 rounded-[2rem] flex items-center gap-3 group/link shadow-inner">
-                <div className="w-12 h-12 rounded-xl bg-white border border-surface-100 flex items-center justify-center text-brand-blue shadow-sm">
-                  <LinkIcon size={20} />
+              <div className="p-2 bg-surface-50 border border-surface-200 rounded-xl flex items-center gap-2 group/link">
+                <div className="w-10 h-10 rounded-lg bg-white border border-surface-100 flex items-center justify-center text-brand-blue shadow-sm shrink-0">
+                  <LinkIcon size={18} />
                 </div>
-                <input readOnly className="bg-transparent border-none focus:ring-0 text-xs font-black text-brand-dark flex-1 truncate font-mono tracking-tight" value={trackingLink} />
+                <input readOnly className="bg-transparent border-none focus:ring-0 text-xs font-bold text-brand-dark flex-1 truncate font-mono min-w-0" value={trackingLink} />
                 <button 
                   onClick={copyToClipboard}
-                  className="p-4 bg-brand-dark text-white rounded-xl hover:bg-black hover:shadow-xl transition-all active:scale-95 group/copy"
-                  title="Copy Tracking URL"
+                  className="p-2.5 bg-brand-dark text-white rounded-lg hover:bg-black hover:shadow-lg transition-all active:scale-95 shrink-0"
+                  title="Copy Link"
                 >
-                  <Copy size={18} className="group-hover/copy:scale-110 transition-transform" />
+                  <Copy size={16} />
                 </button>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-3">
                 <button 
                   onClick={onClose}
-                  className="px-8 py-4 text-[10px] font-black uppercase tracking-[0.2em] border-2 border-surface-200 rounded-xl text-brand-dark hover:bg-surface-50 transition-all active:scale-95"
+                  className="px-4 py-3 text-[10px] sm:text-xs font-bold uppercase tracking-wider border border-surface-200 rounded-xl text-brand-dark hover:bg-surface-50 transition-all"
                 >
-                  Close Terminal
+                  Done
                 </button>
                 <button 
                   onClick={() => setStep('form')}
-                  className="btn-primary px-8 py-4 text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-brand-blue/20 active:scale-95"
+                  className="btn-primary px-4 py-3 text-[10px] sm:text-xs font-bold uppercase tracking-wider shadow-lg shadow-brand-blue/20"
                 >
-                  Create Another
+                  Create New
                 </button>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
       </motion.div>
-    </div>
+    </div>,
+    document.body
   );
 };

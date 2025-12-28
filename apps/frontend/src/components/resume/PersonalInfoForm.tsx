@@ -16,8 +16,31 @@ export function PersonalInfoForm() {
     });
   };
 
+  const SA_NATIONALITIES = [
+    'South African', 'Zimbabwean', 'Mozambican', 'Basotho', 'Motswana', 'Swati', 
+    'Namibian', 'Nigerian', 'Congolese', 'Ethiopian', 'Somali', 'Ghanaian', 
+    'Pakistani', 'Bangladeshi', 'Indian', 'Chinese', 'Malawian', 'Zambian'
+  ];
+
+  const SA_LANGUAGES = [
+    'English', 'IsiZulu', 'IsiXhosa', 'Afrikaans', 'Sepedi', 'Setswana', 
+    'Sesotho', 'Xitsonga', 'SiSwati', 'Tshivenda', 'IsiNdebele', 'Shona', 
+    'French', 'Portuguese', 'Swahili', 'Chewa'
+  ];
+
   return (
     <div className="space-y-4 md:space-y-10 animate-slide-up-soft">
+      <datalist id="nationalities">
+        {SA_NATIONALITIES.map((nat) => (
+          <option key={nat} value={nat} />
+        ))}
+      </datalist>
+      <datalist id="sa-languages">
+        {SA_LANGUAGES.map((lang) => (
+          <option key={lang} value={lang} />
+        ))}
+      </datalist>
+
       <div className="space-y-1 md:space-y-2">
         <div className="flex items-center gap-2 md:gap-3">
           <div className="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-brand-blue/10 flex items-center justify-center text-brand-blue shadow-sm">
@@ -62,10 +85,10 @@ export function PersonalInfoForm() {
         <Input
           label="Date of Birth"
           name="dateOfBirth"
+          type="date"
           value={personalInfo?.dateOfBirth || ''}
           onChange={handleChange}
           required
-          placeholder="e.g. 18 October 1991"
         />
       </div>
 
@@ -84,7 +107,8 @@ export function PersonalInfoForm() {
           value={personalInfo?.nationality || ''}
           onChange={handleChange}
           required
-          placeholder="e.g. South African"
+          placeholder="Select or type..."
+          list="nationalities"
         />
       </div>
 
@@ -103,7 +127,8 @@ export function PersonalInfoForm() {
           value={personalInfo?.homeLanguage || ''}
           onChange={handleChange}
           required
-          placeholder="e.g. IsiXhosa"
+          placeholder="Select or type..."
+          list="sa-languages"
         />
       </div>
 

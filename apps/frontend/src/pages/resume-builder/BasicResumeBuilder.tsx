@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Sparkles, ChevronRight, Trash2, Plus, GraduationCap, Briefcase, User, Star, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Sparkles, ChevronRight, ChevronDown, Trash2, Plus, GraduationCap, Briefcase, User, Star, CheckCircle2, Loader2 } from 'lucide-react';
 import { ResumeProvider, useResume } from '../../contexts/ResumeContext';
 import { toast } from 'sonner';
 import { api } from '../../services/api';
 import { MultiSelectSubjects } from '../../components/ui/MultiSelectSubjects';
+import { PhoneInput } from '../../components/ui/PhoneInput';
 
 // Simplified Steps for Basic Builder
 const STEPS = [
@@ -24,46 +25,289 @@ const InputGroup = ({ label, children }: { label: string, children: React.ReactN
   </div>
 );
 
+const Combobox = ({ value, onChange, options, placeholder }: { value: string, onChange: (val: string) => void, options: string[], placeholder?: string }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [query, setQuery] = useState('');
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const filteredOptions = options.filter(opt => 
+    opt.toLowerCase().includes(value?.toLowerCase() || '')
+  );
+
+  return (
+    <div className="relative" ref={wrapperRef}>
+      <div className="relative">
+        <input
+          className="input-minimal pr-10"
+          value={value}
+          onChange={(e) => {
+            onChange(e.target.value);
+            setIsOpen(true);
+          }}
+          onFocus={() => setIsOpen(true)}
+          placeholder={placeholder}
+        />
+        <button 
+          onClick={() => setIsOpen(!isOpen)}
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-brand-dark/40 hover:text-brand-blue transition-colors"
+        >
+          <ChevronDown size={20} />
+        </button>
+      </div>
+      
+      <AnimatePresence>
+        {isOpen && (filteredOptions.length > 0 || value) && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            className="absolute z-50 w-full mt-2 bg-white rounded-xl shadow-xl border border-surface-200 max-h-60 overflow-y-auto custom-scrollbar"
+          >
+            {filteredOptions.length > 0 ? (
+              filteredOptions.map((option) => (
+                <button
+                  key={option}
+                  className="w-full text-left px-4 py-3 text-sm font-medium text-brand-dark hover:bg-surface-50 transition-colors border-b border-surface-50 last:border-0"
+                  onClick={() => {
+                    onChange(option);
+                    setIsOpen(false);
+                  }}
+                >
+                  {option}
+                </button>
+              ))
+            ) : (
+              <div className="px-4 py-3 text-sm text-text-tertiary italic">
+                Press Enter to use "{value}"
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
+const MultiCombobox = ({ value, onChange, options, placeholder }: { value: string, onChange: (val: string) => void, options: string[], placeholder?: string }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [inputValue, setInputValue] = useState('');
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
+  // Parse current CSV value into array
+  const selectedItems = value ? value.split(',').map(s => s.trim()).filter(Boolean) : [];
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleAdd = (item: string) => {
+    if (!selectedItems.includes(item)) {
+      const newItems = [...selectedItems, item];
+      onChange(newItems.join(', '));
+    }
+    setInputValue('');
+    setIsOpen(false);
+  };
+
+  const handleRemove = (item: string) => {
+    const newItems = selectedItems.filter(i => i !== item);
+    onChange(newItems.join(', '));
+  };
+
+  const filteredOptions = options.filter(opt => 
+    opt.toLowerCase().includes(inputValue.toLowerCase()) && !selectedItems.includes(opt)
+  );
+
+  return (
+    <div className="relative space-y-2" ref={wrapperRef}>
+      <div className="flex flex-wrap gap-2 mb-2">
+        {selectedItems.map((item, idx) => (
+          <div key={idx} className="flex items-center gap-1 px-3 py-1 bg-brand-blue/10 text-brand-blue rounded-lg text-sm font-bold">
+            <span>{item}</span>
+            <button 
+              onClick={() => handleRemove(item)}
+              className="hover:text-red-500 transition-colors"
+            >
+              <Trash2 size={12} />
+            </button>
+          </div>
+        ))}
+      </div>
+      
+      <div className="relative">
+        <input
+          className="input-minimal pr-10"
+          value={inputValue}
+          onChange={(e) => {
+            setInputValue(e.target.value);
+            setIsOpen(true);
+          }}
+          onFocus={() => setIsOpen(true)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && inputValue) {
+              e.preventDefault();
+              handleAdd(inputValue);
+            }
+          }}
+          placeholder={selectedItems.length === 0 ? placeholder : "Add more..."}
+        />
+        <button 
+          onClick={() => setIsOpen(!isOpen)}
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-brand-dark/40 hover:text-brand-blue transition-colors"
+        >
+          <ChevronDown size={20} />
+        </button>
+      </div>
+      
+      <AnimatePresence>
+        {isOpen && (filteredOptions.length > 0 || inputValue) && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            className="absolute z-50 w-full mt-2 bg-white rounded-xl shadow-xl border border-surface-200 max-h-60 overflow-y-auto custom-scrollbar"
+          >
+            {filteredOptions.length > 0 ? (
+              filteredOptions.map((option) => (
+                <button
+                  key={option}
+                  className="w-full text-left px-4 py-3 text-sm font-medium text-brand-dark hover:bg-surface-50 transition-colors border-b border-surface-50 last:border-0"
+                  onClick={() => handleAdd(option)}
+                >
+                  {option}
+                </button>
+              ))
+            ) : (
+              <button
+                className="w-full text-left px-4 py-3 text-sm font-medium text-brand-blue hover:bg-surface-50 transition-colors italic"
+                onClick={() => handleAdd(inputValue)}
+              >
+                Add "{inputValue}"
+              </button>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
 const BasicResumeBuilderContent = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { id } = useParams<{ id: string }>();
-  const { resumeData, updateResumeData, saveToStorage } = useResume();
+  const { resumeData, updateResumeData, saveToStorage, clearStorage } = useResume();
   const [currentStep, setCurrentStep] = useState(0);
   const [loadingAI, setLoadingAI] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   
   // Local state for performant typing and robust updates
   const [localData, setLocalData] = useState<any>(null);
   const isInitialMount = useRef(true);
 
-  // Initialize localData from resumeData
+  // Initialize localData
   useEffect(() => {
+    // 1. Try to load from navigation state first (fastest, used when clicking 'Modify')
+    if (location.state?.resumeData && isInitialMount.current) {
+      console.log('📦 Initializing from navigation state');
+      const data = JSON.parse(JSON.stringify(location.state.resumeData));
+      // Ensure arrays exist
+      data.workExperience = (data.workExperience || []).map((exp: any) => ({
+        ...exp,
+        jobTitle: exp.jobTitle || exp.title || '',
+        company: exp.company || exp.companyName || '',
+        startDate: exp.startDate ? new Date(exp.startDate) : undefined,
+        endDate: exp.endDate ? new Date(exp.endDate) : undefined,
+      }));
+      data.education = data.education || [];
+      data.skills = data.skills || [];
+      data.references = data.references || [];
+      
+      if (!data.personalInfo) data.personalInfo = {};
+      
+      setLocalData(data);
+      updateResumeData(data);
+      isInitialMount.current = false;
+      return; // Skip other initializers
+    }
+
+    // 2. Handle 'new' case (no ID or ID is 'new')
+    if ((!id || id === 'new') && isInitialMount.current) {
+      console.log('✨ Initializing fresh resume state');
+      setLocalData({
+        personalInfo: {},
+        education: [],
+        workExperience: [],
+        skills: [],
+        references: [],
+        templateId: 'basic_sa',
+        title: 'My Basic Resume'
+      });
+      isInitialMount.current = false;
+      return;
+    }
+
+    // 3. Fallback to context if available
     if (isInitialMount.current && Object.keys(resumeData).length > 0) {
       const data = JSON.parse(JSON.stringify(resumeData));
+      // ... (rest of existing logic) ...
+      // Ensure arrays exist
+      data.workExperience = data.workExperience || [];
+      data.education = data.education || [];
+      data.skills = data.skills || [];
+      data.references = data.references || [];
       
-      // Ensure personalInfo exists and has default nationality if it's a SA template
       if (!data.personalInfo) data.personalInfo = {};
       if (!data.personalInfo.nationality && (data.targetLocation === 'South Africa' || data.templateId === 'basic_sa')) {
         data.personalInfo.nationality = 'South African';
       }
       
-      // Ensure professionalSummary exists
       if (data.professionalSummary === undefined) data.professionalSummary = '';
       
       setLocalData(data);
       isInitialMount.current = false;
     }
-  }, [resumeData]);
+  }, [resumeData, id, location.state]);
 
-  // Load existing resume from API if ID is present and not 'new'
+  // Load existing resume from API if ID is present and not 'new' AND not loaded from state
   useEffect(() => {
     const fetchResume = async () => {
+      // Skip if we already loaded data from state matching this ID
+      if (localData && localData._id === id) return;
+
       if (id && id !== 'new') {
         try {
           const response = await api.get(`/resumes/${id}`);
           if (response.data.success) {
-            updateResumeData(response.data.data);
-            setLocalData(response.data.data);
+            const data = response.data.data;
+            // Ensure arrays exist for editing
+            data.workExperience = (data.workExperience || []).map((exp: any) => ({
+              ...exp,
+              jobTitle: exp.jobTitle || exp.title || '',
+              company: exp.company || exp.companyName || '',
+            }));
+            data.education = data.education || [];
+            data.skills = data.skills || [];
+            data.references = data.references || [];
+            
+            updateResumeData(data);
+            setLocalData(data);
           }
         } catch (error) {
           toast.error('Failed to load resume');
@@ -71,8 +315,8 @@ const BasicResumeBuilderContent = () => {
         }
       }
     };
-    if (id) fetchResume();
-  }, [id]);
+    if (id && !location.state?.resumeData) fetchResume();
+  }, [id, location.state]);
 
   // Initialize with location/education data if passed
   useEffect(() => {
@@ -104,6 +348,55 @@ const BasicResumeBuilderContent = () => {
         [field]: value
       }
     }));
+  };
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      syncToContext();
+      
+      const payload = {
+        ...localData,
+        // Ensure template is set
+        templateId: 'basic_sa',
+        // Ensure title exists
+        title: localData.title || `${localData.personalInfo?.firstName || 'My'} ${localData.personalInfo?.lastName || 'Resume'}`
+      };
+
+      let savedResume;
+      if (localData._id && localData._id !== 'new') {
+        const response = await api.put(`/resumes/${localData._id}`, payload);
+        savedResume = response.data.data;
+        toast.success('Resume updated successfully');
+      } else {
+        const response = await api.post('/resumes', payload);
+        savedResume = response.data.data;
+        toast.success('Resume created successfully');
+      }
+
+      // Update local state with saved data (including new ID)
+      setLocalData(savedResume);
+      updateResumeData(savedResume);
+      
+      // Explicitly clear storage to prevent auto-fill on next new resume
+      clearStorage();
+      
+      // Brute-force clear to ensure no lingering data
+      const user = JSON.parse(localStorage.getItem('auth-storage') || '{}')?.state?.user;
+      if (user?.id) {
+        localStorage.removeItem(`resume-builder-data-${user.id}`);
+        localStorage.removeItem(`resume-ai-data-${user.id}`);
+      }
+      localStorage.removeItem('resume-builder-data'); // legacy
+      
+      return savedResume._id;
+    } catch (error) {
+      console.error('Save failed:', error);
+      toast.error('Failed to save resume');
+      return null;
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   if (!localData) {
@@ -217,6 +510,18 @@ const BasicResumeBuilderContent = () => {
   const renderStep = () => {
     switch (STEPS[currentStep].id) {
       case 'personal':
+        const SA_NATIONALITIES = [
+          'South African', 'Zimbabwean', 'Mozambican', 'Basotho', 'Motswana', 'Swati', 
+          'Namibian', 'Nigerian', 'Congolese', 'Ethiopian', 'Somali', 'Ghanaian', 
+          'Pakistani', 'Bangladeshi', 'Indian', 'Chinese', 'Malawian', 'Zambian'
+        ];
+
+        const SA_LANGUAGES = [
+          'English', 'IsiZulu', 'IsiXhosa', 'Afrikaans', 'Sepedi', 'Setswana', 
+          'Sesotho', 'Xitsonga', 'SiSwati', 'Tshivenda', 'IsiNdebele', 'Shona', 
+          'French', 'Portuguese', 'Swahili', 'Chewa'
+        ];
+
         return (
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="space-y-1 px-1">
@@ -225,7 +530,7 @@ const BasicResumeBuilderContent = () => {
             </div>
             
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <InputGroup label="Surname (Last Name)">
                   <input 
                     className="input-minimal"
@@ -244,7 +549,7 @@ const BasicResumeBuilderContent = () => {
                 </InputGroup>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <InputGroup label="Identity Number">
                   <input 
                     className="input-minimal"
@@ -255,16 +560,18 @@ const BasicResumeBuilderContent = () => {
                   />
                 </InputGroup>
                 <InputGroup label="Date of Birth">
-                  <input 
-                    className="input-minimal"
-                    placeholder="e.g. 18 October 1991"
-                    value={localData.personalInfo?.dateOfBirth || ''}
-                    onChange={e => updatePersonalInfo('dateOfBirth', e.target.value)}
-                  />
+                  <div className="relative">
+                    <input 
+                      type="date"
+                      className="input-minimal date-input-custom"
+                      value={localData.personalInfo?.dateOfBirth || ''}
+                      onChange={e => updatePersonalInfo('dateOfBirth', e.target.value)}
+                    />
+                  </div>
                 </InputGroup>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <InputGroup label="Gender">
                   <select 
                     className="input-minimal bg-white"
@@ -278,16 +585,16 @@ const BasicResumeBuilderContent = () => {
                   </select>
                 </InputGroup>
                 <InputGroup label="Nationality">
-                  <input 
-                    className="input-minimal"
-                    placeholder="e.g. South African"
+                  <Combobox 
+                    options={SA_NATIONALITIES}
+                    placeholder="Select or type..."
                     value={localData.personalInfo?.nationality || ''}
-                    onChange={e => updatePersonalInfo('nationality', e.target.value)}
+                    onChange={(val) => updatePersonalInfo('nationality', val)}
                   />
                 </InputGroup>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <InputGroup label="Marital Status">
                   <select 
                     className="input-minimal bg-white"
@@ -302,21 +609,21 @@ const BasicResumeBuilderContent = () => {
                   </select>
                 </InputGroup>
                 <InputGroup label="Home Language">
-                  <input 
-                    className="input-minimal"
-                    placeholder="e.g. IsiXhosa"
+                  <Combobox 
+                    options={SA_LANGUAGES}
+                    placeholder="Select or type..."
                     value={localData.personalInfo?.homeLanguage || ''}
-                    onChange={e => updatePersonalInfo('homeLanguage', e.target.value)}
+                    onChange={(val) => updatePersonalInfo('homeLanguage', val)}
                   />
                 </InputGroup>
               </div>
 
               <InputGroup label="Other Languages">
-                <input 
-                  className="input-minimal"
-                  placeholder="e.g. English, IsiZulu"
+                <MultiCombobox 
+                  options={SA_LANGUAGES}
+                  placeholder="Select or type (e.g. English, IsiZulu)"
                   value={localData.personalInfo?.otherLanguages || ''}
-                  onChange={e => updatePersonalInfo('otherLanguages', e.target.value)}
+                  onChange={(val) => updatePersonalInfo('otherLanguages', val)}
                 />
               </InputGroup>
 
@@ -329,14 +636,24 @@ const BasicResumeBuilderContent = () => {
                 />
               </InputGroup>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <InputGroup label="Contact Number">
-                  <input 
-                    className="input-minimal"
-                    placeholder="e.g. 083 564 1419"
-                    type="tel"
+                  <PhoneInput
                     value={localData.personalInfo?.phone || ''}
-                    onChange={e => updatePersonalInfo('phone', e.target.value)}
+                    onChange={(val) => updatePersonalInfo('phone', val)}
+                    defaultCountryCode={(() => {
+                      const nat = localData.personalInfo?.nationality;
+                      if (!nat) return '+27';
+                      const map: Record<string, string> = {
+                        'South African': '+27', 'Zimbabwean': '+263', 'Mozambican': '+258',
+                        'Basotho': '+266', 'Motswana': '+267', 'Swati': '+268',
+                        'Namibian': '+264', 'Nigerian': '+234', 'Congolese': '+243',
+                        'Ethiopian': '+251', 'Somali': '+252', 'Ghanaian': '+233',
+                        'Pakistani': '+92', 'Bangladeshi': '+880', 'Indian': '+91',
+                        'Chinese': '+86', 'Malawian': '+265', 'Zambian': '+260'
+                      };
+                      return map[nat] || '+27';
+                    })()}
                   />
                 </InputGroup>
                 <InputGroup label="Email Address">
@@ -376,7 +693,7 @@ const BasicResumeBuilderContent = () => {
                 />
               </InputGroup>
               
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <InputGroup label="Grade Passed">
                   <select 
                     className="input-minimal bg-white"
@@ -585,6 +902,39 @@ const BasicResumeBuilderContent = () => {
                             }}
                           />
                         </InputGroup>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <InputGroup label="Start Date">
+                            <div className="relative">
+                              <input 
+                                type="date"
+                                className="input-minimal date-input-custom"
+                                value={exp.startDate ? new Date(exp.startDate).toISOString().split('T')[0] : ''}
+                                onChange={e => {
+                                  const newExp = [...(localData.workExperience || [])];
+                                  newExp[idx].startDate = e.target.value; // Store as YYYY-MM-DD string
+                                  updateLocal({ workExperience: newExp });
+                                }}
+                              />
+                            </div>
+                          </InputGroup>
+                          <InputGroup label="End Date (Leave empty if current)">
+                            <div className="relative">
+                              <input 
+                                type="date"
+                                className="input-minimal date-input-custom"
+                                value={exp.endDate ? new Date(exp.endDate).toISOString().split('T')[0] : ''}
+                                onChange={e => {
+                                  const newExp = [...(localData.workExperience || [])];
+                                  newExp[idx].endDate = e.target.value;
+                                  newExp[idx].isCurrentJob = !e.target.value; // Auto-set isCurrent if empty
+                                  updateLocal({ workExperience: newExp });
+                                }}
+                              />
+                            </div>
+                          </InputGroup>
+                        </div>
+
                         <InputGroup label="What did you do?">
                           <textarea 
                             placeholder="Briefly describe your tasks" 
@@ -673,10 +1023,36 @@ const BasicResumeBuilderContent = () => {
                             }}
                           />
                         </InputGroup>
-                        <div className="grid grid-cols-2 gap-4">
-                          <InputGroup label="Who is this?">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <InputGroup label="Job Title / Position">
                             <input 
-                              placeholder="e.g. Pastor / Boss" 
+                              placeholder="e.g. Principal" 
+                              className="input-minimal"
+                              value={ref.title}
+                              onChange={e => {
+                                const newRef = [...(localData.references || [])];
+                                newRef[idx].title = e.target.value;
+                                updateLocal({ references: newRef });
+                              }}
+                            />
+                          </InputGroup>
+                          <InputGroup label="Company / Institution">
+                            <input 
+                              placeholder="e.g. Orlando High School" 
+                              className="input-minimal"
+                              value={ref.company}
+                              onChange={e => {
+                                const newRef = [...(localData.references || [])];
+                                newRef[idx].company = e.target.value;
+                                updateLocal({ references: newRef });
+                              }}
+                            />
+                          </InputGroup>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <InputGroup label="Relationship">
+                            <input 
+                              placeholder="e.g. Former Supervisor" 
                               className="input-minimal"
                               value={ref.relationship}
                               onChange={e => {
@@ -687,19 +1063,30 @@ const BasicResumeBuilderContent = () => {
                             />
                           </InputGroup>
                           <InputGroup label="Their Phone">
-                            <input 
-                              placeholder="Phone number" 
-                              className="input-minimal"
-                              type="tel"
+                            <PhoneInput
                               value={ref.phone}
-                              onChange={e => {
+                              onChange={(val) => {
                                 const newRef = [...(localData.references || [])];
-                                newRef[idx].phone = e.target.value;
+                                newRef[idx].phone = val;
                                 updateLocal({ references: newRef });
                               }}
+                              placeholder="Phone number"
                             />
                           </InputGroup>
                         </div>
+                        <InputGroup label="Their Email (Optional)">
+                          <input 
+                            placeholder="email@example.com" 
+                            className="input-minimal"
+                            type="email"
+                            value={ref.email}
+                            onChange={e => {
+                              const newRef = [...(localData.references || [])];
+                              newRef[idx].email = e.target.value;
+                              updateLocal({ references: newRef });
+                            }}
+                          />
+                        </InputGroup>
                       </div>
                     </div>
                   ))}
@@ -738,11 +1125,17 @@ const BasicResumeBuilderContent = () => {
               </button>
 
               <button 
-                onClick={() => {
-                  syncToContext();
-                  setTimeout(() => navigate(`/dashboard/resume/preview/${localData._id || 'new'}?template=basic_sa`, { 
-                    state: { resumeData: localData } 
-                  }), 100);
+                onClick={async () => {
+                  const savedId = await handleSave();
+                  if (savedId) {
+                    clearStorage(); // Clear local draft once persisted
+                    setTimeout(() => navigate(`/dashboard/resume/preview/${savedId}?template=basic_sa`, { 
+                      state: { 
+                        resumeData: localData,
+                        refresh: true // Force regeneration
+                      } 
+                    }), 100);
+                  }
                 }}
                 className="w-full py-5 bg-white text-brand-blue border-2 border-brand-blue/10 rounded-[1.5rem] font-black text-sm uppercase tracking-[0.2em] hover:bg-brand-blue/5 transition-all active:scale-95 shadow-sm"
               >
@@ -758,68 +1151,147 @@ const BasicResumeBuilderContent = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white md:bg-surface-50 flex flex-col font-sans">
-      <div className="flex-1 w-full max-w-lg mx-auto md:bg-white md:rounded-[3rem] md:shadow-2xl flex flex-col md:my-8 md:h-[850px] md:relative md:overflow-hidden border-surface-100">
+    <div className="min-h-screen bg-white flex flex-col font-sans text-brand-dark overflow-hidden">
+      <div className="flex-1 w-full h-screen md:grid md:grid-cols-[300px_1fr] transition-all duration-500 overflow-hidden">
         
-        {/* Modern Header */}
-        <div className="px-6 py-5 border-b border-surface-100 flex items-center gap-4 bg-white/95 backdrop-blur-md sticky top-0 z-20">
-          <button onClick={handleBack} className="w-10 h-10 rounded-full hover:bg-surface-50 flex items-center justify-center text-brand-dark active:scale-90 transition-all">
-            <ArrowLeft size={24} strokeWidth={2.5} />
-          </button>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center justify-between gap-2">
-              <h1 className="text-sm font-black text-brand-dark uppercase tracking-widest truncate">{STEPS[currentStep].title}</h1>
-              <span className="text-[10px] font-black text-brand-blue bg-brand-blue/5 px-2.5 py-1 rounded-lg border border-brand-blue/10">
-                {currentStep + 1} OF {STEPS.length}
-              </span>
+        {/* Desktop Sidebar */}
+        <div className="hidden md:flex flex-col bg-[#f8fafc] p-10 justify-between relative overflow-hidden">
+          {/* Decorative Background Elements */}
+          <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none opacity-40">
+            <div className="absolute -top-[20%] -left-[20%] w-[140%] h-[60%] bg-gradient-to-br from-brand-blue/10 to-transparent rounded-full blur-3xl" />
+          </div>
+
+          <div className="space-y-8 relative z-10">
+            <div className="space-y-1">
+              <h1 className="text-xl font-black text-brand-dark tracking-tight">Resume<span className="text-brand-blue">Suite</span></h1>
+              <p className="text-xs font-bold text-text-tertiary uppercase tracking-widest">Builder v2.0</p>
             </div>
-            <div className="h-1.5 bg-surface-100 w-full mt-3 rounded-full overflow-hidden">
-              <motion.div 
-                className="h-full bg-brand-blue rounded-full shadow-[0_0_8px_rgba(59,130,246,0.5)]"
-                initial={{ width: 0 }}
-                animate={{ width: `${((currentStep + 1) / STEPS.length) * 100}%` }}
-                transition={{ type: 'spring', stiffness: 100, damping: 20 }}
-              />
+
+            <div className="space-y-2">
+              {STEPS.map((step, idx) => {
+                const isActive = idx === currentStep;
+                const isCompleted = idx < currentStep;
+                const Icon = step.icon;
+
+                return (
+                  <button 
+                    key={step.id}
+                    onClick={() => {
+                      if (isCompleted) {
+                        syncToContext();
+                        setCurrentStep(idx);
+                      }
+                    }}
+                    disabled={!isCompleted && !isActive}
+                    className={`w-full flex items-center gap-4 p-3 rounded-xl transition-all duration-300 text-left group ${
+                      isActive 
+                        ? 'bg-white shadow-lg shadow-brand-dark/5 ring-1 ring-black/5' 
+                        : isCompleted 
+                          ? 'hover:bg-white/50 text-text-secondary cursor-pointer' 
+                          : 'opacity-40 cursor-not-allowed text-text-tertiary'
+                    }`}
+                  >
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-300 ${
+                      isActive 
+                        ? 'bg-brand-blue text-white shadow-md shadow-brand-blue/30 scale-110' 
+                        : isCompleted
+                          ? 'bg-brand-success/10 text-brand-success'
+                          : 'bg-surface-200 text-text-tertiary'
+                    }`}>
+                      {isCompleted ? <CheckCircle2 size={18} strokeWidth={3} /> : <Icon size={18} />}
+                    </div>
+                    <div>
+                      <p className={`text-xs font-black uppercase tracking-wider ${isActive ? 'text-brand-dark' : 'text-text-secondary'}`}>
+                        {step.title}
+                      </p>
+                      {isActive && <p className="text-[10px] font-bold text-brand-blue animate-pulse">In Progress</p>}
+                    </div>
+                  </button>
+                );
+              })}
             </div>
+          </div>
+
+          <div className="relative z-10">
+             <div className="p-4 bg-brand-dark/5 rounded-2xl border border-brand-dark/5">
+                <p className="text-[10px] text-text-secondary font-medium leading-relaxed">
+                  "Excellence is not a skill, it's an attitude."
+                </p>
+             </div>
           </div>
         </div>
 
-        {/* Dynamic Navigation Dots (Visual Indicator) */}
-        <div className="flex justify-center gap-1.5 py-3 bg-surface-50/30 md:hidden">
-          {STEPS.map((_, idx) => (
-            <div key={idx} className={`h-1 rounded-full transition-all duration-500 ${idx === currentStep ? 'w-6 bg-brand-blue' : 'w-1 bg-surface-200'}`} />
-          ))}
-        </div>
-
-        {/* Scrollable Content Area */}
-        <div className="flex-1 overflow-y-auto custom-scrollbar p-6 md:p-10 relative pb-44 md:pb-32 bg-white">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentStep}
-              initial={{ opacity: 0, y: 10, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -10, scale: 0.98 }}
-              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="h-full"
-            >
-              {renderStep()}
-            </motion.div>
-          </AnimatePresence>
-        </div>
-
-        {/* Bottom Floating Action Bar */}
-        {STEPS[currentStep].id !== 'review' && (
-          <div className="p-6 bg-white/95 backdrop-blur-xl border-t border-surface-100 fixed md:absolute bottom-0 left-0 right-0 z-30 safe-area-bottom shadow-[0_-10px_40px_rgba(0,0,0,0.06)]">
-            <div className="max-w-lg mx-auto">
-              <button 
-                onClick={handleNext}
-                className="w-full py-5.5 md:py-5 bg-brand-dark text-white rounded-[1.5rem] font-black text-sm md:text-base uppercase tracking-[0.2em] shadow-2xl shadow-brand-dark/30 active:scale-[0.96] transition-all flex items-center justify-center gap-3"
-              >
-                Next Node <ChevronRight size={20} strokeWidth={3} />
-              </button>
+        {/* Right Content Area */}
+        <div className="flex flex-col h-full relative bg-white">
+          
+          {/* Mobile Header (Hidden on Desktop) */}
+          <div className="md:hidden px-6 py-5 flex items-center gap-4 bg-white/95 backdrop-blur-md sticky top-0 z-20">
+            <button onClick={handleBack} className="w-10 h-10 rounded-full hover:bg-surface-50 flex items-center justify-center text-brand-dark active:scale-90 transition-all">
+              <ArrowLeft size={24} strokeWidth={2.5} />
+            </button>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between gap-2">
+                <h1 className="text-sm font-black text-brand-dark uppercase tracking-widest truncate">{STEPS[currentStep].title}</h1>
+                <span className="text-[10px] font-black text-brand-blue bg-brand-blue/5 px-2.5 py-1 rounded-lg border border-brand-blue/10">
+                  {currentStep + 1} OF {STEPS.length}
+                </span>
+              </div>
+              <div className="h-1.5 bg-surface-100 w-full mt-3 rounded-full overflow-hidden">
+                <motion.div 
+                  className="h-full bg-brand-blue rounded-full shadow-[0_0_8px_rgba(59,130,246,0.5)]"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${((currentStep + 1) / STEPS.length) * 100}%` }}
+                  transition={{ type: 'spring', stiffness: 100, damping: 20 }}
+                />
+              </div>
             </div>
           </div>
-        )}
+
+          {/* Desktop Header Content */}
+          <div className="hidden md:flex items-center justify-between px-10 py-8 pb-4">
+             <div>
+                <h2 className="text-3xl font-black text-brand-dark tracking-tight">{STEPS[currentStep].title}</h2>
+                <p className="text-sm font-medium text-text-secondary mt-1">Please fill in the details below carefully.</p>
+             </div>
+             <div className="flex items-center gap-3">
+                <button 
+                   onClick={async () => {
+                     await handleSave();
+                     clearStorage(); // Clear local draft once persisted
+                     navigate('/dashboard/resume');
+                   }}
+                   className="px-4 py-2 text-xs font-black text-text-tertiary uppercase tracking-widest hover:text-brand-dark transition-colors"
+                >
+                  Save & Exit
+                </button>
+             </div>
+          </div>
+
+          <div className="flex-1 overflow-y-auto custom-scrollbar p-6 md:px-16 md:py-10 relative pb-44 md:pb-40">
+            {renderStep()}
+          </div>
+
+          {/* Bottom Action Bar */}
+          {STEPS[currentStep].id !== 'review' && (
+            <div className="p-6 md:px-16 md:py-10 bg-white/95 backdrop-blur-xl absolute bottom-0 left-0 right-0 z-30 safe-area-bottom shadow-[0_-20px_50px_rgba(0,0,0,0.04)]">
+              <div className="flex items-center justify-between gap-4">
+                 <button
+                    onClick={handleBack}
+                    className="hidden md:flex px-6 py-4 rounded-xl text-xs font-black uppercase tracking-widest text-text-secondary hover:bg-surface-50 transition-all"
+                 >
+                    Back
+                 </button>
+                 
+                 <button 
+                  onClick={handleNext}
+                  className="flex-1 md:flex-none md:w-auto md:px-10 py-5 bg-brand-dark text-white rounded-xl font-black text-sm uppercase tracking-[0.2em] shadow-2xl shadow-brand-dark/20 active:scale-[0.96] transition-all flex items-center justify-center gap-3 hover:bg-brand-dark/90"
+                >
+                  Next Step <ChevronRight size={18} strokeWidth={3} />
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
       
       <style>{`
@@ -831,14 +1303,13 @@ const BasicResumeBuilderContent = () => {
           font-weight: 600;
           color: #0f172a;
           background-color: #f8fafc;
-          border: 2px solid #f1f5f9;
+          border: none;
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           outline: none;
           min-height: 56px;
         }
         .input-minimal:focus {
           background-color: white;
-          border-color: #3b82f6;
           box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.1), 0 8px 10px -6px rgba(59, 130, 246, 0.1);
           transform: translateY(-1px);
         }
@@ -865,6 +1336,27 @@ const BasicResumeBuilderContent = () => {
         .py-5\\.5 {
           padding-top: 1.375rem;
           padding-bottom: 1.375rem;
+        }
+        .date-input-custom {
+          appearance: none;
+          -webkit-appearance: none;
+          position: relative;
+          background-color: #f8fafc;
+        }
+        .date-input-custom::-webkit-calendar-picker-indicator {
+          color: #1e293b;
+          opacity: 0.5;
+          cursor: pointer;
+          position: absolute;
+          right: 1rem;
+          top: 50%;
+          transform: translateY(-50%);
+          width: 20px;
+          height: 20px;
+          padding: 0;
+        }
+        .date-input-custom:focus::-webkit-calendar-picker-indicator {
+          opacity: 1;
         }
       `}</style>
     </div>

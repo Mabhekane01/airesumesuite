@@ -161,26 +161,39 @@ export default function ResumePreviewPage() {
         
         // Try to load saved PDF from DB first, otherwise generate preview
         try {
-          console.log('🔍 Checking for saved PDF in repository...');
-          // Determine the correct ID to check - handle both string and object formats
+          const forceRefresh = location.state?.refresh === true;
           const resumeIdToCheck = typeof id === 'string' ? id : (id as any)._id || (id as any).id;
           
-          // Check if PDF info exists first to avoid unnecessary download attempts
-          const pdfInfo = await resumeService.getSavedPDFInfo(resumeIdToCheck);
+          let pdfInfo = null;
+          if (!forceRefresh && id !== 'new') {
+            console.log('🔍 Checking for saved PDF in repository...');
+            pdfInfo = await resumeService.getSavedPDFInfo(resumeIdToCheck);
+          }
           
-          if (pdfInfo && pdfInfo.hasSavedPDF) {
+          if (pdfInfo && pdfInfo.hasSavedPDF && !forceRefresh) {
             console.log('✅ Found saved PDF, retrieving from database...');
             const savedPdfBlob = await resumeService.getSavedPDF(resumeIdToCheck);
             setPdfBlob(savedPdfBlob);
             console.log('📦 Loaded existing PDF from repository.');
           } else {
-            console.log('🔄 No saved PDF found, generating preview...');
+            console.log(forceRefresh ? '🔄 Refresh requested, generating fresh preview...' : '🔄 No saved PDF found, generating preview...');
             const blob = await resumeService.generateLatexPDFPreview(
               transformedResume, 
               transformedResume.template
             );
             setPdfBlob(blob);
             console.log('✅ Architecture preview generated successfully');
+
+            // Auto-save the fresh PDF to DB so it persists for future views
+            if (forceRefresh) {
+              console.log('💾 Auto-saving fresh PDF to repository...');
+              resumeService.savePDFToDatabase(resumeIdToCheck, {
+                templateId: transformedResume.template,
+                pdfBlob: blob,
+                resumeData: transformedResume
+              }).then(() => console.log('✅ PDF persistence complete'))
+                .catch(err => console.warn('⚠️ PDF auto-save failed:', err));
+            }
           }
         } catch (pdfErr) {
           console.warn('⚠️ PDF retrieval/generation failed, component will handle missing blob:', pdfErr);

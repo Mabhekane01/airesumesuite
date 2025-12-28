@@ -265,6 +265,34 @@ export function processHobbiesData(hobbiesData: any[]): any[] {
 }
 
 /**
+ * Sanitizes and processes references data
+ */
+export function processReferencesData(referencesData: any[]): any[] {
+  if (!Array.isArray(referencesData)) return [];
+  
+  return referencesData.map((ref: any) => ({
+    name: ref.name || '',
+    title: ref.title || '',
+    company: ref.company || '',
+    email: ref.email || '',
+    phone: ref.phone || '',
+    relationship: ref.relationship || ''
+  }));
+}
+
+/**
+ * Sanitizes and processes additional sections data
+ */
+export function processAdditionalSectionsData(sectionsData: any[]): any[] {
+  if (!Array.isArray(sectionsData)) return [];
+  
+  return sectionsData.map((sec: any) => ({
+    title: sec.title || '',
+    content: sec.content || ''
+  }));
+}
+
+/**
  * Validates personal info data
  */
 export function validatePersonalInfo(personalInfo: any, isForPreview: boolean = false): void {
@@ -355,6 +383,8 @@ export function processCompleteResumeData(data: any, isForPreview: boolean = fal
     awards: processAwardsData(data.awards || []),
     publications: processPublicationsData(data.publications || []),
     hobbies: processHobbiesData(data.hobbies || []),
+    references: processReferencesData(data.references || []),
+    additionalSections: processAdditionalSectionsData(data.additionalSections || []),
     templateId: data.templateId || data.template || 'modern-1',
     isPublic: Boolean(data.isPublic)
   };
@@ -422,6 +452,14 @@ export function processPartialResumeData(data: any): any {
   
   if (data.hobbies !== undefined) {
     processedData.hobbies = processHobbiesData(data.hobbies);
+  }
+
+  if (data.references !== undefined) {
+    processedData.references = processReferencesData(data.references);
+  }
+
+  if (data.additionalSections !== undefined) {
+    processedData.additionalSections = processAdditionalSectionsData(data.additionalSections);
   }
   
   if (data.templateId !== undefined) {

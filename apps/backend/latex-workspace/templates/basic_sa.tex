@@ -1,12 +1,13 @@
 \documentclass[11pt,a4paper]{article}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-\usepackage[margin=2cm]{geometry}
+\usepackage[margin=1.2cm]{geometry} % Reduced margin for closer border
 \usepackage{titlesec}
 \usepackage{enumitem}
 \usepackage{hyperref}
 \usepackage{xcolor}
 \usepackage{fontawesome5}
+\usepackage[most]{tcolorbox} % For thick border
 
 % Colors
 \definecolor{darkblue}{RGB}{0, 77, 153}
@@ -42,6 +43,9 @@
 }
 
 \begin{document}
+
+% --- THICK BORDER BOX ---
+\begin{tcolorbox}[colframe=darkblue,boxrule=2.5pt,arc=0pt,outer arc=0pt, left=8pt, right=8pt, top=8pt, bottom=8pt, enhanced]
 
 % --- HEADER ---
 \begin{center}
@@ -104,4 +108,5 @@
 \end{itemize}
 \BLOCK{endif}
 
+\end{tcolorbox}
 \end{document}
