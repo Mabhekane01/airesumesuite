@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { differenceInDays, isPast } from 'date-fns';
 import { useFormPersistence } from "../../hooks/useFormPersistence";
 import {
   PlusIcon,
@@ -71,6 +72,10 @@ interface JobApplication {
     | "withdrawn";
   priority: "high" | "medium" | "low";
   jobUrl?: string;
+  jobPostingId?: {
+    _id: string;
+    applicationDeadline?: string;
+  };
   notes?: string;
   nextAction?: {
     type: string;
@@ -334,6 +339,20 @@ export default function ApplicationTracker() {
       </div>
 
       <div className="relative z-10 space-y-3">
+        {application.jobPostingId?.applicationDeadline && (() => {
+          const d = new Date(application.jobPostingId.applicationDeadline);
+          const past = isPast(d);
+          const daysLeft = differenceInDays(d, new Date());
+          const isUrgent = !past && daysLeft <= 3;
+          return (
+             <div className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-[9px] font-black uppercase tracking-widest w-fit ${
+               past ? 'bg-red-50 text-red-500 border-red-100' : isUrgent ? 'bg-orange-50 text-brand-orange border-orange-100' : 'bg-surface-50 text-text-tertiary border-surface-200'
+             }`}>
+               <CalendarIcon className="w-3 h-3" />
+               {past ? 'Expired' : daysLeft === 0 ? 'Ends Today' : `Ends in ${daysLeft}d`}
+             </div>
+          );
+        })()}
         <div className="flex items-center gap-4 text-[11px] font-bold text-text-secondary">
           <div className="flex items-center gap-1.5 min-w-0">
             <MapPinIcon className="w-3.5 h-3.5 text-brand-blue flex-shrink-0" />
@@ -511,6 +530,7 @@ export default function ApplicationTracker() {
                 <thead className="bg-surface-50 border-b border-surface-200">
                   <tr>
                     <th className="px-4 md:px-8 py-4 md:py-5 text-[9px] md:text-[10px] font-black text-text-tertiary uppercase tracking-widest">Architecture</th>
+                    <th className="px-4 md:px-8 py-4 md:py-5 text-[9px] md:text-[10px] font-black text-text-tertiary uppercase tracking-widest">Deadline</th>
                     <th className="px-4 md:px-8 py-4 md:py-5 text-[9px] md:text-[10px] font-black text-text-tertiary uppercase tracking-widest">Status</th>
                     <th className="px-4 md:px-8 py-4 md:py-5 text-[9px] md:text-[10px] font-black text-text-tertiary uppercase tracking-widest text-right">Actions</th>
                   </tr>
@@ -523,6 +543,21 @@ export default function ApplicationTracker() {
                           <p className="text-sm md:text-base font-black text-brand-dark tracking-tight leading-none mb-1 group-hover:text-brand-blue transition-colors">{app.jobTitle}</p>
                           <p className="text-[9px] md:text-[10px] font-bold text-text-tertiary uppercase tracking-widest">{app.companyName || app.company}</p>
                         </div>
+                      </td>
+                      <td className="px-4 md:px-8 py-4 md:py-6">
+                        {app.jobPostingId?.applicationDeadline ? (() => {
+                          const d = new Date(app.jobPostingId.applicationDeadline);
+                          const past = isPast(d);
+                          const daysLeft = differenceInDays(d, new Date());
+                          return (
+                            <div className="flex items-center gap-1.5">
+                              <CalendarIcon className={`w-3.5 h-3.5 ${past ? 'text-red-500' : daysLeft <= 3 ? 'text-brand-orange' : 'text-text-tertiary'}`} />
+                              <span className={`text-[9px] md:text-[10px] font-black uppercase tracking-widest ${past ? 'text-red-500' : daysLeft <= 3 ? 'text-brand-orange' : 'text-text-tertiary'}`}>
+                                {past ? 'Expired' : daysLeft === 0 ? 'Today' : `${daysLeft}d Left`}
+                              </span>
+                            </div>
+                          );
+                        })() : <span className="text-[10px] font-bold text-text-tertiary opacity-30 tracking-widest">-</span>}
                       </td>
                       <td className="px-4 md:px-8 py-4 md:py-6">
                         <span className={`px-2 md:px-2.5 py-1 rounded-lg text-[8px] md:text-[9px] font-black uppercase tracking-widest border ${STATUS_CONFIG[app.status]?.color || 'bg-surface-50 text-text-tertiary border-surface-200'}`}>

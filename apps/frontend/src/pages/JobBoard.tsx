@@ -1,11 +1,12 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useJobBoardStore } from '../stores/jobBoardStore';
 import { useAuthStore } from '../stores/authStore';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Briefcase, Building, Plus, Search, ExternalLink, RefreshCw, X, Globe, Cpu, Clock, ChevronRight, Trash2, CheckCircle2, Bold, Italic, List, ListOrdered, Pencil } from 'lucide-react';
+import { MapPin, Briefcase, Building, Plus, Search, ExternalLink, RefreshCw, X, Globe, Cpu, Clock, ChevronRight, Trash2, CheckCircle2, Bold, Italic, List, ListOrdered, Pencil, Calendar } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow, differenceInDays, isPast } from 'date-fns';
 import { locationService } from '../services/locationService';
 import { jobApplicationAPI } from '../services/api';
 import { TrustScore } from '../components/jobs/TrustScore';
@@ -45,6 +46,20 @@ const JobCard = ({ job, isAdmin, onApprove, onDelete, onEdit, onViewFeedback, is
                 {formatDistanceToNow(new Date(displayDate), { addSuffix: true })}
               </div>
             )}
+            {job.applicationDeadline && (() => {
+               const deadline = new Date(job.applicationDeadline);
+               const past = isPast(deadline);
+               const daysLeft = differenceInDays(deadline, new Date());
+               const isUrgent = !past && daysLeft <= 3;
+               return (
+                 <div className={`flex items-center gap-1.5 text-[8px] md:text-[10px] font-black uppercase tracking-[0.15em] px-2.5 py-1.5 rounded-lg border transition-colors ${
+                   past ? 'bg-red-50 text-red-500 border-red-100' : isUrgent ? 'bg-orange-50 text-orange-500 border-orange-100' : 'bg-surface-50 text-text-tertiary border-surface-100 group-hover:bg-white'
+                 }`}>
+                   <Calendar size={10} className={past ? 'text-red-500' : isUrgent ? 'text-orange-500' : 'text-brand-blue'} />
+                   {past ? 'Expired' : daysLeft === 0 ? 'Ends Today' : `Ends in ${daysLeft}d`}
+                 </div>
+               );
+            })()}
             {/* Trust Score Integration */}
             {(job.authenticityScore !== undefined || job.trustBadges?.length > 0) && (
               <div title="Click to view community reviews" className="cursor-pointer hover:scale-105 transition-transform">
@@ -149,7 +164,7 @@ const JobActionModal = ({ isOpen, onClose, editingJob }: { isOpen: boolean; onCl
   const [loading, setLoading] = useState(false);
   const editorRef = useRef<HTMLDivElement>(null);
   const [formData, setFormData] = useState({
-    title: '', company: '', location: '', country: '', description: '', url: '', jobType: 'Full-time', salaryRange: '', postedDate: ''
+    title: '', company: '', location: '', country: '', description: '', url: '', jobType: 'Full-time', salaryRange: '', postedDate: '', applicationDeadline: ''
   });
 
   useEffect(() => {
@@ -163,9 +178,10 @@ const JobActionModal = ({ isOpen, onClose, editingJob }: { isOpen: boolean; onCl
         url: editingJob.url || '',
         jobType: editingJob.jobType || 'Full-time',
         salaryRange: editingJob.salaryRange || '',
-        postedDate: editingJob.postedDate ? new Date(editingJob.postedDate).toISOString().split('T')[0] : ''
+        postedDate: editingJob.postedDate ? new Date(editingJob.postedDate).toISOString().split('T')[0] : '',
+        applicationDeadline: editingJob.applicationDeadline ? new Date(editingJob.applicationDeadline).toISOString().split('T')[0] : ''
       } : {
-        title: '', company: '', location: '', country: '', description: '', url: '', jobType: 'Full-time', salaryRange: '', postedDate: ''
+        title: '', company: '', location: '', country: '', description: '', url: '', jobType: 'Full-time', salaryRange: '', postedDate: '', applicationDeadline: ''
       };
       
       setFormData(initialData);
@@ -289,26 +305,26 @@ const JobActionModal = ({ isOpen, onClose, editingJob }: { isOpen: boolean; onCl
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-[99999] flex items-center justify-center p-2 md:p-4 overflow-hidden">
+  return createPortal(
+    <div className="fixed inset-0 z-[99999] flex items-end sm:items-center justify-center p-0 sm:p-2 md:p-4 overflow-hidden">
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-brand-dark/75 backdrop-blur-lg" />
       <motion.div 
         initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }}
-        className="relative bg-white border border-surface-200 rounded-[2rem] md:rounded-[3.5rem] w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] md:max-h-[95vh]"
+        className="relative bg-white border-t sm:border border-surface-200 rounded-t-[2rem] sm:rounded-[2rem] md:rounded-[3.5rem] w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col h-[90vh] sm:h-auto sm:max-h-[92vh] md:max-h-[95vh]"
       >
         {/* FIXED HEADER */}
         <div className="relative shrink-0 p-5 md:p-10 pb-3 md:pb-6 border-b border-surface-100 bg-white z-20">
           <div className="relative z-10 flex justify-between items-center">
             <div className="flex items-center gap-3 md:gap-4">
-              <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-brand-blue/10 flex items-center justify-center text-brand-blue shadow-inner border border-brand-blue/5">
+              <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-brand-blue/10 flex items-center justify-center text-brand-blue shadow-inner border border-brand-blue/5 shrink-0">
                 {editingJob ? <Pencil size={20} /> : <Plus size={20} />}
               </div>
-              <div>
-                <h2 className="text-lg md:text-3xl font-display font-black text-brand-dark tracking-tighter uppercase leading-none">{editingJob ? 'Refine Architecture.' : 'Register Architecture.'}</h2>
-                <p className="text-[7px] md:text-xs font-bold text-text-tertiary uppercase tracking-widest mt-0.5 md:mt-1">Manual node synchronization</p>
+              <div className="min-w-0">
+                <h2 className="text-lg md:text-3xl font-display font-black text-brand-dark tracking-tighter uppercase leading-none truncate">{editingJob ? 'Refine Architecture.' : 'Register Architecture.'}</h2>
+                <p className="text-[7px] md:text-xs font-bold text-text-tertiary uppercase tracking-widest mt-0.5 md:mt-1 truncate">Manual node synchronization</p>
               </div>
             </div>
-            <button onClick={onClose} className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-surface-50 border border-surface-200 flex items-center justify-center text-text-tertiary hover:text-brand-dark transition-all"><X size={18} /></button>
+            <button onClick={onClose} className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-surface-50 border border-surface-200 flex items-center justify-center text-text-tertiary hover:text-brand-dark transition-all shrink-0"><X size={18} /></button>
           </div>
         </div>
         
@@ -348,9 +364,15 @@ const JobActionModal = ({ isOpen, onClose, editingJob }: { isOpen: boolean; onCl
               </div>
             </div>
             
-            <div className="space-y-1.5 mb-6">
-              <label className="text-[9px] md:text-[10px] font-black text-brand-dark uppercase tracking-[0.2em] ml-1">Posted Date (Optional)</label>
-              <input type="date" className="input-resume w-full px-4 md:px-5 py-3 md:py-4 rounded-xl text-sm font-bold bg-surface-50 border border-surface-200 outline-none focus:ring-4 focus:ring-brand-blue/5 transition-all" value={formData.postedDate} onChange={e => setFormData({...formData, postedDate: e.target.value})} />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-8 mb-6">
+              <div className="space-y-1.5">
+                <label className="text-[9px] md:text-[10px] font-black text-brand-dark uppercase tracking-[0.2em] ml-1">Posted Date (Optional)</label>
+                <input type="date" className="input-resume w-full px-4 md:px-5 py-3 md:py-4 rounded-xl text-sm font-bold bg-surface-50 border border-surface-200 outline-none focus:ring-4 focus:ring-brand-blue/5 transition-all" value={formData.postedDate} onChange={e => setFormData({...formData, postedDate: e.target.value})} />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[9px] md:text-[10px] font-black text-brand-dark uppercase tracking-[0.2em] ml-1">Application Deadline</label>
+                <input type="date" className="input-resume w-full px-4 md:px-5 py-3 md:py-4 rounded-xl text-sm font-bold bg-surface-50 border border-surface-200 outline-none focus:ring-4 focus:ring-brand-blue/5 transition-all" value={formData.applicationDeadline} onChange={e => setFormData({...formData, applicationDeadline: e.target.value})} />
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -388,7 +410,8 @@ const JobActionModal = ({ isOpen, onClose, editingJob }: { isOpen: boolean; onCl
         </div>
       </motion.div>
       <style>{`.rich-text-editor { line-height: 1.6 !important; } .rich-text-editor ul { list-style-type: disc !important; padding-left: 1.5rem !important; margin-bottom: 1rem !important; display: block !important; } .rich-text-editor ol { list-style-type: decimal !important; padding-left: 1.5rem !important; margin-bottom: 1rem !important; display: block !important; } .rich-text-editor li { display: list-item !important; margin-bottom: 0.4rem !important; list-style-position: outside !important; } .rich-text-editor strong, .rich-text-editor b { font-weight: 800 !important; color: #1a1a1a !important; } .rich-text-editor em, .rich-text-editor i { font-style: italic !important; } .rich-text-editor p { margin-bottom: 1rem !important; display: block !important; }`}</style>
-    </div>
+    </div>,
+    document.body
   );
 };
 

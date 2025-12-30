@@ -45,7 +45,7 @@ export const jobPostingController = {
   // Submit a new job (Community Driven)
   createJob: async (req: AuthenticatedRequest, res: Response) => {
     try {
-      const { title, company, location, country, description, url, salaryRange, jobType } = req.body;
+      const { title, company, location, country, description, url, salaryRange, jobType, postedDate, applicationDeadline } = req.body;
       const userId = req.user?.id;
       const userRole = req.user?.role;
 
@@ -69,6 +69,8 @@ export const jobPostingController = {
         url,
         salaryRange,
         jobType,
+        postedDate,
+        applicationDeadline,
         source,
         status,
         postedBy: userId,
@@ -150,7 +152,7 @@ export const jobPostingController = {
   updateJob: async (req: AuthenticatedRequest, res: Response) => {
     try {
       const { id } = req.params;
-      const { title, company, location, country, description, url, salaryRange, jobType } = req.body;
+      const { title, company, location, country, description, url, salaryRange, jobType, postedDate, applicationDeadline } = req.body;
 
       if (!title || !company || !country || !description) {
         return res.status(400).json({ success: false, message: 'Missing required community job fields' });
@@ -165,6 +167,8 @@ export const jobPostingController = {
         url,
         salaryRange,
         jobType,
+        postedDate,
+        applicationDeadline,
         updatedAt: new Date()
       }, { new: true });
 

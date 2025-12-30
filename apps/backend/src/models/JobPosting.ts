@@ -22,6 +22,7 @@ export interface IJobPosting extends Document {
   lastReviewDate?: Date;
   isLocked: boolean;
   postedDate?: Date;
+  applicationDeadline?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -37,6 +38,7 @@ const jobPostingSchema = new Schema<IJobPosting>(
     salaryRange: { type: String },
     jobType: { type: String },
     postedDate: { type: Date },
+    applicationDeadline: { type: Date },
     source: { type: String, enum: ['user', 'admin'], required: true },
     status: { 
       type: String, 

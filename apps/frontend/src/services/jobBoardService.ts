@@ -13,6 +13,7 @@ export interface JobPosting {
   source: 'scraper' | 'user' | 'admin';
   status: 'pending' | 'approved' | 'rejected';
   postedAt?: string;
+  applicationDeadline?: string;
   createdAt: string;
 }
 
