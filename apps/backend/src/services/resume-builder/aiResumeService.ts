@@ -97,26 +97,12 @@ export class AIResumeService {
     resumeData: any, 
     jobDescription?: string
   ): Promise<ATSAnalysisResult & { aiStatus?: string }> {
-    let aiUsedSuccessfully = true;
-    let aiErrorMessage = '';
-    
     try {
       console.log('🤖 PRIORITY: Starting AI-powered ATS compatibility analysis...');
       
-      // PRIORITY 1: AI-powered ATS analysis
-      let analysis;
-      try {
-        console.log('🛡️ AI: Analyzing ATS compatibility...');
-        analysis = await enterpriseAIService.analyzeATSCompatibility(resumeData, jobDescription);
-        console.log('✅ AI: ATS analysis completed successfully');
-      } catch (error: any) {
-        console.warn('⚠️ AI FALLBACK: ATS analysis failed, using manual assessment');
-        aiUsedSuccessfully = false;
-        aiErrorMessage += 'AI ATS analysis failed. ';
-        
-        // Manual fallback using basic assessment
-        analysis = this.generateFallbackATSAnalysis(resumeData, jobDescription);
-      }
+      console.log('🛡️ AI: Analyzing ATS compatibility...');
+      const analysis = await enterpriseAIService.analyzeATSCompatibility(resumeData, jobDescription);
+      console.log('✅ AI: ATS analysis completed successfully');
       
       // Update the resume in database if it has an ID
       if (resumeData.id || resumeData._id) {
@@ -130,153 +116,11 @@ export class AIResumeService {
           console.warn('⚠️ Database update failed:', dbError);
         }
       }
-      
-      // Add AI status information for user notification
-      if (!aiUsedSuccessfully) {
-        analysis.aiStatus = `AI services partially unavailable: ${aiErrorMessage.trim()} Using manual ATS assessment as backup. For optimal results, ensure AI services are fully operational.`;
-        console.log('⚠️ NOTIFICATION: AI ATS analysis had issues, user will be informed');
-      } else {
-        console.log('🎉 SUCCESS: Full AI-powered ATS analysis completed!');
-      }
-      
       return analysis;
     } catch (error) {
       console.error('❌ CRITICAL: ATS analysis failure:', error);
-      throw new Error('Failed to analyze ATS compatibility');
+      throw error;
     }
-  }
-
-  private generateFallbackATSAnalysis(
-    resumeData: any, 
-    jobDescription?: string
-  ): ATSAnalysisResult {
-    console.log('🔄 Generating fallback ATS analysis...');
-    let score = 60;
-    const recommendations: string[] = [];
-    const improvementAreas: string[] = [];
-    const strengths: string[] = [];
-
-    // Basic structure analysis
-    if (!resumeData.personalInfo?.email) {
-      recommendations.push('Add contact email for better ATS parsing');
-      improvementAreas.push('Missing contact information');
-      score -= 5;
-    } else {
-      strengths.push('Complete contact information provided');
-    }
-
-    if (!resumeData.personalInfo?.phone) {
-      recommendations.push('Include phone number in contact information');
-      improvementAreas.push('Incomplete contact details');
-      score -= 5;
-    }
-
-    if (!resumeData.professionalSummary || resumeData.professionalSummary.length < 50) {
-      recommendations.push('Add a comprehensive professional summary (50+ words)');
-      improvementAreas.push('Weak professional summary');
-      score -= 10;
-    } else {
-      score += 5;
-      strengths.push('Professional summary present');
-    }
-
-    if (!resumeData.workExperience?.length) {
-      recommendations.push('Add work experience section with detailed job descriptions');
-      improvementAreas.push('Missing work experience');
-      score -= 15;
-    } else {
-      score += 10;
-      strengths.push('Work experience documented');
-      
-      const hasQuantifiedAchievements = resumeData.workExperience.some((exp: any) =>
-        exp.achievements?.some((achievement: string) => /\d+/.test(achievement))
-      );
-      
-      if (!hasQuantifiedAchievements) {
-        recommendations.push('Add quantified achievements (numbers, percentages, metrics) to work experience');
-        improvementAreas.push('Lack of quantified achievements');
-        score -= 5;
-      } else {
-        score += 5;
-        strengths.push('Quantified achievements present');
-      }
-    }
-
-    if (!resumeData.skills?.length || resumeData.skills.length < 5) {
-      recommendations.push('Add more relevant skills (minimum 5-8 skills recommended)');
-      improvementAreas.push('Insufficient skills listed');
-      score -= 10;
-    } else {
-      score += 5;
-      strengths.push('Comprehensive skills section');
-    }
-
-    if (!resumeData.education?.length) {
-      recommendations.push('Include education section for complete professional profile');
-      improvementAreas.push('Missing education information');
-      score -= 5;
-    } else {
-      strengths.push('Education background provided');
-    }
-
-    // Keyword analysis if job description provided
-    let keywordMatch = 50;
-    if (jobDescription) {
-      const jobKeywords = this.extractKeywords(jobDescription);
-      const resumeText = JSON.stringify(resumeData).toLowerCase();
-      const matchedKeywords = jobKeywords.filter(keyword => 
-        resumeText.includes(keyword.toLowerCase())
-      );
-      keywordMatch = Math.round((matchedKeywords.length / Math.max(jobKeywords.length, 1)) * 100);
-      
-      if (keywordMatch < 60) {
-        recommendations.push(`Improve keyword matching - currently at ${keywordMatch}% match with job description`);
-        improvementAreas.push('Poor keyword alignment');
-        score -= 10;
-      } else {
-        score += 5;
-        strengths.push('Good keyword alignment');
-      }
-    }
-
-    // Format scoring
-    let formatScore = 85;
-    if (resumeData.personalInfo?.firstName && resumeData.personalInfo?.lastName) {
-      formatScore += 5;
-    }
-
-    const contentScore = Math.min(score + 10, 95);
-
-    // Default recommendations if none found
-    if (recommendations.length === 0) {
-      recommendations.push(
-        'Your resume has good ATS compatibility! Consider adding more quantified achievements.',
-        'Include industry-specific keywords relevant to your target positions.',
-        'Ensure all contact information is complete and professional.'
-      );
-      strengths.push('Good overall ATS structure');
-    }
-
-    score = Math.max(30, Math.min(score, 95));
-
-    return {
-      score,
-      recommendations,
-      keywordMatch,
-      formatScore,
-      contentScore,
-      improvementAreas,
-      strengths
-    };
-  }
-
-  private extractKeywords(text: string): string[] {
-    const words = text.toLowerCase()
-      .replace(/[^\w\s]/g, ' ')
-      .split(/\s+/)
-      .filter(word => word.length > 3)
-      .filter(word => !['that', 'with', 'have', 'will', 'this', 'they', 'from', 'were', 'been'].includes(word));
-    return [...new Set(words)].slice(0, 20);
   }
 
   async optimizeResumeForJob(
@@ -288,456 +132,59 @@ export class AIResumeService {
       companyName?: string;
     }
   ): Promise<ResumeImprovementResult & { aiStatus?: string }> {
-    let aiUsedSuccessfully = true;
-    let aiErrorMessage = '';
-    
     try {
       console.log('🤖 PRIORITY: Using AI-powered job optimization...');
       
       // Create job context for AI
       const jobContext = `Job Title: ${jobOptions.jobTitle || 'Position'}, Company: ${jobOptions.companyName || 'Company'}, Description: ${jobOptions.jobDescription || 'No description provided'}`;
       
-      // PRIORITY 1: AI-powered professional summary with job context
-      let enhancedSummary;
-      try {
-        console.log('🎯 AI: Generating job-optimized professional summary...');
-        const summaries = await enterpriseAIService.generateProfessionalSummary(resumeData, jobContext);
-        enhancedSummary = summaries[0];
-        console.log('✅ AI: Professional summary generated successfully');
-      } catch (error: any) {
-        console.warn('⚠️ AI FALLBACK: Professional summary generation failed, using manual enhancement');
-        aiUsedSuccessfully = false;
-        aiErrorMessage += 'AI summary generation failed. ';
-        enhancedSummary = this.generateEnhancedSummary(resumeData);
-      }
-
-      // PRIORITY 1: Try comprehensive AI enhancement
-      let improvedResume;
-      try {
-        console.log('🚀 AI: Performing comprehensive resume optimization...');
-        improvedResume = await enterpriseAIService.optimizeResumeComprehensively({
-          resumeData: {
-            ...resumeData,
-            professionalSummary: enhancedSummary
-          },
-          optimizationType: 'job-specific'
-        });
-        console.log('✅ AI: Comprehensive optimization completed successfully');
-      } catch (error: any) {
-        console.warn('⚠️ AI FALLBACK: Comprehensive optimization failed, using local enhancement');
-        aiUsedSuccessfully = false;
-        aiErrorMessage += 'AI comprehensive optimization failed. ';
-        
-        // Manual fallback
-        improvedResume = {
-          ...resumeData,
-          professionalSummary: enhancedSummary,
-          workExperience: this.enhanceWorkExperienceLocally(resumeData.workExperience || [])
-        };
-      }
-
-      // PRIORITY 1: AI-powered quality and change analysis
-      let qualityAnalysis, actualChanges;
-      try {
-        console.log('📊 AI: Analyzing quality improvements and changes...');
-        [qualityAnalysis, actualChanges] = await Promise.all([
-          this.getAIQualityAssessment(resumeData, improvedResume),
-          this.getAIChangeAnalysis(resumeData, improvedResume)
-        ]);
-        console.log('✅ AI: Quality and change analysis completed successfully');
-      } catch (error: any) {
-        console.warn('⚠️ AI FALLBACK: Quality analysis failed, using manual calculation');
-        aiUsedSuccessfully = false;
-        aiErrorMessage += 'AI quality analysis failed. ';
-        
-        // Manual fallback
-        const originalScore = this.calculateResumeQuality(resumeData);
-        const improvedScore = this.calculateResumeQuality(improvedResume);
-        qualityAnalysis = {
-          before: originalScore,
-          after: improvedScore,
-          improvement: improvedScore - originalScore
-        };
-        actualChanges = this.identifyChanges(resumeData, improvedResume);
-      }
-
-      const result: any = {
-        originalResume: resumeData,
-        improvedResume: improvedResume,
-        enhancedResume: improvedResume,
-        improvements: actualChanges,
-        qualityScore: qualityAnalysis,
-        aiStatus: undefined
-      };
-
-      // Add AI status information for frontend notifications
-      if (!aiUsedSuccessfully) {
-        result.aiStatus = `AI services partially unavailable: ${aiErrorMessage.trim()} Using manual calculations as backup.`;
-        console.log('⚠️ NOTIFICATION: AI services had issues, user will be informed');
-      } else {
-        console.log('🎉 SUCCESS: Full AI-powered optimization completed!');
-      }
-
-      return result;
-    } catch (error) {
-      console.error('❌ CRITICAL: Complete optimization failure:', error);
-      throw new Error('Failed to optimize resume for job posting');
-    }
-  }
-
-  /**
-   * Enhance resume with AI and generate optimized LaTeX code
-   */
-  async enhanceResumeWithLatex(
-    resumeData: any,
-    templateId: string,
-    options: AIResumeEnhancementOptions & {
-      includeIndustryAnalysis?: boolean;
-      includeCompetitorBenchmarking?: boolean;
-      includeContentOptimization?: boolean;
-      includeATSAnalysis?: boolean;
-    } = {},
-    progressCallback?: (progress: string) => void
-  ): Promise<ResumeImprovementResult & {
-    optimizedLatexCode?: string;
-    templateUsed?: string;
-    aiStatus?: string;
-  }> {
-    try {
-      console.log('🤖 Starting AI enhancement with LaTeX generation...');
-      progressCallback?.('Analyzing resume content...');
-
-      // Step 1: Enhance the resume data with AI
-      progressCallback?.('Applying AI enhancements...');
-      const enhancementResult = await this.enhanceResumeComprehensively(resumeData, options);
-
-      // Step 2: Generate LaTeX using standardized template system
-      console.log('📄 [UPDATED] Generating LaTeX using standardized template system...');
-      progressCallback?.('Generating optimized LaTeX code with standardized templates...');
-      
-      // Convert to standardized format and generate LaTeX
-      const optimizedLatexCode = await templateService.generateLatex(
-        templateId,
-        enhancementResult.improvedResume
-      );
-
-      progressCallback?.('Enhancement complete!');
-      return {
-        ...enhancementResult,
-        optimizedLatexCode,
-        templateUsed: templateId,
-        generationMethod: 'standardized' // Add metadata
-      };
-    } catch (error) {
-      console.error('❌ AI enhancement with LaTeX generation failed:', error);
-      throw new Error('Failed to enhance resume with LaTeX generation');
-    }
-  }
-
-  async optimizeResumeWithJobUrl(
-    resumeData: any, 
-    jobUrl: string,
-    options?: {
-      templateCode?: string;
-      templateId?: string;
-    }
-  ): Promise<ResumeImprovementResult & { 
-    aiStatus?: string; 
-    jobScrapingSuccess?: boolean; 
-    scrapedJobDetails?: any;
-    optimizedLatexCode?: string;
-    templateUsed?: string;
-  }> {
-    try {
-      console.log('🎯 Job optimization with URL using standardized service:', {
-        jobUrl,
-        templateId: options?.templateId
-      });
-
-      // Use the new standardized job optimization service for real scraping and deep analysis
-      const optimizationResult = await standardizedJobOptimizationService.optimizeResumeForJob({
-        resumeData,
-        jobUrl,
-        templateId: options?.templateId || resumeData.templateId || 'template01',
-        templateCode: options?.templateCode
-      });
-      
-      console.log('✅ Job optimization complete using standardized system');
-      
-      return {
-        originalResume: optimizationResult.originalResume,
-        improvedResume: optimizationResult.optimizedResume,
-        enhancedResume: optimizationResult.optimizedResume,
-        improvements: optimizationResult.improvements,
-        recommendations: optimizationResult.jobMatchAnalysis.recommendations,
-        atsScore: optimizationResult.atsScore,
-        jobMatchAnalysis: optimizationResult.jobMatchAnalysis,
-        optimizedLatexCode: optimizationResult.optimizedLatex,
-        templateUsed: options?.templateId || resumeData.templateId || 'template01',
-        generationMethod: 'standardized-job-optimization',
-        aiStatus: 'completed',
-        jobScrapingSuccess: !!optimizationResult.scrapedJobDetails,
-        scrapedJobDetails: optimizationResult.scrapedJobDetails
-      };
-    } catch (error: any) {
-      console.error('❌ Error in optimizeResumeWithJobUrl:', error);
-      // Return original resume with error status
-      return {
-        originalResume: resumeData,
-        improvedResume: resumeData,
-        enhancedResume: resumeData,
-        improvements: ['AI optimization encountered an error'],
-        aiStatus: `AI optimization failed: ${error.message}`,
-        jobScrapingSuccess: false,
-        scrapedJobDetails: null
-      };
-    }
-  }
-
-  async analyzeJobFromUrl(jobUrl: string): Promise<{
-    jobDetails: any;
-    matchAnalysis: any;
-    recommendations: string[];
-  }> {
-    try {
-      console.log(`🔍 Analyzing job from URL: ${jobUrl}`);
-      
-      // Use the working geminiService instead of the broken enterpriseAIService
-      // This bypasses the problematic enterpriseAIService.analyzeJobFromUrl method
-      const { geminiService } = await import('../ai/gemini');
-      
-      // Use the high-fidelity Strategic Analysis Protocol
-      const prompt = `
-You are a world-class Executive Headhunter and Senior Recruitment Strategist with advanced web analysis capabilities. Your mission is to perform a deep-dive analysis of the job posting at the provided URL and extract high-fidelity, actionable data.
-
-🎯 TARGET JOB POSTING:
-${jobUrl}
-
-📋 STRATEGIC ANALYSIS PROTOCOL:
-1. DEEP SCRAPE: Read the full text, including the fine print, about the role, company culture, and technical ecosystem.
-2. GRANULAR EXTRACTION: Extract specific tools, versions, methodologies, and internal team dynamics mentioned.
-3. CONTEXTUAL JOB DESCRIPTION: Reconstruct a high-impact, 4-paragraph description (Mission, Technical Ecosystem, Success Parameters, Growth Vectors).
-4. EXHAUSTIVE ARRAYS: Provide 8-12 distinct, high-value items for requirements, responsibilities, and skills.
-
-🔍 REQUIRED OUTPUT FORMAT (STRICT PURE JSON):
-{
-  "title": "full official job title",
-  "company": "legal or well-known trade name of the company",
-  "description": "Detailed 4-paragraph strategic overview (min 250 words).",
-  "requirements": ["8-12 granular requirements"],
-  "responsibilities": ["8-12 granular responsibilities"],
-  "skills": ["10-15 specific tech/soft skills"],
-  "strategicInsights": ["Candidate Positioning", "Keyword Priority", "Interview Strategy"]
-}
-
-CRITICAL: DO NOT use markdown formatting like **bold** or *italics*. All text must be pure plain text only.
-
-ANALYZE THE JOB POSTING AT ${jobUrl} NOW:
-`;
-
-      const text = await geminiService.generateText(prompt);
-      console.log(`📝 Raw response length: ${text.length} chars`);
-      
-      // Simple but robust JSON extraction and parsing
-      let jobDetails;
-      try {
-        // Try direct parsing first
-        jobDetails = JSON.parse(text.trim());
-      } catch (e) {
-        // If that fails, clean the text and try again
-        const cleaned = text
-          .replace(/```json|```/g, '')
-          .replace(/^[^{]*{/, '{')  // Remove everything before first {
-          .replace(/}[^}]*$/, '}') // Remove everything after last }
-          .trim();
-        
-        jobDetails = JSON.parse(cleaned);
-      }
-      
-      console.log(`✅ Successfully parsed job: ${jobDetails.title} at ${jobDetails.company}`);
-      
-      return {
-        jobDetails,
-        matchAnalysis: {
-          title: jobDetails.title,
-          company: jobDetails.company,
-          description: jobDetails.description,
-          requirements: jobDetails.requirements || []
-        },
-        recommendations: [
-          'Job posting successfully analyzed',
-          'Ready to optimize your resume for this position',
-          'Consider highlighting relevant skills and experience'
-        ]
-      };
-    } catch (error) {
-      console.error('❌ Error in analyzeJobFromUrl:', error);
-      // Provide a fallback response instead of failing completely
-      return {
-        jobDetails: {
-          title: "Job Analysis Failed",
-          company: "Unknown Company",
-          description: "Unable to extract job details from the provided URL",
-          requirements: ["Please try again with a different URL"]
-        },
-        matchAnalysis: {
-          title: "Job Analysis Failed",
-          company: "Unknown Company", 
-          description: "Unable to extract job details from the provided URL",
-          requirements: ["Please try again with a different URL"]
-        },
-        recommendations: [
-          'Job analysis encountered an error',
-          'Please verify the URL is accessible and try again',
-          'You can manually enter job details for optimization'
-        ]
-      };
-    }
-  }
-
-  async enhanceResumeComprehensively(
-    resumeData: any,
-    options: AIResumeEnhancementOptions & {
-      includeIndustryAnalysis?: boolean;
-      includeCompetitorBenchmarking?: boolean;
-      includeContentOptimization?: boolean;
-      includeATSAnalysis?: boolean;
-    } = {}
-  ): Promise<ResumeImprovementResult & {
-    industryAlignment?: number;
-    benchmarking?: { percentile: number; improvements: string[] };
-    atsAnalysis?: { score: number; recommendations: string[] };
-    aiStatus?: string;
-  }> {
-    let aiUsedSuccessfully = true;
-    let aiErrorMessage = '';
-    
-    try {
-      console.log('🤖 PRIORITY: Starting comprehensive AI-powered resume enhancement...');
-      const workingResumeData = this.ensureMinimumResumeStructure(resumeData);
-      
-      // NEW: Check if resume uses LaTeX template for enhanced optimization
-      const isLatexTemplate = workingResumeData.isLatexTemplate || false;
-      let availableTemplates = [];
-      
-      if (isLatexTemplate) {
-        try {
-          console.log('📄 AI: Analyzing LaTeX template compatibility...');
-          availableTemplates = await aiLatexGenerator.getTemplateMetadata();
-          console.log(`✅ AI: Found ${availableTemplates.length} available LaTeX templates`);
-        } catch (error) {
-          console.warn('⚠️ AI: LaTeX template analysis failed, continuing with standard enhancement');
-        }
-      }
-      
       // PRIORITY 1: AI-powered professional summary
-      let enhancedSummary;
-      try {
-        console.log('🎯 AI: Generating enhanced professional summary...');
-        const summaries = await enterpriseAIService.generateProfessionalSummary(workingResumeData);
-        enhancedSummary = summaries[0];
-        console.log('✅ AI: Professional summary generated successfully');
-      } catch (error: any) {
-        console.warn('⚠️ AI FALLBACK: Summary generation failed, using manual enhancement');
-        aiUsedSuccessfully = false;
-        aiErrorMessage += 'AI summary generation failed. ';
-        enhancedSummary = this.generateEnhancedSummary(workingResumeData);
-      }
+      console.log('?? AI: Generating enhanced professional summary...');
+      const summaries = await enterpriseAIService.generateProfessionalSummary(workingResumeData);
+      const enhancedSummary = summaries[0];
+      console.log('? AI: Professional summary generated successfully');
 
-      // PRIORITY 1: AI comprehensive optimization
-      let improvedResume;
-      try {
-        console.log('🚀 AI: Performing comprehensive resume optimization...');
-        improvedResume = await enterpriseAIService.optimizeResumeComprehensively({
-          resumeData: {
-            ...workingResumeData,
-            professionalSummary: enhancedSummary
-          },
-          optimizationType: 'comprehensive'
-        });
-        console.log('✅ AI: Comprehensive optimization completed successfully');
-      } catch (error: any) {
-        console.warn('⚠️ AI FALLBACK: Comprehensive optimization failed, using local enhancement');
-        aiUsedSuccessfully = false;
-        aiErrorMessage += 'AI comprehensive optimization failed. ';
-        
-        // Manual fallback
-        improvedResume = {
+// PRIORITY 1: AI comprehensive optimization
+      console.log('?? AI: Performing comprehensive resume optimization...');
+      const improvedResume = await enterpriseAIService.optimizeResumeComprehensively({
+        resumeData: {
           ...workingResumeData,
-          professionalSummary: enhancedSummary,
-          workExperience: this.enhanceWorkExperienceLocally(workingResumeData.workExperience || []),
-          skills: this.enhanceSkillsLocally(workingResumeData.skills || [])
-        };
-      }
+          professionalSummary: enhancedSummary
+        },
+        optimizationType: 'comprehensive'
+      });
+      console.log('? AI: Comprehensive optimization completed successfully');
 
-      // PRIORITY 1: AI-powered quality and change analysis
-      let qualityAnalysis, actualChanges;
-      try {
-        console.log('📊 AI: Analyzing quality improvements and changes...');
-        [qualityAnalysis, actualChanges] = await Promise.all([
-          this.getAIQualityAssessment(workingResumeData, improvedResume),
-          this.getAIChangeAnalysis(workingResumeData, improvedResume)
-        ]);
-        console.log('✅ AI: Quality and change analysis completed successfully');
-      } catch (error: any) {
-        console.warn('⚠️ AI FALLBACK: Analysis failed, using manual calculation');
-        aiUsedSuccessfully = false;
-        aiErrorMessage += 'AI analysis failed. ';
-        
-        // Manual fallback
-        const originalScore = this.calculateResumeQuality(workingResumeData);
-        const improvedScore = this.calculateResumeQuality(improvedResume);
-        qualityAnalysis = {
-          before: originalScore,
-          after: improvedScore,
-          improvement: improvedScore - originalScore
-        };
-        actualChanges = this.identifyChanges(workingResumeData, improvedResume);
-      }
+// PRIORITY 1: AI-powered quality and change analysis
+      console.log('?? AI: Analyzing quality improvements and changes...');
+      const [qualityAnalysis, actualChanges] = await Promise.all([
+        this.getAIQualityAssessment(workingResumeData, improvedResume),
+        this.getAIChangeAnalysis(workingResumeData, improvedResume)
+      ]);
+      console.log('? AI: Quality and change analysis completed successfully');
 
-      // PRIORITY 1: AI enterprise-level analysis
+// PRIORITY 1: AI enterprise-level analysis
       let industryAlignment, benchmarking, atsAnalysis;
 
       if (options.includeIndustryAnalysis) {
-        try {
-          console.log('🏭 AI: Analyzing industry alignment...');
-          industryAlignment = await this.getAIIndustryAlignment(improvedResume);
-          console.log('✅ AI: Industry alignment analysis completed');
-        } catch (error: any) {
-          console.warn('⚠️ AI FALLBACK: Industry analysis failed, using manual calculation');
-          aiUsedSuccessfully = false;
-          aiErrorMessage += 'AI industry analysis failed. ';
-          industryAlignment = this.calculateIndustryAlignment(improvedResume);
-        }
+        console.log('?? AI: Analyzing industry alignment...');
+        industryAlignment = await this.getAIIndustryAlignment(improvedResume);
+        console.log('? AI: Industry alignment analysis completed');
       }
 
       if (options.includeCompetitorBenchmarking) {
-        try {
-          console.log('📈 AI: Performing competitor benchmarking...');
-          benchmarking = await this.getAIBenchmarkingData(improvedResume);
-          console.log('✅ AI: Competitor benchmarking completed');
-        } catch (error: any) {
-          console.warn('⚠️ AI FALLBACK: Benchmarking failed, using manual calculation');
-          aiUsedSuccessfully = false;
-          aiErrorMessage += 'AI benchmarking failed. ';
-          benchmarking = this.generateBenchmarkingData(improvedResume);
-        }
+        console.log('?? AI: Performing competitor benchmarking...');
+        benchmarking = await this.getAIBenchmarkingData(improvedResume);
+        console.log('? AI: Competitor benchmarking completed');
       }
 
       if (options.includeATSAnalysis) {
-        try {
-          console.log('🛡️ AI: Analyzing ATS compatibility...');
-          atsAnalysis = await this.analyzeATSCompatibility(improvedResume);
-          console.log('✅ AI: ATS analysis completed');
-        } catch (error) {
-          console.warn('⚠️ AI FALLBACK: ATS analysis failed, using basic recommendations');
-          aiUsedSuccessfully = false;
-          aiErrorMessage += 'AI ATS analysis failed. ';
-          atsAnalysis = { score: 75, recommendations: ['Use standard section headings', 'Include relevant keywords'] };
-        }
+        console.log('??? AI: Analyzing ATS compatibility...');
+        atsAnalysis = await this.analyzeATSCompatibility(improvedResume);
+        console.log('? AI: ATS analysis completed');
       }
 
-      const result: any = {
+const result: any = {
         originalResume: resumeData,
         improvedResume: improvedResume,
         enhancedResume: improvedResume,
@@ -750,39 +197,10 @@ ANALYZE THE JOB POSTING AT ${jobUrl} NOW:
       };
 
       // NEW: Add LaTeX-specific recommendations if applicable
-      if (isLatexTemplate && availableTemplates.length > 0) {
-        const currentTemplate = availableTemplates.find(t => t.id === workingResumeData.template);
-        if (currentTemplate) {
-          result.improvements.push({
-            category: 'LaTeX Template Optimization',
-            impact: 'high',
-            changes: [
-              `Using professional ${currentTemplate.name} template for enhanced typography`,
-              'LaTeX formatting ensures pixel-perfect PDF generation',
-              'Template automatically optimized for ATS scanning'
-            ]
-          });
-          
-          // Boost quality score for LaTeX templates
-          if (result.qualityScore?.after) {
-            result.qualityScore.after = Math.min(result.qualityScore.after + 5, 100);
-          }
-        }
-      }
-
-      // Add AI status information for user notification
-      if (!aiUsedSuccessfully) {
-        result.aiStatus = `AI services partially unavailable: ${aiErrorMessage.trim()} Using manual calculations as backup. For optimal results, ensure AI services are fully operational.`;
-        console.log('⚠️ NOTIFICATION: AI services had issues during comprehensive enhancement');
-      } else {
-        const servicesUsed = isLatexTemplate ? 'AI + LaTeX Template Analysis' : 'Full AI Enhancement';
-        console.log(`🎉 SUCCESS: ${servicesUsed} completed successfully!`);
-      }
-
       return result;
     } catch (error) {
       console.error('❌ CRITICAL: Comprehensive enhancement failure:', error);
-      throw new Error('Failed to enhance resume comprehensively');
+      throw error;
     }
   }
 
@@ -791,46 +209,9 @@ ANALYZE THE JOB POSTING AT ${jobUrl} NOW:
     appliedImprovements: string[];
   }> {
     try {
-      let improvedResume = { ...resumeData };
-      const appliedImprovements: string[] = [];
-
-      for (const improvementId of improvementIds) {
-        const [category, index] = improvementId.split('-');
-        
-        switch (category) {
-          case 'Professional Summary':
-            if (!improvedResume.professionalSummary || improvedResume.professionalSummary.length < 100) {
-              improvedResume.professionalSummary = this.generateEnhancedSummary(improvedResume);
-              appliedImprovements.push('Enhanced professional summary');
-            }
-            break;
-            
-          case 'Work Experience':
-            improvedResume.workExperience = this.enhanceWorkExperienceLocally(improvedResume.workExperience || []);
-            appliedImprovements.push('Enhanced work experience descriptions');
-            break;
-            
-          case 'Skills':
-            improvedResume.skills = this.enhanceSkillsLocally(improvedResume.skills || []);
-            appliedImprovements.push('Enhanced skills section');
-            break;
-            
-          case 'Content Enhancement':
-            improvedResume = this.applyContentEnhancements(improvedResume);
-            appliedImprovements.push('Applied content enhancements');
-            break;
-            
-          default:
-            appliedImprovements.push(`Applied improvement: ${category}`);
-        }
-      }
-
-      return {
-        enhancedResume: improvedResume,
-        appliedImprovements
-      };
+      throw new Error('AI-specific improvements require the AI enhancement pipeline.');
     } catch (error) {
-      throw new Error('Failed to apply specific improvements');
+      throw error;
     }
   }
 
@@ -984,24 +365,7 @@ Respond only with the JSON data, no additional text.
         console.error('❌ DEBUG: Error details:', error.details);
       }
       
-      // Return fallback analysis when AI fails
-      return {
-        score: 65,
-        strengths: [
-          'Professional resume structure',
-          'Relevant work experience documented'
-        ],
-        gaps: [
-          'Unable to perform AI analysis - service temporarily unavailable',
-          'Manual review recommended for detailed job alignment'
-        ],
-        recommendations: [
-          'Ensure your skills section includes keywords from the job description',
-          'Highlight relevant achievements that match job requirements',
-          'Consider AI services setup for detailed analysis'
-        ],
-        isGoodMatch: false
-      };
+      throw error;
     }
   }
 
@@ -1074,223 +438,8 @@ Respond only with the JSON data, no additional text.
       return Array.isArray(summaries) ? summaries : [summaries];
     } catch (error) {
       console.error('Error generating multiple summary options:', error);
-      // Return a fallback array with one summary if AI fails
-      return [resumeData.professionalSummary || 'Professional with proven experience and expertise.'];
+      throw error;
     }
-  }
-
-  private ensureMinimumResumeStructure(resumeData: any): any {
-    // Create a workable resume structure even from minimal data
-    return {
-      personalInfo: {
-        firstName: resumeData.personalInfo?.firstName || 'Professional',
-        lastName: resumeData.personalInfo?.lastName || 'User',
-        email: resumeData.personalInfo?.email || 'professional@email.com',
-        phone: resumeData.personalInfo?.phone || '',
-        location: resumeData.personalInfo?.location || '',
-        ...resumeData.personalInfo
-      },
-      professionalSummary: resumeData.professionalSummary || 'Motivated professional seeking new opportunities to contribute skills and expertise.',
-      workExperience: resumeData.workExperience?.length > 0 ? resumeData.workExperience : [
-        {
-          jobTitle: 'Professional',
-          company: 'Various Organizations',
-          duration: 'Recent',
-          location: '',
-          achievements: ['Gained valuable experience and developed professional skills']
-        }
-      ],
-      skills: resumeData.skills?.length > 0 ? resumeData.skills : [
-        'Communication',
-        'Problem Solving', 
-        'Team Collaboration',
-        'Time Management'
-      ],
-      education: resumeData.education?.length > 0 ? resumeData.education : [],
-      ...resumeData
-    };
-  }
-
-  private createEnhancedResumeLocally(resumeData: any): any {
-    console.log('🛠️ Creating enhanced resume locally...');
-    
-    return {
-      ...resumeData,
-      professionalSummary: this.generateEnhancedSummary(resumeData),
-      workExperience: this.enhanceWorkExperienceLocally(resumeData.workExperience || []),
-      skills: this.enhanceSkillsLocally(resumeData.skills || []),
-      education: resumeData.education || []
-    };
-  }
-
-  private generateEnhancedSummary(resumeData: any): string {
-    const name = resumeData.personalInfo?.firstName || 'Professional';
-    const experience = resumeData.workExperience || [];
-    const skills = resumeData.skills || [];
-    
-    if (experience.length > 0) {
-      const latestJob = experience[0];
-      const yearsExp = experience.length;
-      return `Results-driven ${latestJob.jobTitle || 'professional'} with ${yearsExp}+ years of proven experience. Demonstrated expertise in ${skills.slice(0, 3).join(', ') || 'key areas'}, with a strong track record of delivering high-impact solutions and exceeding performance expectations. Committed to driving innovation and continuous improvement in dynamic, fast-paced environments.`;
-    }
-    
-    return `Motivated ${name} with strong foundation in ${skills.slice(0, 3).join(', ') || 'professional skills'}. Proven ability to adapt quickly, solve complex problems, and deliver exceptional results. Seeking opportunities to contribute expertise and drive meaningful impact in a collaborative environment.`;
-  }
-
-  private enhanceWorkExperienceLocally(workExperience: any[]): any[] {
-    return workExperience.map(exp => ({
-      ...exp,
-      achievements: (exp.achievements || []).map((achievement: string) => {
-        return achievement
-          .replace(/^Worked on/, 'Spearheaded')
-          .replace(/^Helped/, 'Collaborated to')
-          .replace(/^Did/, 'Successfully executed')
-          .replace(/^Made/, 'Developed and implemented')
-          .replace(/^Managed/, 'Led and optimized');
-      })
-    }));
-  }
-
-  private enhanceSkillsLocally(skills: any[]): any[] {
-    if (skills.length === 0) {
-      return [
-        'Strategic Planning',
-        'Project Management', 
-        'Team Leadership',
-        'Problem Solving',
-        'Communication',
-        'Analytical Thinking'
-      ];
-    }
-    return skills;
-  }
-
-  private calculateResumeQuality(resumeData: any): number {
-    let score = 50; // Base score
-    
-    // Professional summary quality
-    if (resumeData.professionalSummary) {
-      const summaryLength = resumeData.professionalSummary.length;
-      if (summaryLength > 100 && summaryLength < 500) score += 15;
-      if (resumeData.professionalSummary.includes('experience') || resumeData.professionalSummary.includes('results')) score += 5;
-    }
-    
-    // Work experience quality
-    if (resumeData.workExperience?.length > 0) {
-      score += Math.min(resumeData.workExperience.length * 8, 20);
-      const hasQuantifiedAchievements = resumeData.workExperience.some(exp => 
-        exp.achievements?.some(achievement => /\d+/.test(achievement))
-      );
-      if (hasQuantifiedAchievements) score += 10;
-    }
-    
-    // Skills assessment
-    if (resumeData.skills?.length > 3) score += 10;
-    
-    // Education
-    if (resumeData.education?.length > 0) score += 5;
-    
-    return Math.min(score, 100);
-  }
-
-  private identifyChanges(original: any, enhanced: any): Array<{category: string, changes: string[], impact: 'high' | 'medium' | 'low'}> {
-    const changes = [];
-    
-    // Check summary changes
-    if (original.professionalSummary !== enhanced.professionalSummary) {
-      const summaryChanges = [];
-      if (enhanced.professionalSummary.length > original.professionalSummary?.length || 0) {
-        summaryChanges.push('Expanded professional summary with more impactful content');
-      }
-      if (/results|achieve|deliver|impact/i.test(enhanced.professionalSummary)) {
-        summaryChanges.push('Added achievement-focused language');
-      }
-      if (summaryChanges.length > 0) {
-        changes.push({
-          category: 'Professional Summary',
-          changes: summaryChanges,
-          impact: 'high' as const
-        });
-      }
-    }
-    
-    // Check work experience enhancements
-    const originalExpLength = original.workExperience?.length || 0;
-    const enhancedExpLength = enhanced.workExperience?.length || 0;
-    
-    if (enhancedExpLength > 0) {
-      const expChanges = [];
-      if (enhancedExpLength >= originalExpLength) {
-        expChanges.push('Enhanced work experience descriptions');
-      }
-      
-      const hasImprovedLanguage = enhanced.workExperience.some(exp =>
-        exp.achievements?.some(achievement => 
-          /spearheaded|collaborated|executed|developed|implemented/i.test(achievement)
-        )
-      );
-      
-      if (hasImprovedLanguage) {
-        expChanges.push('Upgraded to stronger action verbs');
-      }
-      
-      if (expChanges.length > 0) {
-        changes.push({
-          category: 'Work Experience',
-          changes: expChanges,
-          impact: 'high' as const
-        });
-      }
-    }
-    
-    // Default to basic improvement if no specific changes detected
-    if (changes.length === 0) {
-      changes.push({
-        category: 'Content Enhancement',
-        changes: ['Applied AI optimization', 'Improved overall presentation'],
-        impact: 'medium' as const
-      });
-    }
-    
-    return changes;
-  }
-
-  private calculateIndustryAlignment(resumeData: any): number {
-    const allText = [
-      resumeData.professionalSummary || '',
-      ...resumeData.workExperience?.flatMap(exp => [exp.jobTitle, exp.company, ...exp.achievements]) || [],
-      ...resumeData.skills?.map(skill => skill.name || skill) || []
-    ].join(' ').toLowerCase();
-
-    const industryKeywords = [
-      'technology', 'software', 'development', 'engineering', 'data', 'cloud',
-      'marketing', 'sales', 'digital', 'strategy', 'analytics', 'growth',
-      'finance', 'accounting', 'investment', 'financial', 'analysis', 'budget'
-    ];
-
-    const matches = industryKeywords.filter(keyword => allText.includes(keyword)).length;
-    return Math.min(Math.round((matches / industryKeywords.length) * 100), 100);
-  }
-
-  private generateBenchmarkingData(resumeData: any): { percentile: number; improvements: string[] } {
-    const baseScore = this.calculateResumeQuality(resumeData);
-    const percentile = Math.min(Math.round((baseScore / 100) * 90), 95);
-    
-    const improvements = [];
-    if (baseScore < 80) improvements.push('Strengthen quantified achievements');
-    if (baseScore < 70) improvements.push('Expand professional summary');
-    if (baseScore < 60) improvements.push('Add more relevant skills');
-
-    return { percentile, improvements };
-  }
-
-  private applyContentEnhancements(resumeData: any): any {
-    return {
-      ...resumeData,
-      professionalSummary: this.generateEnhancedSummary(resumeData),
-      workExperience: this.enhanceWorkExperienceLocally(resumeData.workExperience || []),
-      skills: this.enhanceSkillsLocally(resumeData.skills || [])
-    };
   }
 
   // NEW AI-POWERED METHODS - PRIORITY 1
@@ -1365,33 +514,8 @@ Return ONLY this JSON format:
       
       throw new Error('Invalid AI response format');
     } catch (error: any) {
-      console.warn('🔄 AI quality assessment failed, using fallback calculation:', error.message);
-      
-      // Enhanced intelligent fallback with logging
-      try {
-        const originalScore = this.calculateResumeQuality(originalResume);
-        const improvedScore = this.calculateResumeQuality(enhancedResume);
-        
-        console.log('Quality assessment fallback scores:', {
-          original: originalScore,
-          improved: improvedScore,
-          improvement: improvedScore - originalScore
-        });
-        
-        return {
-          before: originalScore,
-          after: improvedScore,
-          improvement: Math.max(0, improvedScore - originalScore) // Ensure non-negative improvement
-        };
-      } catch (fallbackError) {
-        console.error('Even fallback quality calculation failed:', fallbackError);
-        // Last resort - provide reasonable default values
-        return {
-          before: 70,
-          after: 80,
-          improvement: 10
-        };
-      }
+      console.error('AI quality assessment failed:', error);
+      throw error;
     }
   }
 
@@ -1452,9 +576,7 @@ Impact levels: "high" for major improvements, "medium" for moderate changes, "lo
       
       throw new Error('Invalid AI response format');
     } catch (error) {
-      console.warn('🔄 AI change analysis failed, using fallback identification');
-      // Intelligent fallback
-      return this.identifyChanges(originalResume, enhancedResume);
+      throw error;
     }
   }
 
@@ -1492,8 +614,7 @@ Return ONLY a JSON object:
       
       throw new Error('Invalid AI response');
     } catch (error) {
-      console.warn('🔄 AI industry alignment failed, using fallback calculation');
-      return this.calculateIndustryAlignment(resumeData);
+      throw error;
     }
   }
 
@@ -1530,8 +651,7 @@ Return ONLY a JSON object:
       
       throw new Error('Invalid AI response');
     } catch (error) {
-      console.warn('🔄 AI benchmarking failed, using fallback calculation');
-      return this.generateBenchmarkingData(resumeData);
+      throw error;
     }
   }
 }

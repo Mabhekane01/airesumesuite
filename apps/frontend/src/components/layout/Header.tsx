@@ -10,6 +10,7 @@ import {
   ChartBarIcon,
   BellIcon,
   FolderIcon,
+  UserIcon,
 } from "@heroicons/react/24/outline";
 import { Menu, Transition } from "@headlessui/react";
 import { Fragment } from "react";
@@ -124,10 +125,7 @@ export default function Header() {
               className="flex items-center"
             >
               <Link to="/" className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-lg flex items-center justify-center shadow-glow-sm animate-glow-pulse">
-                  <span className="text-white font-bold text-sm">AI</span>
-                </div>
-                <span className="text-xl font-bold gradient-text-dark">
+                <span className="text-xl font-black gradient-text-dark">
                   Job Suite
                 </span>
               </Link>
@@ -238,12 +236,7 @@ export default function Header() {
               {isAuthenticated && user ? (
                 <Menu as="div" className="relative z-50">
                   <Menu.Button className="flex items-center space-x-2 p-2 rounded-full hover:bg-surface-50/60 transition-all duration-300 hover:shadow-glow-sm">
-                    <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-full flex items-center justify-center shadow-glow-sm">
-                      <span className="text-white text-sm font-medium">
-                        {user.firstName[0]}
-                        {user.lastName[0]}
-                      </span>
-                    </div>
+                    <UserIcon className="w-8 h-8 text-emerald-500" />
                     <span className="text-sm font-medium text-text-primary hidden sm:block">
                       {user.firstName}
                     </span>
@@ -260,7 +253,7 @@ export default function Header() {
                     leaveTo="transform opacity-0 scale-95"
                   >
                     <Menu.Items
-                      className="absolute right-0 mt-2 w-48 bg-gray-700/95 backdrop-blur-lg rounded-lg shadow-dark-xl border border-surface-200 focus:outline-none z-50"
+                      className="absolute right-0 mt-2 w-48 bg-panel rounded-lg shadow-dark-xl border border-surface-200 focus:outline-none z-50"
                       style={{ zIndex: 999999 }}
                     >
                       <div className="p-2">

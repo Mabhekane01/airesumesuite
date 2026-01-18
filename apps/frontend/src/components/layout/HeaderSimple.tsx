@@ -10,6 +10,7 @@ import {
   Bars3Icon,
   XMarkIcon,
   MagnifyingGlassIcon,
+  UserCircleIcon,
 } from "@heroicons/react/24/outline";
 import { Menu, Transition } from "@headlessui/react";
 import { Fragment } from "react";
@@ -150,10 +151,7 @@ export default function HeaderSimple({
                 {/* Logo */}
                 <div className="flex items-center">
                   <Link to="/" className="group flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg bg-brand-blue flex items-center justify-center shadow-lg">
-                      <span className="text-white font-bold text-lg">A</span>
-                    </div>
-                    <span className="text-xl font-display font-bold text-brand-dark tracking-tight">
+                    <span className="text-xl font-display font-black text-brand-dark tracking-tight">
                       JobSuite
                     </span>
                   </Link>
@@ -224,11 +222,7 @@ export default function HeaderSimple({
                                 {user.firstName}
                               </div>
                             </div>
-                            <div className="w-8 h-8 bg-brand-blue rounded-full flex items-center justify-center ring-2 ring-white">
-                              <span className="text-white text-xs font-bold">
-                                {user.firstName[0]}
-                              </span>
-                            </div>
+                            <UserCircleIcon className="w-8 h-8 text-brand-blue" />
                           </Menu.Button>
                         </div>
 
@@ -241,7 +235,7 @@ export default function HeaderSimple({
                           leaveFrom="transform opacity-100 scale-100"
                           leaveTo="transform opacity-0 scale-95"
                         >
-                          <Menu.Items className="absolute right-0 mt-4 w-64 bg-white border border-surface-200 rounded-xl shadow-resume p-2 focus:outline-none z-50 origin-top-right">
+                          <Menu.Items className="absolute right-0 mt-4 w-64 bg-panel border border-surface-200 rounded-xl shadow-resume p-2 focus:outline-none z-50 origin-top-right">
                             <Menu.Item>
                               {({ active }) => (
                                 <Link
@@ -314,7 +308,7 @@ export default function HeaderSimple({
               {/* Mobile Menu */}
               {mobileMenuOpen && (
                 <motion.div
-                  className="md:hidden absolute top-full left-0 right-0 mt-4 mx-2 bg-white border border-surface-200 rounded-2xl shadow-resume p-4 z-50"
+                  className="md:hidden absolute top-full left-0 right-0 mt-4 mx-2 bg-panel border border-surface-200 rounded-2xl shadow-resume p-4 z-50"
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}

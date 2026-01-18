@@ -16,7 +16,7 @@ export interface IEducation {
   degree: string;
   fieldOfStudy: string;
   graduationDate: Date; // Made required to match frontend
-  startDate?: Date;
+  startDate: Date;
   endDate?: Date;
   location?: string;
   gpa?: string;
@@ -173,7 +173,7 @@ export interface IResume extends Document {
 const WorkExperienceSchema = new Schema<IWorkExperience>({
   jobTitle: { type: String, required: true },
   company: { type: String, required: true },
-  location: { type: String, required: true },
+  location: { type: String },
   startDate: { type: Date, required: true },
   endDate: { type: Date },
   isCurrentJob: { type: Boolean, default: false },
@@ -234,11 +234,11 @@ const PublicationSchema = new Schema<IPublication>({
 
 const ReferenceSchema = new Schema<IReference>({
   name: { type: String, required: true },
-  title: { type: String, required: true },
-  company: { type: String, required: true },
-  email: { type: String, required: true },
+  title: { type: String },
+  company: { type: String },
+  email: { type: String },
   phone: { type: String, required: true },
-  relationship: { type: String, required: true }
+  relationship: { type: String }
 });
 
 const HobbySchema = new Schema<IHobby>({
@@ -269,7 +269,7 @@ const ResumeSchema = new Schema<IResume>({
     lastName: { type: String, required: true },
     email: { type: String, required: true },
     phone: { type: String, required: true },
-    location: { type: String, required: true },
+    location: { type: String },
     linkedinUrl: { type: String },
     portfolioUrl: { type: String },
     githubUrl: { type: String },

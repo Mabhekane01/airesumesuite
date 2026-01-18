@@ -57,6 +57,10 @@ export interface JobMatchAnalysis {
   competitiveAdvantage: string[];
   keywordAlignment: string[];
   strategicInsights: string[];
+  mode?: 'ai' | 'fallback';
+  confidence?: 'high' | 'medium' | 'low';
+  failureReason?: string;
+  providerFailures?: string[];
 }
 
 export class StandardizedJobOptimizationService {
@@ -484,12 +488,38 @@ Return ONLY valid JSON (no text before/after):
         atsCompatibility: cappedAtsCompatibility,
         competitiveAdvantage: cleanedAnalysis.strongPoints || [],
         keywordAlignment: cleanedAnalysis.keywordAlignment || [],
-        strategicInsights: cleanedAnalysis.strategicInsights || cleanedAnalysis.improvements || cleanedAnalysis.recommendations || []
+        strategicInsights: cleanedAnalysis.strategicInsights || cleanedAnalysis.improvements || cleanedAnalysis.recommendations || [],
+        mode: 'ai',
+        confidence: contentQuality.score >= 70 ? 'high' : 'medium'
       };
 
     } catch (error) {
       console.error('AI job matching failed, using quality-based fallback analysis:', error);
       
+      const failureMessage = error instanceof Error ? error.message : String(error);
+      const failureLower = failureMessage.toLowerCase();
+      const providerFailures: string[] = [];
+      let failureReason = 'ai_unavailable';
+
+      if (
+        failureLower.includes('quota') ||
+        failureLower.includes('resource_exhausted') ||
+        failureLower.includes('ai_quota_exceeded')
+      ) {
+        failureReason = 'ai_quota';
+        providerFailures.push('gemini_quota');
+      } else if (
+        failureLower.includes('invalid api key') ||
+        failureLower.includes('invalid x-api-key') ||
+        failureLower.includes('authentication')
+      ) {
+        failureReason = 'ai_invalid_key';
+        providerFailures.push('gemini_invalid_key');
+      } else if (failureLower.includes('rate limit') || failureLower.includes('429')) {
+        failureReason = 'ai_rate_limit';
+        providerFailures.push('gemini_rate_limit');
+      }
+
       // Fallback to basic keyword matching with quality assessment
       const jobSkills = [...(jobAnalysis.requiredSkills || []), ...(jobAnalysis.preferredSkills || [])];
       const resumeSkills = resumeData.skills?.map(s => s.name.toLowerCase()) || [];
@@ -532,7 +562,11 @@ Return ONLY valid JSON (no text before/after):
           'Optimize technical keywords for better ATS visibility',
           'Highlight specific metrics in recent work experience',
           'Align project descriptions with role-specific requirements'
-        ]
+        ],
+        mode: 'fallback',
+        confidence: 'low',
+        failureReason,
+        providerFailures
       };
     }
   }

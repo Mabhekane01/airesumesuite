@@ -208,6 +208,36 @@ const MultiCombobox = ({ value, onChange, options, placeholder }: { value: strin
   );
 };
 
+const safeDate = (date: any) => {
+  if (!date) return '';
+  if (date instanceof Date) {
+     return isNaN(date.getTime()) ? '' : date.toISOString().split('T')[0];
+  }
+  if (typeof date === 'string') {
+      if (/^\d{4}-\d{2}-\d{2}$/.test(date)) return date;
+      const d = new Date(date);
+      return isNaN(d.getTime()) ? '' : d.toISOString().split('T')[0];
+  }
+  const d = new Date(date);
+  return isNaN(d.getTime()) ? '' : d.toISOString().split('T')[0];
+};
+
+// Helper to sanitize data structure
+const sanitizeResumeData = (data: any) => {
+  if (!data) return data;
+  const clean = { ...data };
+  
+  // Ensure professionalSummary is a string
+  if (clean.professionalSummary && typeof clean.professionalSummary === 'object') {
+    const summaryObj = clean.professionalSummary as any;
+    clean.professionalSummary = String(summaryObj.summary || summaryObj.text || Object.values(summaryObj)[0] || '');
+  } else if (clean.professionalSummary === undefined) {
+    clean.professionalSummary = '';
+  }
+  
+  return clean;
+};
+
 const BasicResumeBuilderContent = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -231,9 +261,7 @@ const BasicResumeBuilderContent = () => {
       data.workExperience = (data.workExperience || []).map((exp: any) => ({
         ...exp,
         jobTitle: exp.jobTitle || exp.title || '',
-        company: exp.company || exp.companyName || '',
-        startDate: exp.startDate ? new Date(exp.startDate) : undefined,
-        endDate: exp.endDate ? new Date(exp.endDate) : undefined,
+        company: exp.company || exp.companyName || exp.organization || '',
       }));
       data.education = data.education || [];
       data.skills = data.skills || [];
@@ -241,8 +269,9 @@ const BasicResumeBuilderContent = () => {
       
       if (!data.personalInfo) data.personalInfo = {};
       
-      setLocalData(data);
-      updateResumeData(data);
+      const cleanData = sanitizeResumeData(data);
+      setLocalData(cleanData);
+      updateResumeData(cleanData);
       isInitialMount.current = false;
       return; // Skip other initializers
     }
@@ -257,7 +286,8 @@ const BasicResumeBuilderContent = () => {
         skills: [],
         references: [],
         templateId: 'basic_sa',
-        title: 'My Basic Resume'
+        title: 'My Basic Resume',
+        professionalSummary: ''
       });
       isInitialMount.current = false;
       return;
@@ -278,9 +308,8 @@ const BasicResumeBuilderContent = () => {
         data.personalInfo.nationality = 'South African';
       }
       
-      if (data.professionalSummary === undefined) data.professionalSummary = '';
-      
-      setLocalData(data);
+      const cleanData = sanitizeResumeData(data);
+      setLocalData(cleanData);
       isInitialMount.current = false;
     }
   }, [resumeData, id, location.state]);
@@ -300,14 +329,15 @@ const BasicResumeBuilderContent = () => {
             data.workExperience = (data.workExperience || []).map((exp: any) => ({
               ...exp,
               jobTitle: exp.jobTitle || exp.title || '',
-              company: exp.company || exp.companyName || '',
+              company: exp.company || exp.companyName || exp.organization || '',
             }));
             data.education = data.education || [];
             data.skills = data.skills || [];
             data.references = data.references || [];
             
-            updateResumeData(data);
-            setLocalData(data);
+            const cleanData = sanitizeResumeData(data);
+            updateResumeData(cleanData);
+            setLocalData(cleanData);
           }
         } catch (error) {
           toast.error('Failed to load resume');
@@ -334,8 +364,9 @@ const BasicResumeBuilderContent = () => {
           location: localData.personalInfo?.location || location.state.targetLocation
         }
       };
-      setLocalData(updated);
-      updateResumeData(updated);
+      const cleanUpdated = sanitizeResumeData(updated);
+      setLocalData(cleanUpdated);
+      updateResumeData(cleanUpdated);
     }
   }, [location.state, !!localData]);
 
@@ -350,7 +381,71 @@ const BasicResumeBuilderContent = () => {
     }));
   };
 
+  const validateAllSteps = () => {
+    // Validate Personal Info
+    const { personalInfo } = localData;
+    const personalRequired = [
+      { field: 'lastName', label: 'Surname' },
+      { field: 'firstName', label: 'First Name' },
+      { field: 'identityNumber', label: 'Identity Number' },
+      { field: 'dateOfBirth', label: 'Date of Birth' },
+      { field: 'gender', label: 'Gender' },
+      { field: 'nationality', label: 'Nationality' },
+      { field: 'maritalStatus', label: 'Marital Status' },
+      { field: 'homeLanguage', label: 'Home Language' },
+      { field: 'residentialAddress', label: 'Residential Address' },
+      { field: 'phone', label: 'Contact Number' },
+      { field: 'email', label: 'Email Address' }
+    ];
+    for (const item of personalRequired) {
+      if (!personalInfo?.[item.field]?.trim()) {
+        toast.error(`${item.label} is compulsory.`);
+        return false;
+      }
+    }
+    if (personalInfo.identityNumber.length !== 13) {
+      toast.error('Identity Number must be exactly 13 digits.');
+      return false;
+    }
+
+    // Validate Education
+    const edu = localData.education?.[0];
+    if (!edu?.institution?.trim() || !edu?.degree?.trim() || !edu?.graduationDate) {
+      toast.error('Education details are incomplete.');
+      return false;
+    }
+
+    // Validate Experience
+    const exps = localData.workExperience || [];
+    if (exps.length === 0) {
+      toast.error('At least one work experience entry is compulsory.');
+      return false;
+    }
+    for (const exp of exps) {
+      if (!exp.jobTitle?.trim() || !exp.company?.trim() || !exp.startDate || !exp.responsibilities?.[0]?.trim()) {
+        toast.error('Work experience details are incomplete.');
+        return false;
+      }
+    }
+
+    // Validate References
+    const refs = localData.references || [];
+    if (refs.length === 0) {
+      toast.error('At least one reference is compulsory.');
+      return false;
+    }
+    for (const ref of refs) {
+      if (!ref.name?.trim() || !ref.phone?.trim()) {
+        toast.error('Reference details are incomplete.');
+        return false;
+      }
+    }
+
+    return true;
+  };
+
   const handleSave = async () => {
+    if (!validateAllSteps()) return null;
     setIsSaving(true);
     try {
       syncToContext();
@@ -463,6 +558,51 @@ const BasicResumeBuilderContent = () => {
       }
     }
 
+    if (STEPS[currentStep].id === 'experience') {
+      const exps = localData.workExperience || [];
+      if (exps.length === 0) {
+        toast.error('At least one work experience entry is compulsory.');
+        return;
+      }
+      
+      for (const exp of exps) {
+        if (!exp.jobTitle?.trim()) {
+          toast.error('Job Role is compulsory.');
+          return;
+        }
+        if (!exp.company?.trim()) {
+          toast.error('Company Name is compulsory.');
+          return;
+        }
+        if (!exp.startDate) {
+          toast.error('Start Date is compulsory.');
+          return;
+        }
+        if (!exp.responsibilities?.[0]?.trim()) {
+           toast.error('Description of tasks is compulsory.');
+           return;
+        }
+      }
+    }
+
+    if (STEPS[currentStep].id === 'references') {
+      const refs = localData.references || [];
+      if (refs.length === 0) {
+        toast.error('At least one reference is compulsory.');
+        return;
+      }
+      for (const ref of refs) {
+        if (!ref.name?.trim()) {
+          toast.error('Reference Name is compulsory.');
+          return;
+        }
+        if (!ref.phone?.trim()) {
+          toast.error('Reference Phone is compulsory.');
+          return;
+        }
+      }
+    }
+
     syncToContext();
     // Use a small timeout to let context update before saving
     setTimeout(() => saveToStorage(), 100);
@@ -495,7 +635,18 @@ const BasicResumeBuilderContent = () => {
       });
       
       if (response.data.success) {
-        const updated = { ...localData, professionalSummary: response.data.data.summary };
+        let summaryText = response.data.data.summary;
+        
+        // Robust handling for potential object return (e.g. { summaries, summary })
+        if (typeof summaryText === 'object' && summaryText !== null) {
+          // If the summary field itself is an object, try to extract text or fallback
+          summaryText = summaryText.summary || summaryText.text || Object.values(summaryText)[0] || '';
+        } else if (response.data.data.summaries && !summaryText) {
+          // Fallback if summary field is missing but summaries array exists
+          summaryText = response.data.data.summaries[0] || '';
+        }
+
+        const updated = { ...localData, professionalSummary: String(summaryText || '') };
         setLocalData(updated);
         updateResumeData(updated);
         toast.success('Summary generated!');
@@ -531,7 +682,7 @@ const BasicResumeBuilderContent = () => {
             
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <InputGroup label="Surname (Last Name)">
+                <InputGroup label="Surname (Last Name) *">
                   <input 
                     className="input-minimal"
                     placeholder="e.g. Mongamgue"
@@ -539,7 +690,7 @@ const BasicResumeBuilderContent = () => {
                     onChange={e => updatePersonalInfo('lastName', e.target.value)}
                   />
                 </InputGroup>
-                <InputGroup label="First Name(s)">
+                <InputGroup label="First Name(s) *">
                   <input 
                     className="input-minimal"
                     placeholder="e.g. Phakama"
@@ -550,7 +701,7 @@ const BasicResumeBuilderContent = () => {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <InputGroup label="Identity Number">
+                <InputGroup label="Identity Number *">
                   <input 
                     className="input-minimal"
                     placeholder="13-digit ID"
@@ -559,7 +710,7 @@ const BasicResumeBuilderContent = () => {
                     onChange={e => updatePersonalInfo('identityNumber', e.target.value)}
                   />
                 </InputGroup>
-                <InputGroup label="Date of Birth">
+                <InputGroup label="Date of Birth *">
                   <div className="relative">
                     <input 
                       type="date"
@@ -572,7 +723,7 @@ const BasicResumeBuilderContent = () => {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <InputGroup label="Gender">
+                <InputGroup label="Gender *">
                   <select 
                     className="input-minimal bg-white"
                     value={localData.personalInfo?.gender || ''}
@@ -584,7 +735,7 @@ const BasicResumeBuilderContent = () => {
                     <option value="Other">Other</option>
                   </select>
                 </InputGroup>
-                <InputGroup label="Nationality">
+                <InputGroup label="Nationality *">
                   <Combobox 
                     options={SA_NATIONALITIES}
                     placeholder="Select or type..."
@@ -595,7 +746,7 @@ const BasicResumeBuilderContent = () => {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <InputGroup label="Marital Status">
+                <InputGroup label="Marital Status *">
                   <select 
                     className="input-minimal bg-white"
                     value={localData.personalInfo?.maritalStatus || ''}
@@ -608,7 +759,7 @@ const BasicResumeBuilderContent = () => {
                     <option value="Widowed">Widowed</option>
                   </select>
                 </InputGroup>
-                <InputGroup label="Home Language">
+                <InputGroup label="Home Language *">
                   <Combobox 
                     options={SA_LANGUAGES}
                     placeholder="Select or type..."
@@ -627,7 +778,7 @@ const BasicResumeBuilderContent = () => {
                 />
               </InputGroup>
 
-              <InputGroup label="Residential Address">
+              <InputGroup label="Residential Address *">
                 <textarea 
                   className="input-minimal h-24 pt-3 resize-none"
                   placeholder="Street, Suburb, City, Code"
@@ -637,7 +788,7 @@ const BasicResumeBuilderContent = () => {
               </InputGroup>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <InputGroup label="Contact Number">
+                <InputGroup label="Contact Number *">
                   <PhoneInput
                     value={localData.personalInfo?.phone || ''}
                     onChange={(val) => updatePersonalInfo('phone', val)}
@@ -656,7 +807,7 @@ const BasicResumeBuilderContent = () => {
                     })()}
                   />
                 </InputGroup>
-                <InputGroup label="Email Address">
+                <InputGroup label="Email Address *">
                   <input 
                     className="input-minimal"
                     placeholder="e.g. phakama@yahoo.com"
@@ -679,14 +830,14 @@ const BasicResumeBuilderContent = () => {
             </div>
 
             <div className="space-y-5">
-              <InputGroup label="School Name">
+              <InputGroup label="School Name *">
                 <input 
                   placeholder="e.g. Orlando High School" 
                   className="input-minimal"
                   value={localData.education?.[0]?.institution || ''}
                   onChange={e => {
                     const newEdu = [...(localData.education || [])];
-                    if (!newEdu[0]) newEdu[0] = { institution: '', degree: 'Grade 12', fieldOfStudy: 'General', graduationDate: new Date() };
+                    if (!newEdu[0]) newEdu[0] = { institution: '', degree: 'Grade 12', fieldOfStudy: 'General' };
                     newEdu[0].institution = e.target.value;
                     updateLocal({ education: newEdu });
                   }}
@@ -694,15 +845,14 @@ const BasicResumeBuilderContent = () => {
               </InputGroup>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <InputGroup label="Grade Passed">
+                <InputGroup label="Grade Passed *">
                   <select 
                     className="input-minimal bg-white"
                     value={localData.education?.[0]?.degree || 'Grade 12'}
                     onChange={e => {
-                      const newEdu = [...(localData.education || [])];
-                      if (!newEdu[0]) newEdu[0] = { institution: '', degree: 'Grade 12', fieldOfStudy: 'General', graduationDate: new Date() };
-                      newEdu[0].degree = e.target.value;
-                      updateLocal({ education: newEdu });
+                                          const newEdu = [...(localData.education || [])];
+                                          if (!newEdu[0]) newEdu[0] = { institution: '', degree: 'Grade 12', fieldOfStudy: 'General' };
+                                          newEdu[0].degree = e.target.value;                      updateLocal({ education: newEdu });
                     }}
                   >
                     <option value="Grade 12">Grade 12 (Matric)</option>
@@ -711,17 +861,16 @@ const BasicResumeBuilderContent = () => {
                     <option value="Grade 9">Grade 9</option>
                   </select>
                 </InputGroup>
-                <InputGroup label="Year Finished">
+                <InputGroup label="Year Finished *">
                   <input 
                     type="number"
                     placeholder="Year" 
                     className="input-minimal"
                     value={localData.education?.[0]?.graduationDate ? new Date(localData.education[0].graduationDate).getFullYear().toString() : ''}
                     onChange={e => {
-                      const newEdu = [...(localData.education || [])];
-                      if (!newEdu[0]) newEdu[0] = { institution: '', degree: 'Grade 12', fieldOfStudy: 'General', graduationDate: new Date() };
-                      const date = new Date();
-                      date.setFullYear(parseInt(e.target.value) || 2024);
+                                          const newEdu = [...(localData.education || [])];
+                                          if (!newEdu[0]) newEdu[0] = { institution: '', degree: 'Grade 12', fieldOfStudy: 'General' };
+                                          const date = new Date();                      date.setFullYear(parseInt(e.target.value) || 2024);
                       newEdu[0].graduationDate = date;
                       updateLocal({ education: newEdu });
                     }}
@@ -735,7 +884,7 @@ const BasicResumeBuilderContent = () => {
                     selectedSubjects={localData.education?.[0]?.coursework || []}
                     onChange={(subjects) => {
                       const newEdu = [...(localData.education || [])];
-                      if (!newEdu[0]) newEdu[0] = { institution: '', degree: 'Grade 12', fieldOfStudy: 'General', graduationDate: new Date() };
+                      if (!newEdu[0]) newEdu[0] = { institution: '', degree: 'Grade 12', fieldOfStudy: 'General' };
                       newEdu[0].coursework = subjects;
                       updateLocal({ education: newEdu });
                     }}
@@ -835,7 +984,7 @@ const BasicResumeBuilderContent = () => {
               {(localData.workExperience || []).length === 0 ? (
                 <button 
                   onClick={() => updateLocal({ 
-                    workExperience: [{ jobTitle: '', company: '', startDate: new Date(), responsibilities: [] }]
+                    workExperience: [{ jobTitle: '', company: '', responsibilities: [] }]
                   })}
                   className="w-full py-12 border-2 border-dashed border-surface-200 rounded-[2rem] bg-surface-50/50 flex flex-col items-center gap-4 text-brand-dark hover:bg-surface-100 transition-all group"
                 >
@@ -852,7 +1001,7 @@ const BasicResumeBuilderContent = () => {
                   <div className="flex justify-end">
                     <button 
                       onClick={() => updateLocal({ 
-                        workExperience: [...(localData.workExperience || []), { jobTitle: '', company: '', startDate: new Date(), responsibilities: [] }]
+                        workExperience: [...(localData.workExperience || []), { jobTitle: '', company: '', responsibilities: [] }]
                       })}
                       className="bg-brand-dark text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl flex items-center gap-2 active:scale-95 transition-all"
                     >
@@ -878,7 +1027,7 @@ const BasicResumeBuilderContent = () => {
                         </button>
                       </div>
                       <div className="space-y-4">
-                        <InputGroup label="Job Role">
+                        <InputGroup label="Job Role *">
                           <input 
                             placeholder="e.g. General Worker" 
                             className="input-minimal"
@@ -890,7 +1039,7 @@ const BasicResumeBuilderContent = () => {
                             }}
                           />
                         </InputGroup>
-                        <InputGroup label="Company Name">
+                        <InputGroup label="Company Name *">
                           <input 
                             placeholder="Company or Employer" 
                             className="input-minimal"
@@ -903,13 +1052,26 @@ const BasicResumeBuilderContent = () => {
                           />
                         </InputGroup>
                         
+                        <InputGroup label="Location">
+                          <input 
+                            placeholder="e.g. Johannesburg" 
+                            className="input-minimal"
+                            value={exp.location || ''}
+                            onChange={e => {
+                              const newExp = [...(localData.workExperience || [])];
+                              newExp[idx].location = e.target.value;
+                              updateLocal({ workExperience: newExp });
+                            }}
+                          />
+                        </InputGroup>
+                        
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <InputGroup label="Start Date">
+                          <InputGroup label="Start Date *">
                             <div className="relative">
                               <input 
                                 type="date"
                                 className="input-minimal date-input-custom"
-                                value={exp.startDate ? new Date(exp.startDate).toISOString().split('T')[0] : ''}
+                                value={safeDate(exp.startDate)}
                                 onChange={e => {
                                   const newExp = [...(localData.workExperience || [])];
                                   newExp[idx].startDate = e.target.value; // Store as YYYY-MM-DD string
@@ -923,7 +1085,7 @@ const BasicResumeBuilderContent = () => {
                               <input 
                                 type="date"
                                 className="input-minimal date-input-custom"
-                                value={exp.endDate ? new Date(exp.endDate).toISOString().split('T')[0] : ''}
+                                value={safeDate(exp.endDate)}
                                 onChange={e => {
                                   const newExp = [...(localData.workExperience || [])];
                                   newExp[idx].endDate = e.target.value;
@@ -935,7 +1097,7 @@ const BasicResumeBuilderContent = () => {
                           </InputGroup>
                         </div>
 
-                        <InputGroup label="What did you do?">
+                        <InputGroup label="What did you do? *">
                           <textarea 
                             placeholder="Briefly describe your tasks" 
                             className="input-minimal h-24 pt-3 resize-none"
@@ -1011,7 +1173,7 @@ const BasicResumeBuilderContent = () => {
                           </button>
                         </div>
                       <div className="space-y-4">
-                        <InputGroup label="Reference Name">
+                        <InputGroup label="Reference Name *">
                           <input 
                             placeholder="e.g. Mr. Khumalo" 
                             className="input-minimal"
@@ -1062,7 +1224,7 @@ const BasicResumeBuilderContent = () => {
                               }}
                             />
                           </InputGroup>
-                          <InputGroup label="Their Phone">
+                          <InputGroup label="Their Phone *">
                             <PhoneInput
                               value={ref.phone}
                               onChange={(val) => {
@@ -1252,18 +1414,6 @@ const BasicResumeBuilderContent = () => {
              <div>
                 <h2 className="text-3xl font-black text-brand-dark tracking-tight">{STEPS[currentStep].title}</h2>
                 <p className="text-sm font-medium text-text-secondary mt-1">Please fill in the details below carefully.</p>
-             </div>
-             <div className="flex items-center gap-3">
-                <button 
-                   onClick={async () => {
-                     await handleSave();
-                     clearStorage(); // Clear local draft once persisted
-                     navigate('/dashboard/resume');
-                   }}
-                   className="px-4 py-2 text-xs font-black text-text-tertiary uppercase tracking-widest hover:text-brand-dark transition-colors"
-                >
-                  Save & Exit
-                </button>
              </div>
           </div>
 

@@ -2,7 +2,7 @@ import { createBrowserRouter, RouterProvider, Routes, Route, Navigate, Outlet, u
 import { useAuthStore } from './stores/authStore';
 import Layout from './components/layout/Layout';
 import DashboardLayout from './components/dashboard/DashboardLayout';
-import LandingPageSimple from './pages/LandingPageSimple';
+import LandingPage from './pages/LandingPage';
 import PublicTemplatesPage from './pages/PublicTemplatesPage';
 import JobBoard from './pages/JobBoard';
 import GoogleAuthCallback from './pages/auth/GoogleAuthCallback';
@@ -61,7 +61,7 @@ function ProtectedRoute({ children }: { children?: React.ReactNode }) {
 const AppRoutes = [
   {
     path: "/",
-    element: <Layout><LandingPageSimple /></Layout>
+    element: <Layout><LandingPage /></Layout>
   },
   {
     path: "/login",

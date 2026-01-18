@@ -51,7 +51,7 @@ export const EnhancementReviewModal: React.FC<EnhancementReviewModalProps> = ({
   enhancementData,
   onApplySelected
 }) => {
-  const { updateAIData, clearOptimizedContent } = useResume();
+  const { updateAIData, markPdfCacheStale } = useResume();
   const [selectedSuggestions, setSelectedSuggestions] = useState<Set<string>>(new Set());
   const [previewMode, setPreviewMode] = useState<'original' | 'enhanced' | 'selected'>('enhanced');
   const [expandedSuggestions, setExpandedSuggestions] = useState<Set<string>>(new Set());
@@ -59,13 +59,7 @@ export const EnhancementReviewModal: React.FC<EnhancementReviewModalProps> = ({
   // Initialize with all suggestions selected
   useEffect(() => {
     if (enhancementData) {
-      const allSuggestionIds = new Set<string>();
-      Object.entries(enhancementData.enhancementSuggestions).forEach(([section, data]) => {
-        data.suggestions.forEach((suggestion, index) => {
-          allSuggestionIds.add(`${section}-${index}`);
-        });
-      });
-      setSelectedSuggestions(allSuggestionIds);
+      setSelectedSuggestions(new Set());
     }
   }, [enhancementData]);
 
@@ -121,11 +115,34 @@ export const EnhancementReviewModal: React.FC<EnhancementReviewModalProps> = ({
           
           if (suggestion.field === 'professionalSummary') {
             finalData.professionalSummary = enhancedValue;
+          } else if (suggestion.field === 'professionalTitle') {
+             if (!finalData.personalInfo) finalData.personalInfo = {};
+             finalData.personalInfo.professionalTitle = enhancedValue;
+          } else if (suggestion.field.startsWith('personalInfo.')) {
+             const fieldName = suggestion.field.split('.')[1];
+             if (finalData.personalInfo) {
+               finalData.personalInfo[fieldName] = enhancedValue;
+             }
+          } else if (suggestion.field === 'workExperience') {
+             finalData.workExperience = enhancedValue;
           } else if (suggestion.field.startsWith('workExperience')) {
-            // Handle work experience field updates
             const match = suggestion.field.match(/workExperience\[(\d+)\]\.(\w+)/);
             if (match && finalData.workExperience?.[parseInt(match[1])]) {
               finalData.workExperience[parseInt(match[1])][match[2]] = enhancedValue;
+            }
+          } else if (suggestion.field === 'education') {
+             finalData.education = enhancedValue;
+          } else if (suggestion.field.startsWith('education')) {
+            const match = suggestion.field.match(/education\[(\d+)\]\.(\w+)/);
+            if (match && finalData.education?.[parseInt(match[1])]) {
+              finalData.education[parseInt(match[1])][match[2]] = enhancedValue;
+            }
+          } else if (suggestion.field === 'projects') {
+             finalData.projects = enhancedValue;
+          } else if (suggestion.field.startsWith('projects')) {
+            const match = suggestion.field.match(/projects\[(\d+)\]\.(\w+)/);
+            if (match && finalData.projects?.[parseInt(match[1])]) {
+              finalData.projects[parseInt(match[1])][match[2]] = enhancedValue;
             }
           } else if (suggestion.field === 'skills') {
             finalData.skills = enhancedValue;
@@ -139,9 +156,13 @@ export const EnhancementReviewModal: React.FC<EnhancementReviewModalProps> = ({
   };
 
   const handleApplyToForm = () => {
+    if (selectedSuggestions.size === 0) {
+      toast.error('Select at least one improvement to apply.');
+      return;
+    }
     const finalResumeData = buildFinalResumeData();
-    // Clear optimized content to force PDF regeneration
-    clearOptimizedContent();
+    // Mark cached PDF as stale so preview prompts for regeneration
+    markPdfCacheStale({ clearOptimizedLatex: true });
     // Track AI usage for subscription logic
     updateAIData({ wasOptimizationApplied: true });
     onApplySelected(finalResumeData);

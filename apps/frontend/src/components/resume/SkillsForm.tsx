@@ -61,7 +61,7 @@ export function SkillsForm() {
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="input-resume py-4 bg-surface-50 appearance-none cursor-pointer"
+              className="input-resume py-4 appearance-none cursor-pointer"
             >
               <option value="technical">Technical</option>
               <option value="soft">Soft Skill</option>

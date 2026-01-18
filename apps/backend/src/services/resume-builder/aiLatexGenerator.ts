@@ -44,7 +44,7 @@ export interface ResumeInput {
     degree: string;
     fieldOfStudy: string;
     graduationDate: string;
-    startDate?: string;
+    startDate: string;
     endDate?: string;
     location?: string;
     gpa?: string;
@@ -332,6 +332,7 @@ export class AILatexGenerator {
         fieldOfStudy: edu.fieldOfStudy,
         location: edu.location,
         graduationDate: edu.graduationDate || edu.endDate,
+        startDate: edu.startDate || '',
         gpa: edu.gpa,
         coursework: edu.coursework || []
       })),
@@ -382,6 +383,7 @@ export class AILatexGenerator {
         fieldOfStudy: edu.fieldOfStudy,
         location: edu.location,
         graduationDate: edu.graduationDate,
+        startDate: edu.startDate || '',
         gpa: edu.gpa,
         coursework: edu.coursework || []
       })),

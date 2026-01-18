@@ -24,7 +24,8 @@ import {
   PresentationChartLineIcon,
   ShieldExclamationIcon,
   CircleStackIcon,
-  QuestionMarkCircleIcon
+  QuestionMarkCircleIcon,
+  UserIcon
 } from "@heroicons/react/24/outline";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
@@ -117,9 +118,7 @@ const TestimonialCard = ({ quote, author, role, company, delay }: any) => (
 
     <div className="flex items-center gap-5 relative z-10">
       <div className="relative">
-        <div className="w-16 h-16 rounded-[1.25rem] bg-gradient-to-tr from-brand-blue/10 to-brand-blue/5 flex items-center justify-center font-black text-brand-blue text-2xl border border-brand-blue/20 group-hover:rotate-6 transition-transform duration-500">
-          {author[0]}
-        </div>
+        <UserIcon className="w-14 h-14 text-brand-blue" />
         <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-brand-success rounded-full border-4 border-white flex items-center justify-center shadow-sm">
           <CheckIcon className="w-2.5 h-2.5 text-white stroke-[4]" />
         </div>
@@ -616,9 +615,6 @@ export default function LandingPageSimple() {
           <div className="grid grid-cols-2 md:grid-cols-5 gap-16 mb-24">
             <div className="col-span-2 space-y-8">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-brand-blue flex items-center justify-center shadow-xl">
-                  <span className="text-white font-black text-2xl">A</span>
-                </div>
                 <span className="font-display font-black text-3xl text-brand-dark tracking-tighter">AI Job Suite</span>
               </div>
               <p className="text-text-secondary text-lg font-bold leading-relaxed max-w-sm">

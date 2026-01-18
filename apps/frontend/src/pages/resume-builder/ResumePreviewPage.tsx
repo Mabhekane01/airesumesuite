@@ -256,8 +256,20 @@ export default function ResumePreviewPage() {
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 md:gap-8 pt-4 md:pt-12">
           <div className="flex items-center gap-3 md:gap-6">
             <button
-              onClick={() => navigate('/dashboard/documents')}
+              onClick={() => {
+                const urlParams = new URLSearchParams(location.search);
+                const queryTemplate = urlParams.get('template');
+                const isBasic = queryTemplate === 'basic_sa' || resume.template === 'basic_sa';
+                
+                if (isBasic) {
+                  navigate(`/dashboard/resume/basic/${id}`, { state: { resumeData: resume } });
+                } else {
+                  // Navigate to step 0 (Personal Info) so user sees the forms immediately
+                  navigate(`/dashboard/resume/edit/${id}`, { state: { resumeData: resume, currentStep: 0 } });
+                }
+              }}
               className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-[1.2rem] bg-white border border-surface-200 flex items-center justify-center text-text-tertiary hover:text-brand-blue hover:border-brand-blue/30 hover:shadow-lg hover:shadow-brand-blue/10 shadow-sm transition-all duration-300 group"
+              title="Back to Editor"
             >
               <ChevronLeftIcon className="w-4 h-4 md:w-5 md:h-5 group-hover:-translate-x-0.5 transition-transform" />
             </button>

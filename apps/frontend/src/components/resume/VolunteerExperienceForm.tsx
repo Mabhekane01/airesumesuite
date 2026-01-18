@@ -135,7 +135,7 @@ export default function VolunteerExperienceForm() {
                     value={exp.description}
                     onChange={(e) => updateVolunteerExperience(index, 'description', e.target.value)}
                     rows={3}
-                    className="input-resume py-4 bg-surface-50"
+                    className="input-resume py-4"
                     placeholder="Briefly describe the mission protocol..."
                   />
                 </div>

@@ -74,66 +74,6 @@ export function PersonalInfoForm() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6">
         <Input
-          label="Identity Number"
-          name="identityNumber"
-          value={personalInfo?.identityNumber || ''}
-          onChange={handleChange}
-          required
-          placeholder="13-digit ID"
-          maxLength={13}
-        />
-        <Input
-          label="Date of Birth"
-          name="dateOfBirth"
-          type="date"
-          value={personalInfo?.dateOfBirth || ''}
-          onChange={handleChange}
-          required
-        />
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6">
-        <Input
-          label="Gender"
-          name="gender"
-          value={personalInfo?.gender || ''}
-          onChange={handleChange}
-          required
-          placeholder="e.g. Female"
-        />
-        <Input
-          label="Nationality"
-          name="nationality"
-          value={personalInfo?.nationality || ''}
-          onChange={handleChange}
-          required
-          placeholder="Select or type..."
-          list="nationalities"
-        />
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6">
-        <Input
-          label="Marital Status"
-          name="maritalStatus"
-          value={personalInfo?.maritalStatus || ''}
-          onChange={handleChange}
-          required
-          placeholder="e.g. Single"
-        />
-        <Input
-          label="Home Language"
-          name="homeLanguage"
-          value={personalInfo?.homeLanguage || ''}
-          onChange={handleChange}
-          required
-          placeholder="Select or type..."
-          list="sa-languages"
-        />
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6">
-        <Input
           label="Institutional Email"
           type="email"
           name="email"
@@ -154,28 +94,7 @@ export function PersonalInfoForm() {
         />
       </div>
 
-      <div className="space-y-1.5">
-        <label className="text-sm font-black text-brand-dark uppercase tracking-widest pl-1">Residential Address</label>
-        <textarea
-          name="residentialAddress"
-          value={personalInfo?.residentialAddress || ''}
-          onChange={handleChange}
-          required
-          placeholder="Street, Suburb, City, Code"
-          className="w-full px-5 py-4 rounded-xl border-2 border-surface-200 bg-surface-50 focus:border-brand-blue focus:bg-white transition-all outline-none text-brand-dark font-bold min-h-[100px] resize-none"
-        />
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6 pt-4">
-        <Input
-          label="Geographic Node"
-          placeholder="City, Country"
-          name="location"
-          value={personalInfo?.location || ''}
-          onChange={handleChange}
-          required
-          helpText="Current deployment location"
-        />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6">
         <Input
           label="Professional Title"
           placeholder="e.g. Principal Systems Architect"

@@ -154,13 +154,13 @@ export default function Documents() {
       </div>
 
       {/* --- TABS --- */}
-      <div className="flex flex-wrap items-center gap-2 bg-surface-50/80 backdrop-blur-md border border-surface-200 p-1.5 rounded-[2rem] w-fit shadow-inner">
+      <div className="flex flex-wrap items-center gap-2 bg-transparent backdrop-blur-md border border-surface-200 p-1.5 rounded-[2rem] w-fit shadow-inner">
         <button
           onClick={() => setActiveTab('resumes')}
           className={`px-8 py-3.5 rounded-[1.7rem] text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 ${
             activeTab === 'resumes' 
               ? 'bg-white text-brand-blue shadow-[0_4px_20px_-2px_rgba(0,0,0,0.1)] border border-surface-100 transform scale-105' 
-              : 'text-text-tertiary hover:text-brand-dark hover:bg-white/60'
+              : 'text-text-tertiary hover:text-brand-dark hover:bg-transparent'
           }`}
         >
           Resumes <span className="ml-1 opacity-60">({resumes.length})</span>
@@ -170,7 +170,7 @@ export default function Documents() {
           className={`px-8 py-3.5 rounded-[1.7rem] text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 ${
             activeTab === 'tracking' 
               ? 'bg-white text-brand-blue shadow-[0_4px_20px_-2px_rgba(0,0,0,0.1)] border border-surface-100 transform scale-105' 
-              : 'text-text-tertiary hover:text-brand-dark hover:bg-white/60'
+              : 'text-text-tertiary hover:text-brand-dark hover:bg-transparent'
           }`}
         >
           Signals <span className="ml-1 opacity-60">({shares.length})</span>
@@ -268,14 +268,14 @@ export default function Documents() {
                           <div className="flex justify-between items-start mb-4">
                             <div className={`p-2.5 rounded-xl transition-colors ${
                               selectedShare?._id === share._id 
-                                ? 'bg-white/10 text-brand-blue' 
+                                ? 'bg-transparent text-brand-blue' 
                                 : 'bg-brand-blue/5 text-brand-blue group-hover:bg-brand-blue/10'
                             }`}>
                               <Share2 size={16} strokeWidth={2.5} />
                             </div>
                             <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-lg ${
                               selectedShare?._id === share._id 
-                                ? 'bg-white/10 text-white/80' 
+                                ? 'bg-transparent text-white/80' 
                                 : 'bg-surface-100 text-text-tertiary'
                             }`}>
                               {share.viewCount} Hits
@@ -368,7 +368,7 @@ export default function Documents() {
                           </h4>
                           <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
                             {selectedShare.views.length === 0 ? (
-                              <div className="py-16 border-2 border-dashed border-surface-200 rounded-[2.5rem] text-center bg-surface-50/50">
+                              <div className="py-16 border-2 border-dashed border-surface-200 rounded-[2.5rem] text-center bg-transparent">
                                 <p className="text-xs font-bold text-text-tertiary opacity-60 italic">Waiting for signal reception...</p>
                               </div>
                             ) : (

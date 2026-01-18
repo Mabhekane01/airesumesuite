@@ -538,17 +538,17 @@ const JobBoard = () => {
         <div className="relative z-10 flex flex-col lg:flex-row gap-3 md:gap-6 items-stretch lg:items-center">
           <div className="flex-1 relative group">
             <div className="absolute left-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg bg-surface-50 flex items-center justify-center group-focus-within:bg-brand-blue group-focus-within:text-white transition-all border border-surface-100 shadow-inner"><MapPin size={14} strokeWidth={2.5} /></div>
-            <input type="text" placeholder="Filter by country..." className="w-full bg-surface-50/50 border border-surface-200 rounded-xl md:rounded-2xl py-3.5 md:py-5 pl-14 md:pl-20 pr-4 text-sm font-black text-brand-dark focus:ring-8 focus:ring-brand-blue/5 outline-none transition-all placeholder:text-text-tertiary" value={country} onChange={(e) => setCountry(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleCountrySearch()} />
+            <input type="text" placeholder="Filter by country..." className="w-full bg-transparent border border-surface-200 rounded-xl md:rounded-2xl py-3.5 md:py-5 pl-14 md:pl-20 pr-4 text-sm font-black text-brand-dark focus:ring-8 focus:ring-brand-blue/5 outline-none transition-all placeholder:text-text-tertiary" value={country} onChange={(e) => setCountry(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleCountrySearch()} />
           </div>
           <div className="flex-1 relative group">
             <div className="absolute left-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg bg-surface-50 flex items-center justify-center group-focus-within:bg-brand-blue group-focus-within:text-white transition-all border border-surface-100 shadow-inner"><Search size={14} strokeWidth={2.5} /></div>
-            <input type="text" placeholder="Search mission parameters..." className="w-full bg-surface-50/50 border border-surface-200 rounded-xl md:rounded-2xl py-3.5 md:py-5 pl-14 md:pl-20 pr-4 text-sm font-black text-brand-dark focus:ring-8 focus:ring-brand-blue/5 outline-none transition-all placeholder:text-text-tertiary" value={keyword} onChange={(e) => setKeyword(e.target.value)} />
+            <input type="text" placeholder="Search mission parameters..." className="w-full bg-transparent border border-surface-200 rounded-xl md:rounded-2xl py-3.5 md:py-5 pl-14 md:pl-20 pr-4 text-sm font-black text-brand-dark focus:ring-8 focus:ring-brand-blue/5 outline-none transition-all placeholder:text-text-tertiary" value={keyword} onChange={(e) => setKeyword(e.target.value)} />
           </div>
           
           <div className="flex-1 lg:max-w-[200px] relative group">
             <div className="absolute left-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg bg-surface-50 flex items-center justify-center group-focus-within:bg-brand-blue group-focus-within:text-white transition-all border border-surface-100 shadow-inner"><Clock size={14} strokeWidth={2.5} /></div>
             <select 
-              className="w-full bg-surface-50/50 border border-surface-200 rounded-xl md:rounded-2xl py-3.5 md:py-5 pl-14 md:pl-16 pr-4 text-sm font-black text-brand-dark focus:ring-8 focus:ring-brand-blue/5 outline-none transition-all appearance-none cursor-pointer"
+              className="w-full bg-transparent border border-surface-200 rounded-xl md:rounded-2xl py-3.5 md:py-5 pl-14 md:pl-16 pr-4 text-sm font-black text-brand-dark focus:ring-8 focus:ring-brand-blue/5 outline-none transition-all appearance-none cursor-pointer"
               value={dateRange}
               onChange={(e) => setDateRange(e.target.value)}
             >
@@ -562,9 +562,9 @@ const JobBoard = () => {
       </div>
 
       {isAdmin && (
-        <div className="flex flex-wrap items-center gap-1.5 bg-surface-50/80 backdrop-blur-md border border-surface-200 p-1 rounded-xl md:rounded-[2rem] w-full sm:w-fit shadow-inner">
-          <button onClick={() => setActiveTab('approved')} className={`flex-1 sm:flex-none px-5 md:px-8 py-2 md:py-3 rounded-lg md:rounded-[1.7rem] text-[8px] md:text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 ${activeTab === 'approved' ? 'bg-white text-brand-blue shadow-md border border-surface-100 transform scale-105' : 'text-text-tertiary hover:text-brand-dark hover:bg-white/60'}`}>Active <span className="ml-1 opacity-60">({jobs.length})</span></button>
-          <button onClick={() => setActiveTab('pending')} className={`flex-1 sm:flex-none px-5 md:px-8 py-2 md:py-3 rounded-lg md:rounded-[1.7rem] text-[8px] md:text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 ${activeTab === 'pending' ? 'bg-white text-brand-blue shadow-md border border-surface-100 transform scale-105' : 'text-text-tertiary hover:text-brand-dark hover:bg-white/60'}`}>Pending <span className="ml-1 opacity-60">({pendingJobs.length})</span></button>
+        <div className="flex flex-wrap items-center gap-1.5 bg-transparent backdrop-blur-md border border-surface-200 p-1 rounded-xl md:rounded-[2rem] w-full sm:w-fit shadow-inner">
+          <button onClick={() => setActiveTab('approved')} className={`flex-1 sm:flex-none px-5 md:px-8 py-2 md:py-3 rounded-lg md:rounded-[1.7rem] text-[8px] md:text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 ${activeTab === 'approved' ? 'bg-transparent text-brand-blue shadow-md border border-surface-100 transform scale-105' : 'text-text-tertiary hover:text-brand-dark hover:bg-transparent'}`}>Active <span className="ml-1 opacity-60">({jobs.length})</span></button>
+          <button onClick={() => setActiveTab('pending')} className={`flex-1 sm:flex-none px-5 md:px-8 py-2 md:py-3 rounded-lg md:rounded-[1.7rem] text-[8px] md:text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 ${activeTab === 'pending' ? 'bg-transparent text-brand-blue shadow-md border border-surface-100 transform scale-105' : 'text-text-tertiary hover:text-brand-dark hover:bg-transparent'}`}>Pending <span className="ml-1 opacity-60">({pendingJobs.length})</span></button>
         </div>
       )}
 

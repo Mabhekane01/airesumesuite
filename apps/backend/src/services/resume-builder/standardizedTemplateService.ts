@@ -46,6 +46,14 @@ export class StandardizedTemplateService {
       `🎯 Generating LaTeX with style-preserving template: ${templateId}`
     );
 
+    // Special case for template01 (ASU Sparky) which requires complex custom rendering
+    if (templateId === 'template01') {
+      console.log('⚡ Delegating template01 to specialized renderer...');
+      const { templateService } = await import('./templateService');
+      // The interfaces are compatible
+      return templateService.generateLatex(templateId, resumeData as any);
+    }
+
     try {
       this.validateResumeData(resumeData);
 
@@ -265,10 +273,60 @@ export class StandardizedTemplateService {
       result = this.renderHandlebarsTemplate(result, data);
     }
 
+    // Apply conditional blocks after rendering
+    result = this.applyConditionalBlocks(result, data);
+
     // Clean up remaining placeholders
     result = this.cleanupRemainingPlaceholders(result);
 
     return result;
+  }
+
+  private applyConditionalBlocks(
+    template: string,
+    data: StandardizedResumeData
+  ): string {
+    const hasArray = (value: any) => Array.isArray(value) && value.length > 0;
+    const hasText = (value: any) =>
+      typeof value === "string" && value.trim().length > 0;
+    const hasCoursework = (education: any[] | undefined) =>
+      Array.isArray(education) &&
+      education.some(
+        (edu) => Array.isArray(edu?.coursework) && edu.coursework.length > 0
+      );
+
+    const flags: Record<string, boolean> = {
+      PROFESSIONAL_TITLE: hasText(data.personalInfo?.professionalTitle),
+      LOCATION: hasText(data.personalInfo?.location),
+      LINKEDIN: hasText(data.personalInfo?.linkedinUrl),
+      GITHUB: hasText(data.personalInfo?.githubUrl),
+      PORTFOLIO: hasText(data.personalInfo?.portfolioUrl),
+      WEBSITE: hasText(data.personalInfo?.websiteUrl),
+      PROFESSIONAL_SUMMARY: hasText(data.professionalSummary),
+      WORK_EXPERIENCE: hasArray(data.workExperience),
+      EDUCATION: hasArray(data.education),
+      SKILLS: hasArray(data.skills),
+      PROJECTS: hasArray(data.projects),
+      CERTIFICATIONS: hasArray(data.certifications),
+      LANGUAGES: hasArray(data.languages),
+      VOLUNTEER_EXPERIENCE: hasArray(data.volunteerExperience),
+      AWARDS: hasArray(data.awards),
+      PUBLICATIONS: hasArray(data.publications),
+      REFERENCES: hasArray(data.references),
+      HOBBIES: hasArray(data.hobbies),
+      ADDITIONAL_SECTIONS: hasArray(data.additionalSections),
+      COURSEWORK: hasCoursework(data.education),
+    };
+
+    return template.replace(
+      /\{\{#IF_([A-Z0-9_]+)\}\}([\s\S]*?)\{\{\/IF_\1\}\}/g,
+      (_match, key: string, content: string) => {
+        if (flags[key] === undefined) {
+          return content;
+        }
+        return flags[key] ? content : "";
+      }
+    );
   }
 
   /**
@@ -1646,6 +1704,7 @@ export interface StandardizedResumeData {
     fieldOfStudy: string;
     location?: string;
     graduationDate: string;
+    startDate: string;
     gpa?: string;
     coursework?: string[];
   }>;

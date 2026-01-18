@@ -90,7 +90,7 @@ export default function AwardsForm() {
                     value={award.description || ''}
                     onChange={(e) => updateAward(index, 'description', e.target.value)}
                     rows={2}
-                    className="input-resume py-4 bg-surface-50"
+                    className="input-resume py-4"
                     placeholder="Briefly describe the significance of this award..."
                   />
                 </div>

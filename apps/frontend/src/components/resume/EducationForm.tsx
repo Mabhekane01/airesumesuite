@@ -113,7 +113,7 @@ export function EducationForm() {
 
                 <div className="grid md:grid-cols-2 gap-6 pt-4 border-t border-surface-100">
                   <DatePicker
-                    label="Matriculation Date"
+                    label="Start Date (Enrollment)"
                     value={edu.startDate}
                     onChange={(value) => {
                       handleDataChange('education', education?.map(e => e.id === edu.id ? { ...e, startDate: value } : e));
@@ -155,7 +155,7 @@ export function EducationForm() {
                             newCoursework[idx] = e.target.value;
                             handleDataChange('education', education?.map(e => e.id === edu.id ? { ...e, coursework: newCoursework } : e));
                           }}
-                          className="input-resume py-3 text-sm flex-1 bg-surface-50 border-surface-100 group-hover/course:border-brand-blue/20 transition-all"
+                          className="input-resume py-3 text-sm flex-1 border-surface-100 group-hover/course:border-brand-blue/20 transition-all"
                           placeholder="Role-relevant module..."
                         />
                         <button

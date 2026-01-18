@@ -6,7 +6,7 @@
  * that gets inserted into template placeholders.
  */
 
-import { geminiService } from "../ai/gemini";
+import { enterpriseAIService } from "../ai/enterpriseAIService";
 
 export interface EnhancementOptions {
   jobDescription?: string;
@@ -56,7 +56,7 @@ export interface ResumeData {
     degree: string;
     fieldOfStudy: string;
     graduationDate: string;
-    startDate?: string;
+    startDate: string;
     endDate?: string;
     location?: string;
     gpa?: string;
@@ -140,7 +140,7 @@ export interface ResumeData {
 
 export class AIContentEnhancer {
   constructor() {
-    // Use the existing geminiService
+    // Use the shared enterprise AI service
   }
 
   /**
@@ -150,8 +150,6 @@ export class AIContentEnhancer {
     resumeData: ResumeData,
     options: EnhancementOptions = {}
   ): Promise<ContentEnhancementResult> {
-    // Use geminiService directly
-
     try {
       console.log('🤖 Enhancing resume content with AI...');
       
@@ -181,7 +179,18 @@ export class AIContentEnhancer {
         keywordsAdded.push(...enhancedWork.keywords);
       }
 
-      // 3. Enhance Project Descriptions
+      // 3. Enhance Skills
+      if (resumeData.skills && resumeData.skills.length > 0) {
+        const enhancedSkills = await this.enhanceSkills(
+          resumeData.skills,
+          options
+        );
+        enhancedContent.skills = enhancedSkills.content;
+        improvements.push(...enhancedSkills.improvements);
+        keywordsAdded.push(...enhancedSkills.keywords);
+      }
+
+      // 4. Enhance Project Descriptions
       if (resumeData.projects && resumeData.projects.length > 0) {
         const enhancedProjects = await this.enhanceProjects(
           resumeData.projects,
@@ -192,10 +201,23 @@ export class AIContentEnhancer {
         keywordsAdded.push(...enhancedProjects.keywords);
       }
 
-      // 4. Calculate ATS Score
-      const atsScore = this.calculateATSScore(enhancedContent, options);
+      // 5. Calculate ATS Score using real AI analysis
+      // We perform this on the ENHANCED content to see the final score
+      console.log('🛡️ Performing final AI ATS analysis...');
+      let atsScore = 0;
+      try {
+        const atsAnalysis = await enterpriseAIService.analyzeATSCompatibility(
+          enhancedContent, 
+          options.jobDescription
+        );
+        atsScore = atsAnalysis.score;
+        console.log(`✅ AI ATS Analysis complete. Score: ${atsScore}%`);
+      } catch (atsError) {
+        console.error('❌ AI ATS Analysis failed:', atsError);
+        throw atsError;
+      }
 
-      console.log(`✅ Content enhancement complete. ATS Score: ${atsScore}%`);
+      console.log(`✅ Content enhancement complete. Final ATS Score: ${atsScore}%`);
       
       return {
         originalContent: resumeData,
@@ -207,12 +229,7 @@ export class AIContentEnhancer {
 
     } catch (error) {
       console.error('❌ AI content enhancement failed:', error);
-      return {
-        originalContent: resumeData,
-        enhancedContent: resumeData,
-        improvements: [`Enhancement failed: ${error.message}`],
-        atsScore: 0,
-      };
+      throw error;
     }
   }
 
@@ -255,7 +272,7 @@ CRITICAL CONSTRAINTS:
 
 Enhanced Executive Abstract:`;
 
-      const enhancedSummary = await geminiService.generateText(prompt);
+      const enhancedSummary = await enterpriseAIService.generateText(prompt, 'summary-generation');
 
       // Clean any markdown formatting that might have slipped through
       const cleanedSummary = this.cleanMarkdownFormatting(enhancedSummary);
@@ -272,7 +289,7 @@ Enhanced Executive Abstract:`;
 
     } catch (error) {
       console.error('Failed to enhance professional summary:', error);
-      return { content: originalSummary, improvements: [], keywords: [] };
+      throw error;
     }
   }
 
@@ -307,7 +324,7 @@ Enhanced Executive Abstract:`;
 
     } catch (error) {
       console.error('Failed to enhance work experience:', error);
-      return { content: workExperience, improvements: [], keywords: [] };
+      throw error;
     }
   }
 
@@ -318,8 +335,6 @@ Enhanced Executive Abstract:`;
     experience: any,
     options: EnhancementOptions
   ): Promise<{ content: any; improvements: string[]; keywords: string[] }> {
-    // Use geminiService directly
-
     try {
       const responsibilitiesText = experience.responsibilities?.join('\n- ') || '';
       const achievementsText = experience.achievements?.join('\n- ') || '';
@@ -353,7 +368,7 @@ CRITICAL CONSTRAINTS:
   "achievements": ["Quantified, high-impact achievement 1", "item 2"]
 }`;
 
-      const responseText = await geminiService.generateText(prompt);
+      const responseText = await enterpriseAIService.generateText(prompt, 'work-experience-enhancement');
       
       // Parse JSON response
       const jsonMatch = responseText.match(/\{[\s\S]*\}/);
@@ -384,9 +399,8 @@ CRITICAL CONSTRAINTS:
 
     } catch (error) {
       console.error('Failed to enhance single work experience:', error);
+      throw error;
     }
-
-    return { content: experience, improvements: [], keywords: [] };
   }
 
   /**
@@ -420,8 +434,67 @@ CRITICAL CONSTRAINTS:
 
     } catch (error) {
       console.error('Failed to enhance projects:', error);
-      return { content: projects, improvements: [], keywords: [] };
+      throw error;
     }
+  }
+
+  /**
+   * Enhance skills list for relevance and categorization
+   */
+  private async enhanceSkills(
+    skills: any[],
+    options: EnhancementOptions
+  ): Promise<{ content: any[]; improvements: string[]; keywords: string[] }> {
+    if (!skills.length) {
+      return { content: skills, improvements: [], keywords: [] };
+    }
+
+    const normalizedSkills = skills.map((skill) =>
+      typeof skill === 'string'
+        ? { name: skill, category: 'technical' }
+        : { name: skill.name, category: skill.category || 'technical' }
+    );
+
+    const prompt = `
+You are a senior talent strategist. Improve this skills list for relevance and ATS compatibility.
+
+CURRENT SKILLS:
+${JSON.stringify(normalizedSkills, null, 2)}
+
+CONTEXT:
+${options.jobDescription ? `- Job Description: ${options.jobDescription.substring(0, 300)}` : ''}
+${options.keywords ? `- Target Keywords: ${options.keywords.join(', ')}` : ''}
+
+REQUIREMENTS:
+1. Keep existing skills unless clearly redundant.
+2. Add missing, relevant skills only if supported by the context.
+3. Ensure categories are one of: "technical", "soft", "language", "certification".
+4. Return ONLY valid JSON array of skill objects in this format:
+[
+  { "name": "Skill Name", "category": "technical" }
+]
+`;
+
+    const responseText = await enterpriseAIService.generateText(prompt, 'skills-enhancement');
+    const parsed = this.parseJsonArray(responseText);
+
+    const cleaned = parsed.map((item: any) => ({
+      name: this.cleanMarkdownFormatting(String(item.name || '').trim()),
+      category: (item.category || 'technical')
+    })).filter((item: any) => item.name);
+
+    if (cleaned.length === 0) {
+      throw new Error('Invalid AI response for skills enhancement');
+    }
+
+    const improvements = this.identifySkillsImprovements(skills, cleaned);
+    const keywords = this.extractKeywords(JSON.stringify(cleaned), options);
+
+    return {
+      content: cleaned,
+      improvements,
+      keywords,
+    };
   }
 
   /**
@@ -455,7 +528,7 @@ CRITICAL RULES:
 
 Enhanced Showcase:`;
 
-      const enhancedDescription = await geminiService.generateText(prompt);
+      const enhancedDescription = await enterpriseAIService.generateText(prompt, 'project-enhancement');
 
       // Clean any markdown formatting
       const cleanedDescription = this.cleanMarkdownFormatting(enhancedDescription);
@@ -481,7 +554,7 @@ Enhanced Showcase:`;
 
     } catch (error) {
       console.error('Failed to enhance project:', error);
-      return { content: project, improvements: [], keywords: [] };
+      throw error;
     }
   }
 
@@ -580,6 +653,23 @@ Enhanced Showcase:`;
     return improvements;
   }
 
+  private identifySkillsImprovements(original: any[], enhanced: any[]): string[] {
+    const improvements: string[] = [];
+    const originalNames = new Set((original || []).map((skill: any) => (skill.name || skill).toString().toLowerCase()));
+    const enhancedNames = new Set((enhanced || []).map((skill: any) => (skill.name || skill).toString().toLowerCase()));
+
+    if (enhancedNames.size > originalNames.size) {
+      improvements.push('Added relevant skills');
+    }
+
+    const categoryChanged = (enhanced || []).some((skill: any) => skill.category);
+    if (categoryChanged) {
+      improvements.push('Improved skill categorization');
+    }
+
+    return improvements;
+  }
+
   /**
    * Clean markdown formatting from AI-generated content
    */
@@ -592,6 +682,23 @@ Enhanced Showcase:`;
       .replace(/`(.*?)`/g, '$1')        // Remove `code` formatting
       .replace(/_{2,}(.*?)_{2,}/g, '$1') // Remove __underline__
       .trim();
+  }
+
+  private parseJsonArray(responseText: string): any[] {
+    let cleaned = responseText.trim();
+    if (cleaned.startsWith('```json')) {
+      cleaned = cleaned.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+    } else if (cleaned.startsWith('```')) {
+      cleaned = cleaned.replace(/^```\s*/, '').replace(/\s*```$/, '');
+    }
+
+    const start = cleaned.indexOf('[');
+    const end = cleaned.lastIndexOf(']');
+    if (start === -1 || end === -1 || end <= start) {
+      throw new Error('Invalid JSON array response');
+    }
+
+    return JSON.parse(cleaned.slice(start, end + 1));
   }
 
   /**
@@ -656,7 +763,7 @@ CRITICAL RULES:
 
 Keywords:`;
 
-      const keywordsText = await geminiService.generateText(prompt);
+      const keywordsText = await enterpriseAIService.generateText(prompt, 'keyword-extraction');
       
       return keywordsText
         .split(',')

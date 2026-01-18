@@ -314,10 +314,15 @@ export class ResumeService {
 
   analyzeATSCompatibility = async (resumeData: any, jobDescription?: string): Promise<{
     score: number;
+    atsScore?: number;
     recommendations: string[];
     keywordMatch: number;
     formatScore: number;
     contentScore: number;
+    mode?: string;
+    confidence?: string;
+    providerFailures?: Array<{ provider: string; reason?: string; message?: string } | string>;
+    reason?: string;
     aiStatus?: string;
   }> => {
     try {
@@ -334,112 +339,23 @@ export class ResumeService {
         console.log(`🎯 Using saved resume ATS analysis endpoint: ${endpoint}`);
       } else {
         // For unsaved/temp resumes, use the general ATS analysis endpoint
-        endpoint = '/resumes/analyze-ats';
+        endpoint = '/resumes/ats-analysis-unsaved';
         payload = { resumeData, jobDescription };
         console.log(`🎯 Using unsaved resume ATS analysis endpoint: ${endpoint}`);
       }
       
       const response = await api.post(endpoint, payload);
-      return response.data.data;
+      const data = response.data.data;
+
+      if (data && typeof data.atsScore === 'number' && typeof data.score !== 'number') {
+        data.score = data.atsScore;
+      }
+
+      return data;
     } catch (error: any) {
       console.error('❌ ATS compatibility analysis failed:', error);
-      return this.generateFallbackATSAnalysis(resumeData, jobDescription);
+      throw new Error(error.response?.data?.message || 'Failed to analyze ATS compatibility. Please try again later.');
     }
-  }
-
-  private generateFallbackATSAnalysis = (resumeData: any, jobDescription?: string): {
-    score: number;
-    recommendations: string[];
-    keywordMatch: number;
-    formatScore: number;
-    contentScore: number;
-  } => {
-    console.log('🔄 Generating fallback ATS analysis...');
-    let score = 60;
-    const recommendations: string[] = [];
-    if (!resumeData.personalInfo?.email) {
-      recommendations.push('Add contact email for better ATS parsing');
-      score -= 5;
-    }
-    if (!resumeData.personalInfo?.phone) {
-      recommendations.push('Include phone number in contact information');
-      score -= 5;
-    }
-    if (!resumeData.professionalSummary || resumeData.professionalSummary.length < 50) {
-      recommendations.push('Add a comprehensive professional summary (50+ words)');
-      score -= 10;
-    } else {
-      score += 5;
-    }
-    if (!resumeData.workExperience?.length) {
-      recommendations.push('Add work experience section with detailed job descriptions');
-      score -= 15;
-    } else {
-      score += 10;
-      const hasQuantifiedAchievements = resumeData.workExperience.some((exp: any) =>
-        exp.achievements?.some((achievement: string) => /\d+/.test(achievement))
-      );
-      if (!hasQuantifiedAchievements) {
-        recommendations.push('Add quantified achievements (numbers, percentages, metrics) to work experience');
-        score -= 5;
-      } else {
-        score += 5;
-      }
-    }
-    if (!resumeData.skills?.length || resumeData.skills.length < 5) {
-      recommendations.push('Add more relevant skills (minimum 5-8 skills recommended)');
-      score -= 10;
-    } else {
-      score += 5;
-    }
-    if (!resumeData.education?.length) {
-      recommendations.push('Include education section for complete professional profile');
-      score -= 5;
-    }
-    let keywordMatch = 50;
-    if (jobDescription) {
-      const jobKeywords = this.extractKeywords(jobDescription);
-      const resumeText = JSON.stringify(resumeData).toLowerCase();
-      const matchedKeywords = jobKeywords.filter(keyword => 
-        resumeText.includes(keyword.toLowerCase())
-      );
-      keywordMatch = Math.round((matchedKeywords.length / Math.max(jobKeywords.length, 1)) * 100);
-      if (keywordMatch < 60) {
-        recommendations.push(`Improve keyword matching - currently at ${keywordMatch}% match with job description`);
-        score -= 10;
-      } else {
-        score += 5;
-      }
-    }
-    let formatScore = 85;
-    if (resumeData.personalInfo?.firstName && resumeData.personalInfo?.lastName) {
-      formatScore += 5;
-    }
-    const contentScore = Math.min(score + 10, 95);
-    if (recommendations.length === 0) {
-      recommendations.push(
-        'Your resume has good ATS compatibility! Consider adding more quantified achievements.',
-        'Include industry-specific keywords relevant to your target positions.',
-        'Ensure all contact information is complete and professional.'
-      );
-    }
-    score = Math.max(30, Math.min(score, 95));
-    return {
-      score,
-      recommendations,
-      keywordMatch,
-      formatScore,
-      contentScore
-    };
-  }
-
-  private extractKeywords = (text: string): string[] => {
-    const words = text.toLowerCase()
-      .replace(/[^\w\s]/g, ' ')
-      .split(/\s+/)
-      .filter(word => word.length > 3)
-      .filter(word => !['that', 'with', 'have', 'will', 'this', 'they', 'from', 'were', 'been'].includes(word));
-    return Array.from(new Set(words)).slice(0, 20);
   }
 
   optimizeResumeForJob = async (resumeData: any, options: {
@@ -698,25 +614,7 @@ export class ResumeService {
       return response.data.data;
     } catch (error) {
       console.error('Error analyzing job alignment:', error);
-      
-      // Return fallback response when API fails
-      return {
-        score: 65,
-        strengths: [
-          'Professional resume structure',
-          'Relevant work experience documented'
-        ],
-        gaps: [
-          'AI analysis service temporarily unavailable',
-          'Manual review recommended for detailed job alignment'
-        ],
-        recommendations: [
-          'Include keywords from the job description in your resume',
-          'Highlight achievements that match job requirements',
-          'Ensure your skills section aligns with job needs'
-        ],
-        isGoodMatch: false
-      };
+      throw error;
     }
   }
 
@@ -826,21 +724,7 @@ export class ResumeService {
       return response.data.data;
     } catch (error: any) {
       console.error('ATS optimization error:', error);
-      const mockOptimizedResume = {
-        ...resumeData,
-        professionalSummary: this.enhanceSummaryWithKeywords(resumeData.professionalSummary, options.missingKeywords),
-        skills: this.addMissingSkills(resumeData.skills, options.missingKeywords),
-        workExperience: this.enhanceWorkExperience(resumeData.workExperience, options.missingKeywords)
-      };
-      return {
-        optimizedResume: mockOptimizedResume,
-        newScore: Math.min(options.currentScore + 15, 95),
-        keywordChanges: ['Added missing industry keywords', 'Improved keyword density in professional summary'],
-        formatChanges: ['Standardized section headers', 'Optimized bullet point structure'],
-        contentChanges: ['Enhanced technical descriptions', 'Added quantifiable achievements'],
-        keywordsAdded: Math.min(options.missingKeywords.length, 5),
-        issuesFixed: options.issues.length
-      };
+      throw error;
     }
   }
 
@@ -1215,7 +1099,7 @@ export class ResumeService {
       console.log('🤖 Enhancing resume with AI...');
       // AI can work with any data - even create from scratch if needed
       if (!resumeData) {
-        resumeData = { personalInfo: {} }; // Provide minimal structure
+        throw new Error('Resume data is required for AI enhancement.');
       }
       const token = this.getAccessToken();
       const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
@@ -1261,31 +1145,6 @@ export class ResumeService {
     }
   }
 
-  private enhanceSummaryWithKeywords = (summary: string, keywords: string[]): string => {
-    if (!summary || keywords.length === 0) return summary;
-    const keywordsToAdd = keywords.slice(0, 3).filter(k => k.length > 3);
-    if (keywordsToAdd.length === 0) return summary;
-    return summary + ` Experienced professional with expertise in ${keywordsToAdd.join(', ')}.`;
-  }
-
-  private addMissingSkills = (currentSkills: any[], keywords: string[]): any[] => {
-    const existingSkillNames = currentSkills.map(s => s.name.toLowerCase());
-    const newSkills = keywords
-      .filter(k => k.length > 3 && !existingSkillNames.includes(k.toLowerCase()))
-      .slice(0, 3)
-      .map(k => ({ name: k, category: 'technical' }));
-    return [...currentSkills, ...newSkills];
-  }
-
-  private enhanceWorkExperience = (workExperience: any[], keywords: string[]): any[] => {
-    return workExperience.map(exp => ({
-      ...exp,
-      achievements: [
-        ...exp.achievements,
-        `Utilized ${keywords[0] || 'industry best practices'} to improve team efficiency and deliver high-quality results`
-      ].slice(0, exp.achievements.length + 1)
-    }));
-  }
 
   private enhanceProfessionalSummary = (summary: string): string => {
     if (!summary) {

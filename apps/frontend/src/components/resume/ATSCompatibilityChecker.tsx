@@ -14,6 +14,7 @@ import { Textarea } from '../ui/Textarea';
 import { resumeService } from '../../services/resumeService';
 import { toast } from 'sonner';
 import EnhancementFeedbackModal from './EnhancementFeedbackModal';
+import { buildAIUnavailableToast } from '../../utils/aiAvailability';
 
 interface ATSCompatibilityCheckerProps {
   isOpen: boolean;
@@ -25,21 +26,26 @@ interface ATSCompatibilityCheckerProps {
 
 interface ATSAnalysisResult {
   score: number;
+  atsScore?: number;
   recommendations: string[];
   keywordMatch: number;
   formatScore: number;
   contentScore: number;
+  mode?: string;
+  confidence?: string;
+  providerFailures?: Array<{ provider: string; reason?: string; message?: string } | string>;
+  reason?: string;
   verdict: {
     alignment: 'strong' | 'potential' | 'low';
     message: string;
     recommendation: string;
   };
-  keywordAnalysis: {
+  keywordAnalysis?: {
     presentKeywords: string[];
     missingKeywords: string[];
     keywordDensity: number;
   };
-  formatAnalysis: {
+  formatAnalysis?: {
     issues: string[];
     strengths: string[];
   };
@@ -103,60 +109,77 @@ export default function ATSCompatibilityChecker({
       
       // Step 1: Analyze current resume
       const result = await resumeService.analyzeATSCompatibility(resumeData, jobDescription);
+      const atsScore = result.score ?? result.atsScore ?? 0;
+      const aiToast = buildAIUnavailableToast({
+        mode: result.mode,
+        confidence: result.confidence,
+        providerFailures: result.providerFailures,
+        reason: result.reason
+      });
+
+      if (aiToast) {
+        toast.warning(aiToast.title, {
+          description: aiToast.description,
+          duration: 8000
+        });
+      }
       
       // Enhanced analysis with verdict and detailed insights
       const enhancedResult: ATSAnalysisResult = {
         ...result,
-        verdict: generateVerdict(result.score),
-        keywordAnalysis: await analyzeKeywords(resumeData, jobDescription),
-        formatAnalysis: analyzeFormat(resumeData)
+        score: atsScore,
+        verdict: generateVerdict(atsScore),
+        keywordAnalysis: result.keywordAnalysis,
+        formatAnalysis: result.formatAnalysis
       };
       
       setAnalysisResult(enhancedResult);
 
       // Step 2: Automatically optimize if score is below 85%
-      if (result.score < 85) {
+      if (atsScore < 85) {
         toast.loading('🤖 Optimizing resume for ATS compatibility...', { id: 'ats-analysis' });
         
         try {
           const optimizationResult = await resumeService.optimizeResumeForATS(resumeData, {
             jobDescription,
-            currentScore: result.score,
-            issues: enhancedResult.formatAnalysis.issues,
-            missingKeywords: enhancedResult.keywordAnalysis.missingKeywords
+            currentScore: atsScore,
+            issues: enhancedResult.formatAnalysis?.issues || [],
+            missingKeywords: enhancedResult.keywordAnalysis?.missingKeywords || []
           });
 
           setOptimizedResume(optimizationResult.optimizedResume);
           
           // Create enhancement feedback
+          const improvements = [
+            {
+              category: 'Keyword Optimization',
+              changes: optimizationResult.keywordChanges || [],
+              impact: 'high' as const
+            },
+            {
+              category: 'Format Improvements',
+              changes: optimizationResult.formatChanges || [],
+              impact: 'medium' as const
+            },
+            {
+              category: 'Content Enhancement',
+              changes: optimizationResult.contentChanges || [],
+              impact: 'high' as const
+            }
+          ].filter((item) => Array.isArray(item.changes) && item.changes.length > 0);
+
           const feedbackData = {
             type: 'ats' as const,
             title: 'ATS Compatibility Analysis Complete',
-            summary: `Analyzed your resume and improved ATS compatibility from ${result.score}% to ${optimizationResult.newScore}%`,
-            improvements: [
-              {
-                category: 'Keyword Optimization',
-                changes: optimizationResult.keywordChanges || ['Added missing industry keywords', 'Improved keyword density'],
-                impact: 'high' as const
-              },
-              {
-                category: 'Format Improvements',
-                changes: optimizationResult.formatChanges || ['Optimized section headers', 'Improved bullet point structure'],
-                impact: 'medium' as const
-              },
-              {
-                category: 'Content Enhancement',
-                changes: optimizationResult.contentChanges || ['Enhanced job descriptions', 'Quantified achievements'],
-                impact: 'high' as const
-              }
-            ],
+            summary: `Analyzed your resume and improved ATS compatibility from ${atsScore}% to ${optimizationResult.newScore}%`,
+            improvements,
             scores: {
-              before: result.score,
+              before: atsScore,
               after: optimizationResult.newScore,
-              improvement: optimizationResult.newScore - result.score
+              improvement: optimizationResult.newScore - atsScore
             },
             keyMetrics: [
-              { label: 'ATS Score', value: `${optimizationResult.newScore}%`, improvement: `${optimizationResult.newScore - result.score}%` },
+              { label: 'ATS Score', value: `${optimizationResult.newScore}%`, improvement: `${optimizationResult.newScore - atsScore}%` },
               { label: 'Keywords Added', value: `${optimizationResult.keywordsAdded || 0}` },
               { label: 'Issues Fixed', value: `${optimizationResult.issuesFixed || 0}` }
             ]
@@ -168,10 +191,10 @@ export default function ATSCompatibilityChecker({
           
         } catch (optimizationError) {
           console.error('ATS optimization failed:', optimizationError);
-          toast.success(`📊 Analysis complete! Score: ${result.score}%`, { id: 'ats-analysis' });
+          toast.success(`📊 Analysis complete! Score: ${atsScore}%`, { id: 'ats-analysis' });
         }
       } else {
-        toast.success(`🎉 Excellent ATS score: ${result.score}%!`, { id: 'ats-analysis' });
+        toast.success(`🎉 Excellent ATS score: ${atsScore}%!`, { id: 'ats-analysis' });
       }
       
     } catch (error: any) {
@@ -191,43 +214,8 @@ export default function ATSCompatibilityChecker({
       
       toast.error(errorMessage, { 
         id: 'ats-analysis',
-        description: 'The analysis will use a fallback method to provide basic insights.',
         duration: 5000
       });
-      
-      // Still try to provide some analysis using fallback
-      try {
-        const fallbackResult = {
-          score: 65,
-          recommendations: [
-            'Complete all resume sections for better analysis',
-            'Add more technical skills relevant to your field',
-            'Include quantified achievements in work experience',
-            'Ensure contact information is complete and professional'
-          ],
-          keywordMatch: 50,
-          formatScore: 80,
-          contentScore: 70,
-          verdict: {
-            alignment: 'potential' as const,
-            message: 'Analysis completed with limited data. Complete your resume for more accurate results.',
-            recommendation: 'Add more details to your resume sections for improved ATS compatibility analysis.'
-          },
-          keywordAnalysis: {
-            presentKeywords: ['professional', 'experience', 'skills'],
-            missingKeywords: ['leadership', 'management', 'results', 'team'],
-            keywordDensity: 50
-          },
-          formatAnalysis: {
-            issues: ['Incomplete resume sections'],
-            strengths: ['Good basic structure', 'Contact information present']
-          }
-        };
-        
-        setAnalysisResult(fallbackResult);
-      } catch (fallbackError) {
-        console.error('Fallback analysis also failed:', fallbackError);
-      }
     } finally {
       setIsAnalyzing(false);
     }
@@ -253,44 +241,6 @@ export default function ATSCompatibilityChecker({
         recommendation: 'Consider looking for roles that better align with your current strengths, or focus on building the missing skills.'
       };
     }
-  };
-
-  const analyzeKeywords = async (resume: any, jobDesc: string) => {
-    // Mock implementation - in real app, this would be done by AI
-    const jobKeywords = jobDesc.toLowerCase().match(/\b[a-z]{3,}\b/g) || [];
-    const resumeText = JSON.stringify(resume).toLowerCase();
-    
-    const presentKeywords = jobKeywords.filter(keyword => 
-      resumeText.includes(keyword)
-    ).slice(0, 10);
-    
-    const missingKeywords = jobKeywords.filter(keyword => 
-      !resumeText.includes(keyword)
-    ).slice(0, 10);
-
-    return {
-      presentKeywords,
-      missingKeywords,
-      keywordDensity: (presentKeywords.length / jobKeywords.length) * 100
-    };
-  };
-
-  const analyzeFormat = (resume: any) => {
-    const issues = [];
-    const strengths = [];
-
-    // Basic format analysis
-    if (!resume.personalInfo?.email) issues.push('Missing contact email');
-    if (!resume.personalInfo?.phone) issues.push('Missing contact phone');
-    if (!resume.workExperience?.length) issues.push('No work experience listed');
-    if (!resume.skills?.length) issues.push('No skills section');
-    
-    if (resume.personalInfo?.email) strengths.push('Contact information present');
-    if (resume.workExperience?.length > 0) strengths.push('Work experience included');
-    if (resume.skills?.length > 0) strengths.push('Skills section present');
-    if (resume.education?.length > 0) strengths.push('Education section included');
-
-    return { issues, strengths };
   };
 
   const getScoreColor = (score: number) => {
@@ -485,7 +435,7 @@ export default function ATSCompatibilityChecker({
               </Card>
 
               {/* Keyword Analysis */}
-              {jobDescription && (
+              {jobDescription && analysisResult.keywordAnalysis && (
                 <div className="grid md:grid-cols-2 gap-6">
                   <Card className="card-dark p-6">
                     <h4 className="font-medium text-green-400 mb-4 flex items-center">

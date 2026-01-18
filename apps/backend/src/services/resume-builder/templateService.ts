@@ -46,7 +46,7 @@ export interface ResumeData {
     degree: string;
     fieldOfStudy: string;
     graduationDate: string;
-    startDate?: string;
+    startDate: string;
     endDate?: string;
     location?: string;
     gpa?: string;
@@ -171,7 +171,9 @@ export class TemplateService {
     }
     
     // Inject custom command definitions to ensure compatibility with all templates
-    const definitions = `
+    // SKIP for template01 as it has its own strict definitions in resume.cls
+    if (templateId !== 'template01') {
+      const definitions = `
 % ------------ AI Resume Suite Custom Commands ------------
 \\ifx\\introduction\\undefined
   \\usepackage{etoolbox}
@@ -230,11 +232,12 @@ export class TemplateService {
 % ---------------------------------------------------------
 `;
 
-    // Inject packages and definitions after \documentclass or at top
-    if (template.includes("\\documentclass")) {
-      template = template.replace(/(\\documentclass.*)/, `$1\n${definitions}`);
-    } else {
-      template = definitions + "\n" + template;
+      // Inject packages and definitions after \documentclass or at top
+      if (template.includes("\\documentclass")) {
+        template = template.replace(/(\\documentclass.*)/, `$1\n${definitions}`);
+      } else {
+        template = definitions + "\n" + template;
+      }
     }
 
     // Use specialized renderer for basic_sa if requested
@@ -252,136 +255,148 @@ export class TemplateService {
     const out: string[] = [];
     const info = data.personalInfo;
 
-    // Title at the top
-    const fullName = `${info.firstName || ''} ${info.lastName || ''}`.trim().toUpperCase();
-    out.push(`% Title at the top`);
-    out.push(`\\begin{center}`);
-    out.push(`{\\Large\\bfseries CV OF ${this.escapeLatex(fullName)}}`);
-    out.push(`\\end{center}`);
-    out.push(`\\vspace{15pt}`);
-
-    // PERSONAL DETAILS Section
-    out.push(`\\cvsection{PERSONAL DETAILS}`);
-    out.push(``);
-    out.push(`\\cventry{Surname}{${this.escapeLatex(info.lastName)}}`);
-    out.push(`\\cventry{Name}{${this.escapeLatex(info.firstName)}}`);
+    // ---------- HEADING -----------------
+    const fullName = `${info.firstName || ''} ${info.lastName || ''}`.trim();
+    out.push(`\\begin{tabular*}{\\textwidth}{l@{\\extracolsep{\\fill}}r}`);
+    out.push(`  \\textbf{{\\LARGE ${this.escapeLatex(fullName)}}} & Email: ${this.escapeLatex(info.email || 'Available upon request')}\\\\`);
     
-    if (info.identityNumber) out.push(`\\cventry{Identity Number}{${this.escapeLatex(info.identityNumber)}}`);
-    if (info.dateOfBirth) out.push(`\\cventry{Date of Birth}{${this.escapeLatex(info.dateOfBirth)}}`);
-    if (info.gender) out.push(`\\cventry{Gender}{${this.escapeLatex(info.gender)}}`);
-    if (info.nationality) out.push(`\\cventry{Nationality}{${this.escapeLatex(info.nationality)}}`);
-    if (info.maritalStatus) out.push(`\\cventry{Marital Status}{${this.escapeLatex(info.maritalStatus)}}`);
-    if (info.homeLanguage) out.push(`\\cventry{Home Language}{${this.escapeLatex(info.homeLanguage)}}`);
-    if (info.otherLanguages) out.push(`\\cventry{Other Languages}{${this.escapeLatex(info.otherLanguages)}}`);
+    // Address handling
+    const address = info.residentialAddress || info.location || '';
+    const addressLines = address.split('\n').filter(l => l.trim().length > 0);
+    const line1 = addressLines[0] || '';
+    const line2 = addressLines.slice(1).join(', ') || '';
+    const phone = info.phone || 'Available upon request';
+    const idNum = info.identityNumber || 'Available upon request';
     
-    if (info.residentialAddress) {
-      const addressLines = info.residentialAddress.split('\n').map(l => this.escapeLatex(l.trim())).filter(Boolean);
-      const latexAddress = `\\begin{tabular}[t]{@{}l@{}} ${addressLines.join('\\\\ ')} \\end{tabular}`;
-      out.push(`\\cventry{Residential Address}{${latexAddress}}`);
-    } else if (info.location) {
-      out.push(`\\cventry{Residential Address}{${this.escapeLatex(info.location)}}`);
-    }
-
-    out.push(`\\vspace{8pt}`);
-    out.push(`\\noindent\\begin{tabular}{@{}p{4.5cm}p{0.3cm}p{10cm}@{}}`);
-    out.push(`Contact Number & & ${this.escapeLatex(info.phone)}`);
-    out.push(`\\end{tabular}\\\\[2pt]`);
-    out.push(``);
-    out.push(`\\noindent\\begin{tabular}{@{}p{4.5cm}p{0.3cm}p{10cm}@{}}`);
-    out.push(`Email Address & \\textcolor{bulletred}{$\\bullet$} & \\textcolor{emailblue}{\\href{mailto:${info.email}}{${this.escapeLatex(info.email)}}}`);
-    out.push(`\\end{tabular}`);
+    out.push(`  ${this.escapeLatex(line1)} & Mobile: ${this.escapeLatex(phone)} \\\\`);
+    out.push(`  ${this.escapeLatex(line2)} & ID: ${this.escapeLatex(idNum)} \\\\`);
+    out.push(`\\end{tabular*}`);
     out.push(``);
 
-    // EDUCATIONAL BACKGROUND (School Level)
+    // ----------- EDUCATION -----------------
     if (data.education && data.education.length > 0) {
-      // Find school level education (usually the first one or Grade 12)
-      const schoolEdu = data.education.find(e => e.degree.includes('Grade') || e.degree.includes('Matric')) || data.education[data.education.length - 1];
+      out.push(`\\section{Education}`);
+      out.push(`  \\resumeSubHeadingListStart`);
       
-      out.push(`\\cvsection{EDUCATIONAL BACKGROUND}`);
-      out.push(``);
-      out.push(`\\cventry{Highest Grade passed}{${this.escapeLatex(schoolEdu.degree)}}`);
-      
-      const year = schoolEdu.graduationDate ? new Date(schoolEdu.graduationDate).getFullYear() : '';
-      out.push(`\\cventry{Year}{${year}}`);
-      out.push(`\\cventry{School}{${this.escapeLatex(schoolEdu.institution)}}`);
-      
-      if (schoolEdu.coursework && schoolEdu.coursework.length > 0) {
-        out.push(`\\cventry{Subjects Passed}{${this.escapeLatex(schoolEdu.coursework.join(', '))}}`);
-      }
-      out.push(``);
-
-      // TERTIARY EDUCATION
-      const tertiaryEdu = data.education.filter(e => e !== schoolEdu);
-      if (tertiaryEdu.length > 0) {
-        out.push(`\\cvsection{TERTIARY EDUCATION}`);
-        out.push(``);
+      for (const edu of data.education) {
+        const institution = edu.institution || '';
+        const location = edu.location || 'South Africa';
+        const degree = edu.degree || '';
+        const dateRange = this.buildDateRange(edu.startDate, edu.graduationDate || edu.endDate);
         
-        for (const edu of tertiaryEdu) {
-          out.push(`\\cventry{Institution}{${this.escapeLatex(edu.institution)}}`);
-          out.push(`\\cventry{Diploma}{${this.escapeLatex(edu.degree)}}`);
-          
-          const duration = this.buildDateRange(edu.startDate, edu.graduationDate);
-          out.push(`\\cventry{Duration}{${duration}}`);
-          
-          if (edu.fieldOfStudy) out.push(`\\cventry{Completed}{${this.escapeLatex(edu.fieldOfStudy)}}`);
-          
-          if (edu.coursework && edu.coursework.length > 0) {
-            const modules = edu.coursework.map(m => this.escapeLatex(m.trim())).filter(Boolean);
-            const latexModules = `\\begin{tabular}[t]{@{}l@{}} ${modules.join('\\\\ ')} \\end{tabular}`;
-            out.push(`\\cventry{Modules Passed}{${latexModules}}`);
-          }
-          out.push(`\\vspace{10pt}`);
+        out.push(`    \\resumeSubheading`);
+        out.push(`      {${this.escapeLatex(institution)}}{${this.escapeLatex(location)}}`);
+        out.push(`      {${this.escapeLatex(degree)}}{${this.escapeLatex(dateRange)}}`);
+        
+        // Subjects and details
+        const details: string[] = [];
+        if (edu.fieldOfStudy) details.push(`\\textbf{Field:} ${this.escapeLatex(edu.fieldOfStudy)}`);
+        if (edu.coursework && edu.coursework.length > 0) {
+          details.push(`\\textbf{Subjects:} ${this.escapeLatex(edu.coursework.join(', '))}`);
+        }
+        
+        if (details.length > 0) {
+          out.push(`      \\resumeItemListStart`);
+          out.push(`        \\resumeItemWithoutTitle{${details.join(', ')}}`);
+          out.push(`      \\resumeItemListEnd`);
         }
       }
-    }
-
-    // Professional Summary (if not empty)
-    if (this.nonEmpty(data.professionalSummary)) {
-      out.push(`\\cvsection{PROFESSIONAL SUMMARY}`);
-      out.push(this.escapeLatex(this.singleLine(data.professionalSummary)));
+      out.push(`  \\resumeSubHeadingListEnd`);
       out.push(``);
     }
 
-    // WORK EXPERIENCE
+    // ----------- SKILLS SUMMARY -----------------
+    if (data.skills && data.skills.length > 0) {
+      out.push(`\\section{Skills Summary}`);
+      out.push(`  \\resumeSubHeadingListStart`);
+      
+      // Group skills by category if possible, or just list them
+      const skillsByCategory: Record<string, string[]> = {};
+      data.skills.forEach(s => {
+        const cat = s.category || 'General';
+        const catName = cat.charAt(0).toUpperCase() + cat.slice(1);
+        if (!skillsByCategory[catName]) skillsByCategory[catName] = [];
+        skillsByCategory[catName].push(s.name);
+      });
+      
+      for (const [cat, names] of Object.entries(skillsByCategory)) {
+        out.push(`    \\resumeSubItem{${this.escapeLatex(cat)}}{${this.escapeLatex(names.join(', '))}}`);
+      }
+      
+      // Add languages here if present
+      if (info.homeLanguage || info.otherLanguages) {
+        const langs = [info.homeLanguage, info.otherLanguages].filter(Boolean).join(', ');
+        out.push(`    \\resumeSubItem{Languages}{${this.escapeLatex(langs)}}`);
+      }
+      
+      out.push(`  \\resumeSubHeadingListEnd`);
+      out.push(``);
+    }
+
+    // ----------- PROFESSIONAL EXPERIENCE -----------------
     if (data.workExperience && data.workExperience.length > 0) {
-      out.push(`\\cvsection{WORK EXPERIENCE}`);
-      out.push(``);
+      out.push(`\\section{Professional Experience}`);
+      out.push(`  \\resumeSubHeadingListStart`);
+      
       for (const exp of data.workExperience) {
-        out.push(`\\cventry{Company}{${this.escapeLatex(exp.company)}}`);
-        out.push(`\\cventry{Position}{${this.escapeLatex(exp.jobTitle)}}`);
+        const company = exp.company || '';
+        const location = exp.location || 'South Africa';
+        const role = exp.jobTitle || '';
         const duration = this.buildDateRange(exp.startDate, exp.endDate, exp.isCurrentJob);
-        out.push(`\\cventry{Duration}{${duration}}`);
+        
+        out.push(`    \\resumeSubheading`);
+        out.push(`      {${this.escapeLatex(company)}}{${this.escapeLatex(location)}}`);
+        out.push(`      {${this.escapeLatex(role)}}{${this.escapeLatex(duration)}}`);
         
         if (exp.responsibilities && exp.responsibilities.length > 0) {
-          const resp = exp.responsibilities.map(r => this.escapeLatex(r.trim())).filter(Boolean);
-          const latexResp = `\\begin{tabular}[t]{@{}l@{}} ${resp.join('\\\\ ')} \\end{tabular}`;
-          out.push(`\\cventry{Responsibilities}{${latexResp}}`);
+          out.push(`      \\resumeItemListStart`);
+          for (const resp of exp.responsibilities) {
+            if (this.nonEmpty(resp)) {
+              // Split by newline in case multiple items were entered in one block
+              const lines = resp.split('\n').filter(l => l.trim().length > 0);
+              for (const line of lines) {
+                out.push(`        \\resumeItemWithoutTitle{${this.escapeLatex(line)}}`);
+              }
+            }
+          }
+          out.push(`      \\resumeItemListEnd`);
         }
-        out.push(`\\vspace{10pt}`);
       }
-    }
-
-    // SKILLS
-    if (data.skills && data.skills.length > 0) {
-      out.push(`\\cvsection{SKILLS}`);
-      out.push(``);
-      const skillNames = data.skills.map(s => s.name).join(', ');
-      out.push(this.escapeLatex(skillNames));
+      out.push(`  \\resumeSubHeadingListEnd`);
       out.push(``);
     }
 
-    // REFERENCES
+    // ----------- PERSONAL INFORMATION -----------------
+    out.push(`\\section{Personal Information}`);
+    out.push(`  \\resumeSubHeadingListStart`);
+    if (info.nationality) out.push(`    \\resumeSubItem{Nationality}{${this.escapeLatex(info.nationality)}}`);
+    if (info.gender) out.push(`    \\resumeSubItem{Gender}{${this.escapeLatex(info.gender)}}`);
+    if (info.maritalStatus) out.push(`    \\resumeSubItem{Marital Status}{${this.escapeLatex(info.maritalStatus)}}`);
+    out.push(`    \\resumeSubItem{Health Status}{Excellent}`);
+    out.push(`    \\resumeSubItem{Availability}{Immediate}`);
+    out.push(`  \\resumeSubHeadingListEnd`);
+    out.push(``);
+
+    // ----------- REFERENCES -----------------
     if (data.references && data.references.length > 0) {
-      out.push(`\\cvsection{REFERENCES}`);
-      out.push(``);
+      out.push(`\\section{References}`);
+      out.push(`  \\resumeSubHeadingListStart`);
       for (const ref of data.references) {
-        out.push(`\\cventry{Name}{${this.escapeLatex(ref.name)}}`);
-        out.push(`\\cventry{Position}{${this.escapeLatex(ref.title)}}`);
-        out.push(`\\cventry{Company}{${this.escapeLatex(ref.company)}}`);
-        out.push(`\\cventry{Contact}{${this.escapeLatex(ref.phone || ref.email)}}`);
-        out.push(`\\vspace{10pt}`);
+        const title = ref.title || 'Reference';
+        const company = ref.company || '';
+        const contact = ref.phone || ref.email || 'Available upon request';
+        
+        out.push(`    \\resumeSubheading`);
+        out.push(`      {${this.escapeLatex(ref.name)} - ${this.escapeLatex(title)}}{${this.escapeLatex(company)}}`);
+        out.push(`      {Contact: ${this.escapeLatex(contact)}}{Available upon request}`);
       }
+      out.push(`  \\resumeSubHeadingListEnd`);
+      out.push(``);
     }
+
+    // ----------- DECLARATION -----------------
+    out.push(`\\section{Declaration}`);
+    out.push(`\\small{I, ${this.escapeLatex(fullName)}, hereby declare that the above information is true and correct to the best of my knowledge.}`);
 
     return out.join('\n');
   }
@@ -407,12 +422,17 @@ export class TemplateService {
       }
     }
 
-    const fullName = this.trimJoin(
+    let fullName = this.trimJoin(
       [data?.personalInfo?.firstName, data?.personalInfo?.lastName].filter(
         Boolean
       ),
       " "
     );
+
+    // Append professional title if present (not supported natively by template01)
+    if (this.nonEmpty(data?.personalInfo?.professionalTitle)) {
+       fullName += `, ${data!.personalInfo!.professionalTitle}`;
+    }
 
     const introArgs = this.kvs([
       this.kv("fullname", fullName),
@@ -1044,7 +1064,7 @@ export class TemplateService {
             description: config?.description || `Professional resume template with modern design.`,
             screenshotUrl,
             category: config?.category || "professional",
-            enabled: dir === "template01"
+            enabled: dir === "template01" || dir === "template02"
           });
         } catch (error) {
           continue;

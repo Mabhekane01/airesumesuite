@@ -1,7 +1,8 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from 'react';
 import { Resume } from '../types';
 import { useAuthStore } from '../stores/authStore';
 import { resumeService } from '../services/resumeService';
+import { getResumeHash } from '../utils/resumeHash';
 
 interface AIEnhancementData {
   atsScore?: number;
@@ -67,6 +68,12 @@ interface AIEnhancementData {
   qualityScore?: number;
 }
 
+interface ResumeAuditEntry {
+  timestamp: string;
+  resumeHash: string;
+  changedFields: string[];
+}
+
 interface ResumeContextType {
   resumeData: Partial<Resume>;
   aiData: AIEnhancementData;
@@ -87,10 +94,12 @@ interface ResumeContextType {
   deleteSavedPdf: (pdfId: string) => void;
   isCacheValid: (currentHash: string) => boolean;
   generateResumeHash: () => string;
+  markPdfCacheStale: (options?: { clearOptimizedLatex?: boolean }) => void;
   clearAllCacheAndBlobUrls: () => void;
   hasRequiredFields: (resumeData: any) => boolean;
   isDirty: boolean; 
   setIsDirty: (dirty: boolean) => void;
+  resumeAuditLog: ResumeAuditEntry[];
   // Subscription and locking
   isAIUsed: boolean;
   isSubscriptionLockActive: boolean;
@@ -120,8 +129,106 @@ export const ResumeProvider: React.FC<ResumeProviderProps> = ({ children, initia
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isDirty, setIsDirty] = useState(false); // New state for dirty tracking
+  const [resumeAuditLog, setResumeAuditLog] = useState<ResumeAuditEntry[]>([]);
+  const resumeDataRef = useRef(resumeData);
+  const aiDataRef = useRef(aiData);
   
   const { user } = useAuthStore();
+
+  useEffect(() => {
+    resumeDataRef.current = resumeData;
+  }, [resumeData]);
+
+  useEffect(() => {
+    aiDataRef.current = aiData;
+  }, [aiData]);
+
+  const getAuditLogKey = useCallback(() => {
+    return user?.id ? `resume-audit-log-${user.id}` : 'resume-audit-log-guest';
+  }, [user?.id]);
+
+  const normalizeForAudit = (value: any): any => {
+    if (value === undefined) return undefined;
+    if (value === null) return null;
+    if (value instanceof Date) return value.toISOString();
+
+    if (Array.isArray(value)) {
+      return value.map(normalizeForAudit).filter((item) => item !== undefined);
+    }
+
+    if (typeof value === 'object') {
+      const normalized: Record<string, any> = {};
+      Object.keys(value)
+        .sort()
+        .forEach((key) => {
+          const normalizedValue = normalizeForAudit(value[key]);
+          if (normalizedValue !== undefined) {
+            normalized[key] = normalizedValue;
+          }
+        });
+      return normalized;
+    }
+
+    return value;
+  };
+
+  const stableSerialize = (value: any): string => {
+    const normalized = normalizeForAudit(value);
+    return JSON.stringify(normalized ?? null);
+  };
+
+  const getChangedResumeFields = (prev: Partial<Resume>, next: Partial<Resume>): string[] => {
+    const keys = [
+      'personalInfo',
+      'professionalSummary',
+      'workExperience',
+      'education',
+      'skills',
+      'projects',
+      'certifications',
+      'languages',
+      'volunteerExperience',
+      'awards',
+      'publications',
+      'references',
+      'hobbies',
+      'additionalSections',
+      'template',
+      'templateId',
+      'isLatexTemplate'
+    ];
+
+    return keys.filter((key) => {
+      const prevValue = (prev as any)?.[key];
+      const nextValue = (next as any)?.[key];
+      return stableSerialize(prevValue) !== stableSerialize(nextValue);
+    });
+  };
+
+  const appendAuditEntry = useCallback((changedFields: string[], nextResumeData: Partial<Resume>) => {
+    if (changedFields.length === 0) return;
+
+    const resumeHash = getResumeHash(nextResumeData, {
+      optimizedForJob: aiDataRef.current.optimizedForJob,
+      optimizedLatexCode: aiDataRef.current.optimizedLatexCode
+    });
+
+    const entry: ResumeAuditEntry = {
+      timestamp: new Date().toISOString(),
+      resumeHash,
+      changedFields
+    };
+
+    setResumeAuditLog(prev => {
+      const nextLog = [...prev, entry].slice(-200);
+      try {
+        localStorage.setItem(getAuditLogKey(), JSON.stringify(nextLog));
+      } catch (error) {
+        console.warn('Failed to persist resume audit log:', error);
+      }
+      return nextLog;
+    });
+  }, [getAuditLogKey]);
 
   // Clear resume data when user changes (login/logout)
   useEffect(() => {
@@ -151,6 +258,10 @@ export const ResumeProvider: React.FC<ResumeProviderProps> = ({ children, initia
           localStorage.removeItem(key);
         }
       });
+      if (currentUserId) {
+        localStorage.removeItem(`resume-audit-log-${currentUserId}`);
+      }
+      localStorage.removeItem('resume-audit-log-guest');
       
       setCurrentUserId(newUserId);
     }
@@ -165,9 +276,11 @@ export const ResumeProvider: React.FC<ResumeProviderProps> = ({ children, initia
       try {
         const userResumeKey = user?.id ? `resume-builder-data-${user.id}` : 'resume-builder-data-guest';
         const userAIKey = user?.id ? `resume-ai-data-${user.id}` : 'resume-ai-data-guest';
+        const auditLogKey = user?.id ? `resume-audit-log-${user.id}` : 'resume-audit-log-guest';
         
         const savedResumeData = localStorage.getItem(userResumeKey);
         const savedAIData = localStorage.getItem(userAIKey);
+        const savedAuditLog = localStorage.getItem(auditLogKey);
         
         console.log('🔍 ResumeContext initialization:', {
           hasSavedResumeData: !!savedResumeData,
@@ -178,15 +291,47 @@ export const ResumeProvider: React.FC<ResumeProviderProps> = ({ children, initia
 
         if (savedResumeData) {
           console.log('📋 Loading saved resume data from localStorage');
-          setResumeData(JSON.parse(savedResumeData));
+          const parsedData = JSON.parse(savedResumeData);
+          const mergedData = initialData ? { ...parsedData, ...initialData } : parsedData;
+          if (mergedData.template && !mergedData.templateId) {
+            mergedData.templateId = mergedData.template;
+          } else if (mergedData.templateId && !mergedData.template) {
+            mergedData.template = mergedData.templateId;
+          }
+          
+          // Sanitizer: Fix corrupted professionalSummary from storage
+          if (mergedData.professionalSummary && typeof mergedData.professionalSummary === 'object') {
+             console.warn('🔥 SANITIZER: Detected corrupted professionalSummary in storage, repairing...');
+             const summaryObj = mergedData.professionalSummary as any;
+             mergedData.professionalSummary = String(summaryObj.summary || summaryObj.text || Object.values(summaryObj)[0] || '');
+             // Update storage immediately to fix persistence
+             localStorage.setItem(userResumeKey, JSON.stringify(mergedData));
+          }
+          
+          setResumeData(mergedData);
         } else if (initialData) {
           console.log('📋 Using initial data provided to ResumeProvider');
-          setResumeData(initialData);
+          // Sanitizer: Fix corrupted professionalSummary from initialData
+          const safeInitialData = { ...initialData };
+          if (safeInitialData.professionalSummary && typeof safeInitialData.professionalSummary === 'object') {
+             console.warn('🔥 SANITIZER: Detected corrupted professionalSummary in initialData, repairing...');
+             const summaryObj = safeInitialData.professionalSummary as any;
+             safeInitialData.professionalSummary = String(summaryObj.summary || summaryObj.text || Object.values(summaryObj)[0] || '');
+          }
+          setResumeData(safeInitialData);
         }
         
         if (savedAIData) {
           console.log('🤖 Loading saved AI data from localStorage');
           const parsedAIData = JSON.parse(savedAIData);
+          
+          // Sanitizer: Fix corrupted optimizedSummary from storage
+          if (parsedAIData.optimizedSummary && typeof parsedAIData.optimizedSummary === 'object') {
+             console.warn('🔥 SANITIZER: Detected corrupted optimizedSummary in storage, repairing...');
+             const summaryObj = parsedAIData.optimizedSummary as any;
+             parsedAIData.optimizedSummary = String(summaryObj.summary || summaryObj.text || Object.values(summaryObj)[0] || '');
+             localStorage.setItem(userAIKey, JSON.stringify(parsedAIData));
+          }
           
           console.log('🔍 Checking cached PDF URL:', {
             hasCachedPdfUrl: !!parsedAIData.cachedPdfUrl,
@@ -337,6 +482,17 @@ export const ResumeProvider: React.FC<ResumeProviderProps> = ({ children, initia
             }
           }
         }
+
+        if (savedAuditLog) {
+          try {
+            setResumeAuditLog(JSON.parse(savedAuditLog));
+          } catch (error) {
+            console.warn('Failed to parse resume audit log:', error);
+            setResumeAuditLog([]);
+          }
+        } else {
+          setResumeAuditLog([]);
+        }
       } catch (error) {
         console.warn('Failed to load resume data from localStorage:', error);
       } finally {
@@ -367,14 +523,51 @@ export const ResumeProvider: React.FC<ResumeProviderProps> = ({ children, initia
   }, [isDirty, resumeData, aiData, saveTimeout]); // Added isDirty to dependencies
 
   const updateResumeData = useCallback((newData: Partial<Resume>) => {
-    setResumeData(prev => ({ ...prev, ...newData }));
+    // Sanitizer: Ensure professionalSummary is always a string to prevent React crashes
+    if (newData.professionalSummary && typeof newData.professionalSummary === 'object') {
+      console.warn('🔥 SANITIZER: Detected corrupted professionalSummary object in update, fixing...', newData.professionalSummary);
+      const summaryObj = newData.professionalSummary as any;
+      newData.professionalSummary = String(summaryObj.summary || summaryObj.text || Object.values(summaryObj)[0] || '');
+    }
+
+    setResumeData(prev => {
+      const nextData = { ...prev, ...newData };
+      if (nextData.template && !nextData.templateId) {
+        nextData.templateId = nextData.template;
+      } else if (nextData.templateId && !nextData.template) {
+        nextData.template = nextData.templateId;
+      }
+      const changedFields = getChangedResumeFields(prev, nextData);
+      appendAuditEntry(changedFields, nextData);
+      return nextData;
+    });
     setIsDirty(true); // Mark as dirty on any data update
-  }, []);
+  }, [appendAuditEntry]);
 
   const updateAIData = useCallback((newData: Partial<AIEnhancementData>) => {
-    setAIData(prev => ({ ...prev, ...newData }));
+    // Sanitizer: Ensure optimizedSummary is always a string
+    if (newData.optimizedSummary && typeof newData.optimizedSummary === 'object') {
+      console.warn('🔥 SANITIZER: Detected corrupted optimizedSummary object in update, fixing...', newData.optimizedSummary);
+      const summaryObj = newData.optimizedSummary as any;
+      newData.optimizedSummary = String(summaryObj.summary || summaryObj.text || Object.values(summaryObj)[0] || '');
+    }
+    
+    setAIData(prev => {
+      const nextData = { ...prev, ...newData };
+      const aiChangedFields: string[] = [];
+      if (stableSerialize(prev.optimizedLatexCode) !== stableSerialize(nextData.optimizedLatexCode)) {
+        aiChangedFields.push('optimizedLatexCode');
+      }
+      if (stableSerialize(prev.optimizedForJob) !== stableSerialize(nextData.optimizedForJob)) {
+        aiChangedFields.push('optimizedForJob');
+      }
+      if (aiChangedFields.length > 0) {
+        appendAuditEntry(aiChangedFields, resumeDataRef.current);
+      }
+      return nextData;
+    });
     setIsDirty(true); // Mark as dirty on any AI data update
-  }, []);
+  }, [appendAuditEntry]);
 
   const debouncedSave = () => {
     // Clear existing timeout
@@ -446,6 +639,11 @@ export const ResumeProvider: React.FC<ResumeProviderProps> = ({ children, initia
       delete aiDataToSave.pdfBlob;
       
       localStorage.setItem(userAIKey, JSON.stringify(aiDataToSave));
+      try {
+        localStorage.setItem(getAuditLogKey(), JSON.stringify(resumeAuditLog));
+      } catch (error) {
+        console.warn('Failed to save resume audit log:', error);
+      }
       
       // Set last saved time and stop auto-saving indicator
       setTimeout(() => {
@@ -470,10 +668,12 @@ export const ResumeProvider: React.FC<ResumeProviderProps> = ({ children, initia
       localStorage.removeItem(userResumeKey);
       localStorage.removeItem(userAIKey);
     }
+    localStorage.removeItem(getAuditLogKey());
     
     setResumeData({});
     setAIData({});
     setIsDirty(false); // Clear dirty state
+    setResumeAuditLog([]);
   };
 
   // New methods for LaTeX optimization state management
@@ -548,40 +748,24 @@ export const ResumeProvider: React.FC<ResumeProviderProps> = ({ children, initia
   }, [aiData.pdfCacheHash, aiData.cachedPdfUrl, aiData.pdfBlob]);
 
   const generateResumeHash = useCallback(() => {
-    // Create a hash based on all resume fields that affect PDF generation
-    const hashData = {
-      personalInfo: resumeData.personalInfo,
-      professionalSummary: resumeData.professionalSummary,
-      workExperience: resumeData.workExperience,
-      education: resumeData.education,
-      skills: resumeData.skills,
-      projects: resumeData.projects,
-      certifications: resumeData.certifications,
-      languages: resumeData.languages,
-      hobbies: resumeData.hobbies,
-      volunteerExperience: resumeData.volunteerExperience,
-      awards: resumeData.awards,
-      publications: resumeData.publications,
-      references: resumeData.references,
-      additionalSections: resumeData.additionalSections,
-      templateId: resumeData.templateId,
-      optimizedForJob: aiData.optimizedForJob
-    };
-    
-    // Use Unicode-safe encoding instead of btoa
-    const jsonString = JSON.stringify(hashData);
-    
-    // Simple hash function that works with Unicode
-    let hash = 0;
-    for (let i = 0; i < jsonString.length; i++) {
-      const char = jsonString.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash = hash & hash; // Convert to 32-bit integer
-    }
-    
-    // Convert to positive hex string and take first 16 characters
-    return Math.abs(hash).toString(16).substring(0, 16);
-  }, [resumeData]);
+    return getResumeHash(resumeData, {
+      optimizedForJob: aiData.optimizedForJob,
+      optimizedLatexCode: aiData.optimizedLatexCode
+    });
+  }, [resumeData, aiData.optimizedForJob, aiData.optimizedLatexCode]);
+
+  const markPdfCacheStale = (options?: { clearOptimizedLatex?: boolean }) => {
+    updateAIData({
+      pdfCacheHash: null,
+      ...(options?.clearOptimizedLatex
+        ? {
+            optimizedLatexCode: undefined,
+            optimizedForJob: undefined,
+            templateId: undefined
+          }
+        : {})
+    });
+  };
 
   const hasRequiredFields = useCallback((resumeData: any) => {
     return (
@@ -769,11 +953,13 @@ export const ResumeProvider: React.FC<ResumeProviderProps> = ({ children, initia
     deleteSavedPdf,
     isCacheValid,
     generateResumeHash,
+    markPdfCacheStale,
     clearAllCacheAndBlobUrls,
     hasRequiredFields,
     isLoading,
     isDirty,
     setIsDirty,
+    resumeAuditLog,
     // AI Usage and Subscription Lock Logic
     get isAIUsed() {
       return !!(

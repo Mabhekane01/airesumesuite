@@ -121,9 +121,7 @@ export default function AccountManager() {
   if (loading) {
     return (
       <div className="min-h-[400px] flex flex-col items-center justify-center space-y-4">
-        <div className="w-16 h-16 rounded-[2rem] bg-surface-50 border border-surface-200 flex items-center justify-center shadow-sm">
-          <ArrowPathIcon className="h-8 w-8 animate-spin text-brand-blue" />
-        </div>
+        <ArrowPathIcon className="h-10 w-10 animate-spin text-brand-blue" />
         <p className="text-[10px] font-black text-brand-dark uppercase tracking-widest">Accessing Account Module...</p>
       </div>
     );
@@ -157,9 +155,7 @@ export default function AccountManager() {
         <div className="absolute top-0 right-0 w-64 h-64 bg-brand-blue/[0.02] rounded-full -mr-32 -mt-32 transition-transform duration-1000 group-hover:scale-110" />
         
         <div className="relative z-10 flex flex-col md:flex-row items-center gap-6 md:gap-8">
-          <div className="w-20 h-20 md:w-24 md:h-24 rounded-[1.5rem] md:rounded-[2rem] bg-brand-dark text-brand-blue flex items-center justify-center text-2xl md:text-3xl font-black shadow-xl border-4 border-surface-50">
-            {userData.firstName[0]}{userData.lastName[0]}
-          </div>
+          <UserIcon className="w-16 h-16 md:w-20 md:h-20 text-brand-blue" />
           <div className="flex-1 text-center md:text-left space-y-4">
             <div>
               <h2 className="text-2xl md:text-3xl font-black text-brand-dark tracking-tight leading-none mb-1">
@@ -250,9 +246,7 @@ export default function AccountManager() {
                   {sessions.map((session) => (
                     <div key={session.id} className="p-4 md:p-6 bg-surface-50 border border-surface-200 rounded-2xl md:rounded-[2rem] flex items-center justify-between group hover:border-brand-blue/30 transition-all shadow-sm">
                       <div className="flex items-center gap-4 md:gap-5">
-                        <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-white border border-surface-200 flex items-center justify-center text-brand-blue shadow-sm group-hover:scale-110 transition-transform">
-                          <ComputerDesktopIcon className="w-5 h-5 md:w-6 md:h-6" />
-                        </div>
+                        <ComputerDesktopIcon className="w-6 h-6 md:w-7 md:h-7 text-brand-blue" />
                         <div>
                           <p className="text-sm font-black text-brand-dark flex items-center gap-2">
                             {session.browser}

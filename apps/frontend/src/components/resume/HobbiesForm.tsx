@@ -88,7 +88,7 @@ export default function HobbiesForm() {
                     value={hobby.description || ''}
                     onChange={(e) => updateHobby(index, 'description', e.target.value)}
                     rows={2}
-                    className="input-resume py-4 bg-surface-50"
+                    className="input-resume py-4"
                     placeholder="Briefly describe your involvement..."
                   />
                 </div>

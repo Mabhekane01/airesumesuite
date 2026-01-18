@@ -53,10 +53,7 @@ export default function LoginPage() {
       <div className="w-full max-w-lg relative z-10">
         <div className="flex justify-center mb-8">
            <Link to="/" className="group flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-brand-blue flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                <span className="text-white font-bold text-xl">A</span>
-              </div>
-              <span className="text-2xl font-display font-bold text-brand-dark tracking-tight">
+              <span className="text-2xl font-display font-black text-brand-dark tracking-tight">
                 JobSuite
               </span>
             </Link>

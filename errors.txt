@@ -1,0 +1,2134 @@
+  timestamp: '2026-01-18T13:43:58.787Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: ::ffff:127.0.0.1 - - [18/Jan/2026:13:43:58 +0000] "GET /api/v1/notifications?limit=100 HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0"
+@ai-job-suite/backend:dev: [ANALYTICS] getDashboardMetrics for user system - 10011ms - FAILED
+@ai-job-suite/backend:dev: Error executing task task_1768743486681_9zjlp6sve: Error: Failed to get dashboard metrics: getaddrinfo ENOTFOUND cluster0-shard-00-00.pmman.mongodb.net
+@ai-job-suite/backend:dev:     at <anonymous> (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\apps\backend\src\services\analyticsService.ts:338:13)
+@ai-job-suite/backend:dev: Task task_1768743486681_6ge96t6g5 executed successfully
+@ai-job-suite/backend:dev:     at processTicksAndRejections (node:internal/process/task_queues:103:5)
+@ai-job-suite/backend:dev:     at runNextTicks (node:internal/process/task_queues:68:3)
+@ai-job-suite/backend:dev:     at listOnTimeout (node:internal/timers:567:9)
+@ai-job-suite/backend:dev:     at process.processTimers (node:internal/timers:541:7)
+@ai-job-suite/backend:dev:     at async AnalyticsService.withPerformanceTracking (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\apps\backend\src\services\analyticsService.ts:220:22)
+@ai-job-suite/backend:dev:     at async AutomationService.executePerformanceMonitoringTask (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\apps\backend\src\services\automationService.ts:240:30)
+@ai-job-suite/backend:dev:     at async AutomationService.executeTask (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\apps\backend\src\services\automationService.ts:170:9)
+@ai-job-suite/backend:dev:     at async AutomationService.processPendingTasks (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\apps\backend\src\services\automationService.ts:147:9)
+@ai-job-suite/backend:dev: Error getting location analytics: MongoServerSelectionError: getaddrinfo ENOTFOUND cluster0-shard-00-00.pmman.mongodb.net
+@ai-job-suite/backend:dev:     at Topology.selectServer (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\sdam\topology.ts:634:30)
+@ai-job-suite/backend:dev:     at runNextTicks (node:internal/process/task_queues:64:5)
+@ai-job-suite/backend:dev:     at listOnTimeout (node:internal/timers:567:9)
+@ai-job-suite/backend:dev:     at process.processTimers (node:internal/timers:541:7)
+@ai-job-suite/backend:dev:     at async tryOperation (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\operations\execute_operation.ts:201:16)
+@ai-job-suite/backend:dev:     at async executeOperation (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\operations\execute_operation.ts:115:12)
+@ai-job-suite/backend:dev:     at async AggregationCursor._initialize (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cursor\aggregation_cursor.ts:92:22)
+@ai-job-suite/backend:dev:     at async AggregationCursor.cursorInit (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cursor\abstract_cursor.ts:944:21)
+@ai-job-suite/backend:dev:     at async AggregationCursor.fetchBatch (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cursor\abstract_cursor.ts:982:7)
+@ai-job-suite/backend:dev:     at async AggregationCursor.next (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cursor\abstract_cursor.ts:612:9)
+@ai-job-suite/backend:dev:     at async AggregationCursor.[Symbol.asyncIterator] (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cursor\abstract_cursor.ts:506:26)
+@ai-job-suite/backend:dev:     at async AggregationCursor.toArray (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cursor\abstract_cursor.ts:700:22)
+@ai-job-suite/backend:dev:     at async Aggregate.exec (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongoose@8.16.5\node_modules\mongoose\lib\aggregate.js:1104:14)
+@ai-job-suite/backend:dev:     at async AnalyticsService.getLocationAnalytics (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\apps\backend\src\services\analyticsService.ts:819:28)
+@ai-job-suite/backend:dev:     at async Promise.all (index 16) {
+@ai-job-suite/backend:dev:   errorLabelSet: Set(0) {},
+@ai-job-suite/backend:dev:   reason: TopologyDescription {
+@ai-job-suite/backend:dev:     type: 'ReplicaSetNoPrimary',
+@ai-job-suite/backend:dev:     servers: Map(3) {
+@ai-job-suite/backend:dev:       'cluster0-shard-00-00.pmman.mongodb.net:27017' => [ServerDescription],
+@ai-job-suite/backend:dev:       'cluster0-shard-00-01.pmman.mongodb.net:27017' => [ServerDescription],
+@ai-job-suite/backend:dev:       'cluster0-shard-00-02.pmman.mongodb.net:27017' => [ServerDescription]
+@ai-job-suite/backend:dev:     },
+@ai-job-suite/backend:dev:     stale: false,
+@ai-job-suite/backend:dev:     compatible: true,
+@ai-job-suite/backend:dev:     heartbeatFrequencyMS: 10000,
+@ai-job-suite/backend:dev:     localThresholdMS: 15,
+@ai-job-suite/backend:dev:     setName: 'atlas-147vh0-shard-0',
+@ai-job-suite/backend:dev:     maxElectionId: new ObjectId('7fffffff00000000000000ae'),
+@ai-job-suite/backend:dev:     maxSetVersion: 40,
+@ai-job-suite/backend:dev:     commonWireVersion: 0,
+@ai-job-suite/backend:dev:     logicalSessionTimeoutMinutes: null
+@ai-job-suite/backend:dev:   },
+@ai-job-suite/backend:dev:   code: undefined,
+@ai-job-suite/backend:dev:   [cause]: MongoNetworkError: getaddrinfo ENOTFOUND cluster0-shard-00-00.pmman.mongodb.net
+@ai-job-suite/backend:dev:       at TLSSocket.<anonymous> (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cmap\connect.ts:395:16)
+@ai-job-suite/backend:dev:       at Object.onceWrapper (node:events:623:26)
+@ai-job-suite/backend:dev:       at TLSSocket.emit (node:events:508:28)
+@ai-job-suite/backend:dev:       at emitErrorNT (node:internal/streams/destroy:170:8)
+@ai-job-suite/backend:dev:       at emitErrorCloseNT (node:internal/streams/destroy:129:3)
+@ai-job-suite/backend:dev:       at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+@ai-job-suite/backend:dev:     errorLabelSet: Set(1) { 'ResetPool' },
+@ai-job-suite/backend:dev:     beforeHandshake: false,
+@ai-job-suite/backend:dev:     [cause]: Error: getaddrinfo ENOTFOUND cluster0-shard-00-00.pmman.mongodb.net
+@ai-job-suite/backend:dev:         at GetAddrInfoReqWrap.onlookup [as oncomplete] (node:dns:111:26) {
+@ai-job-suite/backend:dev:       errno: -3008,
+@ai-job-suite/backend:dev:       code: 'ENOTFOUND',
+@ai-job-suite/backend:dev:       syscall: 'getaddrinfo',
+@ai-job-suite/backend:dev:       hostname: 'cluster0-shard-00-00.pmman.mongodb.net'
+@ai-job-suite/backend:dev:     }
+@ai-job-suite/backend:dev:   }
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: Error analyzing skills: MongoServerSelectionError: getaddrinfo ENOTFOUND cluster0-shard-00-00.pmman.mongodb.net
+@ai-job-suite/backend:dev:     at Topology.selectServer (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\sdam\topology.ts:634:30)
+@ai-job-suite/backend:dev:     at runNextTicks (node:internal/process/task_queues:64:5)
+@ai-job-suite/backend:dev:     at listOnTimeout (node:internal/timers:567:9)
+@ai-job-suite/backend:dev:     at process.processTimers (node:internal/timers:541:7)
+@ai-job-suite/backend:dev:     at async tryOperation (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\operations\execute_operation.ts:201:16)
+@ai-job-suite/backend:dev:     at async executeOperation (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\operations\execute_operation.ts:115:12)
+@ai-job-suite/backend:dev:     at async FindCursor._initialize (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cursor\find_cursor.ts:92:22)
+@ai-job-suite/backend:dev:     at async FindCursor.cursorInit (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cursor\abstract_cursor.ts:944:21)
+@ai-job-suite/backend:dev:     at async FindCursor.fetchBatch (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cursor\abstract_cursor.ts:982:7)
+@ai-job-suite/backend:dev:     at async FindCursor.next (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cursor\abstract_cursor.ts:612:9)
+@ai-job-suite/backend:dev:     at async FindCursor.[Symbol.asyncIterator] (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cursor\abstract_cursor.ts:506:26)
+@ai-job-suite/backend:dev:     at async FindCursor.toArray (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cursor\abstract_cursor.ts:700:22)
+@ai-job-suite/backend:dev:     at async model.Query._find (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongoose@8.16.5\node_modules\mongoose\lib\query.js:2407:14)
+@ai-job-suite/backend:dev:     at async model.Query.exec (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongoose@8.16.5\node_modules\mongoose\lib\query.js:4604:63)
+@ai-job-suite/backend:dev:     at async Promise.all (index 0)
+@ai-job-suite/backend:dev:     at async AnalyticsService.getSkillsAnalytics (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\apps\backend\src\services\analyticsService.ts:660:47) {
+@ai-job-suite/backend:dev:   errorLabelSet: Set(0) {},
+@ai-job-suite/backend:dev:   reason: TopologyDescription {
+@ai-job-suite/backend:dev:     type: 'ReplicaSetNoPrimary',
+@ai-job-suite/backend:dev:     servers: Map(3) {
+@ai-job-suite/backend:dev:       'cluster0-shard-00-00.pmman.mongodb.net:27017' => [ServerDescription],
+@ai-job-suite/backend:dev:       'cluster0-shard-00-01.pmman.mongodb.net:27017' => [ServerDescription],
+@ai-job-suite/backend:dev:       'cluster0-shard-00-02.pmman.mongodb.net:27017' => [ServerDescription]
+@ai-job-suite/backend:dev:     },
+@ai-job-suite/backend:dev:     stale: false,
+@ai-job-suite/backend:dev:     compatible: true,
+@ai-job-suite/backend:dev:     heartbeatFrequencyMS: 10000,
+@ai-job-suite/backend:dev:     localThresholdMS: 15,
+@ai-job-suite/backend:dev:     setName: 'atlas-147vh0-shard-0',
+@ai-job-suite/backend:dev:     maxElectionId: new ObjectId('7fffffff00000000000000ae'),
+@ai-job-suite/backend:dev:     maxSetVersion: 40,
+@ai-job-suite/backend:dev:     commonWireVersion: 0,
+@ai-job-suite/backend:dev:     logicalSessionTimeoutMinutes: null
+@ai-job-suite/backend:dev:   },
+@ai-job-suite/backend:dev:   code: undefined,
+@ai-job-suite/backend:dev:   [cause]: MongoNetworkError: getaddrinfo ENOTFOUND cluster0-shard-00-00.pmman.mongodb.net
+@ai-job-suite/backend:dev:       at TLSSocket.<anonymous> (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cmap\connect.ts:395:16)
+@ai-job-suite/backend:dev:       at Object.onceWrapper (node:events:623:26)
+@ai-job-suite/backend:dev:       at TLSSocket.emit (node:events:508:28)
+@ai-job-suite/backend:dev:       at emitErrorNT (node:internal/streams/destroy:170:8)
+@ai-job-suite/backend:dev:       at emitErrorCloseNT (node:internal/streams/destroy:129:3)
+@ai-job-suite/backend:dev:       at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+@ai-job-suite/backend:dev:     errorLabelSet: Set(1) { 'ResetPool' },
+@ai-job-suite/backend:dev:     beforeHandshake: false,
+@ai-job-suite/backend:dev:     [cause]: Error: getaddrinfo ENOTFOUND cluster0-shard-00-00.pmman.mongodb.net
+@ai-job-suite/backend:dev:         at GetAddrInfoReqWrap.onlookup [as oncomplete] (node:dns:111:26) {
+@ai-job-suite/backend:dev:       errno: -3008,
+@ai-job-suite/backend:dev:       code: 'ENOTFOUND',
+@ai-job-suite/backend:dev:       syscall: 'getaddrinfo',
+@ai-job-suite/backend:dev:       hostname: 'cluster0-shard-00-00.pmman.mongodb.net'
+@ai-job-suite/backend:dev:     }
+@ai-job-suite/backend:dev:   }
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [ANALYTICS] getDashboardMetrics for user system - 10007ms - FAILED
+@ai-job-suite/backend:dev: Error executing task task_1768743486681_9zjlp6sve: Error: Failed to get dashboard metrics: getaddrinfo ENOTFOUND cluster0-shard-00-00.pmman.mongodb.net
+@ai-job-suite/backend:dev:     at <anonymous> (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\apps\backend\src\services\analyticsService.ts:338:13)
+@ai-job-suite/backend:dev:     at processTicksAndRejections (node:internal/process/task_queues:103:5)
+@ai-job-suite/backend:dev:     at runNextTicks (node:internal/process/task_queues:68:3)
+@ai-job-suite/backend:dev:     at listOnTimeout (node:internal/timers:567:9)
+@ai-job-suite/backend:dev:     at process.processTimers (node:internal/timers:541:7)
+@ai-job-suite/backend:dev:     at async AnalyticsService.withPerformanceTracking (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\apps\backend\src\services\analyticsService.ts:220:22)
+@ai-job-suite/backend:dev:     at async AutomationService.executePerformanceMonitoringTask (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\apps\backend\src\services\automationService.ts:240:30)
+@ai-job-suite/backend:dev:     at async AutomationService.executeTask (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\apps\backend\src\services\automationService.ts:170:9)
+@ai-job-suite/backend:dev:     at async AutomationService.processPendingTasks (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\apps\backend\src\services\automationService.ts:147:9)
+@ai-job-suite/backend:dev: Error getting location analytics: MongoServerSelectionError: getaddrinfo ENOTFOUND cluster0-shard-00-00.pmman.mongodb.net
+@ai-job-suite/backend:dev:     at Topology.selectServer (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\sdam\topology.ts:634:30)
+@ai-job-suite/backend:dev:     at runNextTicks (node:internal/process/task_queues:64:5)
+@ai-job-suite/backend:dev:     at listOnTimeout (node:internal/timers:567:9)
+@ai-job-suite/backend:dev:     at process.processTimers (node:internal/timers:541:7)
+@ai-job-suite/backend:dev:     at async tryOperation (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\operations\execute_operation.ts:201:16)
+@ai-job-suite/backend:dev:     at async executeOperation (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\operations\execute_operation.ts:115:12)
+@ai-job-suite/backend:dev:     at async AggregationCursor._initialize (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cursor\aggregation_cursor.ts:92:22)
+@ai-job-suite/backend:dev:     at async AggregationCursor.cursorInit (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cursor\abstract_cursor.ts:944:21)
+@ai-job-suite/backend:dev:     at async AggregationCursor.fetchBatch (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cursor\abstract_cursor.ts:982:7)
+@ai-job-suite/backend:dev:     at async AggregationCursor.next (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cursor\abstract_cursor.ts:612:9)
+@ai-job-suite/backend:dev:     at async AggregationCursor.[Symbol.asyncIterator] (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cursor\abstract_cursor.ts:506:26)
+@ai-job-suite/backend:dev:     at async AggregationCursor.toArray (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cursor\abstract_cursor.ts:700:22)
+@ai-job-suite/backend:dev:     at async Aggregate.exec (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongoose@8.16.5\node_modules\mongoose\lib\aggregate.js:1104:14)
+@ai-job-suite/backend:dev:     at async AnalyticsService.getLocationAnalytics (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\apps\backend\src\services\analyticsService.ts:819:28)
+@ai-job-suite/backend:dev:     at async Promise.all (index 16) {
+@ai-job-suite/backend:dev:   errorLabelSet: Set(0) {},
+@ai-job-suite/backend:dev:   reason: TopologyDescription {
+@ai-job-suite/backend:dev:     type: 'ReplicaSetNoPrimary',
+@ai-job-suite/backend:dev:     servers: Map(3) {
+@ai-job-suite/backend:dev:       'cluster0-shard-00-00.pmman.mongodb.net:27017' => [ServerDescription],
+@ai-job-suite/backend:dev:       'cluster0-shard-00-01.pmman.mongodb.net:27017' => [ServerDescription],
+@ai-job-suite/backend:dev:       'cluster0-shard-00-02.pmman.mongodb.net:27017' => [ServerDescription]
+@ai-job-suite/backend:dev:     },
+@ai-job-suite/backend:dev:     stale: false,
+@ai-job-suite/backend:dev:     compatible: true,
+@ai-job-suite/backend:dev:     heartbeatFrequencyMS: 10000,
+@ai-job-suite/backend:dev:     localThresholdMS: 15,
+@ai-job-suite/backend:dev:     setName: 'atlas-147vh0-shard-0',
+@ai-job-suite/backend:dev:     maxElectionId: new ObjectId('7fffffff00000000000000ae'),
+@ai-job-suite/backend:dev:     maxSetVersion: 40,
+@ai-job-suite/backend:dev:     commonWireVersion: 0,
+@ai-job-suite/backend:dev:     logicalSessionTimeoutMinutes: null
+@ai-job-suite/backend:dev:   },
+@ai-job-suite/backend:dev:   code: undefined,
+@ai-job-suite/backend:dev:   [cause]: MongoNetworkError: getaddrinfo ENOTFOUND cluster0-shard-00-00.pmman.mongodb.net
+@ai-job-suite/backend:dev:       at TLSSocket.<anonymous> (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cmap\connect.ts:395:16)
+@ai-job-suite/backend:dev:       at Object.onceWrapper (node:events:623:26)
+@ai-job-suite/backend:dev:       at TLSSocket.emit (node:events:508:28)
+@ai-job-suite/backend:dev:       at emitErrorNT (node:internal/streams/destroy:170:8)
+@ai-job-suite/backend:dev:       at emitErrorCloseNT (node:internal/streams/destroy:129:3)
+@ai-job-suite/backend:dev:       at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+@ai-job-suite/backend:dev:     errorLabelSet: Set(1) { 'ResetPool' },
+@ai-job-suite/backend:dev:     beforeHandshake: false,
+@ai-job-suite/backend:dev:     [cause]: Error: getaddrinfo ENOTFOUND cluster0-shard-00-00.pmman.mongodb.net
+@ai-job-suite/backend:dev:         at GetAddrInfoReqWrap.onlookup [as oncomplete] (node:dns:111:26) {
+@ai-job-suite/backend:dev:       errno: -3008,
+@ai-job-suite/backend:dev:       code: 'ENOTFOUND',
+@ai-job-suite/backend:dev:       syscall: 'getaddrinfo',
+@ai-job-suite/backend:dev:       hostname: 'cluster0-shard-00-00.pmman.mongodb.net'
+@ai-job-suite/backend:dev:     }
+@ai-job-suite/backend:dev:   }
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: Error analyzing skills: MongoServerSelectionError: getaddrinfo ENOTFOUND cluster0-shard-00-00.pmman.mongodb.net
+@ai-job-suite/backend:dev:     at Topology.selectServer (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\sdam\topology.ts:634:30)
+@ai-job-suite/backend:dev:     at runNextTicks (node:internal/process/task_queues:64:5)
+@ai-job-suite/backend:dev:     at listOnTimeout (node:internal/timers:567:9)
+@ai-job-suite/backend:dev:     at process.processTimers (node:internal/timers:541:7)
+@ai-job-suite/backend:dev:     at async tryOperation (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\operations\execute_operation.ts:201:16)
+@ai-job-suite/backend:dev:     at async executeOperation (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\operations\execute_operation.ts:115:12)
+@ai-job-suite/backend:dev:     at async FindCursor._initialize (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cursor\find_cursor.ts:92:22)
+@ai-job-suite/backend:dev:     at async FindCursor.cursorInit (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cursor\abstract_cursor.ts:944:21)
+@ai-job-suite/backend:dev:     at async FindCursor.fetchBatch (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cursor\abstract_cursor.ts:982:7)
+@ai-job-suite/backend:dev:     at async FindCursor.next (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cursor\abstract_cursor.ts:612:9)
+@ai-job-suite/backend:dev:     at async FindCursor.[Symbol.asyncIterator] (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cursor\abstract_cursor.ts:506:26)
+@ai-job-suite/backend:dev:     at async FindCursor.toArray (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cursor\abstract_cursor.ts:700:22)
+@ai-job-suite/backend:dev:     at async model.Query._find (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongoose@8.16.5\node_modules\mongoose\lib\query.js:2407:14)
+@ai-job-suite/backend:dev:     at async model.Query.exec (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongoose@8.16.5\node_modules\mongoose\lib\query.js:4604:63)
+@ai-job-suite/backend:dev:     at async Promise.all (index 0)
+@ai-job-suite/backend:dev:     at async AnalyticsService.getSkillsAnalytics (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\apps\backend\src\services\analyticsService.ts:660:47) {
+@ai-job-suite/backend:dev:   errorLabelSet: Set(0) {},
+@ai-job-suite/backend:dev:   reason: TopologyDescription {
+@ai-job-suite/backend:dev:     type: 'ReplicaSetNoPrimary',
+@ai-job-suite/backend:dev:     servers: Map(3) {
+@ai-job-suite/backend:dev:       'cluster0-shard-00-00.pmman.mongodb.net:27017' => [ServerDescription],
+@ai-job-suite/backend:dev:       'cluster0-shard-00-01.pmman.mongodb.net:27017' => [ServerDescription],
+@ai-job-suite/backend:dev:       'cluster0-shard-00-02.pmman.mongodb.net:27017' => [ServerDescription]
+@ai-job-suite/backend:dev:     },
+@ai-job-suite/backend:dev:     stale: false,
+@ai-job-suite/backend:dev:     compatible: true,
+@ai-job-suite/backend:dev:     heartbeatFrequencyMS: 10000,
+@ai-job-suite/backend:dev:     localThresholdMS: 15,
+@ai-job-suite/backend:dev:     setName: 'atlas-147vh0-shard-0',
+@ai-job-suite/backend:dev:     maxElectionId: new ObjectId('7fffffff00000000000000ae'),
+@ai-job-suite/backend:dev:     maxSetVersion: 40,
+@ai-job-suite/backend:dev:     commonWireVersion: 0,
+@ai-job-suite/backend:dev:     logicalSessionTimeoutMinutes: null
+@ai-job-suite/backend:dev:   },
+@ai-job-suite/backend:dev:   code: undefined,
+@ai-job-suite/backend:dev:   [cause]: MongoNetworkError: getaddrinfo ENOTFOUND cluster0-shard-00-00.pmman.mongodb.net
+@ai-job-suite/backend:dev:       at TLSSocket.<anonymous> (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cmap\connect.ts:395:16)
+@ai-job-suite/backend:dev:       at Object.onceWrapper (node:events:623:26)
+@ai-job-suite/backend:dev:       at TLSSocket.emit (node:events:508:28)
+@ai-job-suite/backend:dev:       at emitErrorNT (node:internal/streams/destroy:170:8)
+@ai-job-suite/backend:dev:       at emitErrorCloseNT (node:internal/streams/destroy:129:3)
+@ai-job-suite/backend:dev:       at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+@ai-job-suite/backend:dev:     errorLabelSet: Set(1) { 'ResetPool' },
+@ai-job-suite/backend:dev:     beforeHandshake: false,
+@ai-job-suite/backend:dev:     [cause]: Error: getaddrinfo ENOTFOUND cluster0-shard-00-00.pmman.mongodb.net
+@ai-job-suite/backend:dev:         at GetAddrInfoReqWrap.onlookup [as oncomplete] (node:dns:111:26) {
+@ai-job-suite/backend:dev:       errno: -3008,
+@ai-job-suite/backend:dev:       code: 'ENOTFOUND',
+@ai-job-suite/backend:dev:       syscall: 'getaddrinfo',
+@ai-job-suite/backend:dev:       hostname: 'cluster0-shard-00-00.pmman.mongodb.net'
+@ai-job-suite/backend:dev:     }
+@ai-job-suite/backend:dev:   }
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [ANALYTICS] getDashboardMetrics for user system - 10016ms - FAILED
+@ai-job-suite/backend:dev: Error executing task task_1768743486681_9zjlp6sve: Error: Failed to get dashboard metrics: getaddrinfo ENOTFOUND cluster0-shard-00-00.pmman.mongodb.net
+@ai-job-suite/backend:dev:     at <anonymous> (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\apps\backend\src\services\analyticsService.ts:338:13)
+@ai-job-suite/backend:dev:     at processTicksAndRejections (node:internal/process/task_queues:103:5)
+@ai-job-suite/backend:dev:     at runNextTicks (node:internal/process/task_queues:68:3)
+@ai-job-suite/backend:dev:     at listOnTimeout (node:internal/timers:567:9)
+@ai-job-suite/backend:dev:     at process.processTimers (node:internal/timers:541:7)
+@ai-job-suite/backend:dev:     at async AnalyticsService.withPerformanceTracking (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\apps\backend\src\services\analyticsService.ts:220:22)
+@ai-job-suite/backend:dev:     at async AutomationService.executePerformanceMonitoringTask (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\apps\backend\src\services\automationService.ts:240:30)
+@ai-job-suite/backend:dev:     at async AutomationService.executeTask (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\apps\backend\src\services\automationService.ts:170:9)
+@ai-job-suite/backend:dev:     at async AutomationService.processPendingTasks (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\apps\backend\src\services\automationService.ts:147:9)
+@ai-job-suite/backend:dev: Error getting location analytics: MongoServerSelectionError: getaddrinfo ENOTFOUND cluster0-shard-00-00.pmman.mongodb.net
+@ai-job-suite/backend:dev:     at Topology.selectServer (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\sdam\topology.ts:634:30)
+@ai-job-suite/backend:dev:     at runNextTicks (node:internal/process/task_queues:64:5)
+@ai-job-suite/backend:dev:     at listOnTimeout (node:internal/timers:567:9)
+@ai-job-suite/backend:dev:     at process.processTimers (node:internal/timers:541:7)
+@ai-job-suite/backend:dev:     at async tryOperation (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\operations\execute_operation.ts:201:16)
+@ai-job-suite/backend:dev:     at async executeOperation (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\operations\execute_operation.ts:115:12)
+@ai-job-suite/backend:dev:     at async AggregationCursor._initialize (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cursor\aggregation_cursor.ts:92:22)
+@ai-job-suite/backend:dev:     at async AggregationCursor.cursorInit (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cursor\abstract_cursor.ts:944:21)
+@ai-job-suite/backend:dev:     at async AggregationCursor.fetchBatch (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cursor\abstract_cursor.ts:982:7)
+@ai-job-suite/backend:dev:     at async AggregationCursor.next (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cursor\abstract_cursor.ts:612:9)
+@ai-job-suite/backend:dev:     at async AggregationCursor.[Symbol.asyncIterator] (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cursor\abstract_cursor.ts:506:26)
+@ai-job-suite/backend:dev:     at async AggregationCursor.toArray (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cursor\abstract_cursor.ts:700:22)
+@ai-job-suite/backend:dev:     at async Aggregate.exec (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongoose@8.16.5\node_modules\mongoose\lib\aggregate.js:1104:14)
+@ai-job-suite/backend:dev:     at async AnalyticsService.getLocationAnalytics (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\apps\backend\src\services\analyticsService.ts:819:28)
+@ai-job-suite/backend:dev:     at async Promise.all (index 16) {
+@ai-job-suite/backend:dev:   errorLabelSet: Set(0) {},
+@ai-job-suite/backend:dev:   reason: TopologyDescription {
+@ai-job-suite/backend:dev:     type: 'ReplicaSetNoPrimary',
+@ai-job-suite/backend:dev:     servers: Map(3) {
+@ai-job-suite/backend:dev:       'cluster0-shard-00-00.pmman.mongodb.net:27017' => [ServerDescription],
+@ai-job-suite/backend:dev:       'cluster0-shard-00-01.pmman.mongodb.net:27017' => [ServerDescription],
+@ai-job-suite/backend:dev:       'cluster0-shard-00-02.pmman.mongodb.net:27017' => [ServerDescription]
+@ai-job-suite/backend:dev:     },
+@ai-job-suite/backend:dev:     stale: false,
+@ai-job-suite/backend:dev:     compatible: true,
+@ai-job-suite/backend:dev:     heartbeatFrequencyMS: 10000,
+@ai-job-suite/backend:dev:     localThresholdMS: 15,
+@ai-job-suite/backend:dev:     setName: 'atlas-147vh0-shard-0',
+@ai-job-suite/backend:dev:     maxElectionId: new ObjectId('7fffffff00000000000000ae'),
+@ai-job-suite/backend:dev:     maxSetVersion: 40,
+@ai-job-suite/backend:dev:     commonWireVersion: 0,
+@ai-job-suite/backend:dev:     logicalSessionTimeoutMinutes: null
+@ai-job-suite/backend:dev:   },
+@ai-job-suite/backend:dev:   code: undefined,
+@ai-job-suite/backend:dev:   [cause]: MongoNetworkError: getaddrinfo ENOTFOUND cluster0-shard-00-00.pmman.mongodb.net
+@ai-job-suite/backend:dev:       at TLSSocket.<anonymous> (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cmap\connect.ts:395:16)
+@ai-job-suite/backend:dev:       at Object.onceWrapper (node:events:623:26)
+@ai-job-suite/backend:dev:       at TLSSocket.emit (node:events:508:28)
+@ai-job-suite/backend:dev:       at emitErrorNT (node:internal/streams/destroy:170:8)
+@ai-job-suite/backend:dev:       at emitErrorCloseNT (node:internal/streams/destroy:129:3)
+@ai-job-suite/backend:dev:       at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+@ai-job-suite/backend:dev:     errorLabelSet: Set(1) { 'ResetPool' },
+@ai-job-suite/backend:dev:     beforeHandshake: false,
+@ai-job-suite/backend:dev:     [cause]: Error: getaddrinfo ENOTFOUND cluster0-shard-00-00.pmman.mongodb.net
+@ai-job-suite/backend:dev:         at GetAddrInfoReqWrap.onlookup [as oncomplete] (node:dns:111:26) {
+@ai-job-suite/backend:dev:       errno: -3008,
+@ai-job-suite/backend:dev:       code: 'ENOTFOUND',
+@ai-job-suite/backend:dev:       syscall: 'getaddrinfo',
+@ai-job-suite/backend:dev:       hostname: 'cluster0-shard-00-00.pmman.mongodb.net'
+@ai-job-suite/backend:dev:     }
+@ai-job-suite/backend:dev:   }
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: Error analyzing skills: MongoServerSelectionError: getaddrinfo ENOTFOUND cluster0-shard-00-00.pmman.mongodb.net
+@ai-job-suite/backend:dev:     at Topology.selectServer (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\sdam\topology.ts:634:30)
+@ai-job-suite/backend:dev:     at runNextTicks (node:internal/process/task_queues:64:5)
+@ai-job-suite/backend:dev:     at listOnTimeout (node:internal/timers:567:9)
+@ai-job-suite/backend:dev:     at process.processTimers (node:internal/timers:541:7)
+@ai-job-suite/backend:dev:     at async tryOperation (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\operations\execute_operation.ts:201:16)
+@ai-job-suite/backend:dev:     at async executeOperation (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\operations\execute_operation.ts:115:12)
+@ai-job-suite/backend:dev:     at async FindCursor._initialize (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cursor\find_cursor.ts:92:22)
+@ai-job-suite/backend:dev:     at async FindCursor.cursorInit (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cursor\abstract_cursor.ts:944:21)
+@ai-job-suite/backend:dev:     at async FindCursor.fetchBatch (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cursor\abstract_cursor.ts:982:7)
+@ai-job-suite/backend:dev:     at async FindCursor.next (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cursor\abstract_cursor.ts:612:9)
+@ai-job-suite/backend:dev:     at async FindCursor.[Symbol.asyncIterator] (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cursor\abstract_cursor.ts:506:26)
+@ai-job-suite/backend:dev:     at async FindCursor.toArray (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cursor\abstract_cursor.ts:700:22)
+@ai-job-suite/backend:dev:     at async model.Query._find (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongoose@8.16.5\node_modules\mongoose\lib\query.js:2407:14)
+@ai-job-suite/backend:dev:     at async model.Query.exec (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongoose@8.16.5\node_modules\mongoose\lib\query.js:4604:63)
+@ai-job-suite/backend:dev:     at async Promise.all (index 0)
+@ai-job-suite/backend:dev:     at async AnalyticsService.getSkillsAnalytics (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\apps\backend\src\services\analyticsService.ts:660:47) {
+@ai-job-suite/backend:dev:   errorLabelSet: Set(0) {},
+@ai-job-suite/backend:dev:   reason: TopologyDescription {
+@ai-job-suite/backend:dev:     type: 'ReplicaSetNoPrimary',
+@ai-job-suite/backend:dev:     servers: Map(3) {
+@ai-job-suite/backend:dev:       'cluster0-shard-00-00.pmman.mongodb.net:27017' => [ServerDescription],
+@ai-job-suite/backend:dev:       'cluster0-shard-00-01.pmman.mongodb.net:27017' => [ServerDescription],
+@ai-job-suite/backend:dev:       'cluster0-shard-00-02.pmman.mongodb.net:27017' => [ServerDescription]
+@ai-job-suite/backend:dev:     },
+@ai-job-suite/backend:dev:     stale: false,
+@ai-job-suite/backend:dev:     compatible: true,
+@ai-job-suite/backend:dev:     heartbeatFrequencyMS: 10000,
+@ai-job-suite/backend:dev:     localThresholdMS: 15,
+@ai-job-suite/backend:dev:     setName: 'atlas-147vh0-shard-0',
+@ai-job-suite/backend:dev:     maxElectionId: new ObjectId('7fffffff00000000000000ae'),
+@ai-job-suite/backend:dev:     maxSetVersion: 40,
+@ai-job-suite/backend:dev:     commonWireVersion: 0,
+@ai-job-suite/backend:dev:     logicalSessionTimeoutMinutes: null
+@ai-job-suite/backend:dev:   },
+@ai-job-suite/backend:dev:   code: undefined,
+@ai-job-suite/backend:dev:   [cause]: MongoNetworkError: getaddrinfo ENOTFOUND cluster0-shard-00-00.pmman.mongodb.net
+@ai-job-suite/backend:dev:       at TLSSocket.<anonymous> (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cmap\connect.ts:395:16)
+@ai-job-suite/backend:dev:       at Object.onceWrapper (node:events:623:26)
+@ai-job-suite/backend:dev:       at TLSSocket.emit (node:events:508:28)
+@ai-job-suite/backend:dev:       at emitErrorNT (node:internal/streams/destroy:170:8)
+@ai-job-suite/backend:dev:       at emitErrorCloseNT (node:internal/streams/destroy:129:3)
+@ai-job-suite/backend:dev:       at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+@ai-job-suite/backend:dev:     errorLabelSet: Set(1) { 'ResetPool' },
+@ai-job-suite/backend:dev:     beforeHandshake: false,
+@ai-job-suite/backend:dev:     [cause]: Error: getaddrinfo ENOTFOUND cluster0-shard-00-00.pmman.mongodb.net
+@ai-job-suite/backend:dev:         at GetAddrInfoReqWrap.onlookup [as oncomplete] (node:dns:111:26) {
+@ai-job-suite/backend:dev:       errno: -3008,
+@ai-job-suite/backend:dev:       code: 'ENOTFOUND',
+@ai-job-suite/backend:dev:       syscall: 'getaddrinfo',
+@ai-job-suite/backend:dev:       hostname: 'cluster0-shard-00-00.pmman.mongodb.net'
+@ai-job-suite/backend:dev:     }
+@ai-job-suite/backend:dev:   }
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [ANALYTICS] getDashboardMetrics for user system - 10007ms - FAILED
+@ai-job-suite/backend:dev: Error executing task task_1768743486681_9zjlp6sve: Error: Failed to get dashboard metrics: getaddrinfo ENOTFOUND cluster0-shard-00-00.pmman.mongodb.net
+@ai-job-suite/backend:dev:     at <anonymous> (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\apps\backend\src\services\analyticsService.ts:338:13)
+@ai-job-suite/backend:dev:     at processTicksAndRejections (node:internal/process/task_queues:103:5)
+@ai-job-suite/backend:dev:     at runNextTicks (node:internal/process/task_queues:68:3)
+@ai-job-suite/backend:dev:     at listOnTimeout (node:internal/timers:567:9)
+@ai-job-suite/backend:dev:     at process.processTimers (node:internal/timers:541:7)
+@ai-job-suite/backend:dev:     at async AnalyticsService.withPerformanceTracking (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\apps\backend\src\services\analyticsService.ts:220:22)
+@ai-job-suite/backend:dev:     at async AutomationService.executePerformanceMonitoringTask (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\apps\backend\src\services\automationService.ts:240:30)
+@ai-job-suite/backend:dev:     at async AutomationService.executeTask (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\apps\backend\src\services\automationService.ts:170:9)
+@ai-job-suite/backend:dev:     at async AutomationService.processPendingTasks (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\apps\backend\src\services\automationService.ts:147:9)
+@ai-job-suite/backend:dev: Error getting location analytics: MongoServerSelectionError: getaddrinfo ENOTFOUND cluster0-shard-00-00.pmman.mongodb.net
+@ai-job-suite/backend:dev:     at Topology.selectServer (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\sdam\topology.ts:634:30)
+@ai-job-suite/backend:dev:     at runNextTicks (node:internal/process/task_queues:64:5)
+@ai-job-suite/backend:dev:     at listOnTimeout (node:internal/timers:567:9)
+@ai-job-suite/backend:dev:     at process.processTimers (node:internal/timers:541:7)
+@ai-job-suite/backend:dev:     at async tryOperation (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\operations\execute_operation.ts:201:16)
+@ai-job-suite/backend:dev:     at async executeOperation (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\operations\execute_operation.ts:115:12)
+@ai-job-suite/backend:dev:     at async AggregationCursor._initialize (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cursor\aggregation_cursor.ts:92:22)
+@ai-job-suite/backend:dev:     at async AggregationCursor.cursorInit (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cursor\abstract_cursor.ts:944:21)
+@ai-job-suite/backend:dev:     at async AggregationCursor.fetchBatch (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cursor\abstract_cursor.ts:982:7)
+@ai-job-suite/backend:dev:     at async AggregationCursor.next (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cursor\abstract_cursor.ts:612:9)
+@ai-job-suite/backend:dev:     at async AggregationCursor.[Symbol.asyncIterator] (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cursor\abstract_cursor.ts:506:26)
+@ai-job-suite/backend:dev:     at async AggregationCursor.toArray (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cursor\abstract_cursor.ts:700:22)
+@ai-job-suite/backend:dev:     at async Aggregate.exec (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongoose@8.16.5\node_modules\mongoose\lib\aggregate.js:1104:14)
+@ai-job-suite/backend:dev:     at async AnalyticsService.getLocationAnalytics (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\apps\backend\src\services\analyticsService.ts:819:28)
+@ai-job-suite/backend:dev:     at async Promise.all (index 16) {
+@ai-job-suite/backend:dev:   errorLabelSet: Set(0) {},
+@ai-job-suite/backend:dev:   reason: TopologyDescription {
+@ai-job-suite/backend:dev:     type: 'ReplicaSetNoPrimary',
+@ai-job-suite/backend:dev:     servers: Map(3) {
+@ai-job-suite/backend:dev:       'cluster0-shard-00-00.pmman.mongodb.net:27017' => [ServerDescription],
+@ai-job-suite/backend:dev:       'cluster0-shard-00-01.pmman.mongodb.net:27017' => [ServerDescription],
+@ai-job-suite/backend:dev:       'cluster0-shard-00-02.pmman.mongodb.net:27017' => [ServerDescription]
+@ai-job-suite/backend:dev:     },
+@ai-job-suite/backend:dev:     stale: false,
+@ai-job-suite/backend:dev:     compatible: true,
+@ai-job-suite/backend:dev:     heartbeatFrequencyMS: 10000,
+@ai-job-suite/backend:dev:     localThresholdMS: 15,
+@ai-job-suite/backend:dev:     setName: 'atlas-147vh0-shard-0',
+@ai-job-suite/backend:dev:     maxElectionId: new ObjectId('7fffffff00000000000000ae'),
+@ai-job-suite/backend:dev:     maxSetVersion: 40,
+@ai-job-suite/backend:dev:     commonWireVersion: 0,
+@ai-job-suite/backend:dev:     logicalSessionTimeoutMinutes: null
+@ai-job-suite/backend:dev:   },
+@ai-job-suite/backend:dev:   code: undefined,
+@ai-job-suite/backend:dev:   [cause]: MongoNetworkError: getaddrinfo ENOTFOUND cluster0-shard-00-00.pmman.mongodb.net
+@ai-job-suite/backend:dev:       at TLSSocket.<anonymous> (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cmap\connect.ts:395:16)
+@ai-job-suite/backend:dev:       at Object.onceWrapper (node:events:623:26)
+@ai-job-suite/backend:dev:       at TLSSocket.emit (node:events:508:28)
+@ai-job-suite/backend:dev:       at emitErrorNT (node:internal/streams/destroy:170:8)
+@ai-job-suite/backend:dev:       at emitErrorCloseNT (node:internal/streams/destroy:129:3)
+@ai-job-suite/backend:dev:       at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+@ai-job-suite/backend:dev:     errorLabelSet: Set(1) { 'ResetPool' },
+@ai-job-suite/backend:dev:     beforeHandshake: false,
+@ai-job-suite/backend:dev:     [cause]: Error: getaddrinfo ENOTFOUND cluster0-shard-00-00.pmman.mongodb.net
+@ai-job-suite/backend:dev:         at GetAddrInfoReqWrap.onlookup [as oncomplete] (node:dns:111:26) {
+@ai-job-suite/backend:dev:       errno: -3008,
+@ai-job-suite/backend:dev:       code: 'ENOTFOUND',
+@ai-job-suite/backend:dev:       syscall: 'getaddrinfo',
+@ai-job-suite/backend:dev:       hostname: 'cluster0-shard-00-00.pmman.mongodb.net'
+@ai-job-suite/backend:dev:     }
+@ai-job-suite/backend:dev:   }
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: Error analyzing skills: MongoServerSelectionError: getaddrinfo ENOTFOUND cluster0-shard-00-00.pmman.mongodb.net
+@ai-job-suite/backend:dev:     at Topology.selectServer (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\sdam\topology.ts:634:30)
+@ai-job-suite/backend:dev:     at runNextTicks (node:internal/process/task_queues:64:5)
+@ai-job-suite/backend:dev:     at listOnTimeout (node:internal/timers:567:9)
+@ai-job-suite/backend:dev:     at process.processTimers (node:internal/timers:541:7)
+@ai-job-suite/backend:dev:     at async tryOperation (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\operations\execute_operation.ts:201:16)
+@ai-job-suite/backend:dev:     at async executeOperation (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\operations\execute_operation.ts:115:12)
+@ai-job-suite/backend:dev:     at async FindCursor._initialize (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cursor\find_cursor.ts:92:22)
+@ai-job-suite/backend:dev:     at async FindCursor.cursorInit (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cursor\abstract_cursor.ts:944:21)
+@ai-job-suite/backend:dev:     at async FindCursor.fetchBatch (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cursor\abstract_cursor.ts:982:7)
+@ai-job-suite/backend:dev:     at async FindCursor.next (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cursor\abstract_cursor.ts:612:9)
+@ai-job-suite/backend:dev:     at async FindCursor.[Symbol.asyncIterator] (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cursor\abstract_cursor.ts:506:26)
+@ai-job-suite/backend:dev:     at async FindCursor.toArray (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cursor\abstract_cursor.ts:700:22)
+@ai-job-suite/backend:dev:     at async model.Query._find (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongoose@8.16.5\node_modules\mongoose\lib\query.js:2407:14)
+@ai-job-suite/backend:dev:     at async model.Query.exec (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongoose@8.16.5\node_modules\mongoose\lib\query.js:4604:63)
+@ai-job-suite/backend:dev:     at async Promise.all (index 0)
+@ai-job-suite/backend:dev:     at async AnalyticsService.getSkillsAnalytics (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\apps\backend\src\services\analyticsService.ts:660:47) {
+@ai-job-suite/backend:dev:   errorLabelSet: Set(0) {},
+@ai-job-suite/backend:dev:   reason: TopologyDescription {
+@ai-job-suite/backend:dev:     type: 'ReplicaSetNoPrimary',
+@ai-job-suite/backend:dev:     servers: Map(3) {
+@ai-job-suite/backend:dev:       'cluster0-shard-00-00.pmman.mongodb.net:27017' => [ServerDescription],
+@ai-job-suite/backend:dev:       'cluster0-shard-00-01.pmman.mongodb.net:27017' => [ServerDescription],
+@ai-job-suite/backend:dev:       'cluster0-shard-00-02.pmman.mongodb.net:27017' => [ServerDescription]
+@ai-job-suite/backend:dev:     },
+@ai-job-suite/backend:dev:     stale: false,
+@ai-job-suite/backend:dev:     compatible: true,
+@ai-job-suite/backend:dev:     heartbeatFrequencyMS: 10000,
+@ai-job-suite/backend:dev:     localThresholdMS: 15,
+@ai-job-suite/backend:dev:     setName: 'atlas-147vh0-shard-0',
+@ai-job-suite/backend:dev:     maxElectionId: new ObjectId('7fffffff00000000000000ae'),
+@ai-job-suite/backend:dev:     maxSetVersion: 40,
+@ai-job-suite/backend:dev:     commonWireVersion: 0,
+@ai-job-suite/backend:dev:     logicalSessionTimeoutMinutes: null
+@ai-job-suite/backend:dev:   },
+@ai-job-suite/backend:dev:   code: undefined,
+@ai-job-suite/backend:dev:   [cause]: MongoNetworkError: getaddrinfo ENOTFOUND cluster0-shard-00-00.pmman.mongodb.net
+@ai-job-suite/backend:dev:       at TLSSocket.<anonymous> (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cmap\connect.ts:395:16)
+@ai-job-suite/backend:dev:       at Object.onceWrapper (node:events:623:26)
+@ai-job-suite/backend:dev:       at TLSSocket.emit (node:events:508:28)
+@ai-job-suite/backend:dev:       at emitErrorNT (node:internal/streams/destroy:170:8)
+@ai-job-suite/backend:dev:       at emitErrorCloseNT (node:internal/streams/destroy:129:3)
+@ai-job-suite/backend:dev:       at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+@ai-job-suite/backend:dev:     errorLabelSet: Set(1) { 'ResetPool' },
+@ai-job-suite/backend:dev:     beforeHandshake: false,
+@ai-job-suite/backend:dev:     [cause]: Error: getaddrinfo ENOTFOUND cluster0-shard-00-00.pmman.mongodb.net
+@ai-job-suite/backend:dev:         at GetAddrInfoReqWrap.onlookup [as oncomplete] (node:dns:111:26) {
+@ai-job-suite/backend:dev:       errno: -3008,
+@ai-job-suite/backend:dev:       code: 'ENOTFOUND',
+@ai-job-suite/backend:dev:       syscall: 'getaddrinfo',
+@ai-job-suite/backend:dev:       hostname: 'cluster0-shard-00-00.pmman.mongodb.net'
+@ai-job-suite/backend:dev:     }
+@ai-job-suite/backend:dev:   }
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [ANALYTICS] getDashboardMetrics for user system - 10016ms - FAILED
+@ai-job-suite/backend:dev: Error executing task task_1768743486681_9zjlp6sve: Error: Failed to get dashboard metrics: getaddrinfo ENOTFOUND cluster0-shard-00-00.pmman.mongodb.net
+@ai-job-suite/backend:dev:     at <anonymous> (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\apps\backend\src\services\analyticsService.ts:338:13)
+@ai-job-suite/backend:dev:     at processTicksAndRejections (node:internal/process/task_queues:103:5)
+@ai-job-suite/backend:dev:     at runNextTicks (node:internal/process/task_queues:68:3)
+@ai-job-suite/backend:dev:     at listOnTimeout (node:internal/timers:567:9)
+@ai-job-suite/backend:dev:     at process.processTimers (node:internal/timers:541:7)
+@ai-job-suite/backend:dev:     at async AnalyticsService.withPerformanceTracking (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\apps\backend\src\services\analyticsService.ts:220:22)
+@ai-job-suite/backend:dev:     at async AutomationService.executePerformanceMonitoringTask (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\apps\backend\src\services\automationService.ts:240:30)
+@ai-job-suite/backend:dev:     at async AutomationService.executeTask (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\apps\backend\src\services\automationService.ts:170:9)
+@ai-job-suite/backend:dev:     at async AutomationService.processPendingTasks (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\apps\backend\src\services\automationService.ts:147:9)
+@ai-job-suite/backend:dev: Error getting location analytics: MongoServerSelectionError: getaddrinfo ENOTFOUND cluster0-shard-00-00.pmman.mongodb.net
+@ai-job-suite/backend:dev:     at Topology.selectServer (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\sdam\topology.ts:634:30)
+@ai-job-suite/backend:dev:     at runNextTicks (node:internal/process/task_queues:64:5)
+@ai-job-suite/backend:dev:     at listOnTimeout (node:internal/timers:567:9)
+@ai-job-suite/backend:dev:     at process.processTimers (node:internal/timers:541:7)
+@ai-job-suite/backend:dev:     at async tryOperation (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\operations\execute_operation.ts:201:16)
+@ai-job-suite/backend:dev:     at async executeOperation (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\operations\execute_operation.ts:115:12)
+@ai-job-suite/backend:dev:     at async AggregationCursor._initialize (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cursor\aggregation_cursor.ts:92:22)
+@ai-job-suite/backend:dev:     at async AggregationCursor.cursorInit (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cursor\abstract_cursor.ts:944:21)
+@ai-job-suite/backend:dev:     at async AggregationCursor.fetchBatch (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cursor\abstract_cursor.ts:982:7)
+@ai-job-suite/backend:dev:     at async AggregationCursor.next (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cursor\abstract_cursor.ts:612:9)
+@ai-job-suite/backend:dev:     at async AggregationCursor.[Symbol.asyncIterator] (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cursor\abstract_cursor.ts:506:26)
+@ai-job-suite/backend:dev:     at async AggregationCursor.toArray (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cursor\abstract_cursor.ts:700:22)
+@ai-job-suite/backend:dev:     at async Aggregate.exec (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongoose@8.16.5\node_modules\mongoose\lib\aggregate.js:1104:14)
+@ai-job-suite/backend:dev:     at async AnalyticsService.getLocationAnalytics (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\apps\backend\src\services\analyticsService.ts:819:28)
+@ai-job-suite/backend:dev:     at async Promise.all (index 16) {
+@ai-job-suite/backend:dev:   errorLabelSet: Set(0) {},
+@ai-job-suite/backend:dev:   reason: TopologyDescription {
+@ai-job-suite/backend:dev:     type: 'ReplicaSetNoPrimary',
+@ai-job-suite/backend:dev:     servers: Map(3) {
+@ai-job-suite/backend:dev:       'cluster0-shard-00-00.pmman.mongodb.net:27017' => [ServerDescription],
+@ai-job-suite/backend:dev:       'cluster0-shard-00-01.pmman.mongodb.net:27017' => [ServerDescription],
+@ai-job-suite/backend:dev:       'cluster0-shard-00-02.pmman.mongodb.net:27017' => [ServerDescription]
+@ai-job-suite/backend:dev:     },
+@ai-job-suite/backend:dev:     stale: false,
+@ai-job-suite/backend:dev:     compatible: true,
+@ai-job-suite/backend:dev:     heartbeatFrequencyMS: 10000,
+@ai-job-suite/backend:dev:     localThresholdMS: 15,
+@ai-job-suite/backend:dev:     setName: 'atlas-147vh0-shard-0',
+@ai-job-suite/backend:dev:     maxElectionId: new ObjectId('7fffffff00000000000000ae'),
+@ai-job-suite/backend:dev:     maxSetVersion: 40,
+@ai-job-suite/backend:dev:     commonWireVersion: 0,
+@ai-job-suite/backend:dev:     logicalSessionTimeoutMinutes: null
+@ai-job-suite/backend:dev:   },
+@ai-job-suite/backend:dev:   code: undefined,
+@ai-job-suite/backend:dev:   [cause]: MongoNetworkError: getaddrinfo ENOTFOUND cluster0-shard-00-00.pmman.mongodb.net
+@ai-job-suite/backend:dev:       at TLSSocket.<anonymous> (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cmap\connect.ts:395:16)
+@ai-job-suite/backend:dev:       at Object.onceWrapper (node:events:623:26)
+@ai-job-suite/backend:dev:       at TLSSocket.emit (node:events:508:28)
+@ai-job-suite/backend:dev:       at emitErrorNT (node:internal/streams/destroy:170:8)
+@ai-job-suite/backend:dev:       at emitErrorCloseNT (node:internal/streams/destroy:129:3)
+@ai-job-suite/backend:dev:       at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+@ai-job-suite/backend:dev:     errorLabelSet: Set(1) { 'ResetPool' },
+@ai-job-suite/backend:dev:     beforeHandshake: false,
+@ai-job-suite/backend:dev:     [cause]: Error: getaddrinfo ENOTFOUND cluster0-shard-00-00.pmman.mongodb.net
+@ai-job-suite/backend:dev:         at GetAddrInfoReqWrap.onlookup [as oncomplete] (node:dns:111:26) {
+@ai-job-suite/backend:dev:       errno: -3008,
+@ai-job-suite/backend:dev:       code: 'ENOTFOUND',
+@ai-job-suite/backend:dev:       syscall: 'getaddrinfo',
+@ai-job-suite/backend:dev:       hostname: 'cluster0-shard-00-00.pmman.mongodb.net'
+@ai-job-suite/backend:dev:     }
+@ai-job-suite/backend:dev:   }
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: Error analyzing skills: MongoServerSelectionError: getaddrinfo ENOTFOUND cluster0-shard-00-00.pmman.mongodb.net
+@ai-job-suite/backend:dev:     at Topology.selectServer (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\sdam\topology.ts:634:30)
+@ai-job-suite/backend:dev:     at runNextTicks (node:internal/process/task_queues:64:5)
+@ai-job-suite/backend:dev:     at listOnTimeout (node:internal/timers:567:9)
+@ai-job-suite/backend:dev:     at process.processTimers (node:internal/timers:541:7)
+@ai-job-suite/backend:dev:     at async tryOperation (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\operations\execute_operation.ts:201:16)
+@ai-job-suite/backend:dev:     at async executeOperation (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\operations\execute_operation.ts:115:12)
+@ai-job-suite/backend:dev:     at async FindCursor._initialize (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cursor\find_cursor.ts:92:22)
+@ai-job-suite/backend:dev:     at async FindCursor.cursorInit (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cursor\abstract_cursor.ts:944:21)
+@ai-job-suite/backend:dev:     at async FindCursor.fetchBatch (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cursor\abstract_cursor.ts:982:7)
+@ai-job-suite/backend:dev:     at async FindCursor.next (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cursor\abstract_cursor.ts:612:9)
+@ai-job-suite/backend:dev:     at async FindCursor.[Symbol.asyncIterator] (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cursor\abstract_cursor.ts:506:26)
+@ai-job-suite/backend:dev:     at async FindCursor.toArray (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cursor\abstract_cursor.ts:700:22)
+@ai-job-suite/backend:dev:     at async model.Query._find (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongoose@8.16.5\node_modules\mongoose\lib\query.js:2407:14)
+@ai-job-suite/backend:dev:     at async model.Query.exec (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongoose@8.16.5\node_modules\mongoose\lib\query.js:4604:63)
+@ai-job-suite/backend:dev:     at async Promise.all (index 0)
+@ai-job-suite/backend:dev:     at async AnalyticsService.getSkillsAnalytics (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\apps\backend\src\services\analyticsService.ts:660:47) {
+@ai-job-suite/backend:dev:   errorLabelSet: Set(0) {},
+@ai-job-suite/backend:dev:   reason: TopologyDescription {
+@ai-job-suite/backend:dev:     type: 'ReplicaSetNoPrimary',
+@ai-job-suite/backend:dev:     servers: Map(3) {
+@ai-job-suite/backend:dev:       'cluster0-shard-00-00.pmman.mongodb.net:27017' => [ServerDescription],
+@ai-job-suite/backend:dev:       'cluster0-shard-00-01.pmman.mongodb.net:27017' => [ServerDescription],
+@ai-job-suite/backend:dev:       'cluster0-shard-00-02.pmman.mongodb.net:27017' => [ServerDescription]
+@ai-job-suite/backend:dev:     },
+@ai-job-suite/backend:dev:     stale: false,
+@ai-job-suite/backend:dev:     compatible: true,
+@ai-job-suite/backend:dev:     heartbeatFrequencyMS: 10000,
+@ai-job-suite/backend:dev:     localThresholdMS: 15,
+@ai-job-suite/backend:dev:     setName: 'atlas-147vh0-shard-0',
+@ai-job-suite/backend:dev:     maxElectionId: new ObjectId('7fffffff00000000000000ae'),
+@ai-job-suite/backend:dev:     maxSetVersion: 40,
+@ai-job-suite/backend:dev:     commonWireVersion: 0,
+@ai-job-suite/backend:dev:     logicalSessionTimeoutMinutes: null
+@ai-job-suite/backend:dev:   },
+@ai-job-suite/backend:dev:   code: undefined,
+@ai-job-suite/backend:dev:   [cause]: MongoNetworkError: getaddrinfo ENOTFOUND cluster0-shard-00-00.pmman.mongodb.net
+@ai-job-suite/backend:dev:       at TLSSocket.<anonymous> (C:\Users\Bheki Ngwenya\Documents\Projects\airesumesuite\node_modules\.pnpm\mongodb@6.17.0\node_modules\mongodb\src\cmap\connect.ts:395:16)
+@ai-job-suite/backend:dev:       at Object.onceWrapper (node:events:623:26)
+@ai-job-suite/backend:dev:       at TLSSocket.emit (node:events:508:28)
+@ai-job-suite/backend:dev:       at emitErrorNT (node:internal/streams/destroy:170:8)
+@ai-job-suite/backend:dev:       at emitErrorCloseNT (node:internal/streams/destroy:129:3)
+@ai-job-suite/backend:dev:       at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+@ai-job-suite/backend:dev:     errorLabelSet: Set(1) { 'ResetPool' },
+@ai-job-suite/backend:dev:     beforeHandshake: false,
+@ai-job-suite/backend:dev:     [cause]: Error: getaddrinfo ENOTFOUND cluster0-shard-00-00.pmman.mongodb.net
+@ai-job-suite/backend:dev:         at GetAddrInfoReqWrap.onlookup [as oncomplete] (node:dns:111:26) {
+@ai-job-suite/backend:dev:       errno: -3008,
+@ai-job-suite/backend:dev:       code: 'ENOTFOUND',
+@ai-job-suite/backend:dev:       syscall: 'getaddrinfo',
+@ai-job-suite/backend:dev:       hostname: 'cluster0-shard-00-00.pmman.mongodb.net'
+@ai-job-suite/backend:dev:     }
+@ai-job-suite/backend:dev:   }
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [ANALYTICS] getDashboardMetrics for user system - 9467ms - SUCCESS
+@ai-job-suite/backend:dev: Performance alert triggered: system_health {
+@ai-job-suite/backend:dev:   score: 65,
+@ai-job-suite/backend:dev:   issues: [ 'Low application success rate', 'Low user retention rate' ]
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: Performance alert triggered: user_engagement {
+@ai-job-suite/backend:dev:   score: 50,
+@ai-job-suite/backend:dev:   metrics: { activeUsersRatio: 0, applicationActivity: 0, newUsersGrowth: 0 }
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: Task task_1768743486681_9zjlp6sve executed successfully
+@ai-job-suite/backend:dev: 🌐 CORS Request from origin: http://localhost:5173
+@ai-job-suite/backend:dev: ✅ CORS: Origin allowed from whitelist
+@ai-job-suite/backend:dev: 📥 GET /api/v1/notifications from http://localhost:5173
+@ai-job-suite/backend:dev: 📋 Headers: {
+@ai-job-suite/backend:dev:   'Content-Type': undefined,
+@ai-job-suite/backend:dev:   Authorization: '[PRESENT]',
+@ai-job-suite/backend:dev:   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0...'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: 🔓 [AUTH] JWT Verification failed: {
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T14:43:50.886Z Incoming request {
+@ai-job-suite/backend:dev:   message: 'jwt expired',
+@ai-job-suite/backend:dev:   requestId: 'req_1768747430885_zaz30mbij',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   name: 'TokenExpiredError',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0',
+@ai-job-suite/backend:dev:   ipAddress: '::ffff:127.0.0.1',
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T14:43:50.886Z'
+@ai-job-suite/backend:dev:   expiredAt: 2026-01-18T13:57:26.000Z
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T14:43:50.889Z Request completed {
+@ai-job-suite/backend:dev:   requestId: 'req_1768747430885_zaz30mbij',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   statusCode: 401,
+@ai-job-suite/backend:dev:   duration: 3,
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T14:43:50.889Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: ::ffff:127.0.0.1 - - [18/Jan/2026:14:43:50 +0000] "GET /api/v1/notifications?limit=100 HTTP/1.1" 401 34 "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0"
+@ai-job-suite/backend:dev: 🌐 CORS Request from origin: http://localhost:5173
+@ai-job-suite/backend:dev: ✅ CORS: Origin allowed from whitelist
+@ai-job-suite/backend:dev: 📥 POST /api/v1/auth/refresh from http://localhost:5173
+@ai-job-suite/backend:dev: 📋 Headers: {
+@ai-job-suite/backend:dev:   'Content-Type': 'application/json',
+@ai-job-suite/backend:dev:   Authorization: '[NOT PRESENT]',
+@ai-job-suite/backend:dev:   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0...'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T14:43:50.947Z Incoming request {
+@ai-job-suite/backend:dev:   requestId: 'req_1768747430947_iv8v1icxq',
+@ai-job-suite/backend:dev:   method: 'POST',
+@ai-job-suite/backend:dev:   url: '/api/v1/auth/refresh',
+@ai-job-suite/backend:dev:   userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0',
+@ai-job-suite/backend:dev:   ipAddress: '::ffff:127.0.0.1',
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T14:43:50.947Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: 🔄 Token refreshed for user ngwenyabheki275@gmail.com. Active tokens: 5
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T14:43:51.110Z Audit event {
+@ai-job-suite/backend:dev:   eventType: 'api_call',
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   action: 'POST_/api/v1/auth/refresh',
+@ai-job-suite/backend:dev:   result: 'success',
+@ai-job-suite/backend:dev:   ipAddress: '::ffff:127.0.0.1',
+@ai-job-suite/backend:dev:   timestamp: 2026-01-18T14:43:51.110Z,
+@ai-job-suite/backend:dev:   requestId: 'req_1768747430947_iv8v1icxq'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T14:43:51.110Z Request completed {
+@ai-job-suite/backend:dev:   requestId: 'req_1768747430947_iv8v1icxq',
+@ai-job-suite/backend:dev:   method: 'POST',
+@ai-job-suite/backend:dev:   url: '/api/v1/auth/refresh',
+@ai-job-suite/backend:dev:   statusCode: 200,
+@ai-job-suite/backend:dev:   duration: 163,
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T14:43:51.110Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: ::ffff:127.0.0.1 - - [18/Jan/2026:14:43:51 +0000] "POST /api/v1/auth/refresh HTTP/1.1" 200 474 "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0"
+@ai-job-suite/backend:dev: 🌐 CORS Request from origin: http://localhost:5173
+@ai-job-suite/backend:dev: ✅ CORS: Origin allowed from whitelist
+@ai-job-suite/backend:dev: 📥 GET /api/v1/notifications from http://localhost:5173
+@ai-job-suite/backend:dev: 📋 Headers: {
+@ai-job-suite/backend:dev:   'Content-Type': undefined,
+@ai-job-suite/backend:dev:   Authorization: '[PRESENT]',
+@ai-job-suite/backend:dev:   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0...'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T14:43:51.141Z Incoming request {
+@ai-job-suite/backend:dev:   requestId: 'req_1768747431141_nmprhccjl',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0',
+@ai-job-suite/backend:dev:   ipAddress: '::ffff:127.0.0.1',
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T14:43:51.141Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T14:43:52.194Z Request completed {
+@ai-job-suite/backend:dev:   requestId: 'req_1768747431141_nmprhccjl',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   statusCode: 200,
+@ai-job-suite/backend:dev:   duration: 1053,
+@ai-job-suite/backend:dev:   userId: '688c7f167c23a744496c44a9',
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T14:43:52.194Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: ::ffff:127.0.0.1 - - [18/Jan/2026:14:43:52 +0000] "GET /api/v1/notifications?limit=100 HTTP/1.1" 200 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0"
+@ai-job-suite/backend:dev: 🌐 CORS Request from origin: http://localhost:5173
+@ai-job-suite/backend:dev: ✅ CORS: Origin allowed from whitelist
+@ai-job-suite/backend:dev: 📥 GET /api/v1/notifications from http://localhost:5173
+@ai-job-suite/backend:dev: 📋 Headers: {
+@ai-job-suite/backend:dev:   'Content-Type': undefined,
+@ai-job-suite/backend:dev:   Authorization: '[PRESENT]',
+@ai-job-suite/backend:dev:   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0...'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T14:50:44.369Z Incoming request {
+@ai-job-suite/backend:dev:   requestId: 'req_1768747844369_1xfnq0tnu',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0',
+@ai-job-suite/backend:dev:   ipAddress: '::ffff:127.0.0.1',
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T14:50:44.369Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T14:50:45.723Z Request completed {
+@ai-job-suite/backend:dev:   requestId: 'req_1768747844369_1xfnq0tnu',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   statusCode: 304,
+@ai-job-suite/backend:dev:   duration: 1354,
+@ai-job-suite/backend:dev:   userId: '688c7f167c23a744496c44a9',
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T14:50:45.723Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: ::ffff:127.0.0.1 - - [18/Jan/2026:14:50:45 +0000] "GET /api/v1/notifications?limit=100 HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0"
+@ai-job-suite/backend:dev: 🌐 CORS Request from origin: http://localhost:5173
+@ai-job-suite/backend:dev: ✅ CORS: Origin allowed from whitelist
+@ai-job-suite/backend:dev: 📥 GET /api/v1/notifications from http://localhost:5173
+@ai-job-suite/backend:dev: 📋 Headers: {
+@ai-job-suite/backend:dev:   'Content-Type': undefined,
+@ai-job-suite/backend:dev:   Authorization: '[PRESENT]',
+@ai-job-suite/backend:dev:   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0...'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T14:51:15.804Z Incoming request {
+@ai-job-suite/backend:dev:   requestId: 'req_1768747875804_ufs0tu0hi',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0',
+@ai-job-suite/backend:dev:   ipAddress: '::ffff:127.0.0.1',
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T14:51:15.804Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T14:51:16.384Z Request completed {
+@ai-job-suite/backend:dev:   requestId: 'req_1768747875804_ufs0tu0hi',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   statusCode: 304,
+@ai-job-suite/backend:dev:   duration: 580,
+@ai-job-suite/backend:dev:   userId: '688c7f167c23a744496c44a9',
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T14:51:16.384Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: ::ffff:127.0.0.1 - - [18/Jan/2026:14:51:16 +0000] "GET /api/v1/notifications?limit=100 HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0"
+@ai-job-suite/backend:dev: 🌐 CORS Request from origin: http://localhost:5173
+@ai-job-suite/backend:dev: ✅ CORS: Origin allowed from whitelist
+@ai-job-suite/backend:dev: 📥 GET /api/v1/notifications from http://localhost:5173
+@ai-job-suite/backend:dev: 📋 Headers: {
+@ai-job-suite/backend:dev:   'Content-Type': undefined,
+@ai-job-suite/backend:dev:   Authorization: '[PRESENT]',
+@ai-job-suite/backend:dev:   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0...'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T14:51:46.424Z Incoming request {
+@ai-job-suite/backend:dev:   requestId: 'req_1768747906424_rqp1fn5xf',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0',
+@ai-job-suite/backend:dev:   ipAddress: '::ffff:127.0.0.1',
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T14:51:46.424Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T14:51:46.914Z Request completed {
+@ai-job-suite/backend:dev:   requestId: 'req_1768747906424_rqp1fn5xf',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   statusCode: 304,
+@ai-job-suite/backend:dev:   duration: 490,
+@ai-job-suite/backend:dev:   userId: '688c7f167c23a744496c44a9',
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T14:51:46.914Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: ::ffff:127.0.0.1 - - [18/Jan/2026:14:51:46 +0000] "GET /api/v1/notifications?limit=100 HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0"
+@ai-job-suite/backend:dev: 🌐 CORS Request from origin: http://localhost:5173
+@ai-job-suite/backend:dev: ✅ CORS: Origin allowed from whitelist
+@ai-job-suite/backend:dev: 📥 GET /api/v1/notifications from http://localhost:5173
+@ai-job-suite/backend:dev: 📋 Headers: {
+@ai-job-suite/backend:dev:   'Content-Type': undefined,
+@ai-job-suite/backend:dev:   Authorization: '[PRESENT]',
+@ai-job-suite/backend:dev:   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0...'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T14:52:16.958Z Incoming request {
+@ai-job-suite/backend:dev:   requestId: 'req_1768747936958_y8mbxx87i',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0',
+@ai-job-suite/backend:dev:   ipAddress: '::ffff:127.0.0.1',
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T14:52:16.958Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T14:52:17.286Z Request completed {
+@ai-job-suite/backend:dev:   requestId: 'req_1768747936958_y8mbxx87i',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   statusCode: 304,
+@ai-job-suite/backend:dev:   duration: 328,
+@ai-job-suite/backend:dev:   userId: '688c7f167c23a744496c44a9',
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T14:52:17.286Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: ::ffff:127.0.0.1 - - [18/Jan/2026:14:52:17 +0000] "GET /api/v1/notifications?limit=100 HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0"
+@ai-job-suite/backend:dev: 🌐 CORS Request from origin: http://localhost:5173
+@ai-job-suite/backend:dev: ✅ CORS: Origin allowed from whitelist
+@ai-job-suite/backend:dev: 📥 GET /api/v1/notifications from http://localhost:5173
+@ai-job-suite/backend:dev: 📋 Headers: {
+@ai-job-suite/backend:dev:   'Content-Type': undefined,
+@ai-job-suite/backend:dev:   Authorization: '[PRESENT]',
+@ai-job-suite/backend:dev:   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0...'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T14:52:47.330Z Incoming request {
+@ai-job-suite/backend:dev:   requestId: 'req_1768747967330_6rl5gov8o',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0',
+@ai-job-suite/backend:dev:   ipAddress: '::ffff:127.0.0.1',
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T14:52:47.330Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T14:52:47.768Z Request completed {
+@ai-job-suite/backend:dev:   requestId: 'req_1768747967330_6rl5gov8o',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   statusCode: 304,
+@ai-job-suite/backend:dev:   duration: 438,
+@ai-job-suite/backend:dev:   userId: '688c7f167c23a744496c44a9',
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T14:52:47.768Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: ::ffff:127.0.0.1 - - [18/Jan/2026:14:52:47 +0000] "GET /api/v1/notifications?limit=100 HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0"
+@ai-job-suite/backend:dev: 🌐 CORS Request from origin: http://localhost:5173
+@ai-job-suite/backend:dev: ✅ CORS: Origin allowed from whitelist
+@ai-job-suite/backend:dev: 📥 GET /api/v1/notifications from http://localhost:5173
+@ai-job-suite/backend:dev: 📋 Headers: {
+@ai-job-suite/backend:dev:   'Content-Type': undefined,
+@ai-job-suite/backend:dev:   Authorization: '[PRESENT]',
+@ai-job-suite/backend:dev:   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0...'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T14:53:17.825Z Incoming request {
+@ai-job-suite/backend:dev:   requestId: 'req_1768747997825_v3w604zaj',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0',
+@ai-job-suite/backend:dev:   ipAddress: '::ffff:127.0.0.1',
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T14:53:17.825Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T14:53:18.078Z Request completed {
+@ai-job-suite/backend:dev:   requestId: 'req_1768747997825_v3w604zaj',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   statusCode: 304,
+@ai-job-suite/backend:dev:   duration: 253,
+@ai-job-suite/backend:dev:   userId: '688c7f167c23a744496c44a9',
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T14:53:18.078Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: ::ffff:127.0.0.1 - - [18/Jan/2026:14:53:18 +0000] "GET /api/v1/notifications?limit=100 HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0"
+@ai-job-suite/backend:dev: 🌐 CORS Request from origin: http://localhost:5173
+@ai-job-suite/backend:dev: ✅ CORS: Origin allowed from whitelist
+@ai-job-suite/backend:dev: 📥 GET /api/v1/notifications from http://localhost:5173
+@ai-job-suite/backend:dev: 📋 Headers: {
+@ai-job-suite/backend:dev:   'Content-Type': undefined,
+@ai-job-suite/backend:dev:   Authorization: '[PRESENT]',
+@ai-job-suite/backend:dev:   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0...'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T14:53:48.169Z Incoming request {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748028169_0my5xedll',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0',
+@ai-job-suite/backend:dev:   ipAddress: '::ffff:127.0.0.1',
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T14:53:48.169Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T14:53:48.601Z Request completed {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748028169_0my5xedll',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   statusCode: 304,
+@ai-job-suite/backend:dev:   duration: 432,
+@ai-job-suite/backend:dev:   userId: '688c7f167c23a744496c44a9',
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T14:53:48.601Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: ::ffff:127.0.0.1 - - [18/Jan/2026:14:53:48 +0000] "GET /api/v1/notifications?limit=100 HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0"
+@ai-job-suite/backend:dev: 🌐 CORS Request from origin: http://localhost:5173
+@ai-job-suite/backend:dev: ✅ CORS: Origin allowed from whitelist
+@ai-job-suite/backend:dev: 📥 GET /api/v1/notifications from http://localhost:5173
+@ai-job-suite/backend:dev: 📋 Headers: {
+@ai-job-suite/backend:dev:   'Content-Type': undefined,
+@ai-job-suite/backend:dev:   Authorization: '[PRESENT]',
+@ai-job-suite/backend:dev:   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0...'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T14:54:18.646Z Incoming request {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748058646_9v6kpdzbk',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0',
+@ai-job-suite/backend:dev:   ipAddress: '::ffff:127.0.0.1',
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T14:54:18.646Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T14:54:19.061Z Request completed {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748058646_9v6kpdzbk',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   statusCode: 304,
+@ai-job-suite/backend:dev:   duration: 415,
+@ai-job-suite/backend:dev:   userId: '688c7f167c23a744496c44a9',
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T14:54:19.061Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: ::ffff:127.0.0.1 - - [18/Jan/2026:14:54:19 +0000] "GET /api/v1/notifications?limit=100 HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0"
+@ai-job-suite/backend:dev: 🌐 CORS Request from origin: http://localhost:5173
+@ai-job-suite/backend:dev: ✅ CORS: Origin allowed from whitelist
+@ai-job-suite/backend:dev: 📥 GET /api/v1/notifications from http://localhost:5173
+@ai-job-suite/backend:dev: 📋 Headers: {
+@ai-job-suite/backend:dev:   'Content-Type': undefined,
+@ai-job-suite/backend:dev:   Authorization: '[PRESENT]',
+@ai-job-suite/backend:dev:   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0...'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T14:54:49.118Z Incoming request {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748089118_yetp61l6g',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0',
+@ai-job-suite/backend:dev:   ipAddress: '::ffff:127.0.0.1',
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T14:54:49.118Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T14:54:49.423Z Request completed {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748089118_yetp61l6g',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   statusCode: 304,
+@ai-job-suite/backend:dev:   duration: 305,
+@ai-job-suite/backend:dev:   userId: '688c7f167c23a744496c44a9',
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T14:54:49.423Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: ::ffff:127.0.0.1 - - [18/Jan/2026:14:54:49 +0000] "GET /api/v1/notifications?limit=100 HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0"
+@ai-job-suite/backend:dev: 🌐 CORS Request from origin: http://localhost:5173
+@ai-job-suite/backend:dev: ✅ CORS: Origin allowed from whitelist
+@ai-job-suite/backend:dev: 📥 GET /api/v1/notifications from http://localhost:5173
+@ai-job-suite/backend:dev: 📋 Headers: {
+@ai-job-suite/backend:dev:   'Content-Type': undefined,
+@ai-job-suite/backend:dev:   Authorization: '[PRESENT]',
+@ai-job-suite/backend:dev:   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0...'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T14:55:19.447Z Incoming request {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748119447_73i36by1p',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0',
+@ai-job-suite/backend:dev:   ipAddress: '::ffff:127.0.0.1',
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T14:55:19.447Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T14:55:20.038Z Request completed {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748119447_73i36by1p',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   statusCode: 304,
+@ai-job-suite/backend:dev:   duration: 591,
+@ai-job-suite/backend:dev:   userId: '688c7f167c23a744496c44a9',
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T14:55:20.038Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: ::ffff:127.0.0.1 - - [18/Jan/2026:14:55:20 +0000] "GET /api/v1/notifications?limit=100 HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0"
+@ai-job-suite/backend:dev: 🌐 CORS Request from origin: http://localhost:5173
+@ai-job-suite/backend:dev: ✅ CORS: Origin allowed from whitelist
+@ai-job-suite/backend:dev: 📥 GET /api/v1/notifications from http://localhost:5173
+@ai-job-suite/backend:dev: 📋 Headers: {
+@ai-job-suite/backend:dev:   'Content-Type': undefined,
+@ai-job-suite/backend:dev:   Authorization: '[PRESENT]',
+@ai-job-suite/backend:dev:   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0...'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T14:55:50.086Z Incoming request {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748150086_9hgctg3uh',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0',
+@ai-job-suite/backend:dev:   ipAddress: '::ffff:127.0.0.1',
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T14:55:50.086Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T14:55:50.591Z Request completed {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748150086_9hgctg3uh',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   statusCode: 304,
+@ai-job-suite/backend:dev:   duration: 505,
+@ai-job-suite/backend:dev:   userId: '688c7f167c23a744496c44a9',
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T14:55:50.591Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: ::ffff:127.0.0.1 - - [18/Jan/2026:14:55:50 +0000] "GET /api/v1/notifications?limit=100 HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0"
+@ai-job-suite/backend:dev: 🌐 CORS Request from origin: http://localhost:5173
+@ai-job-suite/backend:dev: ✅ CORS: Origin allowed from whitelist
+@ai-job-suite/backend:dev: 📥 GET /api/v1/notifications from http://localhost:5173
+@ai-job-suite/backend:dev: 📋 Headers: {
+@ai-job-suite/backend:dev:   'Content-Type': undefined,
+@ai-job-suite/backend:dev:   Authorization: '[PRESENT]',
+@ai-job-suite/backend:dev:   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0...'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T14:56:20.644Z Incoming request {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748180644_vhklpm1n2',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0',
+@ai-job-suite/backend:dev:   ipAddress: '::ffff:127.0.0.1',
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T14:56:20.644Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T14:56:20.966Z Request completed {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748180644_vhklpm1n2',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   statusCode: 304,
+@ai-job-suite/backend:dev:   duration: 322,
+@ai-job-suite/backend:dev:   userId: '688c7f167c23a744496c44a9',
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T14:56:20.966Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: ::ffff:127.0.0.1 - - [18/Jan/2026:14:56:20 +0000] "GET /api/v1/notifications?limit=100 HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0"
+@ai-job-suite/backend:dev: 🌐 CORS Request from origin: http://localhost:5173
+@ai-job-suite/backend:dev: ✅ CORS: Origin allowed from whitelist
+@ai-job-suite/backend:dev: 📥 GET /api/v1/notifications from http://localhost:5173
+@ai-job-suite/backend:dev: 📋 Headers: {
+@ai-job-suite/backend:dev:   'Content-Type': undefined,
+@ai-job-suite/backend:dev:   Authorization: '[PRESENT]',
+@ai-job-suite/backend:dev:   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0...'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T14:56:51.027Z Incoming request {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748211027_8cxilzckc',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0',
+@ai-job-suite/backend:dev:   ipAddress: '::ffff:127.0.0.1',
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T14:56:51.027Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T14:56:51.775Z Request completed {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748211027_8cxilzckc',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   statusCode: 304,
+@ai-job-suite/backend:dev:   duration: 748,
+@ai-job-suite/backend:dev:   userId: '688c7f167c23a744496c44a9',
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T14:56:51.775Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: ::ffff:127.0.0.1 - - [18/Jan/2026:14:56:51 +0000] "GET /api/v1/notifications?limit=100 HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0"
+@ai-job-suite/backend:dev: 🌐 CORS Request from origin: http://localhost:5173
+@ai-job-suite/backend:dev: ✅ CORS: Origin allowed from whitelist
+@ai-job-suite/backend:dev: 📥 GET /api/v1/notifications from http://localhost:5173
+@ai-job-suite/backend:dev: 📋 Headers: {
+@ai-job-suite/backend:dev:   'Content-Type': undefined,
+@ai-job-suite/backend:dev:   Authorization: '[PRESENT]',
+@ai-job-suite/backend:dev:   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0...'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T14:57:21.864Z Incoming request {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748241864_ioybr0sti',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0',
+@ai-job-suite/backend:dev:   ipAddress: '::ffff:127.0.0.1',
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T14:57:21.864Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T14:57:22.337Z Request completed {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748241864_ioybr0sti',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   statusCode: 304,
+@ai-job-suite/backend:dev:   duration: 473,
+@ai-job-suite/backend:dev:   userId: '688c7f167c23a744496c44a9',
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T14:57:22.337Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: ::ffff:127.0.0.1 - - [18/Jan/2026:14:57:22 +0000] "GET /api/v1/notifications?limit=100 HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0"
+@ai-job-suite/backend:dev: 🌐 CORS Request from origin: http://localhost:5173
+@ai-job-suite/backend:dev: ✅ CORS: Origin allowed from whitelist
+@ai-job-suite/backend:dev: 📥 GET /api/v1/notifications from http://localhost:5173
+@ai-job-suite/backend:dev: 📋 Headers: {
+@ai-job-suite/backend:dev:   'Content-Type': undefined,
+@ai-job-suite/backend:dev:   Authorization: '[PRESENT]',
+@ai-job-suite/backend:dev:   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0...'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T14:57:52.379Z Incoming request {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748272379_yl50ba3xb',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0',
+@ai-job-suite/backend:dev:   ipAddress: '::ffff:127.0.0.1',
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T14:57:52.379Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T14:57:52.879Z Request completed {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748272379_yl50ba3xb',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   statusCode: 304,
+@ai-job-suite/backend:dev:   duration: 500,
+@ai-job-suite/backend:dev:   userId: '688c7f167c23a744496c44a9',
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T14:57:52.879Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: ::ffff:127.0.0.1 - - [18/Jan/2026:14:57:52 +0000] "GET /api/v1/notifications?limit=100 HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0"
+@ai-job-suite/backend:dev: 🌐 CORS Request from origin: http://localhost:5173
+@ai-job-suite/backend:dev: ✅ CORS: Origin allowed from whitelist
+@ai-job-suite/backend:dev: 📥 GET /api/v1/notifications from http://localhost:5173
+@ai-job-suite/backend:dev: 📋 Headers: {
+@ai-job-suite/backend:dev:   'Content-Type': undefined,
+@ai-job-suite/backend:dev:   Authorization: '[PRESENT]',
+@ai-job-suite/backend:dev:   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0...'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T14:58:22.923Z Incoming request {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748302923_om8q0ooaq',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0',
+@ai-job-suite/backend:dev:   ipAddress: '::ffff:127.0.0.1',
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T14:58:22.923Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T14:58:23.314Z Request completed {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748302923_om8q0ooaq',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   statusCode: 304,
+@ai-job-suite/backend:dev:   duration: 391,
+@ai-job-suite/backend:dev:   userId: '688c7f167c23a744496c44a9',
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T14:58:23.314Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: ::ffff:127.0.0.1 - - [18/Jan/2026:14:58:23 +0000] "GET /api/v1/notifications?limit=100 HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0"
+@ai-job-suite/backend:dev: 🌐 CORS Request from origin: http://localhost:5173
+@ai-job-suite/backend:dev: 🔓 [AUTH] JWT Verification failed: {
+@ai-job-suite/backend:dev:   message: 'jwt expired',
+@ai-job-suite/backend:dev:   name: 'TokenExpiredError',
+@ai-job-suite/backend:dev:   expiredAt: 2026-01-18T14:58:51.000Z
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: ✅ CORS: Origin allowed from whitelist
+@ai-job-suite/backend:dev: 📥 GET /api/v1/notifications from http://localhost:5173
+@ai-job-suite/backend:dev: 📋 Headers: {
+@ai-job-suite/backend:dev:   'Content-Type': undefined,
+@ai-job-suite/backend:dev:   Authorization: '[PRESENT]',
+@ai-job-suite/backend:dev:   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0...'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T14:58:53.375Z Incoming request {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748333375_z7siw61aj',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0',
+@ai-job-suite/backend:dev:   ipAddress: '::ffff:127.0.0.1',
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T14:58:53.375Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T14:58:53.385Z Request completed {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748333375_z7siw61aj',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   statusCode: 401,
+@ai-job-suite/backend:dev:   duration: 10,
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T14:58:53.385Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: ::ffff:127.0.0.1 - - [18/Jan/2026:14:58:53 +0000] "GET /api/v1/notifications?limit=100 HTTP/1.1" 401 34 "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0"
+@ai-job-suite/backend:dev: 🌐 CORS Request from origin: http://localhost:5173
+@ai-job-suite/backend:dev: ✅ CORS: Origin allowed from whitelist
+@ai-job-suite/backend:dev: 📥 POST /api/v1/auth/refresh from http://localhost:5173
+@ai-job-suite/backend:dev: 📋 Headers: {
+@ai-job-suite/backend:dev:   'Content-Type': 'application/json',
+@ai-job-suite/backend:dev:   Authorization: '[NOT PRESENT]',
+@ai-job-suite/backend:dev:   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0...'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T14:58:53.420Z Incoming request {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748333420_l26iszuz6',
+@ai-job-suite/backend:dev:   method: 'POST',
+@ai-job-suite/backend:dev:   url: '/api/v1/auth/refresh',
+@ai-job-suite/backend:dev:   userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0',
+@ai-job-suite/backend:dev:   ipAddress: '::ffff:127.0.0.1',
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T14:58:53.420Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: 🔄 Token refreshed for user ngwenyabheki275@gmail.com. Active tokens: 5
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T14:58:53.585Z Audit event {
+@ai-job-suite/backend:dev:   eventType: 'api_call',
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   action: 'POST_/api/v1/auth/refresh',
+@ai-job-suite/backend:dev:   result: 'success',
+@ai-job-suite/backend:dev:   ipAddress: '::ffff:127.0.0.1',
+@ai-job-suite/backend:dev:   timestamp: 2026-01-18T14:58:53.585Z,
+@ai-job-suite/backend:dev:   requestId: 'req_1768748333420_l26iszuz6'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T14:58:53.585Z Request completed {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748333420_l26iszuz6',
+@ai-job-suite/backend:dev:   method: 'POST',
+@ai-job-suite/backend:dev:   url: '/api/v1/auth/refresh',
+@ai-job-suite/backend:dev:   statusCode: 200,
+@ai-job-suite/backend:dev:   duration: 165,
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T14:58:53.585Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: ::ffff:127.0.0.1 - - [18/Jan/2026:14:58:53 +0000] "POST /api/v1/auth/refresh HTTP/1.1" 200 474 "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0"
+@ai-job-suite/backend:dev: 🌐 CORS Request from origin: http://localhost:5173
+@ai-job-suite/backend:dev: ✅ CORS: Origin allowed from whitelist
+@ai-job-suite/backend:dev: 📥 GET /api/v1/notifications from http://localhost:5173
+@ai-job-suite/backend:dev: 📋 Headers: {
+@ai-job-suite/backend:dev:   'Content-Type': undefined,
+@ai-job-suite/backend:dev:   Authorization: '[PRESENT]',
+@ai-job-suite/backend:dev:   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0...'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T14:58:53.611Z Incoming request {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748333611_sn8q4hbyy',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0',
+@ai-job-suite/backend:dev:   ipAddress: '::ffff:127.0.0.1',
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T14:58:53.611Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T14:58:53.961Z Request completed {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748333611_sn8q4hbyy',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   statusCode: 200,
+@ai-job-suite/backend:dev:   duration: 350,
+@ai-job-suite/backend:dev:   userId: '688c7f167c23a744496c44a9',
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T14:58:53.961Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: ::ffff:127.0.0.1 - - [18/Jan/2026:14:58:53 +0000] "GET /api/v1/notifications?limit=100 HTTP/1.1" 200 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0"
+@ai-job-suite/backend:dev: 🌐 CORS Request from origin: http://localhost:5173
+@ai-job-suite/backend:dev: ✅ CORS: Origin allowed from whitelist
+@ai-job-suite/backend:dev: 📥 GET /api/v1/notifications from http://localhost:5173
+@ai-job-suite/backend:dev: 📋 Headers: {
+@ai-job-suite/backend:dev:   'Content-Type': undefined,
+@ai-job-suite/backend:dev:   Authorization: '[PRESENT]',
+@ai-job-suite/backend:dev:   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0...'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T14:59:24.030Z Incoming request {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748364029_83dnsrdau',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0',
+@ai-job-suite/backend:dev:   ipAddress: '::ffff:127.0.0.1',
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T14:59:24.030Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T14:59:24.447Z Request completed {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748364029_83dnsrdau',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   statusCode: 304,
+@ai-job-suite/backend:dev:   duration: 417,
+@ai-job-suite/backend:dev:   userId: '688c7f167c23a744496c44a9',
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T14:59:24.447Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: ::ffff:127.0.0.1 - - [18/Jan/2026:14:59:24 +0000] "GET /api/v1/notifications?limit=100 HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0"
+@ai-job-suite/backend:dev: 🌐 CORS Request from origin: http://localhost:5173
+@ai-job-suite/backend:dev: ✅ CORS: Origin allowed from whitelist
+@ai-job-suite/backend:dev: 📥 GET /api/v1/notifications from http://localhost:5173
+@ai-job-suite/backend:dev: 📋 Headers: {
+@ai-job-suite/backend:dev:   'Content-Type': undefined,
+@ai-job-suite/backend:dev:   Authorization: '[PRESENT]',
+@ai-job-suite/backend:dev:   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0...'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T14:59:54.502Z Incoming request {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748394502_rw03mbzef',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0',
+@ai-job-suite/backend:dev:   ipAddress: '::ffff:127.0.0.1',
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T14:59:54.502Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T14:59:55.267Z Request completed {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748394502_rw03mbzef',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   statusCode: 304,
+@ai-job-suite/backend:dev:   duration: 765,
+@ai-job-suite/backend:dev:   userId: '688c7f167c23a744496c44a9',
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T14:59:55.267Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: ::ffff:127.0.0.1 - - [18/Jan/2026:14:59:55 +0000] "GET /api/v1/notifications?limit=100 HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0"
+@ai-job-suite/backend:dev: 🌐 CORS Request from origin: http://localhost:5173
+@ai-job-suite/backend:dev: ✅ CORS: Origin allowed from whitelist
+@ai-job-suite/backend:dev: 📥 GET /api/v1/notifications from http://localhost:5173
+@ai-job-suite/backend:dev: 📋 Headers: {
+@ai-job-suite/backend:dev:   'Content-Type': undefined,
+@ai-job-suite/backend:dev:   Authorization: '[PRESENT]',
+@ai-job-suite/backend:dev:   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0...'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:00:25.320Z Incoming request {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748425320_oq8wd1az8',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0',
+@ai-job-suite/backend:dev:   ipAddress: '::ffff:127.0.0.1',
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T15:00:25.320Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:00:25.677Z Request completed {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748425320_oq8wd1az8',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   statusCode: 304,
+@ai-job-suite/backend:dev:   duration: 357,
+@ai-job-suite/backend:dev:   userId: '688c7f167c23a744496c44a9',
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T15:00:25.677Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: ::ffff:127.0.0.1 - - [18/Jan/2026:15:00:25 +0000] "GET /api/v1/notifications?limit=100 HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0"
+@ai-job-suite/backend:dev: 🌐 CORS Request from origin: http://localhost:5173
+@ai-job-suite/backend:dev: ✅ CORS: Origin allowed from whitelist
+@ai-job-suite/backend:dev: 📥 GET /api/v1/notifications from http://localhost:5173
+@ai-job-suite/backend:dev: 📋 Headers: {
+@ai-job-suite/backend:dev:   'Content-Type': undefined,
+@ai-job-suite/backend:dev:   Authorization: '[PRESENT]',
+@ai-job-suite/backend:dev:   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0...'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:00:55.721Z Incoming request {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748455721_vfz9l7cb6',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0',
+@ai-job-suite/backend:dev:   ipAddress: '::ffff:127.0.0.1',
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T15:00:55.721Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:00:56.383Z Request completed {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748455721_vfz9l7cb6',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   statusCode: 304,
+@ai-job-suite/backend:dev:   duration: 662,
+@ai-job-suite/backend:dev:   userId: '688c7f167c23a744496c44a9',
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T15:00:56.383Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: ::ffff:127.0.0.1 - - [18/Jan/2026:15:00:56 +0000] "GET /api/v1/notifications?limit=100 HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0"
+@ai-job-suite/backend:dev: 🌐 CORS Request from origin: http://localhost:5173
+@ai-job-suite/backend:dev: ✅ CORS: Origin allowed from whitelist
+@ai-job-suite/backend:dev: 📥 GET /api/v1/notifications from http://localhost:5173
+@ai-job-suite/backend:dev: 📋 Headers: {
+@ai-job-suite/backend:dev:   'Content-Type': undefined,
+@ai-job-suite/backend:dev:   Authorization: '[PRESENT]',
+@ai-job-suite/backend:dev:   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0...'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:01:26.424Z Incoming request {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748486423_zc31cm7cw',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0',
+@ai-job-suite/backend:dev:   ipAddress: '::ffff:127.0.0.1',
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T15:01:26.424Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:01:26.782Z Request completed {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748486423_zc31cm7cw',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   statusCode: 304,
+@ai-job-suite/backend:dev:   duration: 358,
+@ai-job-suite/backend:dev:   userId: '688c7f167c23a744496c44a9',
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T15:01:26.782Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: ::ffff:127.0.0.1 - - [18/Jan/2026:15:01:26 +0000] "GET /api/v1/notifications?limit=100 HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0"
+@ai-job-suite/backend:dev: 🌐 CORS Request from origin: http://localhost:5173
+@ai-job-suite/backend:dev: ✅ CORS: Origin allowed from whitelist
+@ai-job-suite/backend:dev: 📥 GET /api/v1/notifications from http://localhost:5173
+@ai-job-suite/backend:dev: 📋 Headers: {
+@ai-job-suite/backend:dev:   'Content-Type': undefined,
+@ai-job-suite/backend:dev:   Authorization: '[PRESENT]',
+@ai-job-suite/backend:dev:   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0...'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:01:56.817Z Incoming request {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748516817_o0rnrmkpo',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0',
+@ai-job-suite/backend:dev:   ipAddress: '::ffff:127.0.0.1',
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T15:01:56.817Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:01:57.354Z Request completed {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748516817_o0rnrmkpo',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   statusCode: 304,
+@ai-job-suite/backend:dev:   duration: 537,
+@ai-job-suite/backend:dev:   userId: '688c7f167c23a744496c44a9',
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T15:01:57.354Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: ::ffff:127.0.0.1 - - [18/Jan/2026:15:01:57 +0000] "GET /api/v1/notifications?limit=100 HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0"
+@ai-job-suite/backend:dev: 🌐 CORS Request from origin: http://localhost:5173
+@ai-job-suite/backend:dev: ✅ CORS: Origin allowed from whitelist
+@ai-job-suite/backend:dev: 📥 GET /api/v1/notifications from http://localhost:5173
+@ai-job-suite/backend:dev: 📋 Headers: {
+@ai-job-suite/backend:dev:   'Content-Type': undefined,
+@ai-job-suite/backend:dev:   Authorization: '[PRESENT]',
+@ai-job-suite/backend:dev:   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0...'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:02:27.403Z Incoming request {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748547403_xbqrui9r8',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0',
+@ai-job-suite/backend:dev:   ipAddress: '::ffff:127.0.0.1',
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T15:02:27.403Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:02:27.947Z Request completed {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748547403_xbqrui9r8',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   statusCode: 304,
+@ai-job-suite/backend:dev:   duration: 544,
+@ai-job-suite/backend:dev:   userId: '688c7f167c23a744496c44a9',
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T15:02:27.947Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: ::ffff:127.0.0.1 - - [18/Jan/2026:15:02:27 +0000] "GET /api/v1/notifications?limit=100 HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0"
+@ai-job-suite/backend:dev: 🌐 CORS Request from origin: http://localhost:5173
+@ai-job-suite/backend:dev: ✅ CORS: Origin allowed from whitelist
+@ai-job-suite/backend:dev: 📥 GET /api/v1/notifications from http://localhost:5173
+@ai-job-suite/backend:dev: 📋 Headers: {
+@ai-job-suite/backend:dev:   'Content-Type': undefined,
+@ai-job-suite/backend:dev:   Authorization: '[PRESENT]',
+@ai-job-suite/backend:dev:   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0...'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:02:58.014Z Incoming request {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748578014_job6x2wdh',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0',
+@ai-job-suite/backend:dev:   ipAddress: '::ffff:127.0.0.1',
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T15:02:58.014Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:02:58.456Z Request completed {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748578014_job6x2wdh',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   statusCode: 304,
+@ai-job-suite/backend:dev:   duration: 442,
+@ai-job-suite/backend:dev:   userId: '688c7f167c23a744496c44a9',
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T15:02:58.456Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: ::ffff:127.0.0.1 - - [18/Jan/2026:15:02:58 +0000] "GET /api/v1/notifications?limit=100 HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0"
+@ai-job-suite/backend:dev: 🌐 CORS Request from origin: http://localhost:5173
+@ai-job-suite/backend:dev: ✅ CORS: Origin allowed from whitelist
+@ai-job-suite/backend:dev: 📥 GET /api/v1/notifications from http://localhost:5173
+@ai-job-suite/backend:dev: 📋 Headers: {
+@ai-job-suite/backend:dev:   'Content-Type': undefined,
+@ai-job-suite/backend:dev:   Authorization: '[PRESENT]',
+@ai-job-suite/backend:dev:   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0...'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:03:28.514Z Incoming request {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748608514_z5a0f0llc',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0',
+@ai-job-suite/backend:dev:   ipAddress: '::ffff:127.0.0.1',
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T15:03:28.514Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:03:29.078Z Request completed {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748608514_z5a0f0llc',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   statusCode: 304,
+@ai-job-suite/backend:dev:   duration: 564,
+@ai-job-suite/backend:dev:   userId: '688c7f167c23a744496c44a9',
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T15:03:29.078Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: ::ffff:127.0.0.1 - - [18/Jan/2026:15:03:29 +0000] "GET /api/v1/notifications?limit=100 HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0"
+@ai-job-suite/backend:dev: 🌐 CORS Request from origin: http://localhost:5173
+@ai-job-suite/backend:dev: ✅ CORS: Origin allowed from whitelist
+@ai-job-suite/backend:dev: 📥 GET /api/v1/notifications from http://localhost:5173
+@ai-job-suite/backend:dev: 📋 Headers: {
+@ai-job-suite/backend:dev:   'Content-Type': undefined,
+@ai-job-suite/backend:dev:   Authorization: '[PRESENT]',
+@ai-job-suite/backend:dev:   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0...'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:03:59.126Z Incoming request {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748639126_ryd66akwk',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0',
+@ai-job-suite/backend:dev:   ipAddress: '::ffff:127.0.0.1',
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T15:03:59.126Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:03:59.497Z Request completed {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748639126_ryd66akwk',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   statusCode: 304,
+@ai-job-suite/backend:dev:   duration: 371,
+@ai-job-suite/backend:dev:   userId: '688c7f167c23a744496c44a9',
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T15:03:59.497Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: ::ffff:127.0.0.1 - - [18/Jan/2026:15:03:59 +0000] "GET /api/v1/notifications?limit=100 HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0"
+@ai-job-suite/backend:dev: 🌐 CORS Request from origin: http://localhost:5173
+@ai-job-suite/backend:dev: ✅ CORS: Origin allowed from whitelist
+@ai-job-suite/backend:dev: 📥 GET /api/v1/notifications from http://localhost:5173
+@ai-job-suite/backend:dev: 📋 Headers: {
+@ai-job-suite/backend:dev:   'Content-Type': undefined,
+@ai-job-suite/backend:dev:   Authorization: '[PRESENT]',
+@ai-job-suite/backend:dev:   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0...'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:04:29.595Z Incoming request {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748669595_ou78shq3d',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0',
+@ai-job-suite/backend:dev:   ipAddress: '::ffff:127.0.0.1',
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T15:04:29.595Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:04:30.292Z Request completed {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748669595_ou78shq3d',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   statusCode: 304,
+@ai-job-suite/backend:dev:   duration: 697,
+@ai-job-suite/backend:dev:   userId: '688c7f167c23a744496c44a9',
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T15:04:30.292Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: ::ffff:127.0.0.1 - - [18/Jan/2026:15:04:30 +0000] "GET /api/v1/notifications?limit=100 HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0"
+@ai-job-suite/backend:dev: 🌐 CORS Request from origin: http://localhost:5173
+@ai-job-suite/backend:dev: ✅ CORS: Origin allowed from whitelist
+@ai-job-suite/backend:dev: 📥 GET /api/v1/notifications from http://localhost:5173
+@ai-job-suite/backend:dev: 📋 Headers: {
+@ai-job-suite/backend:dev:   'Content-Type': undefined,
+@ai-job-suite/backend:dev:   Authorization: '[PRESENT]',
+@ai-job-suite/backend:dev:   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0...'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:05:00.349Z Incoming request {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748700349_1kr0g96y4',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0',
+@ai-job-suite/backend:dev:   ipAddress: '::ffff:127.0.0.1',
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T15:05:00.349Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:05:00.674Z Request completed {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748700349_1kr0g96y4',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   statusCode: 304,
+@ai-job-suite/backend:dev:   duration: 325,
+@ai-job-suite/backend:dev:   userId: '688c7f167c23a744496c44a9',
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T15:05:00.674Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: ::ffff:127.0.0.1 - - [18/Jan/2026:15:05:00 +0000] "GET /api/v1/notifications?limit=100 HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0"
+@ai-job-suite/backend:dev: 🌐 CORS Request from origin: http://localhost:5173
+@ai-job-suite/backend:dev: ✅ CORS: Origin allowed from whitelist
+@ai-job-suite/backend:dev: 📥 GET /api/v1/notifications from http://localhost:5173
+@ai-job-suite/backend:dev: 📋 Headers: {
+@ai-job-suite/backend:dev:   'Content-Type': undefined,
+@ai-job-suite/backend:dev:   Authorization: '[PRESENT]',
+@ai-job-suite/backend:dev:   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0...'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:05:30.733Z Incoming request {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748730731_bqf8um2qq',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0',
+@ai-job-suite/backend:dev:   ipAddress: '::ffff:127.0.0.1',
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T15:05:30.732Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:05:31.244Z Request completed {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748730731_bqf8um2qq',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   statusCode: 304,
+@ai-job-suite/backend:dev:   duration: 512,
+@ai-job-suite/backend:dev:   userId: '688c7f167c23a744496c44a9',
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T15:05:31.244Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: ::ffff:127.0.0.1 - - [18/Jan/2026:15:05:31 +0000] "GET /api/v1/notifications?limit=100 HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0"
+@ai-job-suite/backend:dev: 🌐 CORS Request from origin: http://localhost:5173
+@ai-job-suite/backend:dev: ✅ CORS: Origin allowed from whitelist
+@ai-job-suite/backend:dev: 📥 GET /api/v1/notifications from http://localhost:5173
+@ai-job-suite/backend:dev: 📋 Headers: {
+@ai-job-suite/backend:dev:   'Content-Type': undefined,
+@ai-job-suite/backend:dev:   Authorization: '[PRESENT]',
+@ai-job-suite/backend:dev:   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0...'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:06:01.298Z Incoming request {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748761298_9c4hjk6ut',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0',
+@ai-job-suite/backend:dev:   ipAddress: '::ffff:127.0.0.1',
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T15:06:01.298Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:06:01.611Z Request completed {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748761298_9c4hjk6ut',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   statusCode: 304,
+@ai-job-suite/backend:dev:   duration: 313,
+@ai-job-suite/backend:dev:   userId: '688c7f167c23a744496c44a9',
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T15:06:01.611Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: ::ffff:127.0.0.1 - - [18/Jan/2026:15:06:01 +0000] "GET /api/v1/notifications?limit=100 HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0"
+@ai-job-suite/backend:dev: 🌐 CORS Request from origin: http://localhost:5173
+@ai-job-suite/backend:dev: ✅ CORS: Origin allowed from whitelist
+@ai-job-suite/backend:dev: 📥 GET /api/v1/notifications from http://localhost:5173
+@ai-job-suite/backend:dev: 📋 Headers: {
+@ai-job-suite/backend:dev:   'Content-Type': undefined,
+@ai-job-suite/backend:dev:   Authorization: '[PRESENT]',
+@ai-job-suite/backend:dev:   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0...'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:06:31.662Z Incoming request {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748791662_rq5h6yc8f',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0',
+@ai-job-suite/backend:dev:   ipAddress: '::ffff:127.0.0.1',
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T15:06:31.662Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:06:32.055Z Request completed {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748791662_rq5h6yc8f',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   statusCode: 304,
+@ai-job-suite/backend:dev:   duration: 393,
+@ai-job-suite/backend:dev:   userId: '688c7f167c23a744496c44a9',
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T15:06:32.055Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: ::ffff:127.0.0.1 - - [18/Jan/2026:15:06:32 +0000] "GET /api/v1/notifications?limit=100 HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0"
+@ai-job-suite/backend:dev: 🌐 CORS Request from origin: http://localhost:5173
+@ai-job-suite/backend:dev: ✅ CORS: Origin allowed from whitelist
+@ai-job-suite/backend:dev: 📥 GET /api/v1/notifications from http://localhost:5173
+@ai-job-suite/backend:dev: 📋 Headers: {
+@ai-job-suite/backend:dev:   'Content-Type': undefined,
+@ai-job-suite/backend:dev:   Authorization: '[PRESENT]',
+@ai-job-suite/backend:dev:   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0...'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:07:02.124Z Incoming request {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748822124_hfg6cvyhr',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0',
+@ai-job-suite/backend:dev:   ipAddress: '::ffff:127.0.0.1',
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T15:07:02.124Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:07:02.434Z Request completed {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748822124_hfg6cvyhr',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   statusCode: 304,
+@ai-job-suite/backend:dev:   duration: 310,
+@ai-job-suite/backend:dev:   userId: '688c7f167c23a744496c44a9',
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T15:07:02.434Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: ::ffff:127.0.0.1 - - [18/Jan/2026:15:07:02 +0000] "GET /api/v1/notifications?limit=100 HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0"
+@ai-job-suite/backend:dev: 🌐 CORS Request from origin: http://localhost:5173
+@ai-job-suite/backend:dev: ✅ CORS: Origin allowed from whitelist
+@ai-job-suite/backend:dev: 📥 GET /api/v1/notifications from http://localhost:5173
+@ai-job-suite/backend:dev: 📋 Headers: {
+@ai-job-suite/backend:dev:   'Content-Type': undefined,
+@ai-job-suite/backend:dev:   Authorization: '[PRESENT]',
+@ai-job-suite/backend:dev:   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0...'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:07:32.478Z Incoming request {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748852478_q2y5r0v8q',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0',
+@ai-job-suite/backend:dev:   ipAddress: '::ffff:127.0.0.1',
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T15:07:32.478Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:07:32.838Z Request completed {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748852478_q2y5r0v8q',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   statusCode: 304,
+@ai-job-suite/backend:dev:   duration: 360,
+@ai-job-suite/backend:dev:   userId: '688c7f167c23a744496c44a9',
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T15:07:32.838Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: ::ffff:127.0.0.1 - - [18/Jan/2026:15:07:32 +0000] "GET /api/v1/notifications?limit=100 HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0"
+@ai-job-suite/backend:dev: 🌐 CORS Request from origin: http://localhost:5173
+@ai-job-suite/backend:dev: ✅ CORS: Origin allowed from whitelist
+@ai-job-suite/backend:dev: 📥 GET /api/v1/notifications from http://localhost:5173
+@ai-job-suite/backend:dev: 📋 Headers: {
+@ai-job-suite/backend:dev:   'Content-Type': undefined,
+@ai-job-suite/backend:dev:   Authorization: '[PRESENT]',
+@ai-job-suite/backend:dev:   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0...'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:08:02.872Z Incoming request {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748882872_l59e2hlll',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0',
+@ai-job-suite/backend:dev:   ipAddress: '::ffff:127.0.0.1',
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T15:08:02.872Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:08:03.179Z Request completed {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748882872_l59e2hlll',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   statusCode: 304,
+@ai-job-suite/backend:dev:   duration: 307,
+@ai-job-suite/backend:dev:   userId: '688c7f167c23a744496c44a9',
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T15:08:03.179Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: ::ffff:127.0.0.1 - - [18/Jan/2026:15:08:03 +0000] "GET /api/v1/notifications?limit=100 HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0"
+@ai-job-suite/backend:dev: 🌐 CORS Request from origin: http://localhost:5173
+@ai-job-suite/backend:dev: ✅ CORS: Origin allowed from whitelist
+@ai-job-suite/backend:dev: 📥 GET /api/v1/notifications from http://localhost:5173
+@ai-job-suite/backend:dev: 📋 Headers: {
+@ai-job-suite/backend:dev:   'Content-Type': undefined,
+@ai-job-suite/backend:dev:   Authorization: '[PRESENT]',
+@ai-job-suite/backend:dev:   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0...'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:08:33.274Z Incoming request {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748913274_eugf31zyy',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0',
+@ai-job-suite/backend:dev:   ipAddress: '::ffff:127.0.0.1',
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T15:08:33.274Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:08:33.612Z Request completed {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748913274_eugf31zyy',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   statusCode: 304,
+@ai-job-suite/backend:dev:   duration: 338,
+@ai-job-suite/backend:dev:   userId: '688c7f167c23a744496c44a9',
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T15:08:33.612Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: ::ffff:127.0.0.1 - - [18/Jan/2026:15:08:33 +0000] "GET /api/v1/notifications?limit=100 HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0"
+@ai-job-suite/backend:dev: 🌐 CORS Request from origin: http://localhost:5173
+@ai-job-suite/backend:dev: ✅ CORS: Origin allowed from whitelist
+@ai-job-suite/backend:dev: 📥 GET /api/v1/notifications from http://localhost:5173
+@ai-job-suite/backend:dev: 📋 Headers: {
+@ai-job-suite/backend:dev:   'Content-Type': undefined,
+@ai-job-suite/backend:dev:   Authorization: '[PRESENT]',
+@ai-job-suite/backend:dev:   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0...'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:09:03.651Z Incoming request {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748943651_0mkvsw75w',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0',
+@ai-job-suite/backend:dev:   ipAddress: '::ffff:127.0.0.1',
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T15:09:03.651Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:09:03.954Z Request completed {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748943651_0mkvsw75w',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   statusCode: 304,
+@ai-job-suite/backend:dev:   duration: 303,
+@ai-job-suite/backend:dev:   userId: '688c7f167c23a744496c44a9',
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T15:09:03.954Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: ::ffff:127.0.0.1 - - [18/Jan/2026:15:09:03 +0000] "GET /api/v1/notifications?limit=100 HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0"
+@ai-job-suite/backend:dev: 🌐 CORS Request from origin: http://localhost:5173
+@ai-job-suite/backend:dev: ✅ CORS: Origin allowed from whitelist
+@ai-job-suite/backend:dev: 📥 GET /api/v1/notifications from http://localhost:5173
+@ai-job-suite/backend:dev: 📋 Headers: {
+@ai-job-suite/backend:dev:   'Content-Type': undefined,
+@ai-job-suite/backend:dev:   Authorization: '[PRESENT]',
+@ai-job-suite/backend:dev:   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0...'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:09:34.004Z Incoming request {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748974004_3zoqx5877',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0',
+@ai-job-suite/backend:dev:   ipAddress: '::ffff:127.0.0.1',
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T15:09:34.004Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:09:34.849Z Request completed {
+@ai-job-suite/backend:dev:   requestId: 'req_1768748974004_3zoqx5877',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   statusCode: 304,
+@ai-job-suite/backend:dev:   duration: 845,
+@ai-job-suite/backend:dev:   userId: '688c7f167c23a744496c44a9',
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T15:09:34.849Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: ::ffff:127.0.0.1 - - [18/Jan/2026:15:09:34 +0000] "GET /api/v1/notifications?limit=100 HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0"
+@ai-job-suite/backend:dev: 🌐 CORS Request from origin: http://localhost:5173
+@ai-job-suite/backend:dev: 🔓 [AUTH] JWT Verification failed: {
+@ai-job-suite/backend:dev:   message: 'jwt expired',
+@ai-job-suite/backend:dev:   name: 'TokenExpiredError',
+@ai-job-suite/backend:dev: ✅ CORS: Origin allowed from whitelist
+@ai-job-suite/backend:dev: 📥 GET /api/v1/notifications from http://localhost:5173
+@ai-job-suite/backend:dev: 📋 Headers: {
+@ai-job-suite/backend:dev:   'Content-Type': undefined,
+@ai-job-suite/backend:dev:   expiredAt: 2026-01-18T15:13:53.000Z
+@ai-job-suite/backend:dev:   Authorization: '[PRESENT]',
+@ai-job-suite/backend:dev:   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0...'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:28:39.469Z Incoming request {
+@ai-job-suite/backend:dev:   requestId: 'req_1768750119469_bnf4jbp8j',
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0',
+@ai-job-suite/backend:dev:   ipAddress: '::ffff:127.0.0.1',
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T15:28:39.469Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:28:39.476Z Request completed {
+@ai-job-suite/backend:dev:   requestId: 'req_1768750119469_bnf4jbp8j',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   statusCode: 401,
+@ai-job-suite/backend:dev:   duration: 7,
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T15:28:39.476Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: ::ffff:127.0.0.1 - - [18/Jan/2026:15:28:39 +0000] "GET /api/v1/notifications?limit=100 HTTP/1.1" 401 34 "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0"
+@ai-job-suite/backend:dev: 🌐 CORS Request from origin: http://localhost:5173
+@ai-job-suite/backend:dev: ✅ CORS: Origin allowed from whitelist
+@ai-job-suite/backend:dev: 📥 POST /api/v1/auth/refresh from http://localhost:5173
+@ai-job-suite/backend:dev: 📋 Headers: {
+@ai-job-suite/backend:dev:   'Content-Type': 'application/json',
+@ai-job-suite/backend:dev:   Authorization: '[NOT PRESENT]',
+@ai-job-suite/backend:dev:   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0...'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:28:39.505Z Incoming request {
+@ai-job-suite/backend:dev:   requestId: 'req_1768750119504_982wf8r5u',
+@ai-job-suite/backend:dev:   method: 'POST',
+@ai-job-suite/backend:dev:   url: '/api/v1/auth/refresh',
+@ai-job-suite/backend:dev:   userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0',
+@ai-job-suite/backend:dev:   ipAddress: '::ffff:127.0.0.1',
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T15:28:39.505Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: 🔄 Token refreshed for user ngwenyabheki275@gmail.com. Active tokens: 5
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:28:40.457Z Audit event {
+@ai-job-suite/backend:dev:   eventType: 'api_call',
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   action: 'POST_/api/v1/auth/refresh',
+@ai-job-suite/backend:dev:   result: 'success',
+@ai-job-suite/backend:dev:   ipAddress: '::ffff:127.0.0.1',
+@ai-job-suite/backend:dev:   timestamp: 2026-01-18T15:28:40.457Z,
+@ai-job-suite/backend:dev:   requestId: 'req_1768750119504_982wf8r5u'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:28:40.457Z Request completed {
+@ai-job-suite/backend:dev:   requestId: 'req_1768750119504_982wf8r5u',
+@ai-job-suite/backend:dev:   method: 'POST',
+@ai-job-suite/backend:dev:   url: '/api/v1/auth/refresh',
+@ai-job-suite/backend:dev:   statusCode: 200,
+@ai-job-suite/backend:dev:   duration: 952,
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T15:28:40.457Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: ::ffff:127.0.0.1 - - [18/Jan/2026:15:28:40 +0000] "POST /api/v1/auth/refresh HTTP/1.1" 200 474 "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0"
+@ai-job-suite/backend:dev: 🌐 CORS Request from origin: http://localhost:5173
+@ai-job-suite/backend:dev: ✅ CORS: Origin allowed from whitelist
+@ai-job-suite/backend:dev: 📥 GET /api/v1/notifications from http://localhost:5173
+@ai-job-suite/backend:dev: 📋 Headers: {
+@ai-job-suite/backend:dev:   'Content-Type': undefined,
+@ai-job-suite/backend:dev:   Authorization: '[PRESENT]',
+@ai-job-suite/backend:dev:   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0...'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:28:40.610Z Incoming request {
+@ai-job-suite/backend:dev:   requestId: 'req_1768750120610_bwfpbab78',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0',
+@ai-job-suite/backend:dev:   ipAddress: '::ffff:127.0.0.1',
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T15:28:40.610Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:28:41.331Z Request completed {
+@ai-job-suite/backend:dev:   requestId: 'req_1768750120610_bwfpbab78',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   statusCode: 200,
+@ai-job-suite/backend:dev:   duration: 721,
+@ai-job-suite/backend:dev:   userId: '688c7f167c23a744496c44a9',
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T15:28:41.331Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: ::ffff:127.0.0.1 - - [18/Jan/2026:15:28:41 +0000] "GET /api/v1/notifications?limit=100 HTTP/1.1" 200 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0"
+@ai-job-suite/backend:dev: 🌐 CORS Request from origin: http://localhost:5173
+@ai-job-suite/backend:dev: ✅ CORS: Origin allowed from whitelist
+@ai-job-suite/backend:dev: 📥 GET /api/v1/resumes/latex-templates from http://localhost:5173
+@ai-job-suite/backend:dev: 📋 Headers: {
+@ai-job-suite/backend:dev:   'Content-Type': undefined,
+@ai-job-suite/backend:dev:   Authorization: '[NOT PRESENT]',
+@ai-job-suite/backend:dev:   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0...'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:28:43.046Z Incoming request {
+@ai-job-suite/backend:dev:   requestId: 'req_1768750123046_pmet1inlh',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/resumes/latex-templates',
+@ai-job-suite/backend:dev:   userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0',
+@ai-job-suite/backend:dev:   ipAddress: '::ffff:127.0.0.1',
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T15:28:43.046Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:28:43.169Z Request completed {
+@ai-job-suite/backend:dev:   requestId: 'req_1768750123046_pmet1inlh',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/resumes/latex-templates',
+@ai-job-suite/backend:dev:   statusCode: 304,
+@ai-job-suite/backend:dev:   duration: 123,
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T15:28:43.169Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: ::ffff:127.0.0.1 - - [18/Jan/2026:15:28:43 +0000] "GET /api/v1/resumes/latex-templates HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0"
+@ai-job-suite/backend:dev: 🌐 CORS Request from origin: http://localhost:5173
+@ai-job-suite/backend:dev: ✅ CORS: Origin allowed from whitelist
+@ai-job-suite/backend:dev: 📥 GET /api/v1/resumes/latex-templates from http://localhost:5173
+@ai-job-suite/backend:dev: 📋 Headers: {
+@ai-job-suite/backend:dev:   'Content-Type': undefined,
+@ai-job-suite/backend:dev:   Authorization: '[NOT PRESENT]',
+@ai-job-suite/backend:dev:   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0...'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:28:43.207Z Incoming request {
+@ai-job-suite/backend:dev:   requestId: 'req_1768750123207_fjo1e3m2t',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/resumes/latex-templates',
+@ai-job-suite/backend:dev:   userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0',
+@ai-job-suite/backend:dev:   ipAddress: '::ffff:127.0.0.1',
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T15:28:43.207Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:28:43.527Z Request completed {
+@ai-job-suite/backend:dev:   requestId: 'req_1768750123207_fjo1e3m2t',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/resumes/latex-templates',
+@ai-job-suite/backend:dev:   statusCode: 304,
+@ai-job-suite/backend:dev:   duration: 320,
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T15:28:43.527Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: ::ffff:127.0.0.1 - - [18/Jan/2026:15:28:43 +0000] "GET /api/v1/resumes/latex-templates HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0"
+@ai-job-suite/backend:dev: 🌐 CORS Request from origin: http://localhost:5173
+@ai-job-suite/backend:dev: ✅ CORS: Origin allowed from whitelist
+@ai-job-suite/backend:dev: 📥 GET /api/v1/resumes/latex-templates from http://localhost:5173
+@ai-job-suite/backend:dev: 📋 Headers: {
+@ai-job-suite/backend:dev:   'Content-Type': undefined,
+@ai-job-suite/backend:dev:   Authorization: '[NOT PRESENT]',
+@ai-job-suite/backend:dev:   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0...'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:28:59.230Z Incoming request {
+@ai-job-suite/backend:dev:   requestId: 'req_1768750139230_2s4zxngec',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/resumes/latex-templates',
+@ai-job-suite/backend:dev:   userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0',
+@ai-job-suite/backend:dev:   ipAddress: '::ffff:127.0.0.1',
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T15:28:59.230Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: 🌐 CORS Request from origin: http://localhost:5173
+@ai-job-suite/backend:dev: ✅ CORS: Origin allowed from whitelist
+@ai-job-suite/backend:dev: 📥 GET /api/v1/resumes/latex-templates from http://localhost:5173
+@ai-job-suite/backend:dev: 📋 Headers: {
+@ai-job-suite/backend:dev:   'Content-Type': undefined,
+@ai-job-suite/backend:dev:   Authorization: '[NOT PRESENT]',
+@ai-job-suite/backend:dev:   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0...'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:28:59.240Z Incoming request {
+@ai-job-suite/backend:dev:   requestId: 'req_1768750139240_e2a1gmrro',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/resumes/latex-templates',
+@ai-job-suite/backend:dev:   userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0',
+@ai-job-suite/backend:dev:   ipAddress: '::ffff:127.0.0.1',
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T15:28:59.240Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:28:59.389Z Request completed {
+@ai-job-suite/backend:dev:   requestId: 'req_1768750139240_e2a1gmrro',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/resumes/latex-templates',
+@ai-job-suite/backend:dev:   statusCode: 200,
+@ai-job-suite/backend:dev:   duration: 149,
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T15:28:59.389Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:28:59.391Z Request completed {
+@ai-job-suite/backend:dev:   requestId: 'req_1768750139230_2s4zxngec',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/resumes/latex-templates',
+@ai-job-suite/backend:dev:   statusCode: 304,
+@ai-job-suite/backend:dev:   duration: 161,
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T15:28:59.391Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: ::ffff:127.0.0.1 - - [18/Jan/2026:15:28:59 +0000] "GET /api/v1/resumes/latex-templates HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0"
+@ai-job-suite/backend:dev: ::ffff:127.0.0.1 - - [18/Jan/2026:15:28:59 +0000] "GET /api/v1/resumes/latex-templates HTTP/1.1" 200 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0"
+@ai-job-suite/backend:dev: 🌐 CORS Request from origin: http://localhost:5173
+@ai-job-suite/backend:dev: ✅ CORS: Origin allowed from whitelist
+@ai-job-suite/backend:dev: 📥 GET /api/v1/notifications from http://localhost:5173
+@ai-job-suite/backend:dev: 📋 Headers: {
+@ai-job-suite/backend:dev:   'Content-Type': undefined,
+@ai-job-suite/backend:dev:   Authorization: '[PRESENT]',
+@ai-job-suite/backend:dev:   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0...'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:29:08.412Z Incoming request {
+@ai-job-suite/backend:dev:   requestId: 'req_1768750148411_7tdzd3b8i',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0',
+@ai-job-suite/backend:dev:   ipAddress: '::ffff:127.0.0.1',
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T15:29:08.411Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:29:09.044Z Request completed {
+@ai-job-suite/backend:dev:   requestId: 'req_1768750148411_7tdzd3b8i',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   statusCode: 304,
+@ai-job-suite/backend:dev:   duration: 633,
+@ai-job-suite/backend:dev:   userId: '688c7f167c23a744496c44a9',
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T15:29:09.044Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: ::ffff:127.0.0.1 - - [18/Jan/2026:15:29:09 +0000] "GET /api/v1/notifications?limit=100 HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0"
+@ai-job-suite/backend:dev: 🌐 CORS Request from origin: http://localhost:5173
+@ai-job-suite/backend:dev: ✅ CORS: Origin allowed from whitelist
+@ai-job-suite/backend:dev: 📥 GET /api/v1/resumes/latex-templates from http://localhost:5173
+@ai-job-suite/backend:dev: 📋 Headers: {
+@ai-job-suite/backend:dev:   'Content-Type': undefined,
+@ai-job-suite/backend:dev:   Authorization: '[NOT PRESENT]',
+@ai-job-suite/backend:dev:   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0...'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:29:12.388Z Incoming request {
+@ai-job-suite/backend:dev:   requestId: 'req_1768750152388_qg4ljewab',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/resumes/latex-templates',
+@ai-job-suite/backend:dev:   userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0',
+@ai-job-suite/backend:dev:   ipAddress: '::ffff:127.0.0.1',
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T15:29:12.388Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:29:12.476Z Request completed {
+@ai-job-suite/backend:dev:   requestId: 'req_1768750152388_qg4ljewab',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/resumes/latex-templates',
+@ai-job-suite/backend:dev:   statusCode: 304,
+@ai-job-suite/backend:dev:   duration: 88,
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T15:29:12.476Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: ::ffff:127.0.0.1 - - [18/Jan/2026:15:29:12 +0000] "GET /api/v1/resumes/latex-templates HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0"
+@ai-job-suite/backend:dev: 🌐 CORS Request from origin: http://localhost:5173
+@ai-job-suite/backend:dev: ✅ CORS: Origin allowed from whitelist
+@ai-job-suite/backend:dev: 📥 GET /api/v1/resumes/latex-templates from http://localhost:5173
+@ai-job-suite/backend:dev: 📋 Headers: {
+@ai-job-suite/backend:dev:   'Content-Type': undefined,
+@ai-job-suite/backend:dev:   Authorization: '[NOT PRESENT]',
+@ai-job-suite/backend:dev:   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0...'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:29:12.494Z Incoming request {
+@ai-job-suite/backend:dev:   requestId: 'req_1768750152494_0wgqkdaqt',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/resumes/latex-templates',
+@ai-job-suite/backend:dev:   userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0',
+@ai-job-suite/backend:dev:   ipAddress: '::ffff:127.0.0.1',
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T15:29:12.494Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:29:12.624Z Request completed {
+@ai-job-suite/backend:dev:   requestId: 'req_1768750152494_0wgqkdaqt',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/resumes/latex-templates',
+@ai-job-suite/backend:dev:   statusCode: 304,
+@ai-job-suite/backend:dev:   duration: 130,
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T15:29:12.624Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: ::ffff:127.0.0.1 - - [18/Jan/2026:15:29:12 +0000] "GET /api/v1/resumes/latex-templates HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0"
+@ai-job-suite/backend:dev: 🌐 CORS Request from origin: http://localhost:5173
+@ai-job-suite/backend:dev: ✅ CORS: Origin allowed from whitelist
+@ai-job-suite/backend:dev: 📥 GET /api/v1/notifications from http://localhost:5173
+@ai-job-suite/backend:dev: 📋 Headers: {
+@ai-job-suite/backend:dev:   'Content-Type': undefined,
+@ai-job-suite/backend:dev:   Authorization: '[PRESENT]',
+@ai-job-suite/backend:dev:   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0...'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:29:39.102Z Incoming request {
+@ai-job-suite/backend:dev:   requestId: 'req_1768750179102_6xpr4hpf9',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0',
+@ai-job-suite/backend:dev:   ipAddress: '::ffff:127.0.0.1',
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T15:29:39.102Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:29:39.947Z Request completed {
+@ai-job-suite/backend:dev:   requestId: 'req_1768750179102_6xpr4hpf9',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   statusCode: 304,
+@ai-job-suite/backend:dev:   duration: 845,
+@ai-job-suite/backend:dev:   userId: '688c7f167c23a744496c44a9',
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T15:29:39.947Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: ::ffff:127.0.0.1 - - [18/Jan/2026:15:29:39 +0000] "GET /api/v1/notifications?limit=100 HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0"
+@ai-job-suite/backend:dev: 🌐 CORS Request from origin: http://localhost:5173
+@ai-job-suite/backend:dev: ✅ CORS: Origin allowed from whitelist
+@ai-job-suite/backend:dev: 📥 GET /api/v1/notifications from http://localhost:5173
+@ai-job-suite/backend:dev: 📋 Headers: {
+@ai-job-suite/backend:dev:   'Content-Type': undefined,
+@ai-job-suite/backend:dev:   Authorization: '[PRESENT]',
+@ai-job-suite/backend:dev:   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0...'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:30:10.024Z Incoming request {
+@ai-job-suite/backend:dev:   requestId: 'req_1768750210024_kj8lhu430',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0',
+@ai-job-suite/backend:dev:   ipAddress: '::ffff:127.0.0.1',
+@ai-job-suite/backend:dev:   userId: undefined,
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T15:30:10.024Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: [INFO] 2026-01-18T15:30:10.544Z Request completed {
+@ai-job-suite/backend:dev:   requestId: 'req_1768750210024_kj8lhu430',
+@ai-job-suite/backend:dev:   method: 'GET',
+@ai-job-suite/backend:dev:   url: '/api/v1/notifications?limit=100',
+@ai-job-suite/backend:dev:   statusCode: 304,
+@ai-job-suite/backend:dev:   duration: 520,
+@ai-job-suite/backend:dev:   userId: '688c7f167c23a744496c44a9',
+@ai-job-suite/backend:dev:   timestamp: '2026-01-18T15:30:10.544Z'
+@ai-job-suite/backend:dev: }
+@ai-job-suite/backend:dev: ::ffff:127.0.0.1 - - [18/Jan/2026:15:30:10 +0000] "GET /api/v1/notifications?limit=100 HTTP/1.1" 304 - "http://localhost:5173/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0"

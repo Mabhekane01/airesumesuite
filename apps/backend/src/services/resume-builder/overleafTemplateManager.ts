@@ -351,6 +351,7 @@ export class OverleafTemplateManager {
           institution: 'University of Technology',
           fieldOfStudy: 'Computer Science',
           location: 'Boston, MA',
+          startDate: 'Sep 2014',
           graduationDate: 'May 2018',
           gpa: '3.8/4.0'
         }

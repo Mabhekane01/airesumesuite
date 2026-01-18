@@ -152,7 +152,6 @@
 \newcommand{\descript}[1]{\textit{#1}}
 \newcommand{\location}[1]{#1}
 \newcommand{\sectionsep}{\vspace{8pt}}
-\newcommand{\topsep}{\vspace{4pt}}
 
 % Define tightemize environment
 \newenvironment{tightemize}
@@ -169,8 +168,8 @@
 %     TITLE NAME
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\namesection{{{NAME}}}{
-\href{mailto:{{EMAIL}}}{{{EMAIL}}} | \href{tel:{{PHONE}}}{{{PHONE}}}
+\namesection{ {{FIRST_NAME}} {{LAST_NAME}} }{
+\href{mailto:{{EMAIL}}}{{EMAIL}} | \href{tel:{{PHONE}}}{{PHONE}}
 }
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -182,41 +181,55 @@
 \begin{minipage}[t]{0.60\textwidth}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%     SUMMARY
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Summary}
+{{PROFESSIONAL_SUMMARY}}
+\sectionsep
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %     EXPERIENCE
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+{{#IF_WORK_EXPERIENCE}}
 \section{Experience}
-{{#EXPERIENCE}}
-\runsubsection{{{COMPANY}}}
-\descript{| {{POSITION}}}
-\location{{{DATES}} | {{LOCATION}}}
-{{#FIRST_EXPERIENCE}}\vspace{\topsep} % Hacky fix for awkward extra vertical space{{/FIRST_EXPERIENCE}}
+{{#WORK_EXPERIENCE}}
+\runsubsection{{{company}}}
+\descript{| {{jobTitle}}}
+\location{{{startDate}} - {{endDate}}{{#if location}} | {{location}}{{/if}}}
 \begin{tightemize}
-{{#BULLETS}}
-\item {{BULLET}}
-{{/BULLETS}}
+{{#responsibilities}}
+\item {{.}}
+{{/responsibilities}}
+{{#achievements}}
+\item \textit{{.}}
+{{/achievements}}
 \end{tightemize}
 \sectionsep
 
-{{/EXPERIENCE}}
+{{/WORK_EXPERIENCE}}
+{{/IF_WORK_EXPERIENCE}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %     PROJECTS
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+{{#IF_PROJECTS}}
 \section{Projects}
 {{#PROJECTS}}
-\runsubsection{{{PROJECT_NAME}}}
-\descript{| {{PROJECT_DESCRIPTION}}}
-\location{{{PROJECT_DATES}} | {{PROJECT_LOCATION}}}
+\runsubsection{{{name}}}
+\descript{| {{description}}}
+\location{{#if url}}\href{{{url}}}{{url}}{{/if}}{{#if startDate}} | {{startDate}}{{#if endDate}} - {{endDate}}{{/if}}{{/if}}
 \begin{tightemize}
-{{#PROJECT_BULLETS}}
-\item {{PROJECT_BULLET}}
-{{/PROJECT_BULLETS}}
+{{#technologies}}
+\item {{.}}
+{{/technologies}}
 \end{tightemize}
 \sectionsep
 
 {{/PROJECTS}}
+{{/IF_PROJECTS}}
 
 \end{minipage}
 \hfill
@@ -226,68 +239,46 @@
 %     EDUCATION
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+{{#IF_EDUCATION}}
 \section{Education}
 
 {{#EDUCATION}}
-\textbf{{{UNIVERSITY}}} \\
-\textit{{{DEGREE}}} \\
-{{#MINOR}}\textit{{{MINOR}}} \\{{/MINOR}}
-\location{{{GRADUATION}} | {{UNIVERSITY_LOCATION}}}
-{{#HONORS}}{{HONORS}} \\{{/HONORS}}
-{{#GPA}}\location{Cum. GPA: {{GPA}}}{{/GPA}}
+\textbf{{{institution}}} \\
+\textit{{{degree}}}{{#if fieldOfStudy}} \\{{fieldOfStudy}}{{/if}}
+\location{{endDate}}{{#if location}} | {{location}}{{/if}}
+{{#if gpa}}\\\location{Cum. GPA: {{gpa}}}{{/if}}
 \sectionsep
 
 {{/EDUCATION}}
+{{/IF_EDUCATION}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %     SKILLS
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+{{#IF_SKILLS}}
 \section{Skills}
-{{#SKILLS_SECTIONS}}
-\textbf{{{SKILLS_CATEGORY}}} \\
-{{#SKILLS_SUBCATEGORIES}}
-\textit{{{SUBCATEGORY_NAME}}:} \\
-{{SUBCATEGORY_SKILLS}} \\
-{{/SKILLS_SUBCATEGORIES}}
+{{#SKILLS}}
+\textbf{{{category}}}: {{name}}{{#if proficiencyLevel}} ({{proficiencyLevel}}){{/if}} \\
+{{/SKILLS}}
 \sectionsep
 
-{{/SKILLS_SECTIONS}}
+{{/IF_SKILLS}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %     COURSEWORK
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+{{#IF_COURSEWORK}}
 \section{Coursework}
-{{#COURSEWORK_SECTIONS}}
-\textbf{{{COURSEWORK_LEVEL}}} \\
-{{#COURSES}}
-{{COURSE_NAME}} {{#TEACHING_ASSISTANT}}\\
-{\footnotesize \textit{\textbf{(Teaching Assistant)}}} {{/TEACHING_ASSISTANT}}\\
-{{/COURSES}}
+{{#EDUCATION}}
+{{#honors}}
+{{.}} \\
+{{/honors}}
+{{/EDUCATION}}
 \sectionsep
 
-{{/COURSEWORK_SECTIONS}}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%     Societies
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\section{Societies}
-{{#SOCIETIES}}
-{{SOCIETY}} \\
-{{/SOCIETIES}}
-\sectionsep
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%     LINKS
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\section{Links}
-{{#LINKS}}
-{{LINK_NAME}}: \href{{{LINK_URL}}}{\textbf{{{LINK_DISPLAY}}}} \\
-{{/LINKS}}
-\sectionsep
+{{/IF_COURSEWORK}}
 
 \end{minipage}
 

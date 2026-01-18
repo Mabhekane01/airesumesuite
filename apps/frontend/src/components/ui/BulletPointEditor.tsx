@@ -119,7 +119,7 @@ export function BulletPointEditor({
                 <div className="w-1.5 h-1.5 bg-brand-blue rounded-full"></div>
               </div>
               
-              <div className="flex-1">
+              <div className="flex-1 min-w-0">
                 {editingIndex === index ? (
                   <div className="space-y-4 bg-white p-6 rounded-2xl border border-brand-blue/30 shadow-sm animate-slide-up-soft">
                     <textarea
@@ -160,7 +160,7 @@ export function BulletPointEditor({
                   </div>
                 ) : (
                   <div
-                    className="cursor-pointer p-2.5 rounded-xl text-sm font-medium text-text-secondary hover:bg-white hover:text-brand-dark hover:shadow-sm transition-all border border-transparent hover:border-surface-200"
+                    className="cursor-pointer p-2.5 rounded-xl text-sm font-medium text-text-secondary hover:bg-white hover:text-brand-dark hover:shadow-sm transition-all border border-transparent hover:border-surface-200 break-words whitespace-pre-wrap"
                     onClick={() => handleStartEditing(index)}
                   >
                     {item || <span className="text-text-muted italic opacity-60">Click to edit parameter...</span>}

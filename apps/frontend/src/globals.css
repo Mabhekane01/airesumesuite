@@ -7,10 +7,7 @@
     color-scheme: light;
   }
   body {
-    @apply bg-background text-text-primary antialiased;
-  }
-  ::selection {
-    @apply bg-brand-blue/30 text-white;
+    @apply bg-background text-text-primary antialiased font-sans;
   }
   h1, h2, h3, h4, h5, h6 {
     @apply font-display tracking-tight text-brand-dark;
@@ -18,140 +15,190 @@
 }
 
 @layer components {
-  /* Resume Cards */
-  .card-resume {
-    @apply bg-white border border-surface-200 rounded-xl transition-all duration-300;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  }
-  .card-resume:hover {
-    @apply -translate-y-0.5;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  }
-
   /* Buttons */
   .btn-primary {
-    @apply inline-flex items-center justify-center rounded-lg bg-brand-blue px-6 py-3 font-semibold text-white transition-all duration-200 hover:bg-blue-600 hover:shadow-lg active:scale-95;
+    @apply inline-flex items-center justify-center rounded-lg bg-brand-blue px-4 py-2 font-medium text-white transition-colors hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-brand-blue/50 disabled:opacity-50 disabled:pointer-events-none;
   }
   .btn-secondary {
-    @apply inline-flex items-center justify-center rounded-lg border border-surface-300 bg-white px-6 py-3 font-semibold text-text-primary transition-all duration-200 hover:bg-surface-50 hover:border-surface-400 active:scale-95;
+    @apply inline-flex items-center justify-center rounded-lg border border-surface-300 bg-white px-4 py-2 font-medium text-text-primary transition-colors hover:bg-surface-50 focus:outline-none focus:ring-2 focus:ring-brand-blue/50 disabled:opacity-50 disabled:pointer-events-none;
   }
-  .btn-dark {
-    @apply inline-flex items-center justify-center rounded-lg bg-brand-dark px-6 py-3 font-semibold text-white transition-all duration-200 hover:bg-slate-800 active:scale-95;
+  
+  /* Cards - Modular Grid Style */
+  .card {
+    @apply bg-white border border-surface-200 rounded-lg shadow-sm;
   }
-
-  /* Dark Buttons */
-  .btn-primary-dark {
-    @apply inline-flex items-center justify-center rounded-lg bg-brand-blue px-6 py-3 font-semibold text-white transition-all duration-200 hover:bg-blue-600 active:scale-95;
-    box-shadow: 0 0 10px -2px rgba(37, 99, 235, 0.3);
-  }
-  .btn-primary-dark:hover {
-    box-shadow: 0 0 20px -5px rgba(37, 99, 235, 0.4);
-  }
-  .btn-secondary-dark {
-    @apply inline-flex items-center justify-center rounded-lg border border-surface-200 bg-surface-50 px-6 py-3 font-semibold text-text-secondary transition-all duration-200 hover:bg-surface-100 hover:text-text-primary active:scale-95;
-  }
-
+  
   /* Inputs */
-  .input-resume {
-    @apply w-full rounded-lg border border-surface-300 bg-white px-4 py-2 text-text-primary transition-all duration-200 focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 outline-none;
-  }
-  .input-field-dark { 
-    @apply input-resume bg-surface-50 border-surface-200 text-text-primary focus:border-brand-blue; 
-  }
-
-  /* Glass Classes */
-  .glass-dark {
-    @apply bg-gray-900/60 backdrop-blur-xl border border-white/10 shadow-lg;
-  }
-  .glass-dark-heavy {
-    @apply bg-gray-900/80 backdrop-blur-2xl border border-white/10 shadow-xl;
-  }
-  .glass-card {
-    @apply bg-white/10 backdrop-blur-lg border border-white/20 shadow-lg;
-  }
-  .glass-card-hover {
-    @apply transition-all duration-300 hover:bg-white/20 hover:border-white/30 hover:scale-[1.02];
-  }
-  .card-dark {
-    @apply bg-surface-50 border border-surface-200 rounded-2xl shadow-sm;
-  }
-  .card-glass-dark {
-    @apply bg-surface-50/80 backdrop-blur-lg border border-surface-200 rounded-2xl shadow-sm;
+  .input,
+  .input-resume,
+  select.input,
+  select.input-resume,
+  input[type="date"].input,
+  input[type="date"].input-resume {
+    @apply block w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm text-text-primary placeholder:text-text-tertiary transition-all duration-200 ease-in-out shadow-sm appearance-none;
+    background-color: white !important;
+    color: #0f172a !important; /* text-text-primary */
   }
 
-  /* Aliases */
-  .glass-morphism { 
-    @apply bg-white border border-surface-200 rounded-xl transition-all duration-300;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  /* Specific fix for Date inputs to ensure the icon and text are visible */
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    @apply cursor-pointer opacity-60 hover:opacity-100 transition-opacity;
+    filter: invert(0.2); /* Adjusts the icon color to match slate-700/800 */
   }
-  .glass-morphism:hover {
-    @apply -translate-y-0.5;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
+  .input:focus,
+  .input-resume:focus {
+    @apply border-brand-blue ring-4 ring-brand-blue/10 outline-none;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1);
   }
-  .glass-card-premium { 
-    @apply bg-white border border-surface-200 rounded-xl transition-all duration-300;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+
+  .input:disabled,
+  .input-resume:disabled {
+    @apply opacity-60 cursor-not-allowed;
+    background-color: #f1f5f9 !important; /* slate-100 */
   }
-  .glass-card-premium:hover {
-    @apply -translate-y-0.5;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
+  /* Dropdown arrow for selects */
+  select.input, select.input-resume {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2364748b' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.75rem center;
+    background-repeat: no-repeat;
+    background-size: 1.25rem;
+    padding-right: 2.5rem;
   }
-  .btn-liquid { 
-    @apply inline-flex items-center justify-center rounded-lg bg-brand-blue px-6 py-3 font-semibold text-white transition-all duration-200 hover:bg-blue-600 hover:shadow-lg active:scale-95;
+
+  /* Dark Field Input (for darker backgrounds) */
+  .input-field-dark {
+    @apply block w-full rounded-md border border-slate-700 bg-slate-800/50 px-4 py-3 text-sm text-white placeholder:text-slate-400 transition-all duration-200 ease-in-out backdrop-blur-sm;
+  }
+  
+  .input-field-dark:focus {
+    @apply border-brand-blue ring-1 ring-brand-blue/50 outline-none bg-slate-800;
   }
 }
 
 @layer utilities {
-  .animate-float {
-    animation: float 5s ease-in-out infinite;
+  .bg-grid-slate {
+    background-image: linear-gradient(to right, #e2e8f0 1px, transparent 1px), linear-gradient(to bottom, #e2e8f0 1px, transparent 1px);
+    background-size: 4rem 4rem;
   }
-  .glow-effect {
-    @apply transition-shadow duration-300;
-    box-shadow: 0 0 10px -2px rgba(37, 99, 235, 0.3);
+  .bg-grid-slate-sm {
+    background-image: linear-gradient(to right, #e2e8f0 1px, transparent 1px), linear-gradient(to bottom, #e2e8f0 1px, transparent 1px);
+    background-size: 2rem 2rem;
   }
-  .glow-effect:hover {
-    box-shadow: 0 0 20px -5px rgba(37, 99, 235, 0.4);
+  :root {
+    --app-border-soft: 15 23 42;
+    --app-border-strong: 15 23 42;
   }
-  .text-gradient-liquid { 
-    @apply text-brand-blue font-bold;
+  .border-surface-100 {
+    border-color: rgb(var(--app-border-soft) / 0.12);
   }
-  .bg-gradient-liquid { 
-    @apply bg-brand-blue;
+  .border-surface-200 {
+    border-color: rgb(var(--app-border-soft) / 0.12);
   }
-  
-  /* Overrides */
-  .bg-gray-900 { 
-    @apply bg-brand-dark;
+  .border-surface-300 {
+    border-color: rgb(var(--app-border-strong) / 0.16);
   }
-  .bg-gray-800 { 
-    @apply bg-surface-50;
+  .border-surface-400 {
+    border-color: rgb(var(--app-border-strong) / 0.2);
   }
-  .text-gray-400 { 
-    @apply text-text-secondary;
+  .bg-surface-100 {
+    background-color: transparent !important;
   }
-  .text-gray-500 { 
-    @apply text-text-tertiary;
+  .bg-white\/95,
+  .bg-white\/90,
+  .bg-white\/80,
+  .bg-white\/70,
+  .bg-white\/60,
+  .bg-white\/50,
+  .bg-white\/40,
+  .bg-white\/30,
+  .bg-white\/20,
+  .bg-white\/10,
+  .bg-white\/5,
+  .bg-surface-50\/95,
+  .bg-surface-50\/90,
+  .bg-surface-50\/80,
+  .bg-surface-50\/70,
+  .bg-surface-50\/60,
+  .bg-surface-50\/50,
+  .bg-surface-50\/40,
+  .bg-surface-50\/30,
+  .bg-surface-50\/20,
+  .bg-surface-50\/10,
+  .bg-surface-50\/5 {
+    background-color: transparent !important;
+  }
+  .bg-brand-blue\/5,
+  .bg-brand-blue\/10,
+  .bg-brand-blue\/20,
+  .bg-brand-blue\/30,
+  .bg-brand-blue\/40,
+  .bg-brand-success\/5,
+  .bg-brand-success\/10,
+  .bg-brand-success\/20,
+  .bg-brand-success\/30,
+  .bg-brand-orange\/5,
+  .bg-brand-orange\/10,
+  .bg-brand-orange\/20,
+  .bg-brand-orange\/30,
+  .bg-brand-purple\/5,
+  .bg-brand-purple\/10,
+  .bg-brand-purple\/20,
+  .bg-brand-purple\/30,
+  .bg-brand-dark\/5,
+  .bg-brand-dark\/10,
+  .bg-brand-dark\/20,
+  .bg-brand-dark\/30,
+  .bg-brand-cyan\/5,
+  .bg-brand-cyan\/10,
+  .bg-brand-cyan\/20,
+  .bg-brand-indigo\/5,
+  .bg-brand-indigo\/10,
+  .bg-brand-indigo\/20,
+  .bg-brand-violet\/5,
+  .bg-brand-violet\/10,
+  .bg-brand-violet\/20,
+  .bg-brand-fuchsia\/5,
+  .bg-brand-fuchsia\/10,
+  .bg-brand-fuchsia\/20 {
+    background-color: transparent !important;
+  }
+  .bg-panel {
+    background-color: rgba(255, 255, 255, 0.92) !important;
+    backdrop-filter: blur(12px);
+  }
+  .rounded-2xl {
+    border-radius: 0.85rem !important;
+  }
+  .rounded-3xl {
+    border-radius: 1rem !important;
+  }
+  .rounded-\[1\.5rem\],
+  .rounded-\[1\.7rem\],
+  .rounded-\[2\.25rem\] {
+    border-radius: 0.95rem !important;
+  }
+  .rounded-\[2rem\],
+  .rounded-\[2\.5rem\],
+  .rounded-\[3rem\],
+  .rounded-\[3\.5rem\],
+  .rounded-\[4rem\] {
+    border-radius: 1rem !important;
   }
 }
 
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-5px); }
-}
-
-/* --- Scrollbar --- */
+/* Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background-color: #f1f5f9;
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background-color: #cbd5e1;
-  border-radius: 9999px;
-  transition: background-color 0.2s;
+  @apply bg-surface-300 rounded-lg;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background-color: #94a3b8;
+  @apply bg-surface-400;
 }

@@ -4,7 +4,7 @@ import path from "path";
 import { v4 as uuidv4 } from "uuid";
 import { promisify } from "util";
 import { aiLatexGenerator, ResumeInput } from "./aiLatexGenerator"; // This is the new, powerful generator
-import { geminiService } from "../ai/gemini";
+import { enterpriseAIService } from "../ai/enterpriseAIService";
 
 // Promisify exec for async/await usage
 const execAsync = promisify(exec);
@@ -57,7 +57,7 @@ class LaTeXCompilationError extends Error {
 
 /**
  * A robust service for compiling LaTeX documents. It orchestrates the AI generator
- * and the compilation process, with fallbacks to ensure a high success rate.
+ * and the compilation process.
  */
 export class LaTeXService {
   private readonly config: Required<LaTeXServiceOptions>;
@@ -316,7 +316,7 @@ export class LaTeXService {
         await execAsync('docker --version');
         console.log('✅ Docker found. Enabling Docker execution mode for LaTeX.');
         this.useDocker = true;
-        // Remove compiler from missing list since we have a fallback
+        // Remove compiler from missing list since Docker will handle compilation
         const index = missing.indexOf(this.config.latexCompiler);
         if (index > -1) missing.splice(index, 1);
         
@@ -555,12 +555,6 @@ export class LaTeXService {
    */
   private async perfectLatexTemplate(latexCode: string): Promise<string> {
     console.log('🤖 Using AI to perfect LaTeX template for compilation...');
-    
-    if (!geminiService || !geminiService.client) {
-      console.log('⚠️ AI service not available, returning original template');
-      return latexCode;
-    }
-
     try {
       const prompt = `You are a professional LaTeX compiler. Your job is to take this potentially broken LaTeX template and return PERFECT, COMPILABLE LaTeX code.
 
@@ -583,8 +577,7 @@ ${latexCode}
 
 Return the COMPLETE, PERFECT LaTeX code that will compile without ANY errors:`;
 
-      // Use the dedicated LaTeX generation method
-      const cleanedText = await geminiService.generateLatex(prompt);
+      const cleanedText = await enterpriseAIService.generateText(prompt, 'latex-generation');
       
       console.log('✅ AI successfully perfected LaTeX template for compilation');
       console.log('🔍 AI-PERFECTED LATEX OUTPUT:');
@@ -815,70 +808,8 @@ Return the COMPLETE, PERFECT LaTeX code that will compile without ANY errors:`;
   }
   
   /**
-   * Apply fallback fixes when validation still fails
-   */
-  private applyFallbackFixes(latexCode: string): string {
-    console.log('🚑 Applying enhanced fallback fixes that preserve custom commands...');
-    
-    // Extract custom commands from the original template
-    const customCommands = [];
-    const lines = latexCode.split('\n');
-    let inMultilineCommand = false;
-    let commandBuffer = '';
-    
-    for (const line of lines) {
-      const trimmedLine = line.trim();
-      
-      // Start of a custom command
-      if (trimmedLine.startsWith('\\newcommand') || trimmedLine.startsWith('\\renewcommand')) {
-        if (trimmedLine.includes('}') && !inMultilineCommand) {
-          // Single line command
-          customCommands.push(line);
-        } else {
-          // Multi-line command
-          inMultilineCommand = true;
-          commandBuffer = line;
-        }
-      } else if (inMultilineCommand) {
-        commandBuffer += '\n' + line;
-        if (trimmedLine.includes('}') && !trimmedLine.startsWith('%')) {
-          // End of multi-line command
-          customCommands.push(commandBuffer);
-          inMultilineCommand = false;
-          commandBuffer = '';
-        }
-      }
-    }
-    
-    // Start with a known-good template structure
-    const fallbackHeader = `\\documentclass[11pt,a4paper]{article}
-\\usepackage[T1]{fontenc}
-\\usepackage[utf8]{inputenc}
-\\usepackage{lmodern}
-\\usepackage{geometry}
-\\usepackage{xcolor}
-\\usepackage{hyperref}
-\\usepackage{enumitem}
-\\usepackage{amsmath,amssymb}`;
-    
-    // Add preserved custom commands
-    const customCommandsText = customCommands.length > 0 ? '\n\n' + customCommands.join('\n') : '';
-    
-    // Extract content between \begin{document} and \end{document}
-    const contentMatch = latexCode.match(/\\begin\{document\}([\s\S]*)\\end\{document\}/);
-    const content = contentMatch ? contentMatch[1] : '\n\\section*{Resume}\n\\textbf{Generated with fallback template}\n';
-    
-    const fallbackLatex = `${fallbackHeader}${customCommandsText}
-
-\\begin{document}${content}\\end{document}`;
-    
-    console.log(`✅ Enhanced fallback template applied with ${customCommands.length} preserved custom commands`);
-    return fallbackLatex;
-  }
-
-  /**
-   * Generates LaTeX source code by calling the AI generator.
-   * Includes validation and a fallback to a basic template if the AI service fails.
+   * Generates LaTeX source code by calling the standardized template generator.
+   * Throws when template generation fails.
    */
   private async generateAILatexSource(
     data: LaTeXTemplateData,
@@ -925,187 +856,6 @@ Return the COMPLETE, PERFECT LaTeX code that will compile without ANY errors:`;
       console.log(`[${compilationId}] 🚨 No fallback available - AI generation is required`);
       throw error;
     }
-  }
-
-  /**
-   * Generates a high-quality, reliable fallback LaTeX template when the AI generator fails.
-   */
-  private generateEnhancedBasicTemplate(data: LaTeXTemplateData): string {
-    const escape = this.escapeLaTeX;
-    const personalInfo = data.personalInfo || {} as any;
-    const contactInfo = [
-      personalInfo.email
-        ? `\\href{mailto:${personalInfo.email}}{${escape(personalInfo.email)}}`
-        : "",
-      personalInfo.phone ? escape(personalInfo.phone) : "",
-      personalInfo.location ? escape(personalInfo.location) : "",
-    ]
-      .filter(Boolean)
-      .join(" $\\bullet$ ");
-
-    const links = [
-      personalInfo.linkedinUrl
-        ? `\\href{${personalInfo.linkedinUrl}}{LinkedIn}`
-        : "",
-      personalInfo.portfolioUrl
-        ? `\\href{${personalInfo.portfolioUrl}}{Portfolio}`
-        : "",
-      personalInfo.githubUrl ? `\\href{${personalInfo.githubUrl}}{GitHub}` : "",
-    ]
-      .filter(Boolean)
-      .join(" $\\bullet$ ");
-
-    const createSection = (title: string, contentGenerator: () => string) => {
-      const content = contentGenerator();
-      return content ? `\\section*{${title}}\n${content}\n\\vspace{0.3em}` : "";
-    };
-
-    console.log('🔧 Generating comprehensive fallback template...');
-    
-    // Ensure we have meaningful content
-    const professionalSummary = data.professionalSummary || 
-      "Dedicated professional with strong analytical and problem-solving skills. Experienced in delivering high-quality results and collaborating effectively with cross-functional teams.";
-    
-    const workSection = this.generateWorkExperienceSection(data.workExperience) ||
-      "\\textbf{Professional Experience}\\\\Recent professional experience in relevant field with focus on delivering quality results and continuous improvement.";
-    
-    const educationSection = this.generateEducationSection(data.education) ||
-      "\\textbf{Education}\\\\Academic background in relevant field with strong foundation in core principles.";
-    
-    const skillsSection = this.generateSkillsSection(data.skills) ||
-      "\\textbf{Technical Skills:} Problem-solving, analytical thinking, communication\\\\\\textbf{Soft Skills:} Team collaboration, project management, attention to detail";
-
-    return `\\documentclass[11pt,a4paper]{article}
-\\usepackage[utf8]{inputenc}
-\\usepackage[T1]{fontenc}
-\\usepackage{lmodern}
-\\usepackage[margin=0.75in]{geometry}
-\\usepackage{enumitem}
-\\usepackage{hyperref}
-\\usepackage{xcolor}
-\\usepackage{titlesec}
-\\definecolor{headercolor}{RGB}{70, 130, 180}
-\\definecolor{sectioncolor}{RGB}{25, 25, 112}
-\\titleformat{\\section}{\\large\\bfseries\\color{sectioncolor}}{}{0em}{}[\\titlerule]
-\\titlespacing*{\\section}{0pt}{14pt}{8pt}
-\\hypersetup{colorlinks=true, urlcolor=blue, linkcolor=blue}
-\\setlist{nosep, leftmargin=1.5em}
-\\setlength{\\parindent}{0pt}
-\\setlength{\\parskip}{6pt}
-\\begin{document}
-\\begin{center}
-  {\\Huge\\bfseries\\color{headercolor} ${escape(personalInfo.firstName || "")} ${escape(personalInfo.lastName || "")}}
-  \\\\[0.5em]
-  {\\large ${contactInfo || "Contact information available upon request"}}
-  ${links ? `\\\\[0.25em]\n  {\\large ${links}}` : ""}
-\\end{center}
-
-\\vspace{1em}
-
-${createSection("Professional Summary", () => escape(professionalSummary))}
-${createSection("Work Experience", () => workSection)}
-${createSection("Education", () => educationSection)}
-${createSection("Skills", () => skillsSection)}
-${data.projects && data.projects.length > 0 ? createSection("Projects", () => this.generateProjectsSection(data.projects || [])) : ""}
-${data.certifications && data.certifications.length > 0 ? createSection("Certifications", () => this.generateCertificationsSection(data.certifications)) : ""}
-
-\\vspace{2em}
-\\begin{center}
-\\textit{References available upon request}
-\\end{center}
-
-\\end{document}`;
-  }
-
-  // --- Section Generation Helpers (for fallback template) ---
-
-  private generateWorkExperienceSection(items: any[]): string {
-    if (!items || items.length === 0) return "";
-    const escape = this.escapeLaTeX;
-    return items
-      .map(
-        (
-          exp
-        ) => `\\textbf{${escape(exp.jobTitle)}} $\\bullet$ \\textit{${escape(exp.companyName)}} \\hfill ${escape(exp.startDate)} -- ${exp.endDate || "Present"}
-${exp.location ? `\\\\${escape(exp.location)}` : ""}
-\\begin{itemize}[itemsep=0pt,topsep=3pt]
-  ${(exp.achievements || []).map((ach: string) => `\\item ${escape(ach)}`).join("\n")}
-\\end{itemize}`
-      )
-      .join("\\vspace{0.5em}\n");
-  }
-
-  private generateEducationSection(items: any[]): string {
-    if (!items || items.length === 0) return "";
-    const escape = this.escapeLaTeX;
-    return items
-      .map((edu) => {
-        // Deduplicate degree and field of study
-        const programParts = [edu.degree, edu.fieldOfStudy].filter(p => p && String(p).trim().length > 0);
-        const uniqueProgramParts: string[] = [];
-        for (const p of programParts) {
-          const trimmed = String(p).trim();
-          const lower = trimmed.toLowerCase();
-          const isDuplicate = uniqueProgramParts.some((existing, idx) => {
-            const exLower = existing.toLowerCase();
-            if (exLower.includes(lower)) return true;
-            if (lower.includes(exLower)) {
-              uniqueProgramParts[idx] = trimmed;
-              return true;
-            }
-            return false;
-          });
-          if (!isDuplicate) {
-            uniqueProgramParts.push(trimmed);
-          }
-        }
-        const program = uniqueProgramParts.join(", ");
-        
-        const header = `\\textbf{${escape(program)}} $\\bullet$ ${escape(edu.institution)} \\hfill ${escape(edu.graduationDate)}`;
-        const gpa = (edu.gpa && String(edu.gpa).trim().length > 0) ? `\\\\GPA: ${escape(edu.gpa)}` : "";
-        return `${header}${gpa}`;
-      })
-      .join("\\vspace{0.5em}\n");
-  }
-
-  private generateSkillsSection(items: any[]): string {
-    if (!items || items.length === 0) return "";
-    const escape = this.escapeLaTeX;
-    const skillsByCategory = items.reduce(
-      (acc, skill) => {
-        const category = skill.category || "General Skills";
-        if (!acc[category]) acc[category] = [];
-        acc[category].push(skill.name);
-        return acc;
-      },
-      {} as Record<string, string[]>
-    );
-
-    return Object.entries(skillsByCategory)
-      .map(
-        ([category, skills]) =>
-          `\\textbf{${escape(category)}:} ${escape((skills as string[]).join(", "))}`
-      )
-      .join("\\\\\n");
-  }
-
-  private generateProjectsSection(items: any[]): string {
-    if (!items || items.length === 0) return "";
-    const escape = this.escapeLaTeX;
-    return items
-      .map(
-        (
-          p
-        ) => `\\textbf{${escape(p.name)}} ${p.url ? `$\\bullet$ \\href{${escape(p.url)}}{Link}` : ""}
-\\\\${escape(p.description)}
-${p.technologies ? `\\\\\\textit{Technologies:} ${escape(p.technologies.join(", "))}` : ""}`
-      )
-      .join("\\vspace{0.5em}\n");
-  }
-
-  private generateCertificationsSection(items?: Array<{name: string; issuer: string; date: string; expirationDate?: string; credentialId?: string; url?: string;}>): string {
-    if (!items || items.length === 0) return "";
-    return `\\begin{itemize}\n${items.map((c) => `\\item ${this.escapeLaTeX(c.name)} - ${this.escapeLaTeX(c.issuer)} (${this.escapeLaTeX(c.date)})`).join('\n')}\n\\end{itemize}`;
   }
 
   // --- Compilation and Conversion ---
@@ -1471,3 +1221,4 @@ ${p.technologies ? `\\\\\\textit{Technologies:} ${escape(p.technologies.join(", 
 
 // --- Singleton Instance ---
 export const latexService = new LaTeXService();
+

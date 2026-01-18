@@ -25,6 +25,7 @@ import { api } from "../../services/api";
 import AILoadingOverlay from "../ui/AILoadingOverlay";
 import { useAIProgress } from "../../hooks/useAIProgress";
 import { toast } from "sonner";
+import { buildAIUnavailableToast, getAIUnavailableToastFromError } from "../../utils/aiAvailability";
 import { useSubscriptionModal } from "../../hooks/useSubscriptionModal";
 import { useSubscription } from "../../hooks/useSubscription";
 import SubscriptionModal from "../subscription/SubscriptionModal";
@@ -92,9 +93,9 @@ export default function EnterpriseResumeEnhancer({
     updateAIData,
     aiData,
     setOptimizedLatexCode,
-    clearOptimizedContent,
     setCachedPdf,
     isCacheValid,
+    markPdfCacheStale,
     clearStorage,
     clearAllCacheAndBlobUrls,
     // Enhanced PDF management
@@ -163,9 +164,12 @@ export default function EnterpriseResumeEnhancer({
   const [pdfGenerating, setPdfGenerating] = useState<boolean>(false);
 
   // Track last resume hash for change detection
-  const [lastResumeHash, setLastResumeHash] = useState<string>("");
+  // Initialize with the hash of the currently cached PDF if available
+  const [lastResumeHash, setLastResumeHash] = useState<string>(aiData.pdfCacheHash || "");
+  
   // Force PDF regeneration trigger
   const [pdfRefreshTrigger, setPdfRefreshTrigger] = useState<number>(0);
+  const [showRefreshPrompt, setShowRefreshPrompt] = useState(false);
 
   // AI Progress hooks for different operations
   const atsProgress = useAIProgress("ats-analysis");
@@ -202,6 +206,7 @@ export default function EnterpriseResumeEnhancer({
   // Dynamic template resolution - prioritize LaTeX templates
   const template =
     dynamicTemplate || getTemplateById(resume.template) || resumeTemplates[0];
+  const isLatexTemplate = resume.isLatexTemplate || template?.engine === "latex";
 
   // Check if resume content has changed (requires PDF regeneration)
   const hasResumeChanged = useCallback(() => {
@@ -209,29 +214,23 @@ export default function EnterpriseResumeEnhancer({
     return currentHash !== lastResumeHash;
   }, [generateResumeHash, lastResumeHash]);
 
-  // Clear cached PDF when resume changes and update last hash
+  // Clear cached PDF when resume changes
+  // NOTE: removed incorrect logic that was auto-updating lastResumeHash here
   useEffect(() => {
     const currentHash = generateResumeHash();
-
-    // Update last hash if this is the first render or hash has changed
-    if (lastResumeHash !== currentHash) {
-      setLastResumeHash(currentHash);
-    }
 
     if (
       !isCacheValid(currentHash) &&
       aiData.cachedPdfUrl
     ) {
-      console.log("📄 Resume content changed, clearing cached PDF");
-      clearOptimizedContent();
+      console.log("📄 Resume content changed vs cache, flagging as stale");
+      // We don't clear content immediately to allow "stale" preview until refresh
+      // clearOptimizedContent(); 
     }
   }, [
-    resume,
     generateResumeHash,
     isCacheValid,
     aiData.cachedPdfUrl,
-    clearOptimizedContent,
-    lastResumeHash,
   ]);
 
   // PDF generation callback that handles enhanced caching
@@ -240,6 +239,10 @@ export default function EnterpriseResumeEnhancer({
       console.log("✅ PDF generated and cached");
       const currentHash = generateResumeHash();
       setCachedPdf(pdfUrl, currentHash, blob);
+      
+      // CRITICAL FIX: Update lastResumeHash ONLY after successful generation
+      setLastResumeHash(currentHash);
+      setShowRefreshPrompt(false);
 
       setPdfGenerating(false);
     },
@@ -250,6 +253,11 @@ export default function EnterpriseResumeEnhancer({
   const handlePdfGenerationStart = useCallback(() => {
     console.log("🔄 PDF generation started");
     setPdfGenerating(true);
+  }, []);
+
+  const handlePdfGenerationError = useCallback((message: string) => {
+    console.warn("⚠️ PDF generation failed:", message);
+    setPdfGenerating(false);
   }, []);
 
   // PDF Management Handlers (using context functions)
@@ -330,8 +338,9 @@ export default function EnterpriseResumeEnhancer({
     );
   };
 
-  // State for AI Enhancement loading
+  // State for AI Enhancement loading and errors
   const [aiEnhancementLoading, setAiEnhancementLoading] = useState(false);
+  const [aiError, setAiError] = useState<{title: string, message: string} | null>(null);
 
   // NEW: Preview-First AI Enhancement - Shows suggestions before generating PDF
   const startAIEnhancementReview = useCallback(async () => {
@@ -339,6 +348,10 @@ export default function EnterpriseResumeEnhancer({
 
     console.log("🤖 Starting AI enhancement preview...");
     setAiEnhancementLoading(true);
+    setAiError(null); // Clear previous errors
+    const loadingToastId = toast.loading('Generating AI suggestions...', {
+      description: 'This may take up to a minute due to high demand.'
+    });
 
     try {
       const templateId = resume.templateId || resume.template || "template1";
@@ -351,27 +364,88 @@ export default function EnterpriseResumeEnhancer({
           improvementLevel: "comprehensive",
         }
       );
+      
+      toast.dismiss(loadingToastId);
+
+      if (!enhancementData || !enhancementData.enhancementSuggestions) {
+        throw new Error("Received empty response from AI service");
+      }
 
       console.log("🎯 AI Enhancement Suggestions Received:", {
-        improvements: enhancementData.improvements.length,
-        keywordsAdded: enhancementData.keywordsAdded.length,
+        improvements: enhancementData.improvements?.length || 0,
+        keywordsAdded: enhancementData.keywordsAdded?.length || 0,
         atsScore: enhancementData.atsScore,
         sectionsWithChanges: Object.keys(enhancementData.enhancementSuggestions).filter(
           key => enhancementData.enhancementSuggestions[key].hasChanges
         )
       });
 
+      // Check if any actual changes were generated
+      const hasAnyChanges = Object.values(enhancementData.enhancementSuggestions).some((section: any) => section.hasChanges);
+      
+      if (!hasAnyChanges) {
+        const failureMessage = enhancementData.improvements?.find((i: string) => i.includes('failed') || i.includes('Error'));
+        if (failureMessage) {
+          const errorMsg = 'The AI service is currently unavailable or hitting rate limits. Please try again in a minute.';
+          setAiError({
+            title: 'AI Enhancement Failed',
+            message: errorMsg
+          });
+          toast.error('AI Enhancement Failed', { description: errorMsg });
+        } else {
+          setAiError({
+            title: 'No Improvements Needed',
+            message: 'Your resume content is already highly optimized! No significant AI enhancements were suggested.'
+          });
+          toast.info('No Improvements Needed');
+        }
+        setAiEnhancementLoading(false);
+        return;
+      }
+
       // Show the enhancement review modal
+      toast.success("AI Suggestions Ready!", { description: "Review the suggested improvements below." });
       setEnhancementReviewData(enhancementData);
       setShowEnhancementReview(true);
 
     } catch (error) {
+      toast.dismiss(loadingToastId);
       console.error("❌ AI enhancement preview failed:", error);
-      toast.error(`AI enhancement failed: ${error.message}`);
+      const aiToast = getAIUnavailableToastFromError(error);
+      const errorMsg = aiToast?.description || error.message || 'Unknown error occurred';
+      setAiError({
+        title: aiToast?.title || 'AI Enhancement Error',
+        message: errorMsg
+      });
+      if (aiToast) {
+        toast.error(aiToast.title, { description: aiToast.description, duration: 8000 });
+      } else {
+        toast.error(`AI enhancement failed: ${errorMsg}`);
+      }
     } finally {
       setAiEnhancementLoading(false);
     }
   }, [resume, aiEnhancementLoading]);
+
+  // Alert Component
+  const AIErrorAlert = ({ error, onClose }: { error: {title: string, message: string}, onClose: () => void }) => (
+    <div className="mb-6 p-4 rounded-lg bg-red-50 border border-red-200 flex items-start gap-3 animate-in fade-in slide-in-from-top-2">
+      <div className="p-1 bg-red-100 rounded-full">
+        <svg className="w-5 h-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+      </div>
+      <div className="flex-1">
+        <h3 className="text-sm font-semibold text-red-800">{error.title}</h3>
+        <p className="text-sm text-red-700 mt-1">{error.message}</p>
+      </div>
+      <button onClick={onClose} className="text-red-500 hover:text-red-700">
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+  );
 
   // Cleanup function to clear all data and return to template selection
   const handleStartFresh = useCallback(async () => {
@@ -434,41 +508,34 @@ export default function EnterpriseResumeEnhancer({
     try {
       // Track successful API calls
       let successfulCalls = 0;
-      let totalCalls = 2; // summary, ATS (enhancement is now separate)
-
-      // First, generate REAL AI professional summary
-      console.log("📝 Generating REAL AI professional summary...");
-      let aiSummary = null;
-      try {
-        const summaryResponse = await api.post("/resumes/generate-summary", {
-          resumeData: resume,
-        });
-        aiSummary = summaryResponse.data.data || summaryResponse.data.summary;
-        console.log(
-          "✅ REAL AI summary generated:",
-          aiSummary?.substring(0, 50) + "..."
-        );
-        successfulCalls++;
-      } catch (summaryError) {
-        console.warn(
-          "⚠️ AI summary generation failed:",
-          summaryError.response?.data || summaryError.message
-        );
-        if (isSubscriptionError(summaryError)) {
-          analysisProgress.cancelProgress();
-          // Let the API interceptor handle subscription modal
-          checkAIFeature("AI Resume Analysis");
-          return; // Stop processing - subscription error
-        }
-      }
+      let totalCalls = 2; // ATS + industry alignment
 
       // Second, run ATS analysis with AI
       console.log("🔍 Running AI-powered ATS analysis...");
       let atsResponse;
       try {
         atsResponse = await resumeService.analyzeATSCompatibility(resume);
-        console.log("✅ ATS analysis completed. Score:", atsResponse.score);
-        successfulCalls++;
+        const atsScore =
+          typeof atsResponse.score === "number"
+            ? atsResponse.score
+            : atsResponse.atsScore ?? 0;
+        console.log("✅ ATS analysis completed. Score:", atsScore);
+
+        const atsFallbackToast = buildAIUnavailableToast({
+          mode: atsResponse.mode,
+          confidence: atsResponse.confidence,
+          providerFailures: atsResponse.providerFailures,
+          reason: atsResponse.reason
+        });
+
+        if (atsFallbackToast) {
+          toast.warning(atsFallbackToast.title, {
+            description: atsFallbackToast.description,
+            duration: 8000
+          });
+        } else {
+          successfulCalls++;
+        }
       } catch (atsError) {
         console.warn("⚠️ ATS analysis failed:", atsError);
         if (isSubscriptionError(atsError)) {
@@ -477,18 +544,12 @@ export default function EnterpriseResumeEnhancer({
           checkAIFeature("AI Resume Analysis");
           return; // Stop processing - subscription error
         }
-        // Use fallback data
-        atsResponse = {
-          score: 70,
-          strengths: [],
-          recommendations: [],
-          improvementAreas: [],
-        };
+        throw atsError;
       }
 
       // Third, get job alignment score for industry analysis
       console.log("📊 Analyzing industry alignment...");
-      let alignmentScore = 75;
+      let alignmentScore: number;
       try {
         const alignmentResponse = await resumeService.getJobAlignmentScore(
           resume,
@@ -496,8 +557,10 @@ export default function EnterpriseResumeEnhancer({
         );
         alignmentScore = alignmentResponse.score;
         console.log("✅ Industry alignment score:", alignmentScore);
+        successfulCalls++;
       } catch (alignmentError) {
-        console.warn("⚠️ Industry alignment analysis failed, using fallback");
+        console.warn("⚠️ Industry alignment analysis failed:", alignmentError);
+        throw alignmentError;
       }
 
       // Analysis complete - no enhancement during analysis
@@ -506,24 +569,25 @@ export default function EnterpriseResumeEnhancer({
       );
 
       // Process all the REAL AI responses
+      const atsScore =
+        typeof atsResponse.score === "number"
+          ? atsResponse.score
+          : atsResponse.atsScore ?? 0;
+
       const analysis: AIAnalysis = {
-        overallScore: atsResponse.score || 75,
-        atsCompatibility: atsResponse.score,
+        overallScore: atsScore,
+        atsCompatibility: atsScore,
         keywordDensity:
           atsResponse.keywordMatch || calculateKeywordDensity(resume),
         contentQuality:
           atsResponse.contentScore || assessContentQuality(resume),
         industryAlignment: alignmentScore,
         strengths: atsResponse.strengths || extractStrengths(resume),
-        improvements: formatImprovements(atsResponse.recommendations || []),
+        improvements: [],
         competitorComparison: {
-          percentile: Math.min(Math.round((atsResponse.score / 100) * 85), 95),
+          percentile: Math.min(Math.round((atsScore / 100) * 85), 95),
           industry: detectIndustry(resume),
-          improvements: atsResponse.improvementAreas || [
-            "Add more quantified achievements",
-            "Improve keyword optimization",
-            "Enhance professional summary",
-          ],
+          improvements: [],
         },
       };
 
@@ -536,8 +600,6 @@ export default function EnterpriseResumeEnhancer({
       setAiAnalysis(analysis);
       updateAIData({
         atsScore: analysis.atsCompatibility,
-        aiSuggestions: analysis.improvements.flatMap((imp) => imp.suggestions),
-        optimizedSummary: aiSummary,
         wasAnalysisRun: true, // Track AI usage for lock logic
       });
 
@@ -546,12 +608,7 @@ export default function EnterpriseResumeEnhancer({
       // Only show success if we had actual AI successes
       if (successfulCalls > 0) {
         toast.success("AI analysis completed successfully", {
-          description: `ATS Score: ${analysis.atsCompatibility}% | ${analysis.improvements.length} improvements identified | ${successfulCalls}/${totalCalls} AI services used`,
-        });
-      } else {
-        // All AI calls failed - show fallback message
-        toast.warning("Analysis completed with limited features", {
-          description: "AI services unavailable. Using basic analysis instead.",
+          description: `ATS Score: ${analysis.atsCompatibility}% | ${successfulCalls}/${totalCalls} AI services used`,
         });
       }
     } catch (error: any) {
@@ -562,30 +619,8 @@ export default function EnterpriseResumeEnhancer({
       const errorMessage =
         error.response?.data?.message || error.message || "Unknown error";
       toast.error(`AI analysis failed: ${errorMessage}`, {
-        description: "Check console for details. Using local fallback.",
+        description: "Check console for details.",
       });
-
-      // Only use local fallback if ALL AI calls fail
-      const analysis: AIAnalysis = {
-        overallScore: calculateOverallScore(resume),
-        atsCompatibility: 70,
-        keywordDensity: calculateKeywordDensity(resume),
-        contentQuality: assessContentQuality(resume),
-        industryAlignment: 75,
-        strengths: extractStrengths(resume),
-        improvements: formatImprovements([]),
-        competitorComparison: {
-          percentile: 65,
-          industry: detectIndustry(resume),
-          improvements: [
-            "AI services not configured",
-            "Check API keys in backend",
-            "Enable enterprise AI features",
-          ],
-        },
-      };
-
-      setAiAnalysis(analysis);
     } finally {
       console.log("🏁 AI Analysis process completed");
       // Notify parent that analysis is complete
@@ -728,8 +763,8 @@ export default function EnterpriseResumeEnhancer({
               result.optimizedLatexCode || result.data?.optimizedLatexCode;
             optimizedResumeData.templateUsed = result.templateUsed || result.data?.templateUsed;
 
-            // Clear cached PDF since resume is now optimized
-            clearOptimizedContent();
+            // Mark cached PDF as stale so the preview can prompt for regeneration
+            markPdfCacheStale();
             
             // Note: PDF will be automatically regenerated when preview system detects form changes
             console.log("✅ Job optimization completed - PDF will auto-regenerate on preview");
@@ -917,20 +952,53 @@ export default function EnterpriseResumeEnhancer({
     }
   }, [shouldSwitchToPreview, onPreviewSwitched]);
 
-  // Auto-trigger PDF generation when entering preview tab if needed
+  // Auto-trigger PDF generation logic with robust state handling
   useEffect(() => {
-    if (activeTab === 'preview') {
-      const currentHash = generateResumeHash();
-      // Check if we need to generate:
-      // 1. Cache is invalid (hash mismatch) OR
-      // 2. No cached URL exists
-      // AND we are not currently generating
-      if ((!isCacheValid(currentHash) || !aiData.cachedPdfUrl) && !pdfGenerating) {
-        console.log("🔄 Auto-triggering PDF generation on preview entry");
-        setPdfRefreshTrigger(prev => prev + 1);
-      }
+    // Only run this logic when the Preview tab is active
+    if (activeTab !== 'preview') return;
+    
+    // Prevent re-triggering if already generating
+    if (pdfGenerating) return;
+
+    const currentHash = generateResumeHash();
+    
+    console.log('🔍 Preview Hash Check:', {
+      currentHash,
+      cachedHash: aiData.pdfCacheHash,
+      isValid: isCacheValid(currentHash),
+      hasUrl: !!aiData.cachedPdfUrl
+    });
+
+    // Check validity
+    // 1. If cache matches current hash -> Valid, no action needed
+    if (isCacheValid(currentHash)) {
+      setShowRefreshPrompt(false);
+      return;
     }
-  }, [activeTab, generateResumeHash, isCacheValid, aiData.cachedPdfUrl, pdfGenerating]);
+
+    // 2. If we are here, the cache is either missing or invalid (stale)
+    const hasExistingPdf = !!aiData.cachedPdfUrl;
+
+    if (!hasExistingPdf) {
+      // CASE 1: First Attempt (No PDF exists yet)
+      // Auto-trigger immediately
+      console.log("🔄 First Attempt: Auto-triggering initial PDF generation");
+      setPdfRefreshTrigger(prev => prev + 1);
+      // We set generating to true immediately to prevent double-triggering while component updates
+      setPdfGenerating(true); 
+    } else {
+      // CASE 2: Edit Detected (PDF exists but hash doesn't match)
+      // Show prompt to user
+      console.log("⚠️ Changes Detected: Prompting user for refresh");
+      setShowRefreshPrompt(true);
+    }
+  }, [
+    activeTab, 
+    generateResumeHash, 
+    isCacheValid, 
+    aiData.cachedPdfUrl, 
+    pdfGenerating
+  ]);
 
 
   // Helper functions
@@ -1184,8 +1252,98 @@ export default function EnterpriseResumeEnhancer({
 
   const memoizedResumeData = useMemo(() => resume, [resumeChangeKey]);
 
+  // Clean resume data for preview to prevent Basic Resume fields from leaking into other templates
+  const cleanedResumeForPreview = useMemo(() => {
+    // Deep clone to avoid mutating the original
+    const cleaned = JSON.parse(JSON.stringify(resume));
+    
+    // If NOT using the Basic SA template, remove SA-specific fields
+    if (cleaned.templateId !== 'basic_sa' && cleaned.template !== 'basic_sa') {
+      if (cleaned.personalInfo) {
+        delete cleaned.personalInfo.identityNumber;
+        delete cleaned.personalInfo.maritalStatus;
+        delete cleaned.personalInfo.gender;
+        delete cleaned.personalInfo.nationality; // Keep nationality only if critical? Usually Basic SA specific.
+        delete cleaned.personalInfo.homeLanguage;
+        delete cleaned.personalInfo.residentialAddress; // Standard templates use 'location'
+        delete cleaned.personalInfo.dateOfBirth;
+      }
+    }
+    return cleaned;
+  }, [resume]);
+
+
+  // Modal for detecting changes
+  const ChangesDetectedModal = ({ 
+    isOpen, 
+    onConfirm, 
+    onCancel 
+  }: { 
+    isOpen: boolean; 
+    onConfirm: () => void; 
+    onCancel: () => void; 
+  }) => {
+    if (!isOpen) return null;
+
+    return (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 relative overflow-hidden animate-in zoom-in-95 duration-200 border border-surface-200">
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-brand-blue to-brand-purple" />
+          
+          <div className="flex items-center gap-4 mb-4">
+            <div className="w-12 h-12 rounded-full bg-brand-orange/10 flex items-center justify-center flex-shrink-0">
+              <SparklesIcon className="w-6 h-6 text-brand-orange" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-gray-900">Changes Detected</h3>
+              <p className="text-sm text-gray-500">Your resume content has been updated.</p>
+            </div>
+          </div>
+          
+          <p className="text-gray-600 mb-6 leading-relaxed text-sm">
+            We noticed you made changes to your resume. Would you like to generate a new PDF preview to reflect these updates?
+          </p>
+          
+          <div className="flex gap-3 justify-end">
+            <Button
+              variant="outline"
+              onClick={onCancel}
+              className="text-gray-600 border-gray-200 hover:bg-gray-50"
+            >
+              Keep Current Preview
+            </Button>
+            <Button
+              onClick={onConfirm}
+              className="bg-brand-dark text-white hover:bg-gray-800 shadow-lg shadow-brand-dark/20"
+            >
+              <ArrowPathIcon className="w-4 h-4 mr-2" />
+              Generate New PDF
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-6">
+      <ChangesDetectedModal 
+        isOpen={showRefreshPrompt} 
+        onConfirm={() => {
+          setPdfRefreshTrigger(prev => prev + 1);
+          setShowRefreshPrompt(false);
+        }}
+        onCancel={() => setShowRefreshPrompt(false)}
+      />
+
+      {/* AI Error Alert */}
+      {aiError && (
+        <AIErrorAlert 
+          error={aiError} 
+          onClose={() => setAiError(null)} 
+        />
+      )}
+
       {/* Tab Navigation - Clean Horizontal Scroll */}
       <div className="bg-surface-50 rounded-lg p-1 overflow-x-auto">
         <div className="flex space-x-1 min-w-max">
@@ -1252,7 +1410,7 @@ export default function EnterpriseResumeEnhancer({
                   </h3>
                   <p className="text-sm text-text-secondary">
                     See your resume with professional{" "}
-                    {resume.isLatexTemplate ? "LaTeX" : "HTML"} formatting -
+                    {isLatexTemplate ? "LaTeX" : "HTML"} formatting -
                     completely free!
                   </p>
                   <div className="mt-2">
@@ -1325,7 +1483,8 @@ export default function EnterpriseResumeEnhancer({
           )}
 
           {/* Full Screen PDF Preview */}
-          <div className="w-full h-screen -m-6">
+          <div className="w-full h-[85vh] -m-6 relative group">
+            
             {loadingTemplate ? (
               <div className="flex items-center justify-center h-full bg-gray-100">
                 <div className="text-center">
@@ -1333,17 +1492,18 @@ export default function EnterpriseResumeEnhancer({
                   <p className="text-gray-600">Loading template...</p>
                 </div>
               </div>
-            ) : dynamicTemplate || resume.isLatexTemplate ? (
+            ) : dynamicTemplate || isLatexTemplate ? (
                 <PDFPreview 
                   pdfUrl={aiData.cachedPdfUrl}
                   pdfBlob={aiData.pdfBlob}
                   pdfBlobBase64={aiData.pdfBlobBase64}
-                  templateId={resume.template || 'template01'}
-                  resumeData={resume as any}
+                  templateId={resume.templateId || resume.template || template?.id || 'template01'}
+                  resumeData={cleanedResumeForPreview as any}
                   title={resume.title || 'Enhanced Resume'}
                   className="h-full"
                   onPdfGenerated={handlePdfGenerated}
                   onGenerationStart={handlePdfGenerationStart}
+                  onGenerationError={handlePdfGenerationError}
                   refreshTrigger={pdfRefreshTrigger}
                 />
             ) : (
@@ -1388,7 +1548,7 @@ export default function EnterpriseResumeEnhancer({
                 color="text-emerald-400"
               />
             </div>
-            {resume.isLatexTemplate && (
+            {isLatexTemplate && (
               <div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-teal-500/20 rounded-lg">
                 <div className="flex items-center gap-2 mb-2">
                   <DocumentTextIcon className="w-4 h-4 text-teal-400 flex-shrink-0" />
@@ -1456,8 +1616,8 @@ export default function EnterpriseResumeEnhancer({
                       Unlock AI-Powered Analysis
                     </h4>
                     <p className="text-sm sm:text-base text-text-secondary mb-4 sm:mb-5 leading-relaxed">
-                      Get comprehensive insights including ATS compatibility,
-                      industry benchmarking, and personalized recommendations
+                      Get comprehensive insights including ATS compatibility
+                      and industry benchmarking.
                     </p>
                     <Button
                       onClick={runComprehensiveAnalysis}
@@ -1556,93 +1716,12 @@ export default function EnterpriseResumeEnhancer({
                     </ul>
                   </div>
 
-                  {/* AI Recommended Summary Section */}
-                  {aiData.optimizedSummary && (
-                    <div className="pt-6 border-t border-surface-200/30">
-                      <div className="flex items-center gap-2 mb-3">
-                        <SparklesIcon className="w-5 h-5 text-teal-400" />
-                        <h4 className="font-semibold text-text-primary">
-                          AI Recommended Summary
-                        </h4>
-                      </div>
-                      <div className="p-4 bg-teal-500/5 border border-teal-500/20 rounded-xl mb-4">
-                        <p className="text-sm text-text-secondary leading-relaxed italic">
-                          "{aiData.optimizedSummary}"
-                        </p>
-                      </div>
-                      <Button
-                        onClick={() => {
-                          updateResumeData({ professionalSummary: aiData.optimizedSummary });
-                          updateAIData({ wasSummaryGenerated: true });
-                          setActiveTab("preview");
-                          toast.success("AI optimized summary applied! Previewing updates...");
-                        }}
-                        className="w-full bg-teal-600 hover:bg-teal-700 shadow-glow-sm"
-                      >
-                        Apply Optimized Summary
-                      </Button>
-                    </div>
-                  )}
+                  
                 </Card>
               </div>
 
               <div className="space-y-6">
-                <Card className="card-dark p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-xl font-semibold text-text-primary">
-                      AI Recommendations
-                    </h3>
-                  </div>
-
-                  <div className="space-y-4">
-                    {aiAnalysis.improvements.map((improvement, index) => (
-                      <div
-                        key={index}
-                        className={`p-4 rounded-lg border ${
-                          improvement.priority === "high"
-                            ? "border-red-500/30 bg-red-500/10"
-                            : improvement.priority === "medium"
-                              ? "border-yellow-500/30 bg-yellow-500/10"
-                              : "border-teal-500/30 bg-teal-500/10"
-                        }`}
-                      >
-                        <div className="flex items-center justify-between mb-2">
-                          <h4 className="font-semibold text-text-primary">
-                            {improvement.category}
-                          </h4>
-                          <span
-                            className={`px-2 py-1 rounded text-xs font-medium ${
-                              improvement.priority === "high"
-                                ? "bg-red-500/20 text-red-400"
-                                : improvement.priority === "medium"
-                                  ? "bg-yellow-500/20 text-yellow-400"
-                                  : "bg-teal-500/20 text-teal-400"
-                            }`}
-                          >
-                            {improvement.priority.toUpperCase()}
-                          </span>
-                        </div>
-
-                        <p className="text-sm text-dark-text-muted mb-3">
-                          {improvement.impact}
-                        </p>
-
-                        <ul className="space-y-1">
-                          {improvement.suggestions.map(
-                            (suggestion, suggestionIndex) => (
-                              <li
-                                key={suggestionIndex}
-                                className="text-sm text-text-secondary"
-                              >
-                                • {suggestion}
-                              </li>
-                            )
-                          )}
-                        </ul>
-                      </div>
-                    ))}
-                  </div>
-                </Card>
+                
               </div>
             </div>
           ) : (
@@ -1655,9 +1734,8 @@ export default function EnterpriseResumeEnhancer({
                   AI Analysis Ready
                 </h3>
                 <p className="text-text-secondary mb-6">
-                  Get comprehensive AI-powered insights about your resume
-                  including ATS compatibility, content quality, and
-                  industry-specific recommendations.
+                  Get AI-powered insights about your resume including ATS
+                  compatibility, content quality, and industry alignment.
                 </p>
 
                 {analysisProgress.isLoading ? (
@@ -2063,16 +2141,14 @@ export default function EnterpriseResumeEnhancer({
             updateResumeData(finalResumeData);
             setShowEnhancementReview(false);
             
-            // Clear cached PDF to force regeneration
-            clearOptimizedContent();
+            // Mark cached PDF as stale so preview prompts for regeneration
+            markPdfCacheStale({ clearOptimizedLatex: true });
             
-            // Trigger PDF refresh
-            setPdfRefreshTrigger(prev => prev + 1);
-            
-            // Switch to preview tab to show updated resume
-            setActiveTab("preview");
-            
-            toast.success('Enhancement applied successfully! Check your updated resume in the preview.');
+            // Switch to preview tab to show updated resume (with delay to ensure data propagation)
+            setTimeout(() => {
+              setActiveTab("preview");
+              toast.success('Enhancement applied successfully! Generating new preview...');
+            }, 300);
           }}
         />
       )}

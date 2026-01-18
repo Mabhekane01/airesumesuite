@@ -1,0 +1,147 @@
+Rewritten / Fixed Prompt
+
+Strict Instructions (Must Follow):
+
+Do not modify or interfere with any code that is not directly related to the issues described.
+
+Do not take shortcuts.
+
+Perform a deep audit trail analysis to fully understand:
+
+the codebase,
+
+the data flow,
+
+state changes,
+
+and side effects.
+
+Every change must be justified by findings from the audit.
+
+The goal is correctness and traceability, not speed.
+
+System Context
+
+We have a Resume Builder system with the following behavior:
+
+The system auto-detects the user's location.
+
+If the user is located in South Africa (SA):
+
+A popup asks the user for their highest qualification.
+
+Resume Flow Based on Qualification
+A. Matric or Lower
+
+User is shown the basic resume form.
+
+User selects a basic template.
+
+When the form is completed:
+
+The system automatically generates a preview PDF
+using the basic resume template.
+
+B. Higher Qualification
+
+User can choose from specialized templates.
+
+Each specialized template has:
+
+Its own LaTeX layout
+
+Its own rendering logic.
+
+ISSUE 1: Change Tracking Fails for Specialized Templates
+Problem:
+
+When users select specialized templates, the system fails to correctly track changes made in the resume form.
+
+Even minor changes (e.g. a single character or letter) are not consistently detected.
+
+As a result, the system cannot reliably determine whether the resume data has changed.
+
+Why This Matters:
+
+During System Deployment:
+
+First deployment attempt
+
+The system should automatically generate a template preview PDF.
+
+Subsequent attempts
+
+If the user has gone back and updated any resume fields:
+
+A popup must appear asking:
+
+"Do you want to generate a new PDF preview?"
+
+Note: The logic for this popup exists, but it is failing due to unreliable change detection, which indicates the absence or failure of a proper audit trail / change tracking mechanism.
+
+ISSUE 2: AI Analysis & Resume Enhancement Does Not Persist Changes
+Problem:
+
+We have an AI Analysis & Resume Enhancement feature that:
+
+Suggests improvements to resume content.
+
+Allows users to apply these improvements.
+
+However:
+
+When AI-generated changes are applied:
+
+The resume fields are not updated correctly.
+
+The system does not recognize the changes as user updates.
+
+Impact:
+
+The System Deployment step does not show the popup asking whether to generate a new PDF preview.
+
+This makes it impossible to generate an updated preview PDF after AI enhancements.
+
+Objectives
+
+You must:
+
+Identify why resume field changes are not reliably detected, especially for:
+
+Specialized templates
+
+AI-applied updates
+
+Implement or fix a robust audit trail / change tracking mechanism that:
+
+Detects any change, including minimal text edits.
+
+Works consistently across:
+
+Basic templates
+
+Specialized templates
+
+AI-enhanced content
+
+Ensure the System Deployment logic:
+
+Correctly distinguishes between:
+
+First deployment
+
+Subsequent deployments with changes
+
+Reliably triggers the "Generate new PDF preview?" popup when appropriate.
+
+Ensure no unrelated code paths are modified.
+
+Expected Outcome
+
+Resume changes are accurately tracked at field level.
+
+AI enhancements correctly update resume data and trigger change detection.
+
+PDF preview generation logic behaves consistently and predictably.
+
+The system has a clear, traceable audit trail for resume edits.

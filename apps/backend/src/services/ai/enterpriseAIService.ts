@@ -9,11 +9,42 @@ try {
   console.warn('Anthropic SDK not available - some AI features will be limited');
   Anthropic = null;
 }
+export type ProviderFailureReason =
+  | 'rate_limit'
+  | 'quota'
+  | 'invalid_key'
+  | 'unauthorized'
+  | 'service_unavailable'
+  | 'timeout'
+  | 'unknown';
+
+export interface ProviderFailure {
+  provider: string;
+  reason: ProviderFailureReason;
+  message: string;
+  status?: number;
+  retryAfterMs?: number;
+}
+
+export interface ProviderHealth {
+  enabled: boolean;
+  disabledUntil?: number;
+  reason?: ProviderFailureReason;
+  message?: string;
+}
+
 // Custom error class for AI service errors
 class AIServiceError extends Error {
-  constructor(message: string, public code?: string) {
+  public details?: { providerFailures?: ProviderFailure[]; reason?: string };
+
+  constructor(
+    message: string,
+    public code?: string,
+    details?: { providerFailures?: ProviderFailure[]; reason?: string }
+  ) {
     super(message);
     this.name = 'AIServiceError';
+    this.details = details;
   }
 }
 
@@ -60,10 +91,14 @@ export class EnterpriseAIService {
   private claude: InstanceType<typeof Anthropic> | null = null;
   private openai: OpenAI | null = null;
   private providers: AIProvider[] = [];
+  private providerHealth = new Map<string, ProviderHealth>();
   
   // Model resilience tracking
   private modelCooldowns = new Map<string, number>();
   private readonly QUOTA_COOLDOWN = 5 * 1000; // 5 second retry for 429s
+  private readonly PROVIDER_RATE_LIMIT_COOLDOWN = 30 * 1000;
+  private readonly PROVIDER_SERVICE_COOLDOWN = 60 * 1000;
+  private readonly PROVIDER_QUOTA_RESET_MS = 24 * 60 * 60 * 1000;
 
   constructor() {
     this.initializeProviders();
@@ -71,25 +106,24 @@ export class EnterpriseAIService {
 
   private getSmartModelSelection(type: string): string {
     const now = Date.now();
-    const g3pro = 'gemini-3-pro-preview';
-    const g3flash = 'gemini-3-flash-preview';
-    const g25pro = 'gemini-2.5-pro';
-    const g25flash = 'gemini-2.5-flash';
-    const legacy = 'gemini-1.5-flash';
+    // Cutting-edge Gemini 3 & 2.5 Family
+    const g3pro = 'gemini-3-pro-preview';      // Next-gen reasoning (Preview)
+    const g25pro = 'gemini-2.5-pro';           // Stable advanced reasoning
+    const g25flash = 'gemini-2.5-flash';       // Balanced fast model
+    const g25flashLite = 'gemini-2.5-flash-lite'; // Cost-efficient
 
     // 1. Determine preferred starting model
-    const preferred = (type === 'resume-optimization' || type === 'job-matching') ? g3pro : g3flash;
+    // Use Gemini 3 Pro for deep optimization/reasoning tasks, 2.5 Flash for speed
+    const preferred = (type === 'resume-optimization' || type === 'job-matching') ? g3pro : g25flash;
 
-    // 2. Build the fallback chain based on the preferred entry point
-    const chain = preferred === g3pro 
-      ? [g3pro, g3flash, g25pro, g25flash, legacy]
-      : [g3flash, g25flash, legacy];
+    // 2. Build the fallback chain - Prioritize capability then speed
+    const chain = [preferred, g3pro, g25pro, g25flash, g25flashLite];
 
     // 3. Find the first model in the chain that is NOT on cooldown
     for (const model of chain) {
       if (!this.isModelOnCooldown(model)) {
         if (model !== preferred) {
-          console.log(`📡 [RESILIENCE] ${preferred} restricted, falling back to ${model}`);
+          console.log(`📡 [RESILIENCE] ${preferred} restricted/cooldown, falling back to ${model}`);
         }
         return model;
       }
@@ -120,7 +154,8 @@ export class EnterpriseAIService {
         this.gemini = new GoogleGenAI({
           apiKey: process.env.GEMINI_API_KEY,
         });
-        this.providers.push({ name: 'gemini', isAvailable: true, priority: 1 });
+        this.providers.push({ name: 'gemini', isAvailable: true, priority: 2 });
+        this.providerHealth.set('gemini', { enabled: true });
       } catch (error) {
         console.warn('Failed to initialize Gemini:', error);
       }
@@ -132,7 +167,8 @@ export class EnterpriseAIService {
         this.claude = new Anthropic({
           apiKey: process.env.ANTHROPIC_API_KEY,
         });
-        this.providers.push({ name: 'claude', isAvailable: true, priority: 2 });
+        this.providers.push({ name: 'claude', isAvailable: true, priority: 3 });
+        this.providerHealth.set('claude', { enabled: true });
       } catch (error) {
         console.warn('Failed to initialize Claude:', error);
       }
@@ -146,7 +182,8 @@ export class EnterpriseAIService {
         this.openai = new OpenAI({
           apiKey: process.env.OPENAI_API_KEY,
         });
-        this.providers.push({ name: 'openai', isAvailable: true, priority: 3 });
+        this.providers.push({ name: 'openai', isAvailable: true, priority: 1 });
+        this.providerHealth.set('openai', { enabled: true });
       } catch (error) {
         console.warn('Failed to initialize OpenAI:', error);
       }
@@ -157,54 +194,206 @@ export class EnterpriseAIService {
     console.log('🤖 Available AI providers:', this.providers.map(p => p.name));
   }
 
+  private getProviderHealth(providerName: string): ProviderHealth | undefined {
+    return this.providerHealth.get(providerName);
+  }
+
+  private isProviderEnabled(provider: AIProvider): boolean {
+    const health = this.getProviderHealth(provider.name);
+    if (!health) return provider.isAvailable;
+    if (!health.enabled) return false;
+
+    if (health.disabledUntil && Date.now() < health.disabledUntil) {
+      return false;
+    }
+
+    if (health.disabledUntil && Date.now() >= health.disabledUntil) {
+      health.disabledUntil = undefined;
+      health.reason = undefined;
+      health.message = undefined;
+    }
+
+    return true;
+  }
+
+  private getErrorStatus(error: any): number | undefined {
+    return (
+      error?.status ||
+      error?.response?.status ||
+      error?.response?.statusCode
+    );
+  }
+
+  private getRetryAfterMs(error: any): number | undefined {
+    const retryAfterHeader = error?.response?.headers?.['retry-after'];
+    if (retryAfterHeader) {
+      const seconds = Number(retryAfterHeader);
+      if (!Number.isNaN(seconds)) {
+        return seconds * 1000;
+      }
+    }
+
+    const retryDelay =
+      error?.response?.data?.error?.details?.find(
+        (detail: any) => detail?.retryDelay
+      )?.retryDelay ||
+      error?.response?.data?.error?.details?.retryDelay ||
+      error?.response?.data?.error?.retryDelay;
+
+    if (typeof retryDelay === 'string' && retryDelay.endsWith('s')) {
+      const seconds = Number(retryDelay.replace('s', ''));
+      if (!Number.isNaN(seconds)) {
+        return seconds * 1000;
+      }
+    }
+
+    return undefined;
+  }
+
+  private classifyProviderError(error: any): {
+    reason: ProviderFailureReason;
+    message: string;
+    status?: number;
+    retryAfterMs?: number;
+  } {
+    const status = this.getErrorStatus(error);
+    const message = (error?.message || 'Unknown error').toString();
+    const lower = message.toLowerCase();
+    const retryAfterMs = this.getRetryAfterMs(error);
+
+    if (
+      status === 401 ||
+      lower.includes('invalid api key') ||
+      lower.includes('invalid x-api-key') ||
+      lower.includes('authentication_error')
+    ) {
+      return { reason: 'invalid_key', message, status };
+    }
+
+    if (
+      lower.includes('insufficient_quota') ||
+      lower.includes('quota') ||
+      lower.includes('billing') ||
+      lower.includes('resource_exhausted') ||
+      error?.code === 'AI_QUOTA_EXCEEDED'
+    ) {
+      return { reason: 'quota', message, status };
+    }
+
+    if (status === 429 || lower.includes('rate limit') || lower.includes('too many requests')) {
+      return { reason: 'rate_limit', message, status, retryAfterMs };
+    }
+
+    if (status === 503 || lower.includes('overloaded') || lower.includes('service unavailable')) {
+      return { reason: 'service_unavailable', message, status, retryAfterMs };
+    }
+
+    if (lower.includes('timeout')) {
+      return { reason: 'timeout', message, status, retryAfterMs };
+    }
+
+    return { reason: 'unknown', message, status, retryAfterMs };
+  }
+
+  private recordProviderFailure(providerName: string, failure: ProviderFailure): void {
+    const health = this.getProviderHealth(providerName) || { enabled: true };
+
+    if (failure.reason === 'rate_limit') {
+      health.disabledUntil =
+        Date.now() + (failure.retryAfterMs || this.PROVIDER_RATE_LIMIT_COOLDOWN);
+      health.reason = failure.reason;
+      health.message = failure.message;
+    } else if (failure.reason === 'service_unavailable' || failure.reason === 'timeout') {
+      health.disabledUntil =
+        Date.now() + (failure.retryAfterMs || this.PROVIDER_SERVICE_COOLDOWN);
+      health.reason = failure.reason;
+      health.message = failure.message;
+    } else if (failure.reason === 'quota') {
+      health.reason = failure.reason;
+      health.message = failure.message;
+      if (providerName === 'gemini') {
+        health.disabledUntil = Date.now() + this.PROVIDER_QUOTA_RESET_MS;
+        health.enabled = true;
+      } else {
+        health.enabled = false;
+      }
+    } else if (failure.reason === 'invalid_key' || failure.reason === 'unauthorized') {
+      health.enabled = false;
+      health.reason = failure.reason;
+      health.message = failure.message;
+    }
+
+    this.providerHealth.set(providerName, health);
+  }
+
+
   private async executeWithFallback<T>(
     operation: (provider: string) => Promise<T>,
     operationName: string
   ): Promise<T> {
-    const availableProviders = this.providers.filter(p => p.isAvailable);
+    const availableProviders = this.providers.filter((provider) =>
+      this.isProviderEnabled(provider)
+    );
     
     if (availableProviders.length === 0) {
       throw new AIServiceError(
         'No AI providers are currently available',
-        'all'
+        'all',
+        {
+          reason: 'all_disabled'
+        }
       );
     }
 
     let lastError: Error | null = null;
-    const attemptResults: Array<{ provider: string; error: string }> = [];
+    const attemptResults: ProviderFailure[] = [];
 
-    for (const provider of availableProviders) {
+    for (const provider of this.providers) {
+      if (!this.isProviderEnabled(provider)) {
+        const health = this.getProviderHealth(provider.name);
+        attemptResults.push({
+          provider: provider.name,
+          reason: health?.reason || 'unknown',
+          message: health?.message || 'Provider disabled',
+          status: health?.disabledUntil ? 429 : undefined
+        });
+        continue;
+      }
+
       try {
-        console.log(`🤖 Attempting ${operationName} with ${provider.name}`);
+        console.log(`???? Attempting ${operationName} with ${provider.name}`);
         const result = await operation(provider.name);
-        console.log(`✅ Successfully completed ${operationName} with ${provider.name}`);
+        console.log(`??? Successfully completed ${operationName} with ${provider.name}`);
         return result;
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        console.warn(`⚠️ ${provider.name} failed for ${operationName}:`, errorMessage);
+        const failureInfo = this.classifyProviderError(error);
+        console.warn(`?????? ${provider.name} failed for ${operationName}:`, failureInfo.message);
         lastError = error as Error;
-        attemptResults.push({ provider: provider.name, error: errorMessage });
+        attemptResults.push({
+          provider: provider.name,
+          reason: failureInfo.reason,
+          message: failureInfo.message,
+          status: failureInfo.status,
+          retryAfterMs: failureInfo.retryAfterMs
+        });
         
-        // Mark provider as temporarily unavailable if it's a rate limit or auth error
-        if (error instanceof Error && (
-          error.message.includes('rate limit') ||
-          error.message.includes('quota') ||
-          error.message.includes('unauthorized') ||
-          error.message.includes('429')
-        )) {
-          console.log(`🚫 Temporarily disabling ${provider.name} due to rate limiting`);
-          provider.isAvailable = false;
-          setTimeout(() => {
-            console.log(`✅ Re-enabling ${provider.name}`);
-            provider.isAvailable = true;
-          }, 60000); // Re-enable after 1 minute
-        }
+        this.recordProviderFailure(provider.name, {
+          provider: provider.name,
+          reason: failureInfo.reason,
+          message: failureInfo.message,
+          status: failureInfo.status,
+          retryAfterMs: failureInfo.retryAfterMs
+        });
       }
     }
 
     throw new AIServiceError(
       `All AI providers failed for ${operationName}`,
-      'fallback'
+      'fallback',
+      {
+        providerFailures: attemptResults,
+        reason: lastError?.message
+      }
     );
   }
 
@@ -370,6 +559,12 @@ CRITICAL RULES:
     }, 'professional summary generation');
   }
 
+  async generateText(prompt: string, type: string = 'text-generation'): Promise<string> {
+    return this.executeWithFallback(async (provider) => {
+      return this.callAIProviderText(provider, prompt, type);
+    }, 'text generation');
+  }
+
   private async callAIProvider(provider: string, prompt: string, type: string): Promise<any> {
     switch (provider) {
       case 'gemini':
@@ -378,6 +573,19 @@ CRITICAL RULES:
         return this.callClaude(prompt, type);
       case 'openai':
         return this.callOpenAI(prompt, type);
+      default:
+        throw new Error(`Unknown provider: ${provider}`);
+    }
+  }
+
+  private async callAIProviderText(provider: string, prompt: string, type: string): Promise<string> {
+    switch (provider) {
+      case 'gemini':
+        return this.callGeminiText(prompt, type);
+      case 'claude':
+        return this.callClaudeText(prompt);
+      case 'openai':
+        return this.callOpenAIText(prompt);
       default:
         throw new Error(`Unknown provider: ${provider}`);
     }
@@ -503,6 +711,63 @@ CRITICAL RULES:
     }
   }
 
+  private async callGeminiText(prompt: string, type: string): Promise<string> {
+    if (!this.gemini) {
+      throw new Error('Gemini not available');
+    }
+
+    const selectedModel = this.getSmartModelSelection(type);
+
+    try {
+      console.log(`ðŸ”„ Calling Gemini (${selectedModel}) for ${type} (text)...`);
+
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('AI request timeout')), 60000);
+      });
+
+      const config: any = {
+        model: selectedModel,
+        contents: prompt,
+      };
+
+      if (type === 'latex-generation') {
+        config.generationConfig = {
+          maxOutputTokens: 8192,
+          temperature: 0.1,
+          topK: 20,
+          topP: 0.8,
+          candidateCount: 1,
+        };
+      }
+
+      const aiPromise = this.gemini.models.generateContent(config);
+      const result = await Promise.race([aiPromise, timeoutPromise]) as any;
+
+      let text = '';
+      if (result.candidates && result.candidates[0]) {
+        const candidate = result.candidates[0];
+        if (candidate.content && candidate.content.parts) {
+          text = candidate.content.parts.map(part => part.text || '').join('');
+        }
+      } else if (result.response && typeof result.response.text === 'function') {
+        text = await result.response.text();
+      } else if (result.response && result.response.text) {
+        text = result.response.text;
+      } else if (result.text) {
+        text = result.text;
+      }
+
+      if (!text) {
+        throw new Error('Empty response text from Gemini API');
+      }
+
+      return text.trim();
+    } catch (error: any) {
+      console.error(`âŒ Gemini text error for ${type} using ${selectedModel}:`, error.message);
+      throw error;
+    }
+  }
+
   private async callClaude(prompt: string, type: string): Promise<any> {
     if (!this.claude) {
       throw new Error('Claude not available');
@@ -518,19 +783,62 @@ CRITICAL RULES:
     return this.parseAIResponse(text, type);
   }
 
+  private async callClaudeText(prompt: string): Promise<string> {
+    if (!this.claude) {
+      throw new Error('Claude not available');
+    }
+
+    const response = await this.claude.messages.create({
+      model: 'claude-3-5-sonnet-20241022',
+      max_tokens: 4000,
+      messages: [{ role: 'user', content: prompt }],
+    });
+
+    const text = response.content[0].type === 'text' ? response.content[0].text : '';
+    if (!text) {
+      throw new Error('Empty response text from Claude API');
+    }
+    return text.trim();
+  }
+
   private async callOpenAI(prompt: string, type: string): Promise<any> {
     if (!this.openai) {
       throw new Error('OpenAI not available');
     }
 
+    // Select specialized GPT-5 model based on task type
+    let model = 'gpt-5.2'; // Main flagship reasoning & agentic
+    
+    if (type === 'latex-generation' || type === 'coding') {
+      model = 'gpt-5.2-codex'; // Coding-focused version
+    }
+
     const response = await this.openai.chat.completions.create({
-      model: 'gpt-4',
+      model: model,
       messages: [{ role: 'user', content: prompt }],
       max_tokens: 4000,
     });
 
     const text = response.choices[0]?.message?.content || '';
     return this.parseAIResponse(text, type);
+  }
+
+  private async callOpenAIText(prompt: string, type: string): Promise<string> {
+    if (!this.openai) {
+      throw new Error('OpenAI not available');
+    }
+
+    const response = await this.openai.chat.completions.create({
+      model: 'gpt-5.2', // Main flagship
+      messages: [{ role: 'user', content: prompt }],
+      max_tokens: 4000,
+    });
+
+    const text = response.choices[0]?.message?.content || '';
+    if (!text) {
+      throw new Error('Empty response text from OpenAI');
+    }
+    return text.trim();
   }
 
   private cleanMarkdownFromParsedContent(data: any): any {
@@ -693,7 +1001,10 @@ CRITICAL RULES:
   }
 
   getProviderStatus(): AIProvider[] {
-    return [...this.providers];
+    return this.providers.map((provider) => ({
+      ...provider,
+      isAvailable: this.isProviderEnabled(provider)
+    }));
   }
 }
 

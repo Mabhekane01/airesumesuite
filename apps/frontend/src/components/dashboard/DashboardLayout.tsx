@@ -15,6 +15,7 @@ import {
   BriefcaseIcon,
   ChartBarIcon,
   UserIcon,
+  UserCircleIcon,
   Cog6ToothIcon,
   PowerIcon,
   BellIcon,
@@ -68,13 +69,13 @@ const quickActions = [
     name: "New Application",
     href: "/dashboard/job-posting",
     icon: PlusIcon,
-    color: "bg-brand-blue",
+    iconColor: "text-brand-blue",
   },
   {
     name: "Build AI Resume",
     href: "/dashboard/resume/templates",
     icon: SparklesIcon,
-    color: "bg-brand-success",
+    iconColor: "text-brand-success",
   },
 ];
 
@@ -193,9 +194,7 @@ export default function DashboardLayout() {
           {/* Logo */}
           <div className="flex items-center justify-between h-20 px-8 border-b border-surface-100">
             <Link to="/" className="flex items-center space-x-3 group">
-              <div className="w-9 h-9 bg-brand-blue rounded-xl flex items-center justify-center shadow-lg shadow-brand-blue/20 group-hover:scale-110 transition-transform duration-300">
-                <SparklesIcon className="w-5 h-5 text-white" />
-              </div>
+              <SparklesIcon className="w-5 h-5 text-brand-blue" />
               <span className="text-xl font-display font-black text-brand-dark tracking-tighter">
                 AI Job Suite
               </span>
@@ -254,9 +253,7 @@ export default function DashboardLayout() {
                   className="group flex items-center px-4 py-3 text-sm font-bold rounded-2xl transition-all duration-300 bg-surface-50 border border-surface-200 hover:border-brand-blue/30 hover:bg-white hover:shadow-lg shadow-sm"
                   onClick={() => setSidebarOpen(false)}
                 >
-                  <div className={`mr-3 p-2 rounded-xl ${action.color} text-white shadow-sm group-hover:scale-110 transition-transform`}>
-                    <action.icon className="h-4 w-4" />
-                  </div>
+                  <action.icon className={`mr-3 h-4 w-4 ${action.iconColor}`} />
                   <span className="text-brand-dark group-hover:text-brand-blue transition-colors">
                     {action.name}
                   </span>
@@ -266,11 +263,9 @@ export default function DashboardLayout() {
           </div>
 
           {/* User Brief info in sidebar footer */}
-          <div className="p-6 border-t border-surface-100 bg-surface-50/50">
+          <div className="p-6 border-t border-surface-100 bg-transparent">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-brand-dark flex items-center justify-center font-black text-white text-sm shadow-sm">
-                {(user.firstName?.[0] || 'U') + (user.lastName?.[0] || 'N')}
-              </div>
+              <UserCircleIcon className="w-10 h-10 text-brand-blue" />
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-black text-brand-dark truncate">{user.firstName} {user.lastName}</p>
                 <p className="text-[10px] font-bold text-text-tertiary uppercase tracking-widest truncate">{user.tier} Account</p>
@@ -283,7 +278,7 @@ export default function DashboardLayout() {
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0 relative overflow-hidden">
         {/* Top header */}
-        <header className="bg-white/80 backdrop-blur-md border-b border-surface-200 h-20 flex-shrink-0 relative z-[50]">
+        <header className="bg-transparent backdrop-blur-md border-b border-surface-200 h-20 flex-shrink-0 relative z-[50]">
           <div className="flex items-center justify-between h-full px-4 sm:px-10">
             <div className="flex items-center gap-6 flex-1">
               <button
@@ -337,9 +332,9 @@ export default function DashboardLayout() {
                       initial={{ opacity: 0, y: 15, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 15, scale: 0.95 }}
-                      className="fixed left-4 right-4 top-24 w-auto sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-4 sm:w-96 bg-white border border-surface-200 rounded-[2rem] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.1)] overflow-hidden z-[100]"
+                      className="fixed left-4 right-4 top-24 w-auto sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-4 sm:w-96 bg-panel border border-surface-200 rounded-[2rem] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.1)] overflow-hidden z-[100]"
                     >
-                      <div className="p-6 border-b border-surface-100 bg-surface-50/50">
+                      <div className="p-6 border-b border-surface-100 bg-transparent">
                         <div className="flex items-center justify-between mb-4">
                           <h3 className="text-sm font-black text-brand-dark uppercase tracking-widest">
                             Alert Logs
@@ -436,11 +431,7 @@ export default function DashboardLayout() {
                     showUserMenu ? "bg-brand-dark border-brand-dark text-white shadow-xl" : "bg-white border-surface-200 hover:border-brand-blue/30 shadow-sm"
                   }`}
                 >
-                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-black text-sm transition-colors ${
-                    showUserMenu ? "bg-brand-blue text-white" : "bg-brand-dark text-white"
-                  }`}>
-                    {(user.firstName?.[0] || 'U') + (user.lastName?.[0] || 'N')}
-                  </div>
+                  <UserCircleIcon className={`w-9 h-9 ${showUserMenu ? "text-brand-blue" : "text-brand-dark"}`} />
                   <div className="hidden sm:block text-left">
                     <p className={`text-xs font-black tracking-tight leading-none ${showUserMenu ? "text-white" : "text-brand-dark"}`}>{user.firstName} {user.lastName}</p>
                     <p className={`text-[9px] font-bold uppercase tracking-widest ${showUserMenu ? "text-white/60" : "text-text-tertiary"}`}>{user.tier}</p>
@@ -453,9 +444,9 @@ export default function DashboardLayout() {
                       initial={{ opacity: 0, y: 15, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 15, scale: 0.95 }}
-                      className="absolute right-0 top-full mt-4 w-64 bg-white border border-surface-200 rounded-[2rem] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.1)] overflow-hidden z-[100]"
+                      className="absolute right-0 top-full mt-4 w-64 bg-panel border border-surface-200 rounded-[2rem] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.1)] overflow-hidden z-[100]"
                     >
-                      <div className="p-6 border-b border-surface-100 bg-surface-50/50">
+                      <div className="p-6 border-b border-surface-100 bg-transparent">
                         <p className="text-sm font-black text-brand-dark tracking-tight">
                           {user.firstName} {user.lastName}
                         </p>

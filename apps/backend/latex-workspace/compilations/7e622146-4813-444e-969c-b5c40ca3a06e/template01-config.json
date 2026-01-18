@@ -1,9 +1,9 @@
 {
-  "templateId": "template02",
-  "templateName": "Deedy Two-Column Resume",
-  "description": "A popular two-column resume template optimized for tech roles, featuring clean typography and ATS-friendly formatting. Based on the famous Deedy Resume design.",
-  "category": "professional",
-  "tags": ["two-column", "tech", "ats-friendly", "minimalist"],
+  "templateId": "template01",
+  "templateName": "ASU Sparky Sundevil Resume",
+  "description": "A professional academic resume template designed at Arizona State University featuring clean sections and excellent readability. Perfect for students and early career professionals in technical fields.",
+  "category": "academic",
+  "tags": ["single-column", "academic", "student", "ats-friendly", "professional"],
   "isStandardized": true,
   "requiredFields": [
     "personalInfo.firstName",
@@ -68,7 +68,7 @@
       "required": false
     },
     "location": {
-      "ifTag": "IF_LOCATION", 
+      "ifTag": "IF_LOCATION",
       "endIfTag": "/IF_LOCATION",
       "required": false
     },
@@ -100,11 +100,6 @@
     "education": {
       "ifTag": "IF_EDUCATION",
       "endIfTag": "/IF_EDUCATION",
-      "required": false
-    },
-    "coursework": {
-      "ifTag": "IF_COURSEWORK",
-      "endIfTag": "/IF_COURSEWORK",
       "required": false
     },
     "skills": {
@@ -159,15 +154,15 @@
     }
   },
   "compilationSettings": {
-    "compiler": "xelatex",
+    "compiler": "pdflatex",
     "passes": 2,
-    "specialPackages": ["fontawesome5", "multicol", "tabularx"]
+    "specialPackages": ["fontawesome5", "multicol", "tabularx", "geometry", "xcolor"]
   },
   "metadata": {
     "author": "AI Job Suite",
     "version": "1.0.0",
-    "lastUpdated": "2025-08-05",
-    "screenshotPath": "/templates/template02/38598.jpeg",
-    "previewUrl": "/templates/template02/38598.jpeg"
+    "lastUpdated": "2025-08-13",
+    "screenshotPath": "/templates/template01/33592.jpeg",
+    "previewUrl": "/templates/template01/33592.jpeg"
   }
 }

@@ -53,7 +53,7 @@
     \endgroup
 }
 
-% ------------------------------------
+% ------------------------------------ 
 
 % ------------- Header --------------
 \newcommand\printNameTitle[1]{%
@@ -77,7 +77,7 @@
         {% 
             \expandafter\ifstrequal\expandafter{phone}{}{}% Contact number
             {% 
-                \ifcommandkey{phone}{\commandkey{phone}}{}% 
+                \ifcommandkey{phone}{\commandkey{phone}}{}%
                 \expandafter\ifstrequal\expandafter{email}{}
                 {% 
                     \expandafter\ifstrequal\expandafter{linkedin}{}
@@ -85,9 +85,9 @@
                         \expandafter\ifstrequal\expandafter{github}{}
                         {% 
                             % empty % 
-                        }{\separator}%
-                    }{\separator}%
-                }{\separator}%
+                        }{\separator}% 
+                    }{\separator}% 
+                }{\separator}% 
             }% Contact number field ends here
             \expandafter\ifstrequal\expandafter{email}{}{}% Email
             {% 
@@ -97,8 +97,8 @@
                     \expandafter\ifstrequal\expandafter{github}{}
                     {% 
                         % empty % 
-                    }{\separator}%
-                }{\separator}%
+                    }{\separator}% 
+                }{\separator}% 
             }% Email fields ends here
             \expandafter\ifstrequal\expandafter{linkedin}{}{}% Linkedin
             {% 
@@ -106,7 +106,7 @@
                 \expandafter\ifstrequal\expandafter{github}{}
                 {% 
                     % empty % 
-                }{\separator}%
+                }{\separator}% 
             }% Linkedin field ends here
             \expandafter\ifstrequal\expandafter{github}{}{}% Github
             {% 
@@ -145,10 +145,10 @@
     }%
     \IfStrEq{\commandkey{college}}{}{}{%
         \\ \commandkey{college}%
-    }% 
+    }%
     \IfStrEq{\commandkey{coursework}}{}{}{%
         \\ \commandkey{coursework}%
-    }%    
+    }%
 }
 
 % ------------------------------------
@@ -191,7 +191,7 @@
     \textbf{% 
         \ifcommandkey{company}{\commandkey{company}}{}%
         \ifcommandkey{location}{
-            \ifcommandkey{company}{, }{}% 
+            \ifcommandkey{company}{, }{}
             \commandkey{location}%
         }{}% 
         \ifcommandkey{position}{

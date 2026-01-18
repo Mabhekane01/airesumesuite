@@ -43,7 +43,7 @@ export default function JobOptimizationModal({
     updateResumeData,
     updateAIData,
     setOptimizedLatexCode,
-    clearOptimizedContent,
+    markPdfCacheStale,
     setCachedPdf
   } = useResume();
   const activeResumeData = resumeData || contextResumeData;
@@ -202,8 +202,8 @@ export default function JobOptimizationModal({
       // Handle multiple resume property names for backwards compatibility
       const optimizedResumeData = result.optimizedResume || result.improvedResume || result.enhancedResume;
       
-      // Clear previous optimization state when applying new optimization
-      clearOptimizedContent();
+      // Mark cached PDF as stale so the preview prompts for regeneration
+      markPdfCacheStale();
       
       // Handle PDF blob directly like enhancement service
       if (result.pdfBlob) {

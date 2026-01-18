@@ -182,8 +182,8 @@ export function DatePicker({
             placeholder={getPlaceholderText()}
             disabled={disabled}
             className={clsx(
-              'input-field-dark pr-10',
-              error && 'border-accent-danger focus:ring-accent-danger focus:border-accent-danger',
+              'input-resume pr-10',
+              error && 'border-red-300 focus:ring-red-100',
               disabled && 'opacity-50 cursor-not-allowed'
             )}
           />
@@ -194,10 +194,10 @@ export function DatePicker({
             onKeyDown={handleKeyDown}
             disabled={disabled}
             className={clsx(
-              'input-field-dark pr-10 text-left cursor-pointer',
-              error && 'border-accent-danger focus:ring-accent-danger focus:border-accent-danger',
+              'input-resume pr-10 text-left cursor-pointer flex items-center',
+              error && 'border-red-300 focus:ring-red-100',
               disabled && 'opacity-50 cursor-not-allowed',
-              !displayValue && 'text-dark-text-muted'
+              !displayValue && 'text-text-tertiary'
             )}
           >
             {displayValue || getPlaceholderText()}
@@ -214,7 +214,7 @@ export function DatePicker({
         </button>
         
         {isOpen && !disabled && (
-          <div className="absolute z-50 mt-1 w-full max-w-xs bg-surface-50 border border-surface-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+          <div className="absolute z-50 mt-1 w-full max-w-xs bg-white border border-slate-200 rounded-lg shadow-xl max-h-60 overflow-y-auto ring-1 ring-black/5">
             {monthOptions.length > 0 ? (
               monthOptions.map((option) => (
                 <button

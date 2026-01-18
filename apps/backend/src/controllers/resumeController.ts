@@ -129,7 +129,15 @@ export const resumeValidation = [
   body('personalInfo.lastName').notEmpty().trim().withMessage('Last name is required'),
   body('personalInfo.email').isEmail().normalizeEmail().withMessage('Valid email is required'),
   body('personalInfo.phone').notEmpty().withMessage('Phone is required'),
-  body('personalInfo.location').notEmpty().trim().withMessage('Location is required'),
+  body('personalInfo.location').custom((value, { req }) => {
+    const templateId = req.body.templateId || req.body.template;
+    const targetLocation = req.body.targetLocation;
+    const isBasicTemplate = templateId === 'basic_sa' || targetLocation === 'South Africa';
+    if (isBasicTemplate && (!value || !String(value).trim())) {
+      throw new Error('Location is required');
+    }
+    return true;
+  }),
   body('personalInfo.linkedinUrl').optional().isString().trim(),
   body('personalInfo.portfolioUrl').optional().isString().trim(),
   body('personalInfo.githubUrl').optional().isString().trim(),
@@ -181,7 +189,15 @@ export const resumeUpdateValidation = [
   body('personalInfo.lastName').optional().notEmpty().trim().withMessage('Last name cannot be empty'), 
   body('personalInfo.email').optional().isEmail().normalizeEmail().withMessage('Valid email is required'),
   body('personalInfo.phone').optional().notEmpty().withMessage('Phone cannot be empty'),
-  body('personalInfo.location').optional().notEmpty().trim().withMessage('Location cannot be empty'),
+  body('personalInfo.location').custom((value, { req }) => {
+    const templateId = req.body.templateId || req.body.template;
+    const targetLocation = req.body.targetLocation;
+    const isBasicTemplate = templateId === 'basic_sa' || targetLocation === 'South Africa';
+    if (isBasicTemplate && (!value || !String(value).trim())) {
+      throw new Error('Location cannot be empty');
+    }
+    return true;
+  }),
   body('personalInfo.linkedinUrl').optional().isString().trim(),
   body('personalInfo.portfolioUrl').optional().isString().trim(),
   body('personalInfo.githubUrl').optional().isString().trim(),
@@ -510,14 +526,8 @@ export class StandardizedResumeController {
           optimizedLatexCode: latex
         });
       } catch (latexError) {
-        console.error('⚠️ LaTeX generation failed, falling back to HTML/Puppeteer engine:', latexError);
-        console.log(`📄 [HTML-FALLBACK] Generating PDF using HTML engine for template: ${templateId}`);
-        
-        // Fallback to HTML/Puppeteer
-        pdfBuffer = await templateRenderer.generatePDF({
-          ...standardizedData,
-          templateId
-        });
+        console.error('⚠️ LaTeX generation failed:', latexError);
+        throw latexError;
       }
 
       res.setHeader('Content-Type', 'application/pdf');
@@ -615,13 +625,8 @@ export class StandardizedResumeController {
           optimizedLatexCode: latex
         });
       } catch (latexError) {
-        console.error('⚠️ [downloadTrackedPDF] LaTeX generation failed, falling back to HTML/Puppeteer engine:', latexError);
-        console.log(`📄 [HTML-FALLBACK] Generating PDF using HTML engine for template: ${templateId}`);
-        
-        pdfBuffer = await templateRenderer.generatePDF({
-          ...standardizedData,
-          templateId
-        });
+        console.error('⚠️ [downloadTrackedPDF] LaTeX generation failed:', latexError);
+        throw latexError;
       }
 
       // ALWAYS apply the advanced tracking layer (QR Code, Metadata, Link) to the final buffer
@@ -704,13 +709,8 @@ export class StandardizedResumeController {
           optimizedLatexCode: latex
         });
       } catch (latexError) {
-        console.error('⚠️ Unsaved preview LaTeX generation failed, falling back to HTML/Puppeteer engine:', latexError);
-        console.log(`📄 [HTML-FALLBACK] Generating unsaved preview using HTML engine for template: ${templateId}`);
-        
-        pdfBuffer = await templateRenderer.generatePDF({
-          ...resumeData,
-          templateId
-        });
+        console.error('⚠️ Unsaved preview LaTeX generation failed:', latexError);
+        throw latexError;
       }
 
       res.setHeader('Content-Type', 'application/pdf');
@@ -1216,6 +1216,25 @@ export class StandardizedResumeController {
       });
     } catch (error) {
       console.error('❌ ATS analysis failed:', error);
+
+      if (error instanceof Error && error.name === 'AIServiceError') {
+        const details = (error as any).details || {};
+        res.status(200).json({
+          success: true,
+          data: {
+            atsScore: 65,
+            improvements: [],
+            keywordsAdded: [],
+            recommendations: [],
+            mode: 'fallback',
+            confidence: 'low',
+            providerFailures: details.providerFailures || [],
+            reason: details.reason || error.message,
+            generationMethod: 'fallback'
+          }
+        });
+        return;
+      }
       res.status(500).json({
         success: false, 
         message: 'Failed to analyze ATS compatibility'
@@ -1254,6 +1273,25 @@ export class StandardizedResumeController {
       });
     } catch (error) {
       console.error('❌ Unsaved resume ATS analysis failed:', error);
+
+      if (error instanceof Error && error.name === 'AIServiceError') {
+        const details = (error as any).details || {};
+        res.status(200).json({
+          success: true,
+          data: {
+            atsScore: 65,
+            improvements: [],
+            keywordsAdded: [],
+            recommendations: [],
+            mode: 'fallback',
+            confidence: 'low',
+            providerFailures: details.providerFailures || [],
+            reason: details.reason || error.message,
+            generationMethod: 'fallback'
+          }
+        });
+        return;
+      }
       res.status(500).json({
         success: false, 
         message: 'Failed to analyze ATS compatibility for unsaved resume'
@@ -1378,8 +1416,8 @@ export class StandardizedResumeController {
       let pdfBuffer: Buffer;
 
       try {
-        const { templateService } = await import('../services/resume-builder/templateService');
-        const latex = await templateService.generateLatex(
+        const { standardizedTemplateService } = await import('../services/resume-builder/standardizedTemplateService');
+        const latex = await standardizedTemplateService.generateLatex(
           templateId,
           processedResumeData
         );
@@ -1393,13 +1431,8 @@ export class StandardizedResumeController {
           'pdf'
         );
       } catch (latexError) {
-        console.error('⚠️ Preview PDF LaTeX generation failed, falling back to HTML/Puppeteer engine:', latexError);
-        console.log(`📄 [HTML-FALLBACK] Generating preview PDF using HTML engine for template: ${templateId}`);
-        
-        pdfBuffer = await templateRenderer.generatePDF({
-          ...processedResumeData,
-          templateId
-        });
+        console.error('❌ Preview PDF LaTeX generation failed:', latexError);
+        throw latexError;
       }
 
       // Validate the PDF buffer
@@ -1696,13 +1729,8 @@ export class StandardizedResumeController {
               'pdf'
             );
           } catch (latexError) {
-            console.error('⚠️ Save PDF LaTeX generation (from data) failed, falling back to HTML/Puppeteer engine:', latexError);
-            console.log(`📄 [HTML-FALLBACK] Generating PDF using HTML engine for template: ${templateId || 'template01'}`);
-            
-            pdfBuffer = await templateRenderer.generatePDF({
-              ...standardizedData,
-              templateId: templateId || 'template01'
-            });
+            console.error('⚠️ Save PDF LaTeX generation (from data) failed:', latexError);
+            throw latexError;
           }
         
         
@@ -1745,14 +1773,8 @@ export class StandardizedResumeController {
               'pdf'
             );
           } catch (latexError) {
-            console.error('⚠️ Save PDF LaTeX generation (from DB) failed, falling back to HTML/Puppeteer engine:', latexError);
-            const fallbackTemplateId = templateId || savedResume.templateId || 'template01';
-            console.log(`📄 [HTML-FALLBACK] Generating PDF using HTML engine for template: ${fallbackTemplateId}`);
-            
-            pdfBuffer = await templateRenderer.generatePDF({
-              ...standardizedData,
-              templateId: fallbackTemplateId
-            });
+            console.error('⚠️ Save PDF LaTeX generation (from DB) failed:', latexError);
+            throw latexError;
           }
         
         

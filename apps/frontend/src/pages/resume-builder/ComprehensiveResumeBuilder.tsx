@@ -157,14 +157,32 @@ const ComprehensiveResumeBuilderContent: React.FC = () => {
     // Check for ID in params (preferred) or query param (legacy/fallback)
     const editId = id || urlParams.get('edit');
     
+    // Handle hydration from state (e.g. coming back from Preview)
+    if (location.state?.resumeData) {
+      updateResumeData(location.state.resumeData);
+      if (location.state.currentStep !== undefined) {
+        setCurrentStep(location.state.currentStep);
+      }
+    }
+    
     if (editId) {
-      if (editId === '[object Object]') {
+      if (editId === 'new') {
+        // Clear previous AI/PDF cache to ensure fresh start and correct "First Attempt" behavior
+        // This forces the preview to auto-generate instead of showing "Changes Detected" pop-up
+        updateAIData({ 
+          cachedPdfUrl: undefined, 
+          pdfCacheHash: undefined, 
+          pdfBlob: undefined, 
+          savedPdfs: [] 
+        });
+      } else if (editId === '[object Object]') {
         console.error('Invalid resume ID detected: [object Object]');
         toast.error('Invalid architecture reference detected. Return to dashboard.');
         navigate('/dashboard/documents');
         return;
+      } else {
+        loadResumeForEditing(editId);
       }
-      loadResumeForEditing(editId);
     }
   }, [location.state?.templateId, location.state?.targetLocation, location.search, id]);
 
@@ -231,8 +249,9 @@ const ComprehensiveResumeBuilderContent: React.FC = () => {
           toast.error('Phone number is required.');
           return false;
         }
-        if (!resumeData.personalInfo?.location) {
-          toast.error('Location is required.');
+        // Location is only strictly required for Basic Resume (SA Format)
+        if ((resumeData.templateId === 'basic_sa' || resumeData.template === 'basic_sa') && !resumeData.personalInfo?.location) {
+          toast.error('Location is required for this template.');
           return false;
         }
         return true;
@@ -310,8 +329,9 @@ const ComprehensiveResumeBuilderContent: React.FC = () => {
         return;
       }
       
-      if (!resumeData.personalInfo?.location) {
-        toast.error('Identity Protocol Error: Location required.');
+      // Location is only strictly required for Basic Resume
+      if ((resumeData.templateId === 'basic_sa' || resumeData.template === 'basic_sa') && !resumeData.personalInfo?.location) {
+        toast.error('Identity Protocol Error: Location required for this template.');
         setIsLoading(false);
         return;
       }
@@ -589,38 +609,40 @@ const ComprehensiveResumeBuilderContent: React.FC = () => {
                     <StepComponent {...getStepProps(currentStepData.id)} />
                   )}
                 </div>
-
-                {/* Internal Navigation Buttons */}
-                <div className="mt-8 md:mt-16 pt-6 md:pt-10 border-t border-surface-100 flex flex-col-reverse sm:flex-row items-center justify-between gap-4 sm:gap-0">
-                  <button
-                    onClick={handlePrevious}
-                    disabled={currentStep === 0}
-                    className="w-full sm:w-auto px-4 py-3 md:px-8 md:py-4 text-[10px] font-black uppercase tracking-[0.2em] text-text-tertiary hover:text-brand-dark disabled:opacity-30 transition-all flex items-center justify-center sm:justify-start gap-2"
-                  >
-                    ← Previous
-                  </button>
-                  
-                  {currentStep < steps.length - 1 ? (
-                    <button
-                      onClick={handleNext}
-                      className="w-full sm:w-auto btn-primary px-6 py-3 md:px-10 md:py-4 text-xs md:text-sm font-black uppercase tracking-[0.2em] shadow-xl shadow-brand-blue/20 flex items-center justify-center gap-3 group active:scale-95 transition-all"
-                    >
-                      Process & Next <ChevronRightIcon className="w-4 h-4 stroke-[3] group-hover:translate-x-1 transition-transform" />
-                    </button>
-                  ) : (
-                    <button
-                      onClick={handleSaveResume}
-                      disabled={isLoading}
-                      className="w-full sm:w-auto btn-primary px-6 py-3 md:px-12 md:py-4 text-xs md:text-sm font-black uppercase tracking-[0.2em] shadow-xl shadow-brand-blue/20 flex items-center justify-center gap-3 active:scale-95 transition-all"
-                    >
-                      <CloudIcon className="w-5 h-5 stroke-[2.5]" />
-                      Finalize
-                    </button>
-                  )}
-                </div>
               </div>
             </div>
           </div>
+        </div>
+      </div>
+      
+      {/* --- FLOATING NAVIGATION FOOTER --- */}
+      <div className="fixed bottom-0 left-0 lg:left-72 right-0 z-40 bg-white/90 backdrop-blur-md border-t border-surface-200 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] py-4 px-6 md:px-10">
+        <div className="max-w-7xl mx-auto flex flex-col-reverse sm:flex-row items-center justify-between gap-4 sm:gap-0">
+          <button
+            onClick={handlePrevious}
+            disabled={currentStep === 0}
+            className="w-full sm:w-auto btn-secondary px-6 py-3 text-xs font-black uppercase tracking-widest shadow-sm transition-all flex items-center justify-center gap-2 hover:bg-surface-50"
+          >
+            ← Previous Section
+          </button>
+          
+          {currentStep < steps.length - 1 ? (
+            <button
+              onClick={handleNext}
+              className="w-full sm:w-auto btn-primary px-8 py-3 text-xs font-black uppercase tracking-widest shadow-lg shadow-brand-blue/20 flex items-center justify-center gap-3 hover:scale-105 transition-transform"
+            >
+              Process & Next <ChevronRightIcon className="w-4 h-4 stroke-[3]" />
+            </button>
+          ) : (
+            <button
+              onClick={handleSaveResume}
+              disabled={isLoading}
+              className="w-full sm:w-auto btn-primary px-10 py-3 text-xs font-black uppercase tracking-widest shadow-lg shadow-brand-blue/20 flex items-center justify-center gap-3 hover:scale-105 transition-transform"
+            >
+              <CloudIcon className="w-5 h-5 stroke-[2.5]" />
+              Finalize
+            </button>
+          )}
         </div>
       </div>
       

@@ -1,4 +1,12 @@
 import express from 'express';
+// Fix for Node.js 19+ DNS resolution issues with MongoDB Atlas SRV records
+import dns from 'node:dns';
+try {
+  dns.setServers(['1.1.1.1', '8.8.8.8']);
+  console.log('🌐 DNS resolvers configured: 1.1.1.1, 8.8.8.8');
+} catch (e) {
+  console.warn('⚠️  Failed to set custom DNS servers:', e);
+}
 console.log('🚀 [BACKEND] SERVER RELOADING - ' + new Date().toISOString());
 import cors from 'cors';
 import helmet from 'helmet';
@@ -310,22 +318,30 @@ app.use(errorHandler);
 // Initialize database connections and start server
 const startServer = async () => {
   try {
-    await connectDB();
+    const dbConnected = await connectDB();
     await connectRedis();
     
-    // Initialize location, company, and currency databases
-    console.log('🌍 Initializing location, company, and currency databases...');
-    await locationService.initializeDatabase();
-    await companyService.initializeDatabase();
-    await currencyService.initializeDatabase();
-    
-    // Clean up expired tokens on startup
-    console.log('🧹 Running startup token cleanup...');
-    try {
-      const cleanupResult = await cleanupExpiredTokens();
-      console.log(`✅ Startup cleanup: ${cleanupResult.tokensRemoved} expired tokens removed, ${cleanupResult.oldSessionsClosed} old sessions closed`);
-    } catch (error) {
-      console.warn('⚠️  Startup token cleanup failed:', error);
+    if (dbConnected) {
+      // Initialize location, company, and currency databases
+      console.log('🌍 Initializing location, company, and currency databases...');
+      try {
+        await locationService.initializeDatabase();
+        await companyService.initializeDatabase();
+        await currencyService.initializeDatabase();
+      } catch (error) {
+        console.warn('⚠️  Database initialization failed:', error);
+      }
+      
+      // Clean up expired tokens on startup
+      console.log('🧹 Running startup token cleanup...');
+      try {
+        const cleanupResult = await cleanupExpiredTokens();
+        console.log(`✅ Startup cleanup: ${cleanupResult.tokensRemoved} expired tokens removed, ${cleanupResult.oldSessionsClosed} old sessions closed`);
+      } catch (error) {
+        console.warn('⚠️  Startup token cleanup failed:', error);
+      }
+    } else {
+      console.warn('⚠️  Skipping database initialization and token cleanup due to missing DB connection');
     }
     
     // Test email service connection

@@ -68,10 +68,10 @@ export default function NotificationDropdown({
       initial={{ opacity: 0, y: 15, scale: 0.95 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: 15, scale: 0.95 }}
-      className="fixed left-4 right-4 top-24 w-auto sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-4 sm:w-96 bg-white border border-surface-200 rounded-[2rem] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.1)] overflow-hidden z-[100]"
+      className="fixed left-4 right-4 top-24 w-auto sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-4 sm:w-96 bg-panel border border-surface-200 rounded-[2rem] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.1)] overflow-hidden z-[100]"
     >
       {/* --- HEADER --- */}
-      <div className="p-4 md:p-6 border-b border-surface-100 bg-surface-50/50">
+      <div className="p-4 md:p-6 border-b border-surface-100 bg-panel">
         <div className="flex items-center justify-between mb-3 md:mb-4">
           <h3 className="text-sm font-black text-brand-dark uppercase tracking-widest">
             Alert Logs
@@ -162,7 +162,7 @@ export default function NotificationDropdown({
       </div>
 
       {/* --- FOOTER --- */}
-      <div className="p-4 bg-surface-50/50 border-t border-surface-100 text-center">
+      <div className="p-4 bg-panel border-t border-surface-100 text-center">
         <p className="text-[9px] font-black text-text-tertiary uppercase tracking-[0.2em]">
           End-to-End Encrypted Notifications
         </p>
