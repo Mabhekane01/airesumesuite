@@ -52,12 +52,7 @@ export default function PublicTemplatesPage() {
       return;
     }
 
-    navigate('/dashboard/resume/comprehensive', {
-      state: { 
-        templateId: templateId,
-        isLatexTemplate: true
-      }
-    });
+    navigate(`/templates/${templateId}/preview`);
   };
 
   const handleAuthSuccess = () => {
@@ -65,12 +60,7 @@ export default function PublicTemplatesPage() {
     toast.success('System Authenticated. Identity active.');
     
     if (selectedTemplate) {
-      navigate('/dashboard/resume/comprehensive', {
-        state: { 
-          templateId: selectedTemplate,
-          isLatexTemplate: true
-        }
-      });
+      navigate(`/templates/${selectedTemplate}/preview`);
     }
   };
 

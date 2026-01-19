@@ -11,6 +11,7 @@ import ResumeBuilder from './pages/resume-builder/ResumeBuilder';
 import ComprehensiveResumeBuilder from './pages/resume-builder/ComprehensiveResumeBuilder';
 import BasicResumeBuilder from './pages/resume-builder/BasicResumeBuilder';
 import TemplateSelection from './pages/resume-builder/TemplateSelection';
+import TemplatePreviewPage from './pages/resume-builder/TemplatePreviewPage';
 import ResumePreviewPage from './pages/resume-builder/ResumePreviewPage';
 import UploadResume from './pages/resume-builder/UploadResume';
 import EditJobApplication from './pages/job-tracker/EditJobApplication';
@@ -72,6 +73,10 @@ const AppRoutes = [
     element: <Layout><PublicTemplatesPage /></Layout>
   },
   {
+    path: "/templates/:templateId/preview",
+    element: <Layout><TemplatePreviewPage /></Layout>
+  },
+  {
     path: "/jobs",
     element: <Layout><JobBoard /></Layout>
   },
@@ -101,6 +106,7 @@ const AppRoutes = [
       // Resume Builder Routes
       { path: "resume", element: <ResumeBuilder /> },
       { path: "resume/templates", element: <TemplateSelection /> },
+      { path: "resume/templates/:templateId/preview", element: <TemplatePreviewPage /> },
       { path: "resume/comprehensive", element: <ComprehensiveResumeBuilder /> },
       { path: "resume/basic", element: <BasicResumeBuilder /> },
       { path: "resume/basic/:id", element: <BasicResumeBuilder /> },

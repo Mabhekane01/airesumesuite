@@ -174,14 +174,11 @@ export default function TemplateSelection() {
                 return;
               }
               
-              setSelectedTemplate(templateId);
-              const builderPath = '/dashboard/resume/comprehensive';
-              navigate(builderPath, { 
-                state: { 
-                  resumeData: resumeData ? { ...resumeData, templateId, isLatexTemplate: true } : undefined, 
-                  templateId, 
-                  isLatexTemplate: true 
-                } 
+            setSelectedTemplate(templateId);
+              navigate(`/dashboard/resume/templates/${templateId}/preview`, {
+                state: {
+                  resumeData: resumeData ? { ...resumeData } : undefined
+                }
               });
             }}
           />
