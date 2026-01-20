@@ -1884,7 +1884,7 @@ export class StandardizedResumeController {
       console.log('🤖 [AI-PDF] Enhancing resume and generating PDF...');
 
       // Enhance content with AI
-      const contentEnhancement = await aiContentEnhancer.enhanceResumeContent(resumeData);
+      const contentEnhancement = await aiContentEnhancer.enhanceResumeContent(resumeData, options || {});
 
       let pdfBuffer: Buffer;
 
@@ -2060,7 +2060,15 @@ export class StandardizedResumeController {
             workExperience: this.createWorkExperienceSuggestions(resumeData.workExperience, contentEnhancement.enhancedContent.workExperience),
             education: this.createEducationSuggestions(resumeData.education, contentEnhancement.enhancedContent.education),
             skills: this.createSkillsSuggestions(resumeData.skills, contentEnhancement.enhancedContent.skills),
-            projects: this.createProjectsSuggestions(resumeData.projects, contentEnhancement.enhancedContent.projects)
+            projects: this.createProjectsSuggestions(resumeData.projects, contentEnhancement.enhancedContent.projects),
+            certifications: this.createCertificationsSuggestions(resumeData.certifications, contentEnhancement.enhancedContent.certifications),
+            languages: this.createLanguagesSuggestions(resumeData.languages, contentEnhancement.enhancedContent.languages),
+            volunteerExperience: this.createVolunteerExperienceSuggestions(resumeData.volunteerExperience, contentEnhancement.enhancedContent.volunteerExperience),
+            awards: this.createAwardsSuggestions(resumeData.awards, contentEnhancement.enhancedContent.awards),
+            publications: this.createPublicationsSuggestions(resumeData.publications, contentEnhancement.enhancedContent.publications),
+            references: this.createReferencesSuggestions(resumeData.references, contentEnhancement.enhancedContent.references),
+            hobbies: this.createHobbiesSuggestions(resumeData.hobbies, contentEnhancement.enhancedContent.hobbies),
+            additionalSections: this.createAdditionalSectionsSuggestions(resumeData.additionalSections, contentEnhancement.enhancedContent.additionalSections)
           }
         }
       });
@@ -2145,47 +2153,294 @@ export class StandardizedResumeController {
 
   private createEducationSuggestions(original: any[], enhanced: any[]): any {
     const suggestions = [];
-    // Basic comparison - can be enhanced based on specific needs
-    if (JSON.stringify(original) !== JSON.stringify(enhanced)) {
-      suggestions.push({
-        field: 'education',
-        type: 'improvement',
-        original: original,
-        suggested: enhanced,
-        reason: 'Enhanced education section formatting and relevant coursework'
-      });
+    if (Array.isArray(original) && Array.isArray(enhanced) && original.length === enhanced.length) {
+      for (let i = 0; i < original.length; i++) {
+        const origEdu = original[i];
+        const enhEdu = enhanced[i];
+        if (JSON.stringify(origEdu.coursework) !== JSON.stringify(enhEdu.coursework)) {
+          suggestions.push({
+            field: `education[${i}].coursework`,
+            type: 'improvement',
+            original: origEdu.coursework,
+            suggested: enhEdu.coursework,
+            reason: `Refined coursework for ${enhEdu.institution || origEdu.institution || `education ${i + 1}`}`
+          });
+        }
+      }
     }
-    
+
     return { suggestions, hasChanges: suggestions.length > 0 };
   }
 
   private createSkillsSuggestions(original: any[], enhanced: any[]): any {
     const suggestions = [];
-    if (JSON.stringify(original) !== JSON.stringify(enhanced)) {
-      suggestions.push({
-        field: 'skills',
-        type: 'improvement',
-        original: original,
-        suggested: enhanced,
-        reason: 'Enhanced skills with industry-relevant technologies and better categorization'
-      });
+    const originalList = Array.isArray(original) ? original : [];
+    const enhancedList = Array.isArray(enhanced) ? enhanced : [];
+    const originalByName = new Map(
+      originalList.map((skill: any) => [(skill.name || skill).toString().toLowerCase(), skill])
+    );
+
+    for (const skill of enhancedList) {
+      const name = (skill.name || '').toString().trim();
+      if (!name) continue;
+      const key = name.toLowerCase();
+      const originalSkill = originalByName.get(key);
+      if (!originalSkill) {
+        suggestions.push({
+          field: 'skills.add',
+          type: 'addition',
+          original: 'Not listed',
+          suggested: skill,
+          reason: `Add relevant skill: ${name}`
+        });
+      } else if (skill.category && skill.category !== originalSkill.category) {
+        suggestions.push({
+          field: 'skills.update',
+          type: 'improvement',
+          original: originalSkill,
+          suggested: skill,
+          reason: `Update skill category for ${name}`
+        });
+      }
     }
-    
+
     return { suggestions, hasChanges: suggestions.length > 0 };
   }
 
   private createProjectsSuggestions(original: any[], enhanced: any[]): any {
     const suggestions = [];
-    if (JSON.stringify(original) !== JSON.stringify(enhanced)) {
-      suggestions.push({
-        field: 'projects',
-        type: 'improvement',
-        original: original,
-        suggested: enhanced,
-        reason: 'Enhanced project descriptions with technical details and measurable outcomes'
-      });
+    if (Array.isArray(original) && Array.isArray(enhanced) && original.length === enhanced.length) {
+      for (let i = 0; i < original.length; i++) {
+        const origProj = original[i];
+        const enhProj = enhanced[i];
+
+        if (JSON.stringify(origProj.description) !== JSON.stringify(enhProj.description)) {
+          suggestions.push({
+            field: `projects[${i}].description`,
+            type: 'improvement',
+            original: origProj.description,
+            suggested: enhProj.description,
+            reason: `Enhanced description for ${enhProj.name || origProj.name || `project ${i + 1}`}`
+          });
+        }
+
+        if (JSON.stringify(origProj.technologies) !== JSON.stringify(enhProj.technologies)) {
+          suggestions.push({
+            field: `projects[${i}].technologies`,
+            type: 'improvement',
+            original: origProj.technologies,
+            suggested: enhProj.technologies,
+            reason: `Refined technologies for ${enhProj.name || origProj.name || `project ${i + 1}`}`
+          });
+        }
+      }
     }
-    
+
+    return { suggestions, hasChanges: suggestions.length > 0 };
+  }
+
+  private createCertificationsSuggestions(original: any[] = [], enhanced: any[] = []): any {
+    const suggestions = [];
+    if (Array.isArray(original) && Array.isArray(enhanced) && original.length === enhanced.length) {
+      for (let i = 0; i < original.length; i++) {
+        const origCert = original[i];
+        const enhCert = enhanced[i];
+        if ((origCert.name || '').trim() !== (enhCert.name || '').trim()) {
+          suggestions.push({
+            field: `certifications[${i}].name`,
+            type: 'improvement',
+            original: origCert.name,
+            suggested: enhCert.name,
+            reason: `Standardized certification name for ${origCert.name || `certification ${i + 1}`}`
+          });
+        }
+        if ((origCert.issuer || '').trim() !== (enhCert.issuer || '').trim()) {
+          suggestions.push({
+            field: `certifications[${i}].issuer`,
+            type: 'improvement',
+            original: origCert.issuer,
+            suggested: enhCert.issuer,
+            reason: `Standardized issuer for ${origCert.name || `certification ${i + 1}`}`
+          });
+        }
+      }
+    }
+    return { suggestions, hasChanges: suggestions.length > 0 };
+  }
+
+  private createLanguagesSuggestions(original: any[] = [], enhanced: any[] = []): any {
+    const suggestions = [];
+    if (Array.isArray(original) && Array.isArray(enhanced) && original.length === enhanced.length) {
+      for (let i = 0; i < original.length; i++) {
+        const origLang = original[i];
+        const enhLang = enhanced[i];
+        if ((origLang.name || '').trim() !== (enhLang.name || '').trim()) {
+          suggestions.push({
+            field: `languages[${i}].name`,
+            type: 'improvement',
+            original: origLang.name,
+            suggested: enhLang.name,
+            reason: `Standardized language name for ${origLang.name || `language ${i + 1}`}`
+          });
+        }
+      }
+    }
+    return { suggestions, hasChanges: suggestions.length > 0 };
+  }
+
+  private createVolunteerExperienceSuggestions(original: any[] = [], enhanced: any[] = []): any {
+    const suggestions = [];
+    if (Array.isArray(original) && Array.isArray(enhanced) && original.length === enhanced.length) {
+      for (let i = 0; i < original.length; i++) {
+        const origExp = original[i];
+        const enhExp = enhanced[i];
+        if ((origExp.description || '').trim() !== (enhExp.description || '').trim()) {
+          suggestions.push({
+            field: `volunteerExperience[${i}].description`,
+            type: 'improvement',
+            original: origExp.description,
+            suggested: enhExp.description,
+            reason: `Enhanced volunteer description for ${enhExp.organization || origExp.organization || `role ${i + 1}`}`
+          });
+        }
+        if (JSON.stringify(origExp.achievements) !== JSON.stringify(enhExp.achievements)) {
+          suggestions.push({
+            field: `volunteerExperience[${i}].achievements`,
+            type: 'improvement',
+            original: origExp.achievements,
+            suggested: enhExp.achievements,
+            reason: `Enhanced volunteer achievements for ${enhExp.organization || origExp.organization || `role ${i + 1}`}`
+          });
+        }
+      }
+    }
+    return { suggestions, hasChanges: suggestions.length > 0 };
+  }
+
+  private createAwardsSuggestions(original: any[] = [], enhanced: any[] = []): any {
+    const suggestions = [];
+    if (Array.isArray(original) && Array.isArray(enhanced) && original.length === enhanced.length) {
+      for (let i = 0; i < original.length; i++) {
+        const origAward = original[i];
+        const enhAward = enhanced[i];
+        if ((origAward.description || '').trim() !== (enhAward.description || '').trim()) {
+          suggestions.push({
+            field: `awards[${i}].description`,
+            type: 'improvement',
+            original: origAward.description,
+            suggested: enhAward.description,
+            reason: `Enhanced award description for ${enhAward.title || origAward.title || `award ${i + 1}`}`
+          });
+        }
+      }
+    }
+    return { suggestions, hasChanges: suggestions.length > 0 };
+  }
+
+  private createPublicationsSuggestions(original: any[] = [], enhanced: any[] = []): any {
+    const suggestions = [];
+    if (Array.isArray(original) && Array.isArray(enhanced) && original.length === enhanced.length) {
+      for (let i = 0; i < original.length; i++) {
+        const origPub = original[i];
+        const enhPub = enhanced[i];
+        if ((origPub.description || '').trim() !== (enhPub.description || '').trim()) {
+          suggestions.push({
+            field: `publications[${i}].description`,
+            type: 'improvement',
+            original: origPub.description,
+            suggested: enhPub.description,
+            reason: `Enhanced publication description for ${enhPub.title || origPub.title || `publication ${i + 1}`}`
+          });
+        }
+      }
+    }
+    return { suggestions, hasChanges: suggestions.length > 0 };
+  }
+
+  private createReferencesSuggestions(original: any[] = [], enhanced: any[] = []): any {
+    const suggestions = [];
+    if (Array.isArray(original) && Array.isArray(enhanced) && original.length === enhanced.length) {
+      for (let i = 0; i < original.length; i++) {
+        const origRef = original[i];
+        const enhRef = enhanced[i];
+        if ((origRef.name || '').trim() !== (enhRef.name || '').trim()) {
+          suggestions.push({
+            field: `references[${i}].name`,
+            type: 'improvement',
+            original: origRef.name,
+            suggested: enhRef.name,
+            reason: `Normalized reference name for ${origRef.name || `reference ${i + 1}`}`
+          });
+        }
+        if ((origRef.title || '').trim() !== (enhRef.title || '').trim()) {
+          suggestions.push({
+            field: `references[${i}].title`,
+            type: 'improvement',
+            original: origRef.title,
+            suggested: enhRef.title,
+            reason: `Normalized reference title for ${origRef.name || `reference ${i + 1}`}`
+          });
+        }
+        if ((origRef.company || '').trim() !== (enhRef.company || '').trim()) {
+          suggestions.push({
+            field: `references[${i}].company`,
+            type: 'improvement',
+            original: origRef.company,
+            suggested: enhRef.company,
+            reason: `Normalized reference company for ${origRef.name || `reference ${i + 1}`}`
+          });
+        }
+        if ((origRef.relationship || '').trim() !== (enhRef.relationship || '').trim()) {
+          suggestions.push({
+            field: `references[${i}].relationship`,
+            type: 'improvement',
+            original: origRef.relationship,
+            suggested: enhRef.relationship,
+            reason: `Normalized reference relationship for ${origRef.name || `reference ${i + 1}`}`
+          });
+        }
+      }
+    }
+    return { suggestions, hasChanges: suggestions.length > 0 };
+  }
+
+  private createHobbiesSuggestions(original: any[] = [], enhanced: any[] = []): any {
+    const suggestions = [];
+    if (Array.isArray(original) && Array.isArray(enhanced) && original.length === enhanced.length) {
+      for (let i = 0; i < original.length; i++) {
+        const origHobby = original[i];
+        const enhHobby = enhanced[i];
+        if ((origHobby.description || '').trim() !== (enhHobby.description || '').trim()) {
+          suggestions.push({
+            field: `hobbies[${i}].description`,
+            type: 'improvement',
+            original: origHobby.description,
+            suggested: enhHobby.description,
+            reason: `Enhanced description for ${enhHobby.name || origHobby.name || `hobby ${i + 1}`}`
+          });
+        }
+      }
+    }
+    return { suggestions, hasChanges: suggestions.length > 0 };
+  }
+
+  private createAdditionalSectionsSuggestions(original: any[] = [], enhanced: any[] = []): any {
+    const suggestions = [];
+    if (Array.isArray(original) && Array.isArray(enhanced) && original.length === enhanced.length) {
+      for (let i = 0; i < original.length; i++) {
+        const origSection = original[i];
+        const enhSection = enhanced[i];
+        if ((origSection.content || '').trim() !== (enhSection.content || '').trim()) {
+          suggestions.push({
+            field: `additionalSections[${i}].content`,
+            type: 'improvement',
+            original: origSection.content,
+            suggested: enhSection.content,
+            reason: `Enhanced content for ${enhSection.title || origSection.title || `section ${i + 1}`}`
+          });
+        }
+      }
+    }
     return { suggestions, hasChanges: suggestions.length > 0 };
   }
 
@@ -2244,6 +2499,46 @@ export class StandardizedResumeController {
           'projects', 
           resumeData.projects, 
           optimizationResult.optimizedResume?.projects
+        ),
+        certifications: this.createJobOptimizationSuggestions(
+          'certifications',
+          resumeData.certifications,
+          optimizationResult.optimizedResume?.certifications
+        ),
+        languages: this.createJobOptimizationSuggestions(
+          'languages',
+          resumeData.languages,
+          optimizationResult.optimizedResume?.languages
+        ),
+        volunteerExperience: this.createJobOptimizationSuggestions(
+          'volunteerExperience',
+          resumeData.volunteerExperience,
+          optimizationResult.optimizedResume?.volunteerExperience
+        ),
+        awards: this.createJobOptimizationSuggestions(
+          'awards',
+          resumeData.awards,
+          optimizationResult.optimizedResume?.awards
+        ),
+        publications: this.createJobOptimizationSuggestions(
+          'publications',
+          resumeData.publications,
+          optimizationResult.optimizedResume?.publications
+        ),
+        references: this.createJobOptimizationSuggestions(
+          'references',
+          resumeData.references,
+          optimizationResult.optimizedResume?.references
+        ),
+        hobbies: this.createJobOptimizationSuggestions(
+          'hobbies',
+          resumeData.hobbies,
+          optimizationResult.optimizedResume?.hobbies
+        ),
+        additionalSections: this.createJobOptimizationSuggestions(
+          'additionalSections',
+          resumeData.additionalSections,
+          optimizationResult.optimizedResume?.additionalSections
         )
       };
 
@@ -2274,10 +2569,41 @@ export class StandardizedResumeController {
 
     } catch (error) {
       console.error('❌ Job optimization preview failed:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Job optimization preview failed',
-        error: error instanceof Error ? error.message : 'Unknown error'
+      res.status(200).json({
+        success: true,
+        data: {
+          originalResumeData: req.body?.resumeData,
+          optimizedResumeData: req.body?.resumeData,
+          jobMatchScore: 0,
+          keywordAlignment: [],
+          skillsMatch: 0,
+          experienceMatch: 0,
+          addedKeywords: [],
+          missingKeywords: [],
+          recommendations: ['Job optimization preview unavailable. Please try again.'],
+          strategicInsights: [],
+          jobContext: {
+            jobTitle: req.body?.jobTitle || 'Target Position',
+            companyName: req.body?.companyName || 'Target Company',
+            jobDescription: req.body?.jobDescription ? req.body.jobDescription.substring(0, 500) + '...' : ''
+          },
+          optimizationSuggestions: {
+            personalInfo: { suggestions: [], hasChanges: false },
+            professionalSummary: { suggestions: [], hasChanges: false },
+            workExperience: { suggestions: [], hasChanges: false },
+            education: { suggestions: [], hasChanges: false },
+            skills: { suggestions: [], hasChanges: false },
+            projects: { suggestions: [], hasChanges: false },
+            certifications: { suggestions: [], hasChanges: false },
+            languages: { suggestions: [], hasChanges: false },
+            volunteerExperience: { suggestions: [], hasChanges: false },
+            awards: { suggestions: [], hasChanges: false },
+            publications: { suggestions: [], hasChanges: false },
+            references: { suggestions: [], hasChanges: false },
+            hobbies: { suggestions: [], hasChanges: false },
+            additionalSections: { suggestions: [], hasChanges: false }
+          }
+        }
       });
     }
   }
@@ -2440,6 +2766,102 @@ export class StandardizedResumeController {
                 original: stripMarkdown(origItem.description) || '',
                 suggested: stripMarkdown(optItem.description) || '',
                 reason: `Optimized description for ${itemName}`
+              });
+            }
+          }
+        }
+      } else if (sectionName === 'languages') {
+        if (Array.isArray(original) && Array.isArray(optimized) && original.length === optimized.length) {
+          for (let i = 0; i < original.length; i++) {
+            const origLang = original[i];
+            const optLang = optimized[i];
+
+            if ((origLang.name || '').trim() !== (optLang.name || '').trim()) {
+              suggestions.push({
+                field: `languages[${i}].name`,
+                type: 'job_optimization',
+                original: stripMarkdown(origLang.name) || '',
+                suggested: stripMarkdown(optLang.name) || '',
+                reason: `Standardized language name for ${origLang.name || `language ${i + 1}`}`
+              });
+            }
+          }
+        }
+      } else if (sectionName === 'references') {
+        if (Array.isArray(original) && Array.isArray(optimized) && original.length === optimized.length) {
+          for (let i = 0; i < original.length; i++) {
+            const origRef = original[i];
+            const optRef = optimized[i];
+            const refName = optRef.name || origRef.name || `reference ${i + 1}`;
+
+            if ((origRef.name || '').trim() !== (optRef.name || '').trim()) {
+              suggestions.push({
+                field: `references[${i}].name`,
+                type: 'job_optimization',
+                original: stripMarkdown(origRef.name) || '',
+                suggested: stripMarkdown(optRef.name) || '',
+                reason: `Standardized reference name for ${refName}`
+              });
+            }
+            if ((origRef.title || '').trim() !== (optRef.title || '').trim()) {
+              suggestions.push({
+                field: `references[${i}].title`,
+                type: 'job_optimization',
+                original: stripMarkdown(origRef.title) || '',
+                suggested: stripMarkdown(optRef.title) || '',
+                reason: `Standardized reference title for ${refName}`
+              });
+            }
+            if ((origRef.company || '').trim() !== (optRef.company || '').trim()) {
+              suggestions.push({
+                field: `references[${i}].company`,
+                type: 'job_optimization',
+                original: stripMarkdown(origRef.company) || '',
+                suggested: stripMarkdown(optRef.company) || '',
+                reason: `Standardized reference company for ${refName}`
+              });
+            }
+            if ((origRef.relationship || '').trim() !== (optRef.relationship || '').trim()) {
+              suggestions.push({
+                field: `references[${i}].relationship`,
+                type: 'job_optimization',
+                original: stripMarkdown(origRef.relationship) || '',
+                suggested: stripMarkdown(optRef.relationship) || '',
+                reason: `Standardized reference relationship for ${refName}`
+              });
+            }
+          }
+        }
+      } else if (sectionName === 'hobbies') {
+        if (Array.isArray(original) && Array.isArray(optimized) && original.length === optimized.length) {
+          for (let i = 0; i < original.length; i++) {
+            const origHobby = original[i];
+            const optHobby = optimized[i];
+
+            if ((origHobby.description || '').trim() !== (optHobby.description || '').trim()) {
+              suggestions.push({
+                field: `hobbies[${i}].description`,
+                type: 'job_optimization',
+                original: stripMarkdown(origHobby.description) || '',
+                suggested: stripMarkdown(optHobby.description) || '',
+                reason: `Refined hobby description for ${optHobby.name || origHobby.name || `hobby ${i + 1}`}`
+              });
+            }
+          }
+        }
+      } else if (sectionName === 'additionalSections') {
+        if (Array.isArray(original) && Array.isArray(optimized) && original.length === optimized.length) {
+          for (let i = 0; i < original.length; i++) {
+            const origSection = original[i];
+            const optSection = optimized[i];
+
+            if ((origSection.content || '').trim() !== (optSection.content || '').trim()) {
+              suggestions.push({
+                field: `additionalSections[${i}].content`,
+                type: 'job_optimization',
+                original: stripMarkdown(origSection.content) || '',
+                suggested: stripMarkdown(optSection.content) || '',
+                reason: `Refined content for ${optSection.title || origSection.title || `section ${i + 1}`}`
               });
             }
           }

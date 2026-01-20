@@ -45,6 +45,14 @@ interface JobOptimizationReviewData {
     education: JobOptimizationSectionData;
     skills: JobOptimizationSectionData;
     projects: JobOptimizationSectionData;
+    certifications: JobOptimizationSectionData;
+    languages: JobOptimizationSectionData;
+    volunteerExperience: JobOptimizationSectionData;
+    awards: JobOptimizationSectionData;
+    publications: JobOptimizationSectionData;
+    references: JobOptimizationSectionData;
+    hobbies: JobOptimizationSectionData;
+    additionalSections: JobOptimizationSectionData;
   };
 }
 
@@ -144,6 +152,42 @@ export const JobOptimizationReviewModal: React.FC<JobOptimizationReviewModalProp
             finalData.professionalSummary = suggestion.original;
           } else if (suggestion.field === 'skills') {
             finalData.skills = suggestion.original;
+          } else if (suggestion.field.startsWith('languages')) {
+            const match = suggestion.field.match(/languages\[(\d+)\]\.(\w+)/);
+            if (match && finalData.languages) {
+              const [, indexStr, fieldName] = match;
+              const index = parseInt(indexStr);
+              if (finalData.languages[index] && optimizationData.originalResumeData.languages?.[index]) {
+                finalData.languages[index][fieldName] = optimizationData.originalResumeData.languages[index][fieldName];
+              }
+            }
+          } else if (suggestion.field.startsWith('references')) {
+            const match = suggestion.field.match(/references\[(\d+)\]\.(\w+)/);
+            if (match && finalData.references) {
+              const [, indexStr, fieldName] = match;
+              const index = parseInt(indexStr);
+              if (finalData.references[index] && optimizationData.originalResumeData.references?.[index]) {
+                finalData.references[index][fieldName] = optimizationData.originalResumeData.references[index][fieldName];
+              }
+            }
+          } else if (suggestion.field.startsWith('hobbies')) {
+            const match = suggestion.field.match(/hobbies\[(\d+)\]\.(\w+)/);
+            if (match && finalData.hobbies) {
+              const [, indexStr, fieldName] = match;
+              const index = parseInt(indexStr);
+              if (finalData.hobbies[index] && optimizationData.originalResumeData.hobbies?.[index]) {
+                finalData.hobbies[index][fieldName] = optimizationData.originalResumeData.hobbies[index][fieldName];
+              }
+            }
+          } else if (suggestion.field.startsWith('additionalSections')) {
+            const match = suggestion.field.match(/additionalSections\[(\d+)\]\.(\w+)/);
+            if (match && finalData.additionalSections) {
+              const [, indexStr, fieldName] = match;
+              const index = parseInt(indexStr);
+              if (finalData.additionalSections[index] && optimizationData.originalResumeData.additionalSections?.[index]) {
+                finalData.additionalSections[index][fieldName] = optimizationData.originalResumeData.additionalSections[index][fieldName];
+              }
+            }
           } else if (suggestion.field.startsWith('workExperience')) {
             // Handle work experience field updates
             const match = suggestion.field.match(/workExperience\[(\d+)\]\.(\w+)/);
@@ -247,7 +291,15 @@ export const JobOptimizationReviewModal: React.FC<JobOptimizationReviewModalProp
       workExperience: 'Work Experience',
       education: 'Education',
       skills: 'Skills',
-      projects: 'Projects'
+      projects: 'Projects',
+      certifications: 'Certifications',
+      languages: 'Languages',
+      volunteerExperience: 'Volunteer Experience',
+      awards: 'Awards',
+      publications: 'Publications',
+      references: 'References',
+      hobbies: 'Hobbies',
+      additionalSections: 'Additional Sections'
     };
     return titles[sectionName] || sectionName;
   };
@@ -391,9 +443,12 @@ export const JobOptimizationReviewModal: React.FC<JobOptimizationReviewModalProp
                             return typeof content === 'string' ? content : JSON.stringify(content, null, 2);
                           };
 
+                          const handleToggle = () => toggleSuggestion(sectionName, index);
+
                           return (
                             <div
                               key={index}
+                              onClick={handleToggle}
                               className={`p-3 sm:p-4 rounded-lg border transition-all duration-200 ${
                                 isSelected
                                   ? 'bg-teal-500/10 border-teal-500/30 shadow-glow-sm'
@@ -407,7 +462,10 @@ export const JobOptimizationReviewModal: React.FC<JobOptimizationReviewModalProp
                                       ? 'bg-teal-500 text-white' 
                                       : 'bg-dark-border text-dark-text-muted'
                                   }`}
-                                  onClick={() => toggleSuggestion(sectionName, index)}
+                                  onClick={(event) => {
+                                    event.stopPropagation();
+                                    handleToggle();
+                                  }}
                                 >
                                   {isSelected ? (
                                     <CheckIconSolid className="h-4 w-4" />
@@ -449,7 +507,10 @@ export const JobOptimizationReviewModal: React.FC<JobOptimizationReviewModalProp
                                   {(getContentPreview(suggestion.original, 100).includes('...') || 
                                     getContentPreview(suggestion.suggested, 100).includes('...')) && (
                                     <button
-                                      onClick={() => toggleSuggestionExpansion(suggestionId)}
+                                      onClick={(event) => {
+                                        event.stopPropagation();
+                                        toggleSuggestionExpansion(suggestionId);
+                                      }}
                                       className="text-xs text-teal-400 hover:text-teal-300 mt-2 transition-colors"
                                     >
                                       {isExpanded ? 'Show Less' : 'Show Full Content'}

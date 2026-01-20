@@ -258,8 +258,8 @@ Return only valid JSON:`;
       suggestions.push({
         section: 'summary',
         priority: 'high',
-        suggestion: 'Enhanced professional summary with job-relevant keywords and quantifiable achievements',
-        reasoning: 'AI optimization improved summary to better match job requirements and include industry keywords',
+        suggestion: 'Refined professional summary to align with role keywords',
+        reasoning: 'Adjusted wording to better reflect the job requirements without changing facts',
         impact: 'increase_match',
         applied: true,
       });
@@ -270,8 +270,8 @@ Return only valid JSON:`;
       suggestions.push({
         section: 'experience',
         priority: 'high',
-        suggestion: 'Optimized work experience bullet points with stronger action verbs and quantified results',
-        reasoning: 'Enhanced achievements to better align with job requirements and demonstrate impact',
+        suggestion: 'Refined work experience bullets for clarity and relevance',
+        reasoning: 'Aligned responsibilities and achievements with the job requirements',
         impact: 'boost_ranking',
         applied: true,
       });
@@ -300,8 +300,8 @@ Return only valid JSON:`;
       suggestions.push({
         section: 'projects',
         priority: 'medium',
-        suggestion: 'Enhanced project descriptions to highlight relevant technologies and outcomes',
-        reasoning: 'Project descriptions were optimized to better showcase skills relevant to the target role',
+        suggestion: 'Adjusted project descriptions to emphasize relevant technologies',
+        reasoning: 'Aligned project details with role-specific requirements',
         impact: 'increase_match',
         applied: true,
       });
@@ -311,8 +311,8 @@ Return only valid JSON:`;
     suggestions.push({
       section: 'general',
       priority: 'high',
-      suggestion: 'Applied ATS optimization techniques including keyword integration and formatting improvements',
-      reasoning: 'Standardized template ensures ATS compatibility while AI enhancement adds relevant keywords',
+      suggestion: 'Applied standard ATS-friendly formatting and keyword alignment',
+      reasoning: 'Maintained formatting consistency while aligning terminology with the job post',
       impact: 'improve_ats',
       applied: true,
     });

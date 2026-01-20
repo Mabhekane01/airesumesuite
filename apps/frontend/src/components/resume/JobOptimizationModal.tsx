@@ -665,6 +665,7 @@ export default function JobOptimizationModal({
           onApplySelected={(finalResumeData) => {
             // Apply the job-optimized resume data to the form
             updateResumeData(finalResumeData);
+            markPdfCacheStale({ clearOptimizedLatex: true });
             
             // Track AI usage for subscription logic
             updateAIData({ 

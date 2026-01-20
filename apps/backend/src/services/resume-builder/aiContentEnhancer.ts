@@ -159,49 +159,213 @@ export class AIContentEnhancer {
 
       // 1. Enhance Professional Summary
       if (resumeData.professionalSummary) {
-        const enhancedSummary = await this.enhanceProfessionalSummary(
-          resumeData.professionalSummary,
-          options
-        );
-        enhancedContent.professionalSummary = enhancedSummary.content;
-        improvements.push(...enhancedSummary.improvements);
-        keywordsAdded.push(...enhancedSummary.keywords);
+        try {
+          const enhancedSummary = await this.enhanceProfessionalSummary(
+            resumeData.professionalSummary,
+            options
+          );
+          enhancedContent.professionalSummary = enhancedSummary.content;
+          improvements.push(...enhancedSummary.improvements);
+          keywordsAdded.push(...enhancedSummary.keywords);
+        } catch (error) {
+          console.warn('Professional summary enhancement skipped:', error);
+          improvements.push('Professional summary enhancement skipped due to AI response issues');
+        }
       }
 
       // 2. Enhance Work Experience
       if (resumeData.workExperience && resumeData.workExperience.length > 0) {
-        const enhancedWork = await this.enhanceWorkExperience(
-          resumeData.workExperience,
-          options
-        );
-        enhancedContent.workExperience = enhancedWork.content;
-        improvements.push(...enhancedWork.improvements);
-        keywordsAdded.push(...enhancedWork.keywords);
+        try {
+          const enhancedWork = await this.enhanceWorkExperience(
+            resumeData.workExperience,
+            options
+          );
+          enhancedContent.workExperience = enhancedWork.content;
+          improvements.push(...enhancedWork.improvements);
+          keywordsAdded.push(...enhancedWork.keywords);
+        } catch (error) {
+          console.warn('Work experience enhancement skipped:', error);
+          improvements.push('Work experience enhancement skipped due to AI response issues');
+        }
       }
 
-      // 3. Enhance Skills
+      // 3. Enhance Education
+      if (resumeData.education && resumeData.education.length > 0) {
+        try {
+          const enhancedEducation = await this.enhanceEducation(
+            resumeData.education,
+            options
+          );
+          enhancedContent.education = enhancedEducation.content;
+          improvements.push(...enhancedEducation.improvements);
+          keywordsAdded.push(...enhancedEducation.keywords);
+        } catch (error) {
+          console.warn('Education enhancement skipped:', error);
+          improvements.push('Education enhancement skipped due to AI response issues');
+        }
+      }
+
+      // 4. Enhance Skills
       if (resumeData.skills && resumeData.skills.length > 0) {
-        const enhancedSkills = await this.enhanceSkills(
-          resumeData.skills,
-          options
-        );
-        enhancedContent.skills = enhancedSkills.content;
-        improvements.push(...enhancedSkills.improvements);
-        keywordsAdded.push(...enhancedSkills.keywords);
+        try {
+          const enhancedSkills = await this.enhanceSkills(
+            resumeData.skills,
+            options
+          );
+          enhancedContent.skills = enhancedSkills.content;
+          improvements.push(...enhancedSkills.improvements);
+          keywordsAdded.push(...enhancedSkills.keywords);
+        } catch (error) {
+          console.warn('Skills enhancement skipped:', error);
+          improvements.push('Skills enhancement skipped due to AI response issues');
+        }
       }
 
-      // 4. Enhance Project Descriptions
+      // 5. Enhance Project Descriptions
       if (resumeData.projects && resumeData.projects.length > 0) {
-        const enhancedProjects = await this.enhanceProjects(
-          resumeData.projects,
-          options
-        );
-        enhancedContent.projects = enhancedProjects.content;
-        improvements.push(...enhancedProjects.improvements);
-        keywordsAdded.push(...enhancedProjects.keywords);
+        try {
+          const enhancedProjects = await this.enhanceProjects(
+            resumeData.projects,
+            options
+          );
+          enhancedContent.projects = enhancedProjects.content;
+          improvements.push(...enhancedProjects.improvements);
+          keywordsAdded.push(...enhancedProjects.keywords);
+        } catch (error) {
+          console.warn('Project enhancement skipped:', error);
+          improvements.push('Project enhancement skipped due to AI response issues');
+        }
       }
 
-      // 5. Calculate ATS Score using real AI analysis
+      // 6. Enhance Certifications
+      if (resumeData.certifications && resumeData.certifications.length > 0) {
+        try {
+          const enhancedCertifications = await this.enhanceCertifications(
+            resumeData.certifications,
+            options
+          );
+          enhancedContent.certifications = enhancedCertifications.content;
+          improvements.push(...enhancedCertifications.improvements);
+          keywordsAdded.push(...enhancedCertifications.keywords);
+        } catch (error) {
+          console.warn('Certifications enhancement skipped:', error);
+          improvements.push('Certifications enhancement skipped due to AI response issues');
+        }
+      }
+
+      // 7. Enhance Languages
+      if (resumeData.languages && resumeData.languages.length > 0) {
+        try {
+          const enhancedLanguages = await this.enhanceLanguages(
+            resumeData.languages,
+            options
+          );
+          enhancedContent.languages = enhancedLanguages.content;
+          improvements.push(...enhancedLanguages.improvements);
+          keywordsAdded.push(...enhancedLanguages.keywords);
+        } catch (error) {
+          console.warn('Languages enhancement skipped:', error);
+          improvements.push('Languages enhancement skipped due to AI response issues');
+        }
+      }
+
+      // 8. Enhance Volunteer Experience
+      if (resumeData.volunteerExperience && resumeData.volunteerExperience.length > 0) {
+        try {
+          const enhancedVolunteer = await this.enhanceVolunteerExperience(
+            resumeData.volunteerExperience,
+            options
+          );
+          enhancedContent.volunteerExperience = enhancedVolunteer.content;
+          improvements.push(...enhancedVolunteer.improvements);
+          keywordsAdded.push(...enhancedVolunteer.keywords);
+        } catch (error) {
+          console.warn('Volunteer experience enhancement skipped:', error);
+          improvements.push('Volunteer experience enhancement skipped due to AI response issues');
+        }
+      }
+
+      // 9. Enhance Awards
+      if (resumeData.awards && resumeData.awards.length > 0) {
+        try {
+          const enhancedAwards = await this.enhanceAwards(
+            resumeData.awards,
+            options
+          );
+          enhancedContent.awards = enhancedAwards.content;
+          improvements.push(...enhancedAwards.improvements);
+          keywordsAdded.push(...enhancedAwards.keywords);
+        } catch (error) {
+          console.warn('Awards enhancement skipped:', error);
+          improvements.push('Awards enhancement skipped due to AI response issues');
+        }
+      }
+
+      // 10. Enhance Publications
+      if (resumeData.publications && resumeData.publications.length > 0) {
+        try {
+          const enhancedPublications = await this.enhancePublications(
+            resumeData.publications,
+            options
+          );
+          enhancedContent.publications = enhancedPublications.content;
+          improvements.push(...enhancedPublications.improvements);
+          keywordsAdded.push(...enhancedPublications.keywords);
+        } catch (error) {
+          console.warn('Publications enhancement skipped:', error);
+          improvements.push('Publications enhancement skipped due to AI response issues');
+        }
+      }
+
+      // 11. Enhance References
+      if (resumeData.references && resumeData.references.length > 0) {
+        try {
+          const enhancedReferences = await this.enhanceReferences(
+            resumeData.references,
+            options
+          );
+          enhancedContent.references = enhancedReferences.content;
+          improvements.push(...enhancedReferences.improvements);
+          keywordsAdded.push(...enhancedReferences.keywords);
+        } catch (error) {
+          console.warn('References enhancement skipped:', error);
+          improvements.push('References enhancement skipped due to AI response issues');
+        }
+      }
+
+      // 12. Enhance Hobbies
+      if (resumeData.hobbies && resumeData.hobbies.length > 0) {
+        try {
+          const enhancedHobbies = await this.enhanceHobbies(
+            resumeData.hobbies,
+            options
+          );
+          enhancedContent.hobbies = enhancedHobbies.content;
+          improvements.push(...enhancedHobbies.improvements);
+          keywordsAdded.push(...enhancedHobbies.keywords);
+        } catch (error) {
+          console.warn('Hobbies enhancement skipped:', error);
+          improvements.push('Hobbies enhancement skipped due to AI response issues');
+        }
+      }
+
+      // 13. Enhance Additional Sections
+      if (resumeData.additionalSections && resumeData.additionalSections.length > 0) {
+        try {
+          const enhancedAdditional = await this.enhanceAdditionalSections(
+            resumeData.additionalSections,
+            options
+          );
+          enhancedContent.additionalSections = enhancedAdditional.content;
+          improvements.push(...enhancedAdditional.improvements);
+          keywordsAdded.push(...enhancedAdditional.keywords);
+        } catch (error) {
+          console.warn('Additional sections enhancement skipped:', error);
+          improvements.push('Additional sections enhancement skipped due to AI response issues');
+        }
+      }
+
+      // 14. Calculate ATS Score using real AI analysis
       // We perform this on the ENHANCED content to see the final score
       console.log('🛡️ Performing final AI ATS analysis...');
       let atsScore = 0;
@@ -214,7 +378,8 @@ export class AIContentEnhancer {
         console.log(`✅ AI ATS Analysis complete. Score: ${atsScore}%`);
       } catch (atsError) {
         console.error('❌ AI ATS Analysis failed:', atsError);
-        throw atsError;
+        atsScore = 0;
+        improvements.push('ATS analysis unavailable due to AI response issues');
       }
 
       console.log(`✅ Content enhancement complete. Final ATS Score: ${atsScore}%`);
@@ -245,6 +410,7 @@ export class AIContentEnhancer {
     }
 
     try {
+      const toneGuidance = this.getToneGuidance(options);
       const prompt = `
 You are an Elite Executive Resume Architect. Your task is to transform a standard professional summary into a high-impact 'Executive Abstract' that commands attention and outranks competitors in ATS systems.
 
@@ -264,6 +430,7 @@ REQUIRED EXECUTION:
 3. QUANTIFICATION: Integrate specific, high-level achievements or scale of impact.
 4. ATS ARCHITECTURE: Seamlessly integrate primary technical and industry keywords.
 5. TONE: Maintain an elite, authoritative, and results-driven professional voice.
+${toneGuidance}
 
 CRITICAL CONSTRAINTS:
 - Use PLAIN TEXT ONLY.
@@ -336,6 +503,7 @@ Enhanced Executive Abstract:`;
     options: EnhancementOptions
   ): Promise<{ content: any; improvements: string[]; keywords: string[] }> {
     try {
+      const toneGuidance = this.getToneGuidance(options);
       const responsibilitiesText = experience.responsibilities?.join('\n- ') || '';
       const achievementsText = experience.achievements?.join('\n- ') || '';
 
@@ -357,6 +525,7 @@ REQUIRED EXECUTION:
 3. QUANTIFICATION: Every point must aim to include a metric, percentage, or specific data yield.
 4. ATS COMPATIBILITY: Deeply embed technical keywords from the alignment vectors.
 5. CONCISENESS: Limit each point to 1-2 lines of high-density impact.
+${toneGuidance}
 
 CRITICAL CONSTRAINTS:
 - Use PLAIN TEXT ONLY. NO markdown bold (**), italics (*), or bullet symbols inside JSON strings.
@@ -368,34 +537,50 @@ CRITICAL CONSTRAINTS:
   "achievements": ["Quantified, high-impact achievement 1", "item 2"]
 }`;
 
-      const responseText = await enterpriseAIService.generateText(prompt, 'work-experience-enhancement');
-      
-      // Parse JSON response
-      const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        const enhancedData = JSON.parse(jsonMatch[0]);
-        
-        // Clean markdown formatting from all text arrays
-        const cleanedResponsibilities = (enhancedData.responsibilities || experience.responsibilities || [])
-          .map((item: string) => this.cleanMarkdownFormatting(item));
-        const cleanedAchievements = (enhancedData.achievements || experience.achievements || [])
-          .map((item: string) => this.cleanMarkdownFormatting(item));
-        
-        const enhancedExperience = {
-          ...experience,
-          responsibilities: cleanedResponsibilities,
-          achievements: cleanedAchievements,
-        };
+      let enhancedData: any | null = null;
 
-        const improvements = this.identifyWorkExperienceImprovements(experience, enhancedExperience);
-        const keywords = this.extractKeywords(JSON.stringify(enhancedData), options);
+      try {
+        enhancedData = await enterpriseAIService.generateJson<any>(prompt, 'work-experience-enhancement');
+      } catch (error) {
+        console.warn('Work experience JSON response invalid, retrying with text parsing...', error);
+      }
 
+      if (!enhancedData) {
+        const responseText = await enterpriseAIService.generateText(prompt, 'work-experience-enhancement');
+        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          enhancedData = JSON.parse(jsonMatch[0]);
+        }
+      }
+
+      if (!enhancedData) {
         return {
-          content: enhancedExperience,
-          improvements,
-          keywords,
+          content: experience,
+          improvements: [`Work experience enhancement skipped for ${experience.jobTitle || 'this role'}`],
+          keywords: []
         };
       }
+
+      // Clean markdown formatting from all text arrays
+      const cleanedResponsibilities = (enhancedData.responsibilities || experience.responsibilities || [])
+        .map((item: string) => this.cleanMarkdownFormatting(item));
+      const cleanedAchievements = (enhancedData.achievements || experience.achievements || [])
+        .map((item: string) => this.cleanMarkdownFormatting(item));
+      
+      const enhancedExperience = {
+        ...experience,
+        responsibilities: cleanedResponsibilities,
+        achievements: cleanedAchievements,
+      };
+
+      const improvements = this.identifyWorkExperienceImprovements(experience, enhancedExperience);
+      const keywords = this.extractKeywords(JSON.stringify(enhancedData), options);
+
+      return {
+        content: enhancedExperience,
+        improvements,
+        keywords,
+      };
 
     } catch (error) {
       console.error('Failed to enhance single work experience:', error);
@@ -439,6 +624,638 @@ CRITICAL CONSTRAINTS:
   }
 
   /**
+   * Enhance education entries (coursework optimization only)
+   */
+  private async enhanceEducation(
+    education: any[],
+    options: EnhancementOptions
+  ): Promise<{ content: any[]; improvements: string[]; keywords: string[] }> {
+    if (!education.length) {
+      return { content: education, improvements: [], keywords: [] };
+    }
+
+    const normalizedEducation = education.map((edu) => ({
+      institution: edu.institution,
+      degree: edu.degree,
+      fieldOfStudy: edu.fieldOfStudy,
+      coursework: Array.isArray(edu.coursework) ? edu.coursework : []
+    }));
+
+    const toneGuidance = this.getToneGuidance(options);
+    const prompt = `
+You are an academic resume specialist. Improve coursework entries for clarity and ATS alignment without changing factual education data.
+
+CURRENT EDUCATION:
+${JSON.stringify(normalizedEducation, null, 2)}
+
+CONTEXT:
+${options.jobDescription ? `- Job Description: ${options.jobDescription.substring(0, 300)}` : ''}
+${options.keywords ? `- Target Keywords: ${options.keywords.join(', ')}` : ''}
+
+REQUIREMENTS:
+1. Only update the "coursework" arrays for each entry.
+2. Keep other fields unchanged.
+3. Do NOT invent degrees, institutions, or dates.
+4. Return ONLY a JSON array of objects in this format:
+[
+  { "coursework": ["Course 1", "Course 2"] }
+]
+${toneGuidance}
+`;
+
+    let parsed: any[] | null = null;
+    try {
+      const jsonResponse = await enterpriseAIService.generateJson<any>(prompt, 'education-enhancement');
+      if (Array.isArray(jsonResponse)) {
+        parsed = jsonResponse;
+      } else if (jsonResponse?.education && Array.isArray(jsonResponse.education)) {
+        parsed = jsonResponse.education;
+      }
+    } catch (error) {
+      console.warn('Education JSON response invalid, retrying with strict prompt...', error);
+    }
+
+    if (!parsed) {
+      try {
+        const strictPrompt = `${prompt}\n\nCRITICAL: Return ONLY a JSON array. No prose, no code fences.`;
+        const retryResponse = await enterpriseAIService.generateText(strictPrompt, 'education-enhancement');
+        parsed = this.parseJsonArray(retryResponse);
+      } catch (error) {
+        console.warn('Education enhancement retry failed, using original education:', error);
+      }
+    }
+
+    const cleaned = education.map((edu, index) => {
+      const entry = parsed?.[index];
+      const coursework = Array.isArray(entry?.coursework)
+        ? entry.coursework.map((item: string) => this.cleanMarkdownFormatting(item)).filter((item: string) => item)
+        : (Array.isArray(edu.coursework) ? edu.coursework : []);
+      return {
+        ...edu,
+        coursework
+      };
+    });
+
+    const improvements = this.identifyEducationImprovements(education, cleaned);
+    const keywords = this.extractKeywords(JSON.stringify(cleaned), options);
+
+    return {
+      content: cleaned,
+      improvements,
+      keywords
+    };
+  }
+
+  /**
+   * Enhance certifications (title/issuer normalization only)
+   */
+  private async enhanceCertifications(
+    certifications: any[],
+    options: EnhancementOptions
+  ): Promise<{ content: any[]; improvements: string[]; keywords: string[] }> {
+    if (!certifications.length) {
+      return { content: certifications, improvements: [], keywords: [] };
+    }
+
+    const normalizedCerts = certifications.map((cert) => ({
+      name: cert.name,
+      issuer: cert.issuer
+    }));
+
+    const toneGuidance = this.getToneGuidance(options);
+    const prompt = `
+You are a credential formatting specialist. Normalize certification names and issuers for consistency.
+
+CURRENT CERTIFICATIONS:
+${JSON.stringify(normalizedCerts, null, 2)}
+
+REQUIREMENTS:
+1. Only adjust "name" and "issuer" casing/spacing if needed.
+2. Do NOT invent certifications or change facts.
+3. Return ONLY a JSON array of objects:
+[
+  { "name": "Certification Name", "issuer": "Issuer" }
+]
+${toneGuidance}
+`;
+
+    let parsed: any[] | null = null;
+    try {
+      const jsonResponse = await enterpriseAIService.generateJson<any>(prompt, 'certifications-enhancement');
+      if (Array.isArray(jsonResponse)) {
+        parsed = jsonResponse;
+      } else if (jsonResponse?.certifications && Array.isArray(jsonResponse.certifications)) {
+        parsed = jsonResponse.certifications;
+      }
+    } catch (error) {
+      console.warn('Certifications JSON response invalid, retrying with strict prompt...', error);
+    }
+
+    if (!parsed) {
+      try {
+        const strictPrompt = `${prompt}\n\nCRITICAL: Return ONLY a JSON array. No prose, no code fences.`;
+        const retryResponse = await enterpriseAIService.generateText(strictPrompt, 'certifications-enhancement');
+        parsed = this.parseJsonArray(retryResponse);
+      } catch (error) {
+        console.warn('Certifications enhancement retry failed, using original certifications:', error);
+      }
+    }
+
+    const cleaned = certifications.map((cert, index) => {
+      const entry = parsed?.[index] || {};
+      return {
+        ...cert,
+        name: this.cleanMarkdownFormatting(String(entry.name || cert.name || '').trim()),
+        issuer: this.cleanMarkdownFormatting(String(entry.issuer || cert.issuer || '').trim())
+      };
+    });
+
+    const improvements = this.identifyCertificationsImprovements(certifications, cleaned);
+    const keywords = this.extractKeywords(JSON.stringify(cleaned), options);
+
+    return {
+      content: cleaned,
+      improvements,
+      keywords
+    };
+  }
+
+  /**
+   * Enhance languages (name normalization only)
+   */
+  private async enhanceLanguages(
+    languages: any[],
+    options: EnhancementOptions
+  ): Promise<{ content: any[]; improvements: string[]; keywords: string[] }> {
+    if (!languages.length) {
+      return { content: languages, improvements: [], keywords: [] };
+    }
+
+    const normalizedLanguages = languages.map((lang) => ({
+      name: lang.name,
+      proficiency: lang.proficiency
+    }));
+
+    const toneGuidance = this.getToneGuidance(options);
+    const prompt = `
+You are a resume editor. Normalize language names for consistency.
+
+CURRENT LANGUAGES:
+${JSON.stringify(normalizedLanguages, null, 2)}
+
+REQUIREMENTS:
+1. Only adjust "name" casing/spacing if needed.
+2. Do NOT change proficiency values.
+3. Return ONLY a JSON array:
+[
+  { "name": "Language", "proficiency": "native" }
+]
+${toneGuidance}
+`;
+
+    let parsed: any[] | null = null;
+    try {
+      const jsonResponse = await enterpriseAIService.generateJson<any>(prompt, 'languages-enhancement');
+      if (Array.isArray(jsonResponse)) {
+        parsed = jsonResponse;
+      } else if (jsonResponse?.languages && Array.isArray(jsonResponse.languages)) {
+        parsed = jsonResponse.languages;
+      }
+    } catch (error) {
+      console.warn('Languages JSON response invalid, retrying with strict prompt...', error);
+    }
+
+    if (!parsed) {
+      try {
+        const strictPrompt = `${prompt}\n\nCRITICAL: Return ONLY a JSON array. No prose, no code fences.`;
+        const retryResponse = await enterpriseAIService.generateText(strictPrompt, 'languages-enhancement');
+        parsed = this.parseJsonArray(retryResponse);
+      } catch (error) {
+        console.warn('Languages enhancement retry failed, using original languages:', error);
+      }
+    }
+
+    const cleaned = languages.map((lang, index) => {
+      const entry = parsed?.[index] || {};
+      return {
+        ...lang,
+        name: this.cleanMarkdownFormatting(String(entry.name || lang.name || '').trim()),
+        proficiency: entry.proficiency || lang.proficiency
+      };
+    });
+
+    const improvements = this.identifyLanguagesImprovements(languages, cleaned);
+    const keywords = this.extractKeywords(JSON.stringify(cleaned), options);
+
+    return {
+      content: cleaned,
+      improvements,
+      keywords
+    };
+  }
+
+  /**
+   * Enhance volunteer experience descriptions and achievements
+   */
+  private async enhanceVolunteerExperience(
+    volunteerExperience: any[],
+    options: EnhancementOptions
+  ): Promise<{ content: any[]; improvements: string[]; keywords: string[] }> {
+    if (!volunteerExperience.length) {
+      return { content: volunteerExperience, improvements: [], keywords: [] };
+    }
+
+    const normalized = volunteerExperience.map((exp) => ({
+      organization: exp.organization,
+      role: exp.role,
+      description: exp.description,
+      achievements: exp.achievements || []
+    }));
+
+    const toneGuidance = this.getToneGuidance(options);
+    const prompt = `
+You are a nonprofit impact writer. Improve volunteer descriptions and achievements without changing factual details.
+
+CURRENT VOLUNTEER EXPERIENCE:
+${JSON.stringify(normalized, null, 2)}
+
+CONTEXT:
+${options.jobDescription ? `- Job Description: ${options.jobDescription.substring(0, 300)}` : ''}
+${options.keywords ? `- Target Keywords: ${options.keywords.join(', ')}` : ''}
+
+REQUIREMENTS:
+1. Return ONLY a JSON array with "description" and "achievements" for each entry.
+2. Do NOT invent organizations, roles, or dates.
+3. Keep tone professional and concise.
+[
+  { "description": "Improved description", "achievements": ["Achievement 1"] }
+]
+${toneGuidance}
+`;
+
+    let parsed: any[] | null = null;
+    try {
+      const jsonResponse = await enterpriseAIService.generateJson<any>(prompt, 'volunteer-enhancement');
+      if (Array.isArray(jsonResponse)) {
+        parsed = jsonResponse;
+      } else if (jsonResponse?.volunteerExperience && Array.isArray(jsonResponse.volunteerExperience)) {
+        parsed = jsonResponse.volunteerExperience;
+      }
+    } catch (error) {
+      console.warn('Volunteer JSON response invalid, retrying with strict prompt...', error);
+    }
+
+    if (!parsed) {
+      try {
+        const strictPrompt = `${prompt}\n\nCRITICAL: Return ONLY a JSON array. No prose, no code fences.`;
+        const retryResponse = await enterpriseAIService.generateText(strictPrompt, 'volunteer-enhancement');
+        parsed = this.parseJsonArray(retryResponse);
+      } catch (error) {
+        console.warn('Volunteer enhancement retry failed, using original volunteer data:', error);
+      }
+    }
+
+    const cleaned = volunteerExperience.map((exp, index) => {
+      const entry = parsed?.[index] || {};
+      return {
+        ...exp,
+        description: entry.description ? this.cleanMarkdownFormatting(entry.description) : exp.description,
+        achievements: Array.isArray(entry.achievements)
+          ? entry.achievements.map((item: string) => this.cleanMarkdownFormatting(item)).filter((item: string) => item)
+          : (exp.achievements || [])
+      };
+    });
+
+    const improvements = this.identifyVolunteerExperienceImprovements(volunteerExperience, cleaned);
+    const keywords = this.extractKeywords(JSON.stringify(cleaned), options);
+
+    return {
+      content: cleaned,
+      improvements,
+      keywords
+    };
+  }
+
+  /**
+   * Enhance awards descriptions
+   */
+  private async enhanceAwards(
+    awards: any[],
+    options: EnhancementOptions
+  ): Promise<{ content: any[]; improvements: string[]; keywords: string[] }> {
+    if (!awards.length) {
+      return { content: awards, improvements: [], keywords: [] };
+    }
+
+    const normalized = awards.map((award) => ({
+      title: award.title,
+      issuer: award.issuer,
+      description: award.description || ''
+    }));
+
+    const toneGuidance = this.getToneGuidance(options);
+    const prompt = `
+You are an awards editor. Improve award descriptions for clarity and impact.
+
+CURRENT AWARDS:
+${JSON.stringify(normalized, null, 2)}
+
+REQUIREMENTS:
+1. Return ONLY a JSON array with "description" fields.
+2. Do NOT change titles or issuers.
+[
+  { "description": "Improved description" }
+]
+${toneGuidance}
+`;
+
+    let parsed: any[] | null = null;
+    try {
+      const jsonResponse = await enterpriseAIService.generateJson<any>(prompt, 'awards-enhancement');
+      if (Array.isArray(jsonResponse)) {
+        parsed = jsonResponse;
+      } else if (jsonResponse?.awards && Array.isArray(jsonResponse.awards)) {
+        parsed = jsonResponse.awards;
+      }
+    } catch (error) {
+      console.warn('Awards JSON response invalid, retrying with strict prompt...', error);
+    }
+
+    if (!parsed) {
+      try {
+        const strictPrompt = `${prompt}\n\nCRITICAL: Return ONLY a JSON array. No prose, no code fences.`;
+        const retryResponse = await enterpriseAIService.generateText(strictPrompt, 'awards-enhancement');
+        parsed = this.parseJsonArray(retryResponse);
+      } catch (error) {
+        console.warn('Awards enhancement retry failed, using original awards:', error);
+      }
+    }
+
+    const cleaned = awards.map((award, index) => {
+      const entry = parsed?.[index] || {};
+      return {
+        ...award,
+        description: entry.description ? this.cleanMarkdownFormatting(entry.description) : award.description
+      };
+    });
+
+    const improvements = this.identifyAwardsImprovements(awards, cleaned);
+    const keywords = this.extractKeywords(JSON.stringify(cleaned), options);
+
+    return {
+      content: cleaned,
+      improvements,
+      keywords
+    };
+  }
+
+  /**
+   * Enhance publications descriptions
+   */
+  private async enhancePublications(
+    publications: any[],
+    options: EnhancementOptions
+  ): Promise<{ content: any[]; improvements: string[]; keywords: string[] }> {
+    if (!publications.length) {
+      return { content: publications, improvements: [], keywords: [] };
+    }
+
+    const normalized = publications.map((pub) => ({
+      title: pub.title,
+      publisher: pub.publisher,
+      description: pub.description || ''
+    }));
+
+    const toneGuidance = this.getToneGuidance(options);
+    const prompt = `
+You are a publications editor. Improve publication descriptions for clarity and relevance.
+
+CURRENT PUBLICATIONS:
+${JSON.stringify(normalized, null, 2)}
+
+REQUIREMENTS:
+1. Return ONLY a JSON array with "description" fields.
+2. Do NOT change titles or publishers.
+[
+  { "description": "Improved description" }
+]
+${toneGuidance}
+`;
+
+    let parsed: any[] | null = null;
+    try {
+      const jsonResponse = await enterpriseAIService.generateJson<any>(prompt, 'publications-enhancement');
+      if (Array.isArray(jsonResponse)) {
+        parsed = jsonResponse;
+      } else if (jsonResponse?.publications && Array.isArray(jsonResponse.publications)) {
+        parsed = jsonResponse.publications;
+      }
+    } catch (error) {
+      console.warn('Publications JSON response invalid, retrying with strict prompt...', error);
+    }
+
+    if (!parsed) {
+      try {
+        const strictPrompt = `${prompt}\n\nCRITICAL: Return ONLY a JSON array. No prose, no code fences.`;
+        const retryResponse = await enterpriseAIService.generateText(strictPrompt, 'publications-enhancement');
+        parsed = this.parseJsonArray(retryResponse);
+      } catch (error) {
+        console.warn('Publications enhancement retry failed, using original publications:', error);
+      }
+    }
+
+    const cleaned = publications.map((pub, index) => {
+      const entry = parsed?.[index] || {};
+      return {
+        ...pub,
+        description: entry.description ? this.cleanMarkdownFormatting(entry.description) : pub.description
+      };
+    });
+
+    const improvements = this.identifyPublicationsImprovements(publications, cleaned);
+    const keywords = this.extractKeywords(JSON.stringify(cleaned), options);
+
+    return {
+      content: cleaned,
+      improvements,
+      keywords
+    };
+  }
+
+  /**
+   * Enhance references (normalize formatting only)
+   */
+  private async enhanceReferences(
+    references: any[],
+    options: EnhancementOptions
+  ): Promise<{ content: any[]; improvements: string[]; keywords: string[] }> {
+    if (!references.length) {
+      return { content: references, improvements: [], keywords: [] };
+    }
+
+    const cleaned = references.map((ref) => ({
+      ...ref,
+      name: this.cleanMarkdownFormatting(String(ref.name || '').trim()),
+      title: this.cleanMarkdownFormatting(String(ref.title || '').trim()),
+      company: this.cleanMarkdownFormatting(String(ref.company || '').trim()),
+      relationship: this.cleanMarkdownFormatting(String(ref.relationship || '').trim())
+    }));
+
+    const improvements = this.identifyReferencesImprovements(references, cleaned);
+    const keywords = this.extractKeywords(JSON.stringify(cleaned), options);
+
+    return {
+      content: cleaned,
+      improvements,
+      keywords
+    };
+  }
+
+  /**
+   * Enhance hobbies descriptions
+   */
+  private async enhanceHobbies(
+    hobbies: any[],
+    options: EnhancementOptions
+  ): Promise<{ content: any[]; improvements: string[]; keywords: string[] }> {
+    if (!hobbies.length) {
+      return { content: hobbies, improvements: [], keywords: [] };
+    }
+
+    const normalized = hobbies.map((hobby) => ({
+      name: hobby.name,
+      description: hobby.description || ''
+    }));
+
+    const toneGuidance = this.getToneGuidance(options);
+    const prompt = `
+You are a resume editor. Improve hobby descriptions for professionalism and relevance.
+
+CURRENT HOBBIES:
+${JSON.stringify(normalized, null, 2)}
+
+REQUIREMENTS:
+1. Return ONLY a JSON array with "description" fields.
+2. Do NOT change hobby names.
+[
+  { "description": "Improved description" }
+]
+${toneGuidance}
+`;
+
+    let parsed: any[] | null = null;
+    try {
+      const jsonResponse = await enterpriseAIService.generateJson<any>(prompt, 'hobbies-enhancement');
+      if (Array.isArray(jsonResponse)) {
+        parsed = jsonResponse;
+      } else if (jsonResponse?.hobbies && Array.isArray(jsonResponse.hobbies)) {
+        parsed = jsonResponse.hobbies;
+      }
+    } catch (error) {
+      console.warn('Hobbies JSON response invalid, retrying with strict prompt...', error);
+    }
+
+    if (!parsed) {
+      try {
+        const strictPrompt = `${prompt}\n\nCRITICAL: Return ONLY a JSON array. No prose, no code fences.`;
+        const retryResponse = await enterpriseAIService.generateText(strictPrompt, 'hobbies-enhancement');
+        parsed = this.parseJsonArray(retryResponse);
+      } catch (error) {
+        console.warn('Hobbies enhancement retry failed, using original hobbies:', error);
+      }
+    }
+
+    const cleaned = hobbies.map((hobby, index) => {
+      const entry = parsed?.[index] || {};
+      return {
+        ...hobby,
+        description: entry.description ? this.cleanMarkdownFormatting(entry.description) : hobby.description
+      };
+    });
+
+    const improvements = this.identifyHobbiesImprovements(hobbies, cleaned);
+    const keywords = this.extractKeywords(JSON.stringify(cleaned), options);
+
+    return {
+      content: cleaned,
+      improvements,
+      keywords
+    };
+  }
+
+  /**
+   * Enhance additional sections content
+   */
+  private async enhanceAdditionalSections(
+    additionalSections: any[],
+    options: EnhancementOptions
+  ): Promise<{ content: any[]; improvements: string[]; keywords: string[] }> {
+    if (!additionalSections.length) {
+      return { content: additionalSections, improvements: [], keywords: [] };
+    }
+
+    const normalized = additionalSections.map((section) => ({
+      title: section.title,
+      content: section.content
+    }));
+
+    const toneGuidance = this.getToneGuidance(options);
+    const prompt = `
+You are a resume editor. Improve additional section content for clarity and impact.
+
+CURRENT SECTIONS:
+${JSON.stringify(normalized, null, 2)}
+
+REQUIREMENTS:
+1. Return ONLY a JSON array with "content" fields.
+2. Do NOT change titles.
+[
+  { "content": "Improved content" }
+]
+${toneGuidance}
+`;
+
+    let parsed: any[] | null = null;
+    try {
+      const jsonResponse = await enterpriseAIService.generateJson<any>(prompt, 'additional-sections-enhancement');
+      if (Array.isArray(jsonResponse)) {
+        parsed = jsonResponse;
+      } else if (jsonResponse?.additionalSections && Array.isArray(jsonResponse.additionalSections)) {
+        parsed = jsonResponse.additionalSections;
+      }
+    } catch (error) {
+      console.warn('Additional sections JSON response invalid, retrying with strict prompt...', error);
+    }
+
+    if (!parsed) {
+      try {
+        const strictPrompt = `${prompt}\n\nCRITICAL: Return ONLY a JSON array. No prose, no code fences.`;
+        const retryResponse = await enterpriseAIService.generateText(strictPrompt, 'additional-sections-enhancement');
+        parsed = this.parseJsonArray(retryResponse);
+      } catch (error) {
+        console.warn('Additional sections enhancement retry failed, using original sections:', error);
+      }
+    }
+
+    const cleaned = additionalSections.map((section, index) => {
+      const entry = parsed?.[index] || {};
+      return {
+        ...section,
+        content: entry.content ? this.cleanMarkdownFormatting(entry.content) : section.content
+      };
+    });
+
+    const improvements = this.identifyAdditionalSectionsImprovements(additionalSections, cleaned);
+    const keywords = this.extractKeywords(JSON.stringify(cleaned), options);
+
+    return {
+      content: cleaned,
+      improvements,
+      keywords
+    };
+  }
+
+  /**
    * Enhance skills list for relevance and categorization
    */
   private async enhanceSkills(
@@ -455,6 +1272,7 @@ CRITICAL CONSTRAINTS:
         : { name: skill.name, category: skill.category || 'technical' }
     );
 
+    const toneGuidance = this.getToneGuidance(options);
     const prompt = `
 You are a senior talent strategist. Improve this skills list for relevance and ATS compatibility.
 
@@ -473,18 +1291,42 @@ REQUIREMENTS:
 [
   { "name": "Skill Name", "category": "technical" }
 ]
+${toneGuidance}
 `;
 
-    const responseText = await enterpriseAIService.generateText(prompt, 'skills-enhancement');
-    const parsed = this.parseJsonArray(responseText);
+    let parsed: any[] | null = null;
+    try {
+      const jsonResponse = await enterpriseAIService.generateJson<any>(prompt, 'skills-enhancement');
+      if (Array.isArray(jsonResponse)) {
+        parsed = jsonResponse;
+      } else if (jsonResponse?.skills && Array.isArray(jsonResponse.skills)) {
+        parsed = jsonResponse.skills;
+      }
+    } catch (error) {
+      console.warn('Skills enhancement JSON response invalid, retrying with strict prompt...', error);
+    }
 
-    const cleaned = parsed.map((item: any) => ({
-      name: this.cleanMarkdownFormatting(String(item.name || '').trim()),
-      category: (item.category || 'technical')
+    if (!parsed) {
+      try {
+        const strictPrompt = `${prompt}\n\nCRITICAL: Return ONLY a JSON array. No prose, no code fences, no trailing commas.`;
+        const retryResponse = await enterpriseAIService.generateText(strictPrompt, 'skills-enhancement');
+        parsed = this.parseJsonArray(retryResponse);
+      } catch (error) {
+        console.warn('Skills enhancement retry failed, using original skills:', error);
+      }
+    }
+
+    const cleaned = (parsed || []).map((item: any) => ({
+      name: this.cleanMarkdownFormatting(String(item?.name || '').trim()),
+      category: (item?.category || 'technical')
     })).filter((item: any) => item.name);
 
     if (cleaned.length === 0) {
-      throw new Error('Invalid AI response for skills enhancement');
+      return {
+        content: normalizedSkills,
+        improvements: ['Skills enhancement skipped due to invalid AI response formatting'],
+        keywords: []
+      };
     }
 
     const improvements = this.identifySkillsImprovements(skills, cleaned);
@@ -505,6 +1347,7 @@ REQUIREMENTS:
     options: EnhancementOptions
   ): Promise<{ content: any; improvements: string[]; keywords: string[] }> {
     try {
+      const toneGuidance = this.getToneGuidance(options);
       const prompt = `
 You are a Senior Technical Portfolio Architect. Enhance this project description to be a 'Technical Mastery Showcase' that highlights high-caliber engineering and problem-solving impact.
 
@@ -521,6 +1364,7 @@ REQUIRED EXECUTION:
 2. STACK: Seamlessly integrate the provided technologies into the narrative.
 3. SENIORITY: Use authoritative, senior-level technical terminology.
 4. CONCISENESS: Limit to 2-3 sentences of high-density intelligence.
+${toneGuidance}
 
 CRITICAL RULES:
 - Use PLAIN TEXT ONLY. NO markdown formatting (**bold**, *italics*, etc).
@@ -670,6 +1514,110 @@ Enhanced Showcase:`;
     return improvements;
   }
 
+  private identifyEducationImprovements(original: any[], enhanced: any[]): string[] {
+    const improvements: string[] = [];
+    const changed = (enhanced || []).some((edu, idx) =>
+      JSON.stringify(edu.coursework || []) !== JSON.stringify(original?.[idx]?.coursework || [])
+    );
+    if (changed) {
+      improvements.push('Refined coursework for ATS relevance');
+    }
+    return improvements;
+  }
+
+  private identifyCertificationsImprovements(original: any[], enhanced: any[]): string[] {
+    const improvements: string[] = [];
+    const changed = (enhanced || []).some((cert, idx) =>
+      (cert.name || '').trim() !== (original?.[idx]?.name || '').trim() ||
+      (cert.issuer || '').trim() !== (original?.[idx]?.issuer || '').trim()
+    );
+    if (changed) {
+      improvements.push('Standardized certification titles and issuers');
+    }
+    return improvements;
+  }
+
+  private identifyLanguagesImprovements(original: any[], enhanced: any[]): string[] {
+    const improvements: string[] = [];
+    const changed = (enhanced || []).some((lang, idx) =>
+      (lang.name || '').trim() !== (original?.[idx]?.name || '').trim()
+    );
+    if (changed) {
+      improvements.push('Standardized language names');
+    }
+    return improvements;
+  }
+
+  private identifyVolunteerExperienceImprovements(original: any[], enhanced: any[]): string[] {
+    const improvements: string[] = [];
+    const changed = (enhanced || []).some((exp, idx) =>
+      (exp.description || '').trim() !== (original?.[idx]?.description || '').trim() ||
+      JSON.stringify(exp.achievements || []) !== JSON.stringify(original?.[idx]?.achievements || [])
+    );
+    if (changed) {
+      improvements.push('Enhanced volunteer impact descriptions');
+    }
+    return improvements;
+  }
+
+  private identifyAwardsImprovements(original: any[], enhanced: any[]): string[] {
+    const improvements: string[] = [];
+    const changed = (enhanced || []).some((award, idx) =>
+      (award.description || '').trim() !== (original?.[idx]?.description || '').trim()
+    );
+    if (changed) {
+      improvements.push('Enhanced award descriptions');
+    }
+    return improvements;
+  }
+
+  private identifyPublicationsImprovements(original: any[], enhanced: any[]): string[] {
+    const improvements: string[] = [];
+    const changed = (enhanced || []).some((pub, idx) =>
+      (pub.description || '').trim() !== (original?.[idx]?.description || '').trim()
+    );
+    if (changed) {
+      improvements.push('Enhanced publication descriptions');
+    }
+    return improvements;
+  }
+
+  private identifyReferencesImprovements(original: any[], enhanced: any[]): string[] {
+    const improvements: string[] = [];
+    const changed = (enhanced || []).some((ref, idx) =>
+      (ref.name || '').trim() !== (original?.[idx]?.name || '').trim() ||
+      (ref.title || '').trim() !== (original?.[idx]?.title || '').trim() ||
+      (ref.company || '').trim() !== (original?.[idx]?.company || '').trim() ||
+      (ref.relationship || '').trim() !== (original?.[idx]?.relationship || '').trim()
+    );
+    if (changed) {
+      improvements.push('Normalized references formatting');
+    }
+    return improvements;
+  }
+
+  private identifyHobbiesImprovements(original: any[], enhanced: any[]): string[] {
+    const improvements: string[] = [];
+    const changed = (enhanced || []).some((hobby, idx) =>
+      (hobby.description || '').trim() !== (original?.[idx]?.description || '').trim()
+    );
+    if (changed) {
+      improvements.push('Enhanced hobby descriptions');
+    }
+    return improvements;
+  }
+
+  private identifyAdditionalSectionsImprovements(original: any[], enhanced: any[]): string[] {
+    const improvements: string[] = [];
+    const changed = (enhanced || []).some((section, idx) =>
+      (section.content || '').trim() !== (original?.[idx]?.content || '').trim()
+    );
+    if (changed) {
+      improvements.push('Enhanced additional section content');
+    }
+    return improvements;
+  }
+
   /**
    * Clean markdown formatting from AI-generated content
    */
@@ -698,7 +1646,15 @@ Enhanced Showcase:`;
       throw new Error('Invalid JSON array response');
     }
 
-    return JSON.parse(cleaned.slice(start, end + 1));
+    const slice = cleaned.slice(start, end + 1);
+    try {
+      return JSON.parse(slice);
+    } catch (error) {
+      const repaired = slice
+        .replace(/,\s*}/g, '}')
+        .replace(/,\s*]/g, ']');
+      return JSON.parse(repaired);
+    }
   }
 
   /**
@@ -717,6 +1673,11 @@ Enhanced Showcase:`;
     }
     
     return keywords;
+  }
+
+  private getToneGuidance(options: EnhancementOptions): string {
+    const tone = options.tone || 'professional';
+    return `TONE: ${tone}, clear, and human. Avoid exaggeration, hype, and perfection claims. Do not invent metrics or achievements; if data is missing, keep statements neutral and grounded.`;
   }
 
   /**

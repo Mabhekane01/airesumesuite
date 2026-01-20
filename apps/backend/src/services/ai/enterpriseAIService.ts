@@ -1,5 +1,8 @@
 import { GoogleGenAI } from '@google/genai';
 import { OpenAI } from 'openai';
+import dotenv from 'dotenv';
+import fs from 'fs';
+import path from 'path';
 
 // Optional Anthropic SDK - gracefully handle missing dependency
 let Anthropic: any;
@@ -147,7 +150,42 @@ export class EnterpriseAIService {
     this.modelCooldowns.set(model, Date.now() + this.QUOTA_COOLDOWN);
   }
 
+  private loadEnvIfNeeded(): string | null {
+    if (
+      process.env.GEMINI_API_KEY ||
+      process.env.OPENAI_API_KEY ||
+      process.env.ANTHROPIC_API_KEY
+    ) {
+      return null;
+    }
+
+    const cwdEnvPath = path.resolve(process.cwd(), '.env');
+    if (fs.existsSync(cwdEnvPath)) {
+      dotenv.config({ path: cwdEnvPath });
+      return cwdEnvPath;
+    }
+
+    const backendEnvPath = path.resolve(process.cwd(), 'apps', 'backend', '.env');
+    if (fs.existsSync(backendEnvPath)) {
+      dotenv.config({ path: backendEnvPath });
+      return backendEnvPath;
+    }
+
+    return null;
+  }
+
   private initializeProviders(): void {
+    const loadedEnvPath = this.loadEnvIfNeeded();
+    this.providers = [];
+    this.providerHealth = new Map<string, ProviderHealth>();
+    console.log('[AI] Env check', {
+      cwd: process.cwd(),
+      loadedEnvPath,
+      hasGemini: Boolean(process.env.GEMINI_API_KEY),
+      hasOpenAI: Boolean(process.env.OPENAI_API_KEY),
+      hasAnthropic: Boolean(process.env.ANTHROPIC_API_KEY)
+    });
+
     // Initialize Gemini
     if (process.env.GEMINI_API_KEY) {
       try {
@@ -261,21 +299,25 @@ export class EnterpriseAIService {
     const lower = message.toLowerCase();
     const retryAfterMs = this.getRetryAfterMs(error);
 
-    if (
-      status === 401 ||
-      lower.includes('invalid api key') ||
-      lower.includes('invalid x-api-key') ||
-      lower.includes('authentication_error')
-    ) {
-      return { reason: 'invalid_key', message, status };
-    }
+      if (
+        status === 401 ||
+        lower.includes('invalid api key') ||
+        lower.includes('invalid x-api-key') ||
+        lower.includes('authentication_error')
+      ) {
+        return { reason: 'invalid_key', message, status };
+      }
 
-    if (
-      lower.includes('insufficient_quota') ||
-      lower.includes('quota') ||
-      lower.includes('billing') ||
-      lower.includes('resource_exhausted') ||
-      error?.code === 'AI_QUOTA_EXCEEDED'
+      if (status === 429 && retryAfterMs) {
+        return { reason: 'rate_limit', message, status, retryAfterMs };
+      }
+
+      if (
+        lower.includes('insufficient_quota') ||
+        lower.includes('quota') ||
+        lower.includes('billing') ||
+        lower.includes('resource_exhausted') ||
+        error?.code === 'AI_QUOTA_EXCEEDED'
     ) {
       return { reason: 'quota', message, status };
     }
@@ -331,16 +373,35 @@ export class EnterpriseAIService {
     operation: (provider: string) => Promise<T>,
     operationName: string
   ): Promise<T> {
-    const availableProviders = this.providers.filter((provider) =>
+    let availableProviders = this.providers.filter((provider) =>
       this.isProviderEnabled(provider)
     );
     
     if (availableProviders.length === 0) {
-      throw new AIServiceError(
-        'No AI providers are currently available',
-        'all',
-        {
-          reason: 'all_disabled'
+      if (this.providers.length === 0) {
+        this.initializeProviders();
+        availableProviders = this.providers.filter((provider) =>
+          this.isProviderEnabled(provider)
+        );
+      }
+    }
+
+      if (availableProviders.length === 0) {
+        const providerHealthSnapshot = this.providers.map((provider) => ({
+          provider: provider.name,
+          health: this.getProviderHealth(provider.name)
+        }));
+        console.warn('[AI] No enabled providers', JSON.stringify(providerHealthSnapshot));
+        throw new AIServiceError(
+          'No AI providers are currently available',
+          'all',
+          {
+            reason: 'all_disabled',
+          providerFailures: providerHealthSnapshot.map((entry) => ({
+            provider: entry.provider,
+            reason: entry.health?.reason || 'unknown',
+            message: entry.health?.message || 'Provider disabled'
+          }))
         }
       );
     }
@@ -364,6 +425,14 @@ export class EnterpriseAIService {
         console.log(`???? Attempting ${operationName} with ${provider.name}`);
         const result = await operation(provider.name);
         console.log(`??? Successfully completed ${operationName} with ${provider.name}`);
+        const health = this.getProviderHealth(provider.name);
+        if (health) {
+          health.enabled = true;
+          health.disabledUntil = undefined;
+          health.reason = undefined;
+          health.message = undefined;
+          this.providerHealth.set(provider.name, health);
+        }
         return result;
       } catch (error) {
         const failureInfo = this.classifyProviderError(error);
@@ -565,6 +634,12 @@ CRITICAL RULES:
     }, 'text generation');
   }
 
+  async generateJson<T = any>(prompt: string, type: string = 'json-generation'): Promise<T> {
+    return this.executeWithFallback(async (provider) => {
+      return this.callAIProvider(provider, prompt, type) as Promise<T>;
+    }, 'json generation');
+  }
+
   private async callAIProvider(provider: string, prompt: string, type: string): Promise<any> {
     switch (provider) {
       case 'gemini':
@@ -614,6 +689,19 @@ CRITICAL RULES:
       
       // Resume and job analysis operations need very high token limits
       const resumeOperations = ['job-analysis', 'job-matching', 'ats-analysis', 'summary-generation', 'resume-optimization'];
+      const jsonOperations = [
+        'skills-enhancement',
+        'work-experience-enhancement',
+        'education-enhancement',
+        'certifications-enhancement',
+        'languages-enhancement',
+        'volunteer-enhancement',
+        'awards-enhancement',
+        'publications-enhancement',
+        'hobbies-enhancement',
+        'additional-sections-enhancement',
+        'job-analysis'
+      ];
       if (resumeOperations.includes(type)) {
         // For job-analysis specifically, use more conservative settings to prevent truncation
         if (type === 'job-analysis') {
@@ -634,6 +722,15 @@ CRITICAL RULES:
           };
           console.log(`🔧 Using enhanced config for ${type} with maxOutputTokens: 50000`);
         }
+      } else if (jsonOperations.includes(type)) {
+        config.generationConfig = {
+          maxOutputTokens: 2048,
+          temperature: 0.1,
+          topK: 20,
+          topP: 0.6,
+          candidateCount: 1,
+        };
+        console.log(`Using JSON-safe config for ${type} with maxOutputTokens: 2048`);
       }
       
       const aiPromise = this.gemini.models.generateContent(config);
@@ -736,6 +833,25 @@ CRITICAL RULES:
           temperature: 0.1,
           topK: 20,
           topP: 0.8,
+          candidateCount: 1,
+        };
+      } else if ([
+        'skills-enhancement',
+        'work-experience-enhancement',
+        'education-enhancement',
+        'certifications-enhancement',
+        'languages-enhancement',
+        'volunteer-enhancement',
+        'awards-enhancement',
+        'publications-enhancement',
+        'hobbies-enhancement',
+        'additional-sections-enhancement'
+      ].includes(type)) {
+        config.generationConfig = {
+          maxOutputTokens: 2048,
+          temperature: 0.1,
+          topK: 20,
+          topP: 0.6,
           candidateCount: 1,
         };
       }

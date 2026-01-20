@@ -834,6 +834,14 @@ export class ResumeService {
       education: any;
       skills: any;
       projects: any;
+      certifications: any;
+      languages: any;
+      volunteerExperience: any;
+      awards: any;
+      publications: any;
+      references: any;
+      hobbies: any;
+      additionalSections: any;
     };
   }> => {
     try {
@@ -907,6 +915,14 @@ export class ResumeService {
       education: any;
       skills: any;
       projects: any;
+      certifications: any;
+      languages: any;
+      volunteerExperience: any;
+      awards: any;
+      publications: any;
+      references: any;
+      hobbies: any;
+      additionalSections: any;
     };
   }> => {
     try {

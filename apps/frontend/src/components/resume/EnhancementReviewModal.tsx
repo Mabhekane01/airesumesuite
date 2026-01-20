@@ -35,6 +35,14 @@ interface EnhancementReviewData {
     education: EnhancementSectionData;
     skills: EnhancementSectionData;
     projects: EnhancementSectionData;
+    certifications: EnhancementSectionData;
+    languages: EnhancementSectionData;
+    volunteerExperience: EnhancementSectionData;
+    awards: EnhancementSectionData;
+    publications: EnhancementSectionData;
+    references: EnhancementSectionData;
+    hobbies: EnhancementSectionData;
+    additionalSections: EnhancementSectionData;
   };
 }
 
@@ -56,7 +64,7 @@ export const EnhancementReviewModal: React.FC<EnhancementReviewModalProps> = ({
   const [previewMode, setPreviewMode] = useState<'original' | 'enhanced' | 'selected'>('enhanced');
   const [expandedSuggestions, setExpandedSuggestions] = useState<Set<string>>(new Set());
 
-  // Initialize with all suggestions selected
+  // Initialize with no suggestions selected
   useEffect(() => {
     if (enhancementData) {
       setSelectedSuggestions(new Set());
@@ -146,6 +154,62 @@ export const EnhancementReviewModal: React.FC<EnhancementReviewModalProps> = ({
             }
           } else if (suggestion.field === 'skills') {
             finalData.skills = enhancedValue;
+          } else if (suggestion.field === 'skills.add') {
+            const skillName = String(enhancedValue?.name || '').toLowerCase();
+            if (skillName) {
+              const existing = (finalData.skills || []).some((skill: any) => (skill.name || '').toLowerCase() === skillName);
+              if (!existing) {
+                finalData.skills = [...(finalData.skills || []), enhancedValue];
+              }
+            }
+          } else if (suggestion.field === 'skills.update') {
+            const skillName = String(enhancedValue?.name || '').toLowerCase();
+            if (skillName && Array.isArray(finalData.skills)) {
+              const idx = finalData.skills.findIndex((skill: any) => (skill.name || '').toLowerCase() === skillName);
+              if (idx !== -1) {
+                finalData.skills[idx] = { ...finalData.skills[idx], ...enhancedValue };
+              }
+            }
+          } else if (suggestion.field.startsWith('certifications')) {
+            const match = suggestion.field.match(/certifications\[(\d+)\]\.(\w+)/);
+            if (match && finalData.certifications?.[parseInt(match[1])]) {
+              finalData.certifications[parseInt(match[1])][match[2]] = enhancedValue;
+            }
+          } else if (suggestion.field.startsWith('languages')) {
+            const match = suggestion.field.match(/languages\[(\d+)\]\.(\w+)/);
+            if (match && finalData.languages?.[parseInt(match[1])]) {
+              finalData.languages[parseInt(match[1])][match[2]] = enhancedValue;
+            }
+          } else if (suggestion.field.startsWith('volunteerExperience')) {
+            const match = suggestion.field.match(/volunteerExperience\[(\d+)\]\.(\w+)/);
+            if (match && finalData.volunteerExperience?.[parseInt(match[1])]) {
+              finalData.volunteerExperience[parseInt(match[1])][match[2]] = enhancedValue;
+            }
+          } else if (suggestion.field.startsWith('awards')) {
+            const match = suggestion.field.match(/awards\[(\d+)\]\.(\w+)/);
+            if (match && finalData.awards?.[parseInt(match[1])]) {
+              finalData.awards[parseInt(match[1])][match[2]] = enhancedValue;
+            }
+          } else if (suggestion.field.startsWith('publications')) {
+            const match = suggestion.field.match(/publications\[(\d+)\]\.(\w+)/);
+            if (match && finalData.publications?.[parseInt(match[1])]) {
+              finalData.publications[parseInt(match[1])][match[2]] = enhancedValue;
+            }
+          } else if (suggestion.field.startsWith('references')) {
+            const match = suggestion.field.match(/references\[(\d+)\]\.(\w+)/);
+            if (match && finalData.references?.[parseInt(match[1])]) {
+              finalData.references[parseInt(match[1])][match[2]] = enhancedValue;
+            }
+          } else if (suggestion.field.startsWith('hobbies')) {
+            const match = suggestion.field.match(/hobbies\[(\d+)\]\.(\w+)/);
+            if (match && finalData.hobbies?.[parseInt(match[1])]) {
+              finalData.hobbies[parseInt(match[1])][match[2]] = enhancedValue;
+            }
+          } else if (suggestion.field.startsWith('additionalSections')) {
+            const match = suggestion.field.match(/additionalSections\[(\d+)\]\.(\w+)/);
+            if (match && finalData.additionalSections?.[parseInt(match[1])]) {
+              finalData.additionalSections[parseInt(match[1])][match[2]] = enhancedValue;
+            }
           }
           // Add more field handlers as AI enhancement expands to cover them
         }
@@ -185,7 +249,15 @@ export const EnhancementReviewModal: React.FC<EnhancementReviewModalProps> = ({
       workExperience: 'Work Experience',
       education: 'Education',
       skills: 'Skills',
-      projects: 'Projects'
+      projects: 'Projects',
+      certifications: 'Certifications',
+      languages: 'Languages',
+      volunteerExperience: 'Volunteer Experience',
+      awards: 'Awards',
+      publications: 'Publications',
+      references: 'References',
+      hobbies: 'Hobbies',
+      additionalSections: 'Additional Sections'
     };
     return titles[sectionName] || sectionName;
   };
@@ -380,9 +452,12 @@ export const EnhancementReviewModal: React.FC<EnhancementReviewModalProps> = ({
                             return typeof content === 'string' ? content : JSON.stringify(content, null, 2);
                           };
 
+                          const handleToggle = () => toggleSuggestion(sectionName, index);
+
                           return (
                             <div
                               key={index}
+                              onClick={handleToggle}
                               className={`p-3 sm:p-4 rounded-lg border transition-all duration-200 ${
                                 isSelected
                                   ? 'bg-accent-primary/10 border-accent-primary/30 shadow-glow-sm'
@@ -396,7 +471,10 @@ export const EnhancementReviewModal: React.FC<EnhancementReviewModalProps> = ({
                                       ? 'bg-accent-primary text-white' 
                                       : 'bg-dark-border text-dark-text-muted'
                                   }`}
-                                  onClick={() => toggleSuggestion(sectionName, index)}
+                                  onClick={(event) => {
+                                    event.stopPropagation();
+                                    handleToggle();
+                                  }}
                                 >
                                   {isSelected ? (
                                     <CheckIconSolid className="h-4 w-4" />
@@ -438,7 +516,10 @@ export const EnhancementReviewModal: React.FC<EnhancementReviewModalProps> = ({
                                   {(getContentPreview(suggestion.original, 100).includes('...') || 
                                     getContentPreview(suggestion.suggested, 100).includes('...')) && (
                                     <button
-                                      onClick={() => toggleSuggestionExpansion(suggestionId)}
+                                      onClick={(event) => {
+                                        event.stopPropagation();
+                                        toggleSuggestionExpansion(suggestionId);
+                                      }}
                                       className="text-xs text-accent-primary hover:text-accent-secondary mt-2 transition-colors"
                                     >
                                       {isExpanded ? 'Show Less' : 'Show Full Content'}
