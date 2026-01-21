@@ -921,9 +921,9 @@ export class TemplateService {
     if (Array.isArray(data?.additionalSections) && data!.additionalSections!.length > 0) {
       const blocks: string[] = [];
       for (const section of data!.additionalSections!) {
-        blocks.push(`    \\\begin{experienceSection}{${this.escapeLatex(section.title)}}`);
+        blocks.push(`    \\begin{experienceSection}{${this.escapeLatex(section.title)}}`);
         blocks.push(`    ${this.escapeLatex(section.content)}`);
-        blocks.push(`    \\\end{experienceSection}`);
+        blocks.push(`    \\end{experienceSection}`);
         blocks.push("");
       }
       if (blocks.length > 0) {
@@ -1058,9 +1058,10 @@ export class TemplateService {
           const files = await fs.readdir(templatePath);
           const screenshotFile = files.find(file => file.match(/\.(jpeg|jpg|png)$/i));
           const screenshotUrl = screenshotFile ? `/templates/${dir}/${screenshotFile}` : undefined;
+          const templateName = config?.templateName || config?.name || `Template ${dir.replace('template', '')}`;
           templates.push({
             id: dir,
-            name: config?.name || `Template ${dir.replace('template', '')}`,
+            name: templateName,
             description: config?.description || `Professional resume template with modern design.`,
             screenshotUrl,
             category: config?.category || "professional",

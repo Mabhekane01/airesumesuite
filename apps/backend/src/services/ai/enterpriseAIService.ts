@@ -660,7 +660,7 @@ CRITICAL RULES:
       case 'claude':
         return this.callClaudeText(prompt);
       case 'openai':
-        return this.callOpenAIText(prompt);
+        return this.callOpenAIText(prompt, type);
       default:
         throw new Error(`Unknown provider: ${provider}`);
     }

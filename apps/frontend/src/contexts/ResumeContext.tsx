@@ -172,6 +172,21 @@ export const ResumeProvider: React.FC<ResumeProviderProps> = ({ children, initia
     return value;
   };
 
+  const hasMeaningfulExperienceContent = (exp: any): boolean => {
+    const descriptionText = typeof exp?.description === 'string' ? exp.description.trim() : '';
+    const responsibilities = Array.isArray(exp?.responsibilities) ? exp.responsibilities : [];
+    const achievements = Array.isArray(exp?.achievements) ? exp.achievements : [];
+
+    const hasResponsibilities = responsibilities.some(
+      (resp: any) => typeof resp === 'string' && resp.trim().length > 20
+    );
+    const hasAchievements = achievements.some(
+      (ach: any) => typeof ach === 'string' && ach.trim().length > 20
+    );
+
+    return descriptionText.length > 20 || hasResponsibilities || hasAchievements;
+  };
+
   const stableSerialize = (value: any): string => {
     const normalized = normalizeForAudit(value);
     return JSON.stringify(normalized ?? null);
@@ -394,8 +409,7 @@ export const ResumeProvider: React.FC<ResumeProviderProps> = ({ children, initia
                 resumeContent.professionalSummary.trim().length > 50 &&
                 resumeContent.workExperience?.length > 0 &&
                 resumeContent.workExperience.some(exp => 
-                  exp.jobTitle && exp.company && exp.description &&
-                  exp.description.trim().length > 20
+                  exp.jobTitle && exp.company && hasMeaningfulExperienceContent(exp)
                 )
               );
               
@@ -468,8 +482,7 @@ export const ResumeProvider: React.FC<ResumeProviderProps> = ({ children, initia
               resumeContent.professionalSummary.trim().length > 50 &&
               resumeContent.workExperience?.length > 0 &&
               resumeContent.workExperience.some(exp => 
-                exp.jobTitle && exp.company && exp.description &&
-                exp.description.trim().length > 20
+                exp.jobTitle && exp.company && hasMeaningfulExperienceContent(exp)
               )
             );
             
@@ -781,8 +794,7 @@ export const ResumeProvider: React.FC<ResumeProviderProps> = ({ children, initia
       // Work Experience - at least one entry with meaningful content
       resumeData.workExperience?.length > 0 &&
       resumeData.workExperience.some(exp => 
-        exp.jobTitle && exp.company && exp.description &&
-        exp.description.trim().length > 20
+        exp.jobTitle && exp.company && hasMeaningfulExperienceContent(exp)
       )
     );
   }, []);

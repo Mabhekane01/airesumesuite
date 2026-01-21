@@ -15,6 +15,27 @@ import { templateRenderer } from '../services/resume-builder/templateRenderer';
 
 
 
+const formatResumeDateValue = (value: any): string | undefined => {
+  if (!value) return undefined;
+  if (value instanceof Date) {
+    return value.toISOString().split('T')[0];
+  }
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (!trimmed || trimmed.toLowerCase() === 'undefined' || trimmed.toLowerCase() === 'null') {
+      return undefined;
+    }
+    return trimmed;
+  }
+  if (typeof value === 'number') {
+    const date = new Date(value);
+    if (!isNaN(date.getTime())) {
+      return date.toISOString().split('T')[0];
+    }
+  }
+  return undefined;
+};
+
 // Helper function to convert IResume to StandardizedResumeData
 function convertToStandardizedData(resume: IResume, trackingUrl?: string): ResumeData {
   return {
@@ -33,8 +54,8 @@ function convertToStandardizedData(resume: IResume, trackingUrl?: string): Resum
       jobTitle: exp.jobTitle,
       company: exp.company,
       location: exp.location,
-      startDate: exp.startDate instanceof Date ? exp.startDate.toISOString().split('T')[0] : String(exp.startDate),
-      endDate: exp.endDate instanceof Date ? exp.endDate.toISOString().split('T')[0] : exp.endDate ? String(exp.endDate) : undefined,
+      startDate: formatResumeDateValue(exp.startDate),
+      endDate: formatResumeDateValue(exp.endDate),
       isCurrentJob: exp.isCurrentJob,
       responsibilities: Array.isArray(exp.responsibilities) ? exp.responsibilities : [],
       achievements: Array.isArray(exp.achievements) ? exp.achievements : []
@@ -44,9 +65,9 @@ function convertToStandardizedData(resume: IResume, trackingUrl?: string): Resum
       institution: edu.institution,
       fieldOfStudy: edu.fieldOfStudy,
       location: (edu as any).location,
-      graduationDate: edu.graduationDate instanceof Date ? edu.graduationDate.toISOString().split('T')[0] : String(edu.graduationDate || ''),
-      startDate: (edu as any).startDate instanceof Date ? (edu as any).startDate.toISOString().split('T')[0] : (edu as any).startDate,
-      endDate: (edu as any).endDate instanceof Date ? (edu as any).endDate.toISOString().split('T')[0] : (edu as any).endDate,
+      graduationDate: formatResumeDateValue(edu.graduationDate),
+      startDate: formatResumeDateValue((edu as any).startDate),
+      endDate: formatResumeDateValue((edu as any).endDate),
       gpa: edu.gpa,
       coursework: (edu as any).coursework || (edu as any).courses || (edu as any).honors || []
     })),
@@ -61,14 +82,14 @@ function convertToStandardizedData(resume: IResume, trackingUrl?: string): Resum
                   (typeof proj.description === 'string' ? [proj.description] : []),
       technologies: Array.isArray(proj.technologies) ? proj.technologies : [],
       url: proj.url,
-      startDate: proj.startDate instanceof Date ? proj.startDate.toISOString().split('T')[0] : proj.startDate ? String(proj.startDate) : undefined,
-      endDate: proj.endDate instanceof Date ? proj.endDate.toISOString().split('T')[0] : proj.endDate ? String(proj.endDate) : undefined
+      startDate: formatResumeDateValue(proj.startDate),
+      endDate: formatResumeDateValue(proj.endDate)
     })),
     certifications: (resume.certifications || []).map(cert => ({
       name: cert.name,
       issuer: cert.issuer,
-      date: cert.date instanceof Date ? cert.date.toISOString().split('T')[0] : String(cert.date),
-      expirationDate: cert.expirationDate instanceof Date ? cert.expirationDate.toISOString().split('T')[0] : cert.expirationDate ? String(cert.expirationDate) : undefined,
+      date: formatResumeDateValue(cert.date),
+      expirationDate: formatResumeDateValue(cert.expirationDate),
       credentialId: cert.credentialId,
       url: cert.url,
       description: (cert as any).description
@@ -81,8 +102,8 @@ function convertToStandardizedData(resume: IResume, trackingUrl?: string): Resum
       organization: vol.organization,
       role: vol.role,
       location: vol.location,
-      startDate: vol.startDate instanceof Date ? vol.startDate.toISOString().split('T')[0] : String(vol.startDate),
-      endDate: vol.endDate instanceof Date ? vol.endDate.toISOString().split('T')[0] : vol.endDate ? String(vol.endDate) : undefined,
+      startDate: formatResumeDateValue(vol.startDate),
+      endDate: formatResumeDateValue(vol.endDate),
       isCurrentRole: vol.isCurrentRole,
       description: vol.description || '',
       achievements: Array.isArray(vol.achievements) ? vol.achievements : []
@@ -90,13 +111,13 @@ function convertToStandardizedData(resume: IResume, trackingUrl?: string): Resum
     awards: (resume.awards || []).map(award => ({
       title: award.title,
       issuer: award.issuer,
-      date: award.date instanceof Date ? award.date.toISOString().split('T')[0] : String(award.date),
+      date: formatResumeDateValue(award.date),
       description: award.description
     })),
     publications: (resume.publications || []).map(pub => ({
       title: pub.title,
       publisher: pub.publisher,
-      publicationDate: pub.publicationDate instanceof Date ? pub.publicationDate.toISOString().split('T')[0] : String(pub.publicationDate),
+      publicationDate: formatResumeDateValue(pub.publicationDate),
       url: pub.url,
       description: pub.description
     })),
@@ -152,7 +173,17 @@ export const resumeValidation = [
   body('workExperience.*.jobTitle').optional().notEmpty().withMessage('Job title is required for work experience'),
   body('workExperience.*.company').optional().notEmpty().withMessage('Company is required for work experience'),
   body('workExperience.*.location').optional().notEmpty().withMessage('Location is required for work experience'),
-  body('workExperience.*.startDate').optional().isString().withMessage('Start date must be a valid date string'),
+  body('workExperience.*.startDate')
+    .custom((value, { req }) => {
+      if (!req.body.workExperience) return true;
+      if (value === undefined || value === null || String(value).trim().length === 0) {
+        throw new Error('Start date is required for work experience');
+      }
+      return true;
+    })
+    .bail()
+    .isString()
+    .withMessage('Start date must be a valid date string'),
   body('workExperience.*.responsibilities').optional().isArray().withMessage('Responsibilities must be an array'),
   body('workExperience.*.achievements').optional().isArray().withMessage('Achievements must be an array'),
   
@@ -205,6 +236,17 @@ export const resumeUpdateValidation = [
   
   body('professionalSummary').optional().isString().trim(),
   body('workExperience').optional().isArray().withMessage('Work experience must be an array'),
+  body('workExperience.*.startDate')
+    .custom((value, { req }) => {
+      if (!req.body.workExperience) return true;
+      if (value === undefined || value === null || String(value).trim().length === 0) {
+        throw new Error('Start date is required for work experience');
+      }
+      return true;
+    })
+    .bail()
+    .isString()
+    .withMessage('Start date must be a valid date string'),
   body('education').optional().isArray().withMessage('Education must be an array'),
   body('skills').optional().isArray().withMessage('Skills must be an array'),
   body('projects').optional().isArray().withMessage('Projects must be an array'),

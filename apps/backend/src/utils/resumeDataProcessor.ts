@@ -84,7 +84,7 @@ export function processWorkExperienceData(workData: any[]): any[] {
       jobTitle: work.jobTitle || work.position || '',
       company: work.company || '',
       location: work.location || '',
-      startDate: safeParseDate(work.startDate) || new Date(),
+      startDate: safeParseDate(work.startDate),
       endDate: work.endDate ? safeParseDate(work.endDate) : undefined,
       isCurrentJob: Boolean(work.isCurrentJob) || (!work.endDate && work.isCurrentJob !== false),
       responsibilities: processDescriptionToArray(work.responsibilities),

@@ -134,6 +134,13 @@ export class AIResumeService {
   ): Promise<ResumeImprovementResult & { aiStatus?: string }> {
     try {
       console.log('🤖 PRIORITY: Using AI-powered job optimization...');
+
+      const workingResumeData = resumeData;
+      const options = {
+        includeIndustryAnalysis: false,
+        includeCompetitorBenchmarking: false,
+        includeATSAnalysis: true
+      };
       
       // Create job context for AI
       const jobContext = `Job Title: ${jobOptions.jobTitle || 'Position'}, Company: ${jobOptions.companyName || 'Company'}, Description: ${jobOptions.jobDescription || 'No description provided'}`;

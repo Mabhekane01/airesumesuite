@@ -549,7 +549,11 @@ CRITICAL CONSTRAINTS:
         const responseText = await enterpriseAIService.generateText(prompt, 'work-experience-enhancement');
         const jsonMatch = responseText.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
-          enhancedData = JSON.parse(jsonMatch[0]);
+          try {
+            enhancedData = JSON.parse(jsonMatch[0]);
+          } catch (parseError) {
+            console.warn('Work experience text response contained invalid JSON, falling back to original data:', parseError);
+          }
         }
       }
 

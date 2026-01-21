@@ -18,6 +18,18 @@ router.get('/', authMiddleware, (req: AuthenticatedRequest, res: Response) => re
 // GET /api/v1/resumes/new - Get empty resume structure
 router.get('/new', authMiddleware, (req: Request, res: Response) => resumeController.getNewResume(req, res));
 
+// ===== TEMPLATE MANAGEMENT =====
+// Place static template routes before dynamic :id routes
+
+// GET /api/v1/resumes/templates - Get available templates
+router.get('/templates', (req: Request, res: Response) => resumeController.getAvailableTemplates(req, res));
+
+// GET /api/v1/resumes/latex-templates - Get LaTeX templates
+router.get('/latex-templates', (req: AuthenticatedRequest, res: Response) => resumeController.getLatexTemplates(req, res));
+
+// GET /api/v1/resumes/latex-templates-with-code - Get LaTeX templates with code (for job optimization)
+router.get('/latex-templates-with-code', (req: AuthenticatedRequest, res: Response) => resumeController.getLatexTemplatesWithCode(req, res));
+
 // GET /api/v1/resumes/:id - Get specific resume
 router.get('/:id', authMiddleware, (req: AuthenticatedRequest, res: Response) => resumeController.getResumeById(req, res));
 
@@ -190,17 +202,6 @@ router.post('/ats-analysis-unsaved',
   trackFeatureUsage('ai-ats-analysis-preview'),
   (req: Request, res: Response) => resumeController.analyzeATSCompatibilityUnsaved(req, res)
 );
-
-// ===== TEMPLATE MANAGEMENT =====
-
-// GET /api/v1/resumes/templates - Get available templates
-router.get('/templates', (req: Request, res: Response) => resumeController.getAvailableTemplates(req, res));
-
-// GET /api/v1/resumes/latex-templates - Get LaTeX templates
-router.get('/latex-templates', (req: AuthenticatedRequest, res: Response) => resumeController.getLatexTemplates(req, res));
-
-// GET /api/v1/resumes/latex-templates-with-code - Get LaTeX templates with code (for job optimization)
-router.get('/latex-templates-with-code', (req: AuthenticatedRequest, res: Response) => resumeController.getLatexTemplatesWithCode(req, res));
 
 // ===== ERROR HANDLING =====
 router.use((err: Error, req: Request, res: Response, next: NextFunction) => {
